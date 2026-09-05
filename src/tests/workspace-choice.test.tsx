@@ -10,7 +10,7 @@ describe('workspace choice', () => {
   it('uses the real public Cube game as the main entry while preserving Game Studio under More', async () => {
     const user = userEvent.setup()
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={['/contest']}>
         <App />
       </MemoryRouter>,
     )

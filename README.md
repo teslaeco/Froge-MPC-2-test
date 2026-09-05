@@ -8,7 +8,7 @@ Klient opisuje figurkę lub część → powstaje model 3D i podgląd → klient
 
 TikTok Shop ma być kanałem sprzedaży. Docelowy zasięg jest światowy, wdrażany etapami po weryfikacji obsługiwanych rynków, dostawców i dostawy. Zakres obejmuje też dropshipping gotowych produktów, w tym rozważaną klawiaturę „Codex Micro”; producent, dostępność i warunki współpracy pozostają do potwierdzenia.
 
-**Stan tej kopii:** przeniesiony kod i dokumentacja; brak podłączonego TikTok Shop, płatności, dostawcy generatywnych modeli 3D i wykonawcy produkcji. Istniejący generator jest proceduralny i obsługuje określone kształty. Sam eksport glTF nie potwierdza przydatności modelu do druku lub produkcji.
+**Stan tej kopii:** przeniesiony kod i dokumentacja oraz nowa strona główna studia parametrycznego; brak podłączonego TikTok Shop, płatności, dostawcy generatywnych modeli 3D i wykonawcy produkcji. Istniejący generator jest proceduralny i obsługuje określone kształty. Sam eksport glTF nie potwierdza przydatności modelu do druku lub produkcji.
 
 ## Fundament konkursowy
 
@@ -39,7 +39,9 @@ npm ci
 npm run dev
 ```
 
-Istniejące laboratorium modeli i szkiców handlowych: `/#/shop-lab`. Interfejs zachowuje wygląd oraz nazwy konkursowego ForgeMCP; przebudowa pod TikTok jest następnym etapem.
+Strona główna `/#/` otwiera nowe studio: rakieta Ø 10 × 50 mm, walec, stożek i kula; edycja wymiarów, kąta nosa, kolorów, tekstury i detali. Polecenia tekstowe PL/EN, opcjonalne aktualizowanie podczas pisania i dyktowanie w obsługiwanych przeglądarkach. Eksport glTF z teksturą, STL w mm, PNG i specyfikacji JSON. Narzędzia WebMCP `inspect_live_3d_studio` i `update_live_3d_studio` obsługują ten sam model oraz odrzucają nieaktualną rewizję. Jest to parser parametrów, nie podłączony model Astra ani swobodne generowanie AI.
+
+Dawna strona konkursowa: `/#/contest`. Laboratorium modeli i szkiców handlowych: `/#/shop-lab`. Szczegóły: [Studio 3D](docs/STUDIO_3D.md).
 
 ```bash
 npm run lint

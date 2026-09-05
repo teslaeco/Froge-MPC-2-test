@@ -11,7 +11,7 @@ describe('dashboard render', () => {
         <App />
       </BrowserRouter>,
     )
-    expect(screen.getByRole('heading', { name: 'FORGEMCP' })).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Powiedz, co tworzymy.' })).toBeTruthy()
   })
 
   it('exposes LabTerra WebMCP with place search and optional coordinates', () => {

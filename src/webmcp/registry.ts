@@ -1,3 +1,4 @@
+import { studioTools } from '../studio/tools'
 import { z } from 'zod'
 import type { IntegrationHealth } from '../types/core'
 import { createCandidate, executeGame, promoteCandidate, rollbackCandidate, runTournament, type Tournament } from '../integrations/cube/lab'
@@ -90,5 +91,5 @@ const tools:Base[]=[
  {name:'prepare_b2b_rfq',domain:'commerce',description:'Prepare an unsent manufacturing request from the asset specification; Shopify is not represented as a supplier search engine.',readOnly:false,requiresApproval:false,execute:safe(assetConfigInput,v=>ok(prepareB2bRfq(createAssetSpecification(v as AssetConfiguration)),'WARNING'))},
  {name:'submit_b2b_rfq',domain:'commerce',description:'Guarded supplier-send boundary. No request is sent until a real recipient is verified and separately authorized.',readOnly:false,requiresApproval:true,connectionStatus:'NOT_CONNECTED',execute:safe(z.object({specificationId:z.string().min(8),recipientId:z.string().min(2),humanApproved:z.literal(true)}),()=>supplierSubmissionNotConnected())},
 ]
-export const webmcpTools:WebMcpToolDefinition[]=tools.map(t=>({...t,inputSchema:t.inputSchema??schema,outputSchema:t.outputSchema??schema,connectionStatus:t.connectionStatus??'CONNECTED',verificationPolicy:t.verificationPolicy??(t.requiresApproval?'Automated gates plus explicit human approval':'Validated structured status and provenance')}))
+export const webmcpTools:WebMcpToolDefinition[]= [...studioTools, ...tools].map(t=>({...t,inputSchema:t.inputSchema??schema,outputSchema:t.outputSchema??schema,connectionStatus:t.connectionStatus??'CONNECTED',verificationPolicy:t.verificationPolicy??(t.requiresApproval?'Automated gates plus explicit human approval':'Validated structured status and provenance')}))
 export const getTool=(name:string)=>webmcpTools.find(t=>t.name===name)

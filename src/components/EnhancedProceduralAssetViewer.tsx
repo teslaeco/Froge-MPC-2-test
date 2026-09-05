@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from 'react'
 import type { ProceduralAssetBundle, SemanticPart } from '../integrations/commerce/proceduralAssets'
 
+export type ViewerAsset = Pick<ProceduralAssetBundle, 'semanticParts' | 'geometryFingerprint'> & {
+  preview: Omit<ProceduralAssetBundle['preview'], 'preset'> & { preset: string; textureOnly?: boolean };
+  texture: Pick<ProceduralAssetBundle['texture'], 'bytes' | 'mimeType' | 'fingerprint'>;
+}
+
 type Point3 = [number, number, number]
 type Mat4 = Float32Array
 type RendererMode = 'loading-texture' | 'semantic-webgl' | 'semantic-webgl-fallback' | 'canvas-fallback' | 'unavailable'
@@ -71,7 +76,7 @@ function mixColor(a: Point3, b: Point3, amount: number): Point3 {
   ]
 }
 
-function styleForPart(bundle: ProceduralAssetBundle, part: SemanticPart): SemanticStyle {
+function styleForPart(bundle: ViewerAsset, part: SemanticPart): SemanticStyle {
   const key = `${part.name} ${part.role}`.toLowerCase()
   const primary = hexRgb(bundle.preview.primaryColor)
   const secondary = hexRgb(bundle.preview.secondaryColor)
@@ -98,8 +103,9 @@ function styleForPart(bundle: ProceduralAssetBundle, part: SemanticPart): Semant
   return { color: mixColor(primary, secondary, 0.18), textureWeight: 0.72 }
 }
 
-function buildSemanticArrays(bundle: ProceduralAssetBundle) {
+function buildSemanticArrays(bundle: ViewerAsset) {
   const vertexCount = bundle.preview.positions.length / 3
+  if (bundle.preview.textureOnly) return { colors: new Float32Array(vertexCount * 3).fill(1), textureWeights: new Float32Array(vertexCount).fill(1) }
   const colors = new Float32Array(vertexCount * 3)
   const textureWeights = new Float32Array(vertexCount)
   const primary = hexRgb(bundle.preview.primaryColor)
@@ -237,7 +243,7 @@ function attribute(gl: WebGLRenderingContext, program: WebGLProgram, name: strin
   return buffer
 }
 
-function validBundle(bundle: ProceduralAssetBundle) {
+function validBundle(bundle: ViewerAsset) {
   const vertices = bundle.preview.positions.length / 3
   return vertices > 0
     && bundle.preview.normals.length === bundle.preview.positions.length
@@ -247,7 +253,7 @@ function validBundle(bundle: ProceduralAssetBundle) {
     && bundle.preview.normals.every(Number.isFinite)
 }
 
-export function EnhancedProceduralAssetViewer({ bundle, stale = false }: { bundle: ProceduralAssetBundle; stale?: boolean }) {
+export function EnhancedProceduralAssetViewer({ bundle, stale = false, studio = false }: { bundle: ViewerAsset; stale?: boolean; studio?: boolean }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const angleRef = useRef({ yaw: -0.55, pitch: -0.24 })
   const zoomRef = useRef(1)
@@ -309,7 +315,7 @@ export function EnhancedProceduralAssetViewer({ bundle, stale = false }: { bundl
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR)
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1)
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, studio ? 0 : 1)
 
       const modelLocation = gl.getUniformLocation(program, 'u_model')
       const mvpLocation = gl.getUniformLocation(program, 'u_mvp')
@@ -337,7 +343,7 @@ export function EnhancedProceduralAssetViewer({ bundle, stale = false }: { bundl
           const aspect = width >= height ? scaling(height / width, 1, 1) : scaling(1, width / height, 1)
           const centered = multiply(scaling(fit, fit, fit), translation(-center[0], -center[1], -center[2]))
           const model = multiply(rotationY(angleRef.current.yaw), multiply(rotationX(angleRef.current.pitch), centered))
-          const mvp = multiply(aspect, model)
+          const mvp = studio ? multiply(scaling(1, 1, -1), multiply(aspect, model)) : multiply(aspect, model)
           gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
           gl.useProgram(program)
           gl.uniformMatrix4fv(modelLocation, false, model)
@@ -385,7 +391,7 @@ export function EnhancedProceduralAssetViewer({ bundle, stale = false }: { bundl
       if (texture) gl.deleteTexture(texture)
       if (program) gl.deleteProgram(program)
     }
-  }, [bundle, semantic])
+  }, [bundle, semantic, studio])
 
   function pointerDown(event: ReactPointerEvent<HTMLCanvasElement>) {
     dragRef.current = { x: event.clientX, y: event.clientY }
@@ -414,7 +420,7 @@ export function EnhancedProceduralAssetViewer({ bundle, stale = false }: { bundl
   }
 
   const rendererLabel = rendererMode === 'semantic-webgl'
-    ? 'SEMANTIC PBR PREVIEW'
+    ? studio ? 'PODGLĄD 3D · TEKSTURA' : 'SEMANTIC PBR PREVIEW'
     : rendererMode === 'semantic-webgl-fallback'
       ? 'SEMANTIC MATERIAL FALLBACK'
       : rendererMode === 'canvas-fallback'
@@ -440,8 +446,10 @@ export function EnhancedProceduralAssetViewer({ bundle, stale = false }: { bundl
         <span><b>{rendererLabel}</b> · {bundle.preview.label} · zoom {zoomLabel}%</span>
         <button type="button" onClick={() => setZoom(zoomRef.current - 0.12)} aria-label="Zoom out 3D preview">−</button>
         <button type="button" onClick={() => setZoom(zoomRef.current + 0.12)} aria-label="Zoom in 3D preview">＋</button>
-        <button type="button" onClick={() => setRotating(value => !value)}>{rotating ? 'Pause rotation' : 'Resume rotation'}</button>
+        <button type="button" onClick={() => setRotating(value => !value)}>{studio ? rotating ? 'Zatrzymaj obrót' : 'Obracaj' : rotating ? 'Pause rotation' : 'Resume rotation'}</button>
       </div>
+      {studio && <div className="studio-camera"><button type="button" onClick={() => { angleRef.current = { yaw: 0, pitch: 0 }; setRotating(false) }}>Przód</button><button type="button" onClick={() => { angleRef.current = { yaw: 0, pitch: -Math.PI / 2 }; setRotating(false) }}>Góra</button><button type="button" onClick={() => { angleRef.current = { yaw: -.55, pitch: -.24 }; setZoom(1) }}>Perspektywa</button></div>}
+      {studio && rendererMode === 'unavailable' && <p role="status">Podgląd wymaga WebGL. Eksport modelu jest nadal dostępny.</p>}
       <div className="procedural-viewer__fingerprint">{bundle.geometryFingerprint} · {bundle.texture.fingerprint}</div>
       {stale ? <div className="procedural-viewer__stale"><b>Configuration changed</b><span>Generate again to keep preview and export linked.</span></div> : null}
     </div>

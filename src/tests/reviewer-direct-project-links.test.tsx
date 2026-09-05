@@ -11,7 +11,7 @@ afterEach(cleanup)
 describe('reviewer direct project links', () => {
   it('adds two plain public-project links for Terra and Cube', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={['/contest']}>
         <App />
       </MemoryRouter>,
     )

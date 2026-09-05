@@ -11,7 +11,7 @@ afterEach(cleanup)
 describe('reviewer home', () => {
   it('shows Terra and the public Cube game together on the main page without the Cube login iframe', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={['/contest']}>
         <App />
       </MemoryRouter>,
     )
@@ -34,7 +34,7 @@ describe('reviewer home', () => {
 
   it('keeps the reviewer story limited to three demo steps and explicit proof', () => {
     render(
-      <MemoryRouter initialEntries={['/']}>
+      <MemoryRouter initialEntries={['/contest']}>
         <App />
       </MemoryRouter>,
     )

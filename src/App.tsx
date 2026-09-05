@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import './index.css'
+import { ModelStudio } from './components/ModelStudio'
 import './reviewer.css'
 import { agentRegistry } from './agents/registry'
 import { ApprovalQueue } from './components/ApprovalQueue'
@@ -290,9 +291,9 @@ function App() {
   return (
     <div className="app-shell">
       <header className="site-header">
-        <Link className="site-brand" to="/"><span>FORGE</span>MCP<small>WEBMCP CONTROL LAYER</small></Link>
+        <Link className="site-brand" to="/"><span>FORGE</span>MCP<small>STUDIO 3D · TIKTOK SHOP</small></Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
-          <Link to="/">Reviewer Home</Link>
+          <Link to="/">Studio 3D</Link>
           <Link to="/labmcp">Terra Observatory</Link>
           <Link to="/game-studio">Cube Chess / Game Studio</Link>
           <Link to="/challenge">WebMCP Proof</Link>
@@ -302,7 +303,8 @@ function App() {
 
       <main>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<ModelStudio />} />
+          <Route path="/contest" element={<Home />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/terra" element={<ResearchErrorBoundary><LabMcp /></ResearchErrorBoundary>} />
           <Route path="/labmcp" element={<ResearchErrorBoundary><LabMcp /></ResearchErrorBoundary>} />
@@ -327,11 +329,11 @@ function App() {
           <Route path="/exports" element={<ExportsPage />} />
           <Route path="/integrations" element={<IntegrationStatusPage />} />
           <Route path="/approval" element={<ApprovalQueue />} />
-          <Route path="*" element={<Home />} />
+          <Route path="*" element={<ModelStudio />} />
         </Routes>
       </main>
       <nav className="mobile-tabbar" aria-label="Mobile navigation">
-        <NavLink end to="/"><b>⌂</b><span>Home</span></NavLink><NavLink to="/labmcp"><b>◎</b><span>Terra</span></NavLink><NavLink to="/game-studio"><b>♟</b><span>Cube</span></NavLink><NavLink to="/challenge"><b>✓</b><span>Proof</span></NavLink><NavLink to="/stations"><b>✦</b><span>3D</span></NavLink>
+        <NavLink end to="/"><b>⌂</b><span>Studio</span></NavLink><NavLink to="/labmcp"><b>◎</b><span>Terra</span></NavLink><NavLink to="/game-studio"><b>♟</b><span>Cube</span></NavLink><NavLink to="/challenge"><b>✓</b><span>Proof</span></NavLink><NavLink to="/stations"><b>✦</b><span>3D</span></NavLink>
       </nav>
     </div>
   )
