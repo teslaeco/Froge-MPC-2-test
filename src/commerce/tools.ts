@@ -1,0 +1,11 @@
+import { z } from 'zod'
+import type { WebMcpToolDefinition } from '../webmcp/registry'
+import { productSchema, estimate, readiness, supplierBrief, tiktokBrief } from './domain'
+import { commerceRequest } from './client'
+const input=z.object({product:productSchema,revision:z.number().int().nonnegative()}).strict()
+const common={domain:'commerce' as const,requiresApproval:false,connectionStatus:'CONNECTED' as const,verificationPolicy:'Private authenticated Froge catalog only. Does not publish to Shopify or TikTok, process payments, send messages or start Blender.',outputSchema:{type:'object',additionalProperties:true}}
+export const commerceTools:WebMcpToolDefinition[]=[
+ {...common,name:'list_froge_products',readOnly:true,description:'Read saved products from the authenticated user’s private Froge catalog, including revisions. Does not query live Shopify inventory or orders.',inputSchema:{type:'object',properties:{},additionalProperties:false},execute:async()=>{try{return await commerceRequest('products')}catch(e){return{state:'FAIL',error:(e as Error).message}}}},
+ {...common,name:'save_froge_product',readOnly:false,description:'Save a user-requested private Froge product draft. Use revision 0 and a new UUID for creation, or the exact revision returned by list_froge_products for updates. No store publication, order or supplier message. Do not invent prices, supplier quotes or model files.',inputSchema:z.toJSONSchema(input),execute:async(value)=>{const p=input.safeParse(value);if(!p.success)return{state:'FAIL',error:p.error.issues};try{const result=await commerceRequest('products',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(p.data)});window.dispatchEvent(new Event('froge-catalog-updated'));return result}catch(e){return{state:'FAIL',error:(e as Error).message}}}},
+ {...common,name:'prepare_froge_offer',readOnly:true,description:'Calculate a supplied product’s pre-tax balance and prepare unsent TikTok and supplier text drafts. No messages sent, no manufacturing validation.',inputSchema:z.toJSONSchema(productSchema),execute:async(value)=>{const p=productSchema.safeParse(value);return p.success?{estimate:estimate(p.data),missing:readiness(p.data),tiktok:tiktokBrief(p.data),supplier:supplierBrief(p.data),published:false,sent:false}:{state:'FAIL',error:p.error.issues}}},
+]

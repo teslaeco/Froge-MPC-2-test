@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { newProduct } from '../commerce/domain'
+import { commerceRequest } from '../commerce/client'
 import type { Group } from 'three'
 import { sceneModel, sceneSchema, type ModelScene } from '../studio/scene'
 import { getAgentScene, subscribeAgentScene, requestAgentModel, invalidateAgentRequest } from '../studio/agentSceneStore'
@@ -13,6 +15,7 @@ const Viewer = lazy(() => import('./AiModelViewer'))
 type Engine = typeof import('../studio/aiModel')
 const defaults: Adjustments = { dimensions: ['', '', ''], angles: ['', '', ''] }
 export function ModelStudio() {
+  const navigate=useNavigate()
   const [mode, setMode] = useState<'ai' | 'local'>('ai')
   const [prompt,setPrompt]=useState(''),[name,setName]=useState(''),[sceneData,setSceneData]=useState<ModelScene|null>(null)
   const [busy,setBusy]=useState(false),[note,setNote]=useState(''),[error,setError]=useState('')
@@ -71,6 +74,18 @@ export function ModelStudio() {
   function field(group: 'dimensions' | 'angles', index: number, value: string) {
     setAdjustments(previous => { const next = { ...previous, [group]: [...previous[group]] as [string,string,string] }; next[group][index] = value; return next })
   }
+  async function saveProduct() {
+    if(!model||!engine.current||exporting)return
+    setExporting(true);setError('')
+    try {
+      const blob=await engine.current.exportModel(model,'glb')
+      if(blob.size>12*1024*1024)throw new Error('Model przekracza limit katalogu 12 MB. Pobierz go i przygotuj lżejszą wersję.')
+      const asset=await commerceRequest('models',{method:'POST',headers:{'Content-Type':'model/gltf-binary'},body:blob})
+      const product={...newProduct(),title:(name||'Mój model 3D').slice(0,160),description:sceneData?.description||'',variant:size.map(n=>n.toFixed(2)).join(' × ')+' cm',modelFile:asset.filename}
+      await commerceRequest('products',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({product,revision:0})})
+      navigate('/shop?product='+product.id)
+    }catch(e){setError((e as Error).message)}finally{setExporting(false)}
+  }
   const tabs = <div className="ai-mode"><button aria-pressed={mode === 'ai'} onClick={() => setMode('ai')}>Codex + Blender</button><button aria-pressed={mode === 'local'} onClick={() => setMode('local')}>Bryły parametryczne</button></div>
   if (mode === 'local') return <>{tabs}<ParametricModelStudio /></>
   return <div className="model-studio ai-studio">
@@ -95,10 +110,10 @@ export function ModelStudio() {
         <div className="studio-canvas-heading"><div><small>{model?'TWÓJ MODEL':'OBSZAR ROBOCZY'}</small><h2>{name||'Modelowanie bez płatnego generatora'}</h2></div></div>
         {model?<Suspense fallback={<p className="ai-empty">Ładuję podgląd…</p>}><Viewer model={model}/></Suspense>:<div className="ai-empty"><b>{busy?'Wczytuję geometrię…':'Obejrzyj smoka stworzonego przez Codexa'}</b><p>Model z przestrzennymi łuskowanymi powierzchniami, rogami, wąsami i czterema łapami. Gotowy przykład do otwarcia i edycji w Blenderze.</p><button disabled={busy} onClick={()=>void example()}>Otwórz model smoka</button></div>}
         <div className="studio-export"><div className="studio-export-buttons"><button disabled={busy} onClick={()=>void example()}>Przykład · smok Codexa</button><label className="blender-import">Wczytaj GLB lub scenę JSON<input aria-label="Wczytaj model GLB lub JSON" type="file" accept=".glb,.json" disabled={busy} onChange={e=>{void importFile(e.target.files?.[0]);e.target.value=''}}/></label></div></div>
-        {model && <><div className="studio-measures">{['SZEROKOŚĆ X','WYSOKOŚĆ Y','GŁĘBOKOŚĆ Z'].map((label,i)=><div key={label}><small>{label}</small><b>{size[i]?.toFixed(2)} <span>cm</span></b></div>)}</div><div className="studio-export"><p>GLB zachowuje materiały i tekstury. Eksport GLB/STL uwzględnia widoczną skalę i obrót.</p><div className="studio-export-buttons"><button disabled={exporting||!!adjustmentError} onClick={()=>void download('glb')}>Pobierz GLB + tekstury</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('stl')}>Pobierz STL · mm</button>{sceneData && <button onClick={()=>saveJson('model-blender.froge.json',sceneData)}>Scena do dodatku Blender · JSON</button>}</div><p>JSON zachowuje części w źródłowej skali, przed zmianami wymiarów i obrotów. STL nie zawiera tekstur. Przed drukiem sprawdź siatkę i połącz przecinające się części.</p></div></>}
+        {model && <><div className="studio-measures">{['SZEROKOŚĆ X','WYSOKOŚĆ Y','GŁĘBOKOŚĆ Z'].map((label,i)=><div key={label}><small>{label}</small><b>{size[i]?.toFixed(2)} <span>cm</span></b></div>)}</div><div className="studio-export"><p>GLB zachowuje materiały i tekstury. Eksport GLB/STL uwzględnia widoczną skalę i obrót.</p><div className="studio-export-buttons"><button disabled={exporting||busy||!!adjustmentError} onClick={()=>void saveProduct()}>Dodaj model do katalogu</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('glb')}>Pobierz GLB + tekstury</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('stl')}>Pobierz STL · mm</button>{sceneData && <button onClick={()=>saveJson('model-blender.froge.json',sceneData)}>Scena do dodatku Blender · JSON</button>}</div><p>JSON zachowuje części w źródłowej skali, przed zmianami wymiarów i obrotów. STL nie zawiera tekstur. Przed drukiem sprawdź siatkę i połącz przecinające się części.</p></div></>}
         <details className="ai-adjustments"><summary>Wymiary i kąty · opcjonalnie</summary><p>Zostaw puste, aby zachować proporcje. Domyślnie najdłuższy bok ma 10 cm. Jeden wymiar skaluje całość proporcjonalnie; kilka wymiarów może zmienić proporcje.</p><div className="ai-fields">{['Szerokość X', 'Wysokość Y', 'Głębokość Z'].map((label,i) => <label key={label}>{label} · cm<input type="number" min="0.1" max="1000" step="0.1" placeholder="Automatycznie" value={adjustments.dimensions[i]} onChange={e => field('dimensions', i, e.target.value)} /></label>)}</div><p>Kąty obrotu modelu (nie kąty konstrukcyjne). Wymiary powyżej dotyczą obiektu przed obrotem.</p><div className="ai-fields">{['X','Y','Z'].map((label,i) => <label key={label}>Obrót {label} · °<input type="number" min="-360" max="360" placeholder="0" value={adjustments.angles[i]} onChange={e => field('angles',i,e.target.value)} /></label>)}</div><button onClick={() => setAdjustments(defaults)}>Wyczyść ustawienia</button>{adjustmentError && <p role="alert" className="studio-error">{adjustmentError} Podgląd zachowuje ostatnią poprawną skalę.</p>}</details>
       </section>
     </div>
-    <footer className="studio-footer"><span>FROGE MPC 2 · Studio 3D</span><Link to="/contest">Fundament konkursowy →</Link><Link to="/shop-lab">Laboratorium ofert →</Link></footer>
+    <footer className="studio-footer"><span>FROGE MPC 2 · Studio 3D</span><Link to="/contest">Fundament konkursowy →</Link><Link to="/shop">Katalog · TikTok + Shopify →</Link></footer>
   </div>
 }

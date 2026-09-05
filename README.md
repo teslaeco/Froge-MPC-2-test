@@ -57,3 +57,7 @@ npm run build
 Oryginalne workflow GitHub Actions zapisano jako nieaktywne pliki w `docs/foundation/workflows/`, a powiązanie z poprzednią stroną jako `docs/foundation/hosting.original.json`. Ta kopia nie uruchamia automatycznie publikacji ani starego zadania Codex. Źródłowe `netlify.toml` zachowano jako konfigurację bazową; aktualna wersja jest przeznaczona dla prywatnej strony Sites wskazanej w `.openai/hosting.json`.
 
 Licencja odziedziczonego kodu: [MIT](LICENSE). [Informacje o komponentach zewnętrznych](THIRD_PARTY_NOTICES.md).
+
+## Katalog i sprzedaż
+
+Panel `/shop`: trwały katalog, prywatne pliki 3D, wycena, szkice Shopify CSV, opisy TikTok i zapytania B2B. Model ze studia można zapisać bezpośrednio jako produkt. Kanały sprzedaży i zdalny Blender wymagają konfiguracji; panel nie udaje aktywnej sprzedaży. Szczegóły: [docs/COMMERCE.md](docs/COMMERCE.md).

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import './index.css'
 import { ModelStudio } from './components/ModelStudio'
+import { CommerceHub } from './commerce/CommerceHub'
 import './reviewer.css'
 import { agentRegistry } from './agents/registry'
 import { ApprovalQueue } from './components/ApprovalQueue'
@@ -294,6 +295,7 @@ function App() {
         <Link className="site-brand" to="/"><span>FORGE</span>MCP<small>STUDIO 3D · TIKTOK SHOP</small></Link>
         <nav className="desktop-nav" aria-label="Primary navigation">
           <Link to="/">Studio 3D</Link>
+          <Link to="/shop">Sklep · TikTok + Shopify</Link>
           <Link to="/labmcp">Terra Observatory</Link>
           <Link to="/game-studio">Cube Chess / Game Studio</Link>
           <Link to="/challenge">WebMCP Proof</Link>
@@ -318,6 +320,7 @@ function App() {
           <Route path="/cube-premium" element={<CubePremiumSubscription />} />
           <Route path="/subscription" element={<CubePremiumSubscription />} />
           <Route path="/shop-lab" element={<ProductLab />} />
+          <Route path="/shop" element={<CommerceHub />} />
           <Route path="/shopify-test" element={<ProductLab />} />
           <Route path="/tools" element={<ToolInspector />} />
           <Route path="/verification" element={<Placeholder title="Verification" />} />
@@ -333,7 +336,7 @@ function App() {
         </Routes>
       </main>
       <nav className="mobile-tabbar" aria-label="Mobile navigation">
-        <NavLink end to="/"><b>⌂</b><span>Studio</span></NavLink><NavLink to="/labmcp"><b>◎</b><span>Terra</span></NavLink><NavLink to="/game-studio"><b>♟</b><span>Cube</span></NavLink><NavLink to="/challenge"><b>✓</b><span>Proof</span></NavLink><NavLink to="/stations"><b>✦</b><span>3D</span></NavLink>
+        <NavLink end to="/"><b>⌂</b><span>Studio</span></NavLink><NavLink to="/shop"><b>▤</b><span>Sklep</span></NavLink><NavLink to="/labmcp"><b>◎</b><span>Terra</span></NavLink><NavLink to="/game-studio"><b>♟</b><span>Cube</span></NavLink><NavLink to="/challenge"><b>✓</b><span>Proof</span></NavLink>
       </nav>
     </div>
   )
