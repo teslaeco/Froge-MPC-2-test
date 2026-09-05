@@ -1,96 +1,116 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { EnhancedProceduralAssetViewer, type ViewerAsset } from './EnhancedProceduralAssetViewer'
-import { base64, createModel, exportStl, INITIAL_PROMPT, INITIAL_SPEC, SHAPE_NAMES, type ModelSpec } from '../studio/model'
-import { applyStudioCommand, getStudio, subscribeStudio, undoStudio, updateStudio } from '../studio/store'
+import type { Group } from 'three'
+import { api, followJob, modelBytes, savedJob, saveJob, type Job } from '../studio/generation'
+import type { Adjustments } from '../studio/aiModel'
 import { useDictation } from '../studio/useDictation'
+import { ParametricModelStudio } from './ParametricModelStudio'
 import '../studio/studio.css'
+import '../studio/aiStudio.css'
 
-function save(name: string, data: string | Uint8Array, type: string) {
-  const url = URL.createObjectURL(new Blob([typeof data === 'string' ? data : Uint8Array.from(data)], { type }))
-  const a = document.createElement('a'); a.href = url; a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-function NumberField({ label, value, min, max, step = 1, suffix, onChange }: { label: string; value: number; min: number; max: number; step?: number; suffix: string; onChange: (v: number) => void }) {
-  const [draft, setDraft] = useState(String(value))
-  useEffect(() => { setDraft(String(value)) }, [value])
-  return <label className="studio-field">{label}<span><input aria-label={label} type="number" value={draft} min={min} max={max} step={step} onChange={e => { setDraft(e.target.value); if (e.target.value !== '' && Number.isFinite(e.target.valueAsNumber)) onChange(e.target.valueAsNumber) }} onBlur={() => setDraft(String(value))} /><small>{suffix}</small></span></label>
-}
+const Viewer = lazy(() => import('./AiModelViewer'))
+type Engine = typeof import('../studio/aiModel')
+const defaults: Adjustments = { dimensions: ['', '', ''], angles: ['', '', ''] }
 export function ModelStudio() {
-  const state = useSyncExternalStore(subscribeStudio, getStudio), { spec } = state
-  const [prompt, setPrompt] = useState(INITIAL_PROMPT), [live, setLive] = useState(false), [unit, setUnit] = useState<'mm' | 'cm'>('cm')
-  const [exportError, setExportError] = useState('')
-  const lastApplied = useRef('')
+  const [mode, setMode] = useState<'ai' | 'local'>('ai')
+  const [prompt, setPrompt] = useState(''), [textures, setTextures] = useState(true)
+  const [key, setKey] = useState(''), [connected, setConnected] = useState(false), [configured, setConfigured] = useState(false), [checking, setChecking] = useState(false)
+  const [connectionOpen, setConnectionOpen] = useState(false), [connectionError, setConnectionError] = useState('')
+  const [busy, setBusy] = useState(false), [note, setNote] = useState(''), [error, setError] = useState(''), [progress, setProgress] = useState(0)
+  const [job, setJob] = useState<Job | null>(savedJob), [resultJob, setResultJob] = useState<Job | null>(null)
+  const [source, setSource] = useState<Group | null>(null), [model, setModel] = useState<Group | null>(null), [size, setSize] = useState<number[]>([])
+  const [adjustments, setAdjustments] = useState<Adjustments>(defaults), [adjustmentError, setAdjustmentError] = useState(''), [exporting, setExporting] = useState(false)
+  const engine = useRef<Engine | null>(null), operation = useRef<AbortController | null>(null), sourceRef = useRef<Group | null>(null)
   const speech = useDictation(text => setPrompt(text))
   useEffect(() => {
-    if (!live || !prompt.trim() || prompt === lastApplied.current) return
-    const timer = setTimeout(() => { lastApplied.current = prompt; applyStudioCommand(prompt) }, 650)
-    return () => clearTimeout(timer)
-  }, [prompt, live])
-  const model = useMemo(() => createModel(spec), [spec])
-  const bundle = useMemo<ViewerAsset>(() => ({ geometryFingerprint: model.id, semanticParts: [], preview: { ...model.mesh, preset: spec.shape, label: SHAPE_NAMES[spec.shape], promptMatched: true, primaryColor: spec.color, secondaryColor: spec.accent, textureOnly: true }, texture: { bytes: model.texture, mimeType: 'image/png', fingerprint: model.id } }), [model, spec])
-  const scale = unit === 'cm' ? 10 : 1
-  function change(patch: Partial<ModelSpec>) {
-    const next = { ...spec, ...patch }
-    if (next.shape === 'sphere') next.height = next.diameter = patch.height ?? next.diameter
-    updateStudio(next, 'Parametry zaktualizowane. Podgląd i eksport pokazują tę samą wersję.')
+    const controller = new AbortController()
+    api<{ configured: boolean }>('config', '', controller.signal).then(config => { setConfigured(config.configured); setConnected(config.configured) }).catch(() => { /* Generation reports service errors on action. */ })
+    return () => { controller.abort(); operation.current?.abort(); if (sourceRef.current) engine.current?.disposeModel(sourceRef.current) }
+  }, [])
+  useEffect(() => {
+    if (!source || !engine.current) return
+    try { const next = engine.current.transformModel(source, adjustments); setModel(next); setSize(engine.current.modelSize(next)); setAdjustmentError('') } catch (e) { setAdjustmentError((e as Error).message) }
+  }, [source, adjustments])
+  function remember(next: Job) { setJob(next); saveJob(next) }
+  async function verify() {
+    setChecking(true); setConnectionError('')
+    try { await api('verify', key); setConnected(true); setConnectionOpen(false) } catch (e) { setConnected(false); setConnectionError((e as Error).message) } finally { setChecking(false) }
   }
-  function download(kind: 'gltf' | 'stl' | 'png' | 'json') {
+  async function run(resume?: Job, previewOnly = false) {
+    if (operation.current) return
+    if (!connected) { setConnectionOpen(true); setError('Aby tworzyć modele z dowolnego opisu, najpierw podłącz konto Meshy poniżej.'); return }
+    if (!resume && (!prompt.trim() || prompt.length > 800)) { setError('Wpisz opis od 1 do 800 znaków. Nie musisz podawać wymiarów.'); return }
+    const controller = new AbortController(); operation.current = controller
+    setBusy(true); setError(''); setProgress(0); setNote(resume ? 'Sprawdzam zapisane zadanie…' : 'Wysyłam opis do Meshy…')
     try {
-      const filename = `${spec.shape}-${model.id}`
-      if (kind === 'gltf') save(filename + '.gltf', JSON.stringify(model.gltf), 'model/gltf+json')
-      if (kind === 'stl') save(filename + '-mm.stl', exportStl(model.mesh), 'model/stl')
-      if (kind === 'png') save(filename + '-texture.png', model.texture, 'image/png')
-      if (kind === 'json') save(filename + '-spec.json', JSON.stringify({ spec, qa: model.qa, revision: state.revision, version: model.id, llmUsed: false }, null, 2), 'application/json')
-      setExportError('')
-    } catch { setExportError('Nie udało się zapisać pliku. Spróbuj ponownie.') }
+      let current = resume
+      if (!current) {
+        const created = await api<{ id: string }>('tasks', key, controller.signal, { action: 'preview', prompt: prompt.trim() })
+        current = { id: created.id, prompt: prompt.trim(), textured: textures, stage: 'preview' }; remember(current)
+      }
+      const completed = await followJob(previewOnly ? { ...current, textured: false } : current, key, controller.signal, (task, j) => {
+        setProgress(task.progress); setNote((j.stage === 'preview' ? 'Tworzę geometrię' : 'Nakładam tekstury') + ` · ${task.progress}%`)
+      }, remember)
+      setNote('Pobieram model 3D…')
+      const bytes = await modelBytes(completed.id, key, controller.signal)
+      engine.current ??= await import('../studio/aiModel')
+      const loaded = await engine.current.loadModel(bytes)
+      if (controller.signal.aborted) { engine.current.disposeModel(loaded); return }
+      if (sourceRef.current) engine.current.disposeModel(sourceRef.current)
+      sourceRef.current = loaded; setSource(loaded); setResultJob(completed)
+      setNote(completed.stage === 'refine' ? 'Gotowe — model z teksturami.' : 'Gotowe — geometria bez tekstur.'); setProgress(100)
+    } catch (e) {
+      if (controller.signal.aborted) setNote('Śledzenie wstrzymane. Zadanie może nadal działać w Meshy; wznowienie sprawdza jego wynik.')
+      else { setError((e as Error).message); setNote('Model nie został zastąpiony. Możesz wznowić sprawdzanie zapisanego zadania.') }
+    } finally { if (operation.current === controller) { operation.current = null; setBusy(false) } }
   }
-  return <div className="model-studio">
-    <header className="studio-intro"><div><p className="studio-eyebrow">FROGE / STUDIO MODELI 3D</p><h1>Powiedz, co tworzymy.</h1><p>Od pomysłu do modelu. Dopasuj każdy milimetr.</p></div><div className="studio-version"><span className="studio-dot" />Podgląd na żywo <small>Wersja {state.revision.toString().padStart(2, '0')}</small></div></header>
-    <div className="studio-layout">
-      <section className="studio-panel studio-command" aria-labelledby="command-heading">
-        <div className="studio-panel-heading"><span>01</span><h2 id="command-heading">Polecenie dla agenta</h2></div>
-        <div className="studio-agent-note"><strong>Asystent parametrów</strong><p>Rakieta, walec, stożek i kula. Zmieniaj wymiary, kolor, teksturę, okno i lotki.</p><small>Tryb lokalny · swobodne AI niepodłączone</small></div>
-        <label className="studio-prompt-label" htmlFor="studio-prompt">Co mam stworzyć lub zmienić?</label>
-        <textarea id="studio-prompt" rows={6} maxLength={2000} value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Np. rakieta o średnicy 1 cm i wysokości 5 cm…" />
-        <button className="studio-primary" onClick={() => { lastApplied.current = prompt; applyStudioCommand(prompt) }}>Zastosuj polecenie <span>↗</span></button>
-        <label className="studio-switch"><input type="checkbox" checked={live} onChange={e => setLive(e.target.checked)} />Wprowadzaj polecenia na żywo</label>
-        <small className="studio-helper">Po krótkiej przerwie w pisaniu lub zakończonym zdaniu z mikrofonu. Wymiary w panelu aktualizują się od razu.</small>
-        <button className={speech.listening ? 'studio-mic is-listening' : 'studio-mic'} aria-pressed={speech.listening} disabled={!speech.supported} onClick={speech.listening ? speech.stop : speech.start}>{speech.listening ? '■ Zatrzymaj mikrofon' : '◉ Dyktuj polecenie'}</button>
-        <small className="studio-helper">{speech.supported ? 'Mikrofon włącza się po kliknięciu. Rozpoznawanie mowy może przesyłać dźwięk do usługi przeglądarki.' : 'Dyktowanie niedostępne w tej przeglądarce. Możesz użyć mikrofonu klawiatury telefonu.'}</small>
-        {speech.interim && <p className="studio-transcript">{speech.interim}</p>}{speech.error && <p role="alert" className="studio-error">{speech.error}</p>}
-        <div className="studio-examples"><span>WYPRÓBUJ POLECENIE</span>{['Wysokość 6 cm', 'Kolor niebieski', 'Dodaj lotki', 'Bez okna'].map(text => <button key={text} onClick={() => { setPrompt(text); lastApplied.current = text; applyStudioCommand(text) }}>{text} ↗</button>)}</div>
-        <div className="studio-feedback" role="status">{state.note}</div>
-        {state.errors.length > 0 && <div role="alert" className="studio-error"><b>Model zachowuje poprzednią wersję.</b>{state.errors.map((e,i) => <p key={i}>{e}</p>)}</div>}
+  async function download(format: 'glb' | 'stl') {
+    if (!model || !engine.current) return
+    setExporting(true); setError('')
+    try {
+      const blob = await engine.current.exportModel(model, format), url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = `froge-${resultJob?.id ?? 'model'}${format === 'stl' ? '-mm' : ''}.${format}`; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000)
+    } catch { setError('Nie udało się wyeksportować modelu. Spróbuj ponownie.') } finally { setExporting(false) }
+  }
+  function field(group: 'dimensions' | 'angles', index: number, value: string) {
+    setAdjustments(previous => { const next = { ...previous, [group]: [...previous[group]] as [string,string,string] }; next[group][index] = value; return next })
+  }
+  const tabs = <div className="ai-mode"><button aria-pressed={mode === 'ai'} onClick={() => setMode('ai')}>Model z opisu · AI</button><button aria-pressed={mode === 'local'} onClick={() => setMode('local')}>Bryły parametryczne</button></div>
+  if (mode === 'local') return <>{tabs}<ParametricModelStudio /></>
+  return <div className="model-studio ai-studio">
+    {tabs}
+    <header className="studio-intro"><div><p className="studio-eyebrow">FROGE / STUDIO MODELI 3D</p><h1>Powiedz, co tworzymy.</h1><p>Opisz obiekt. Wymiary i kąty możesz dodać później.</p></div></header>
+    <div className="ai-layout">
+      <section className="studio-panel studio-command" aria-label="Generowanie modelu z opisu">
+        <label className="studio-prompt-label" htmlFor="ai-prompt">Co mam stworzyć?</label>
+        <textarea id="ai-prompt" value={prompt} maxLength={800} rows={6} onChange={e => setPrompt(e.target.value)} placeholder="Np. rozłożysty dąb z grubym pniem, korzeniami i zielonymi liśćmi, realistyczna kora…" />
+        <div className="ai-prompt-meta"><span>Dowolny opis obiektu</span><span>{prompt.length}/800</span></div>
+        <div className="studio-examples">{['Drzewo dąb z liśćmi i korzeniami', 'Figurka smoka z rozłożonymi skrzydłami', 'Rakieta kosmiczna z oknem'].map(text => <button key={text} onClick={() => setPrompt(text)}>{text}</button>)}</div>
+        <label className="studio-switch"><input type="checkbox" checked={textures} onChange={e => setTextures(e.target.checked)} />Dodaj tekstury</label>
+        <button className="studio-primary" disabled={busy || !prompt.trim()} onClick={() => void run()}>{busy ? 'Generowanie w toku…' : 'Generuj model 3D'} <span>↗</span></button>
+        <p className="studio-helper">Generacja używa kredytów API Meshy i może potrwać kilka minut. Pisanie i dyktowanie zmieniają opis; przycisk rozpoczyna nowe zadanie.</p>
+        <button className={speech.listening ? 'studio-mic is-listening' : 'studio-mic'} aria-pressed={speech.listening} disabled={!speech.supported} onClick={speech.listening ? speech.stop : speech.start}>{speech.listening ? 'Zatrzymaj dyktowanie' : 'Dyktuj opis'}</button>
+        <small className="studio-helper">{speech.supported ? 'Mikrofon włącza się po kliknięciu. Rozpoznawanie mowy korzysta z usługi przeglądarki.' : 'Możesz podyktować opis mikrofonem klawiatury telefonu.'}</small>
+        {speech.interim && <p>{speech.interim}</p>}{speech.error && <p role="alert" className="studio-error">{speech.error}</p>}
+        <details className="ai-connection" open={connectionOpen} onToggle={e => setConnectionOpen(e.currentTarget.open)}><summary>Połączenie AI · {connected ? (configured ? 'skonfigurowane' : 'sprawdzone') : 'wymaga podłączenia'}</summary>
+          <p>Podłącz klucz API z konta Meshy. Opis i klucz są przesyłane do Meshy przez tę stronę. Klucz wpisany tutaj pozostaje tylko w pamięci karty.</p>
+          <a href="https://www.meshy.ai/settings/api" target="_blank" rel="noreferrer">Otwórz ustawienia API Meshy ↗</a>
+          <label className="studio-field">Klucz API Meshy<input type="password" value={key} autoComplete="off" spellCheck={false} placeholder={configured ? 'Używany jest klucz serwera' : 'Wklej klucz API tutaj'} onChange={e => { setKey(e.target.value); setConnected(false) }} /></label>
+          <button disabled={checking || (!key.trim() && !configured)} onClick={() => void verify()}>{checking ? 'Sprawdzam…' : 'Sprawdź połączenie'}</button>
+          {connectionError && <p role="alert" className="studio-error">{connectionError}</p>}
+        </details>
+        {(busy || note) && <div className="ai-progress" role="status"><p>{note}</p>{busy && <progress max={100} value={progress} aria-label="Postęp bieżącego etapu" />}</div>}
+        {busy && <button onClick={() => operation.current?.abort()}>Wstrzymaj śledzenie</button>}
+        {error && <p role="alert" className="studio-error">{error}</p>}
+        {job && !busy && <div className="ai-resume"><button onClick={() => void run(job)}>Sprawdź zapisane zadanie</button>{(job.previewId || job.stage === 'preview') && <button onClick={() => void run({ ...job, id: job.previewId || job.id, stage: 'preview' }, true)}>Pobierz samą geometrię</button>}<small>Zadanie: {job.id}</small></div>}
       </section>
-
-      <section className="studio-canvas-panel" aria-label="Model 3D i eksport">
-        <div className="studio-canvas-heading"><div><small>OBSZAR ROBOCZY</small><h2>{SHAPE_NAMES[spec.shape]}</h2></div><button disabled={!state.history.length} onClick={undoStudio}>↶ Cofnij</button></div>
-        <EnhancedProceduralAssetViewer bundle={bundle} studio />
-        <div className="studio-measures"><div><small>SZEROKOŚĆ X</small><b>{(model.qa.sizeMm[0]/scale).toFixed(2)} <span>{unit}</span></b></div><div><small>WYSOKOŚĆ Y</small><b>{(model.qa.sizeMm[1]/scale).toFixed(2)} <span>{unit}</span></b></div><div><small>GŁĘBOKOŚĆ Z</small><b>{(model.qa.sizeMm[2]/scale).toFixed(2)} <span>{unit}</span></b></div></div>
-        <div className="studio-export"><div><h3>Twój model. Twoje pliki.</h3><p>glTF zawiera teksturę. STL to geometria w mm, bez kolorów.</p></div><div className="studio-export-buttons"><button onClick={() => download('gltf')}>↓ Model + tekstura</button><button onClick={() => download('stl')}>↓ STL</button><button onClick={() => download('json')}>↓ Wymiary / JSON</button></div></div>
-        {exportError && <p role="alert">{exportError}</p>}
-        <div className="studio-statusline"><span>● Geometria wygenerowana</span><span>{(model.mesh.indices.length/3).toLocaleString('pl-PL')} trójkątów</span><span>Eksport = podgląd</span></div>
-        <p className="studio-manufacturing">Model parametryczny do oceny. Przydatność do druku wymaga kontroli wykonawcy.{spec.fins && spec.shape === 'rocket' ? ' Lotki zwiększają gabaryt; ich połączenia z korpusem wymagają scalenia przed drukiem.' : ''}</p>
-      </section>
-
-      <section className="studio-panel studio-inspector" aria-labelledby="dimensions-heading">
-        <div className="studio-panel-heading"><span>02</span><h2 id="dimensions-heading">Wymiary i detale</h2></div>
-        <label className="studio-select">Bryła<select value={spec.shape} onChange={e => change({ shape: e.target.value as ModelSpec['shape'] })}>{Object.entries(SHAPE_NAMES).map(([key,label]) => <option key={key} value={key}>{label}</option>)}</select></label>
-        <div className="studio-unit"><span>Jednostki</span><div role="group" aria-label="Jednostki">{(['mm','cm'] as const).map(u => <button key={u} aria-pressed={unit===u} onClick={() => setUnit(u)}>{u}</button>)}</div></div>
-        <NumberField label="Średnica korpusu" value={spec.diameter/scale} min={1/scale} max={500/scale} step={.1/scale} suffix={unit} onChange={v => change({ diameter: v*scale })} />
-        <NumberField label="Wysokość" value={spec.height/scale} min={2/scale} max={1000/scale} step={.1/scale} suffix={unit} onChange={v => change({ height: v*scale })} />
-        <p className="studio-helper">Okrągły korpus: X = Z. Gabaryty z lotkami widać pod modelem.</p>
-        {spec.shape === 'rocket' && <NumberField label="Kąt wierzchołkowy nosa" value={spec.noseAngle} min={20} max={120} suffix="°" onChange={v => change({ noseAngle: v })} />}
-        <label className="studio-select">Dokładność okręgu<select value={spec.segments} onChange={e => change({ segments: Number(e.target.value) })}><option value={64}>64 segmenty</option><option value={128}>128 · wysoka</option><option value={256}>256 · bardzo wysoka</option></select></label>
-        <small className="studio-helper">Odchyłka cięciwy korpusu ≤ {model.qa.circularChordErrorMm.toFixed(5)} mm. Siatka przybliża idealny okrąg.</small>
-        {spec.shape === 'rocket' && <div className="studio-details"><label><input type="checkbox" checked={spec.windows} onChange={e => change({ windows: e.target.checked })} />Okno na teksturze</label><label><input type="checkbox" checked={spec.fins} onChange={e => change({ fins: e.target.checked })} />Cztery lotki</label></div>}
-        <h3 className="studio-material-title">Materiał i tekstura</h3>
-        <label className="studio-select">Wygląd powierzchni<select value={spec.material} onChange={e => change({ material: e.target.value as ModelSpec['material'] })}><option value="metal">Metal · panele</option><option value="ceramic">Ceramika · gładka</option><option value="carbon">Karbon · splot</option></select></label>
-        <div className="studio-colors"><label>Kolor korpusu<input type="color" value={spec.color} onChange={e => change({ color: e.target.value })} /></label><label>Akcent<input type="color" value={spec.accent} onChange={e => change({ accent: e.target.value })} /></label></div>
-        <div className="studio-texture"><img alt="Wygenerowana tekstura UV aktualnego modelu" src={`data:image/png;base64,${base64(model.texture)}`} /><div><b>Tekstura UV</b><small>128 × 128 px · PNG</small><button onClick={() => download('png')}>Pobierz teksturę ↓</button></div></div>
-        <button className="studio-reset" onClick={() => updateStudio({ ...INITIAL_SPEC }, 'Przywrócono rakietę Ø 10 × 50 mm.')}>Przywróć model startowy</button>
+      <section className="studio-canvas-panel" aria-label="Wynik generowania">
+        <div className="studio-canvas-heading"><div><small>{resultJob ? 'TWÓJ MODEL' : 'OBSZAR ROBOCZY'}</small><h2>{resultJob?.prompt || 'Tu pojawi się Twój model'}</h2></div></div>
+        {model ? <Suspense fallback={<p className="ai-empty">Ładuję podgląd…</p>}><Viewer model={model} /></Suspense> : <div className="ai-empty"><b>{busy ? 'Trwa tworzenie modelu' : 'Zacznij od pomysłu'}</b><p>{busy ? 'Po zakończeniu zobaczysz tutaj przestrzenną geometrię.' : 'Drzewo, figurka, pojazd lub część. Wpisz opis po lewej i kliknij „Generuj model 3D”.'}</p>{!connected && <button onClick={() => setConnectionOpen(true)}>Podłącz generator AI</button>}</div>}
+        {model && <><div className="studio-measures">{['SZEROKOŚĆ X', 'WYSOKOŚĆ Y', 'GŁĘBOKOŚĆ Z'].map((label, i) => <div key={label}><small>{label}</small><b>{size[i]?.toFixed(2)} <span>cm</span></b></div>)}</div><div className="studio-export"><p>{resultJob?.stage === 'refine' ? 'Model zawiera tekstury.' : 'Podgląd geometrii — bez tekstur.'} Eksport uwzględnia widoczną skalę i obrót.</p><div className="studio-export-buttons"><button disabled={exporting || !!adjustmentError} onClick={() => void download('glb')}>Pobierz GLB</button><button disabled={exporting || !!adjustmentError} onClick={() => void download('stl')}>Pobierz STL · mm</button></div><p>STL nie zawiera tekstur. Model AI wymaga sprawdzenia i ewentualnej naprawy przed drukiem lub użyciem jako część techniczna.</p></div></>}
+        <details className="ai-adjustments"><summary>Wymiary i kąty · opcjonalnie</summary><p>Zostaw puste, aby zachować proporcje. Domyślnie najdłuższy bok ma 10 cm. Jeden wymiar skaluje całość proporcjonalnie; kilka wymiarów może zmienić proporcje.</p><div className="ai-fields">{['Szerokość X', 'Wysokość Y', 'Głębokość Z'].map((label,i) => <label key={label}>{label} · cm<input type="number" min="0.1" max="1000" step="0.1" placeholder="Automatycznie" value={adjustments.dimensions[i]} onChange={e => field('dimensions', i, e.target.value)} /></label>)}</div><p>Kąty obrotu modelu (nie kąty konstrukcyjne). Wymiary powyżej dotyczą obiektu przed obrotem.</p><div className="ai-fields">{['X','Y','Z'].map((label,i) => <label key={label}>Obrót {label} · °<input type="number" min="-360" max="360" placeholder="0" value={adjustments.angles[i]} onChange={e => field('angles',i,e.target.value)} /></label>)}</div><button onClick={() => setAdjustments(defaults)}>Wyczyść ustawienia</button>{adjustmentError && <p role="alert" className="studio-error">{adjustmentError} Podgląd zachowuje ostatnią poprawną skalę.</p>}</details>
       </section>
     </div>
-    <footer className="studio-footer"><span>FROGE MPC 2 · Modelowanie jest pierwszym etapem naszego sklepu.</span><Link to="/contest">Fundament konkursowy →</Link><Link to="/shop-lab">Laboratorium ofert →</Link></footer>
+    <footer className="studio-footer"><span>FROGE MPC 2 · Studio 3D</span><Link to="/contest">Fundament konkursowy →</Link><Link to="/shop-lab">Laboratorium ofert →</Link></footer>
   </div>
 }

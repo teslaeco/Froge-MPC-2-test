@@ -75,6 +75,7 @@ describe('home studio and agent integration', () => {
     render(<MemoryRouter><App /></MemoryRouter>)
     expect(screen.getByRole('heading',{name:'Powiedz, co tworzymy.'})).toBeTruthy()
     expect(screen.queryByTitle('Terra Observatory live application')).toBeNull()
+    fireEvent.click(screen.getByRole('button',{name:'Bryły parametryczne'}))
     fireEvent.change(screen.getByLabelText('Wysokość'),{target:{value:'6'}})
     expect(getStudio().spec.height).toBe(60)
     fireEvent.change(screen.getByLabelText('Co mam stworzyć lub zmienić?'),{target:{value:'Kolor niebieski'}})
