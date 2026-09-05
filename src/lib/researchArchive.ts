@@ -1,0 +1,527 @@
+import { getVisibleWaterExtrema, type HazardInvestigationResult } from '../integrations/terra/hazardInvestigation'
+import type { ImageryDisplaySettings } from '../integrations/terra/imageryDisplay'
+
+export const RESEARCH_ARCHIVE_KEY = 'forgemcp.terraResearchArchive.v1'
+export const RESEARCH_ARCHIVE_BACKUP_KEY = 'forgemcp.terraResearchArchive.backup.v1'
+export const RESEARCH_ARCHIVE_LIMIT = 50
+
+export type ResearchArchiveStorage = 'local' | 'session' | 'memory'
+
+export type ResearchArchiveSaveResult = {
+  entries: ResearchArchiveEntry[]
+  storage: ResearchArchiveStorage
+}
+
+export type ResearchArchiveEntry = {
+  schemaVersion: '1.0'
+  id: string
+  runId: string
+  savedAt: string
+  title: string
+  classification: string
+  signalState: string
+  verificationState: string
+  area: { resolvedName: string; latitude: number; longitude: number; radiusKm: number }
+  period: HazardInvestigationResult['period']
+  hazards: HazardInvestigationResult['hazards']
+  shortSummary: string[]
+  observations: Array<{ evidenceClass: string; statement: string; limitation: string }>
+  hypotheses: Array<{ id: string; hazardType: string; hypothesis: string; status: string; requiredChecks: string[] }>
+  hydrology?: {
+    waterChangeState: string
+    temporalBasis: string
+    inflowOutflowStatus: string
+    candidateFeatures: string[]
+    mainAndTributaryContext: string
+    causeStatus: string
+  }
+  waterExtrema?: {
+    status: 'ESTABLISHED' | 'INSUFFICIENT_EVIDENCE'
+    mostVisibleWaterYear: number | null
+    leastVisibleWaterYear: number | null
+    comparedYears: number[]
+    method: 'QUALITATIVE_VISUAL_RANKING_OF_SUPPLIED_IMAGES'
+    basis: string
+  }
+  regionalPatrol?: {
+    status: string
+    requestedTiles: number
+    inspectedTiles: number
+    frameWidthKm: number
+    sourceDate: string | null
+    nominalResolutionM: number | null
+    aoiAreaKm2: number
+    sampledAreaUpperBoundKm2: number
+    coverageUpperBoundPercent: number
+    uninspectedAreaLowerBoundPercent: number
+    fullCoverage: false
+    temporalChangeSupportedByPatrolAlone: false
+    tileManifest: Array<{ tileId: string; latitude: number; longitude: number; status: string }>
+    assessmentStatus?: string
+    assessmentOverview?: string
+    tileFindings?: Array<{ tileId: string; surfaceClass: string; hydrologyFeature: string; observation: string; confidence: string }>
+  }
+  test001Finding?: {
+    focus: { latitude: number; longitude: number; frameWidthM: number }
+    state: 'NEAR_TOTAL_HISTORICAL_OPEN_WATER_STATE_TRANSITION_STRONGLY_SUPPORTED'
+    historicalPersistentFootprintHa: number
+    repeatSupportedRangeHa: [number, number]
+    approximateDisappearedHistoricalFootprintHa: number
+    mostVisibleHistoricalYear: number
+    mostVisibleHistoricalAreaHa: number
+    leastVisibleEndpointYear: 2026
+    exactOpenWaterArea2026M2: null
+    exactLossPercent: null
+    causeStatus: 'NOT_ESTABLISHED'
+    alertStatus: 'HIGH_PRIORITY_MONITORING_ANOMALY_REQUIRES_INVESTIGATION'
+  }
+  imagery: {
+    inspectedByModel: number
+    galleryImages: number
+    requestedYears: number
+    missingYears: number
+    modelInputRule?: 'ORIGINAL_OFFICIAL_SATELLITE_PRODUCTS_ONLY' | 'LEGACY_UNDECLARED'
+    originalModelInputs?: number
+    derivedModelInputs?: number
+    aiGeneratedModelInputs?: number
+  }
+  sources: Array<{ name: string; provider: string; state: string; sourceUrl: string }>
+  limitations: string[]
+  displaySettings: ImageryDisplaySettings & { evidenceMeaning: 'DISPLAY_ONLY_NOT_MODEL_INPUT' }
+  learningStatus: 'CURATION_REQUIRED_NOT_AUTOMATIC_TRAINING'
+  humanDecisionRequired: true
+}
+
+const compact = (value: string, maximum = 360) => value.replace(/\s+/g, ' ').trim().slice(0, maximum)
+
+let memoryArchive: ResearchArchiveEntry[] = []
+let memoryFallbackActive = false
+
+export function createResearchArchiveEntry(result: HazardInvestigationResult, display: ImageryDisplaySettings): ResearchArchiveEntry {
+  const visual = result.imagery.analysis?.analysis
+  const hydrology = visual?.hydrology_screening
+  const waterExtrema = getVisibleWaterExtrema(result)
+  const test001 = result.test001Context?.evidence.recordedResult
+  const patrol = result.imagery.analysis?.regional_patrol
+  const patrolAssessment = visual?.regional_patrol_assessment
+  const authenticity = result.imagery.analysis?.imagery_authenticity_policy
+  const waterExtremaSummary = test001 ? undefined : waterExtrema?.status === 'ESTABLISHED'
+    ? `Widoczna woda — najwięcej: ${waterExtrema.most_visible_water_year}; najmniej: ${waterExtrema.least_visible_water_year}; porównane lata: ${waterExtrema.compared_years.join(', ')}.`
+    : waterExtrema
+      ? `Widoczna woda — rok maksimum i minimum nieustalony: ${waterExtrema.basis}`
+      : undefined
+  const shortSummary = [
+    test001 ? `TEST 001: powtarzalne obrazy silnie wspierają niemal całkowity zanik historycznego trwałego lustra; szacowany zanik obrysu około ${test001.approximateDisappearedHistoricalFootprintHa.toFixed(2)} ha.` : undefined,
+    test001 ? `W zmierzonych latach historycznych największy widoczny obrys: ${test001.mostVisibleHistoricalYear} (${test001.mostVisibleHistoricalAreaHa.toFixed(2)} ha); najmniej widocznej wody: punkt końcowy ${test001.leastVisibleEndpointYear}.` : undefined,
+    test001 ? undefined : visual?.headline,
+    test001 ? undefined : visual?.change_over_time,
+    test001 ? undefined : visual?.water_assessment,
+    waterExtremaSummary,
+    hydrology ? `Woda: ${hydrology.water_change_state}; dopływy/odpływy: ${hydrology.inflow_outflow_status}; przyczyna nieustalona.` : undefined,
+    patrol ? `Patrol regionalny: ${patrol.inspected_tiles}/${patrol.requested_tiles} zbliżeń ${patrol.frame_width_km.toFixed(1)} km; górna granica pokrycia AOI ${patrol.nominal_coverage_upper_bound_percent.toFixed(2)}%; nie jest to pełne pokrycie ani szereg czasowy.` : undefined,
+    result.verification.reason,
+  ].filter((value): value is string => Boolean(value?.trim())).map(value => compact(value)).slice(0, 8)
+
+  if (!shortSummary.length) {
+    shortSummary.push(...result.observations.slice(0, 3).map(item => compact(item.statement)))
+  }
+
+  return {
+    schemaVersion: '1.0',
+    id: `archive-${result.runId}`,
+    runId: result.runId,
+    savedAt: new Date().toISOString(),
+    title: result.area.resolvedName,
+    classification: result.classification,
+    signalState: result.signalState,
+    verificationState: result.verification.state,
+    area: {
+      resolvedName: result.area.resolvedName,
+      latitude: result.area.latitude,
+      longitude: result.area.longitude,
+      radiusKm: result.area.radiusKm,
+    },
+    period: result.period,
+    hazards: result.hazards,
+    shortSummary,
+    observations: result.observations.slice(0, 6).map(item => ({ evidenceClass: item.evidenceClass, statement: compact(item.statement), limitation: compact(item.limitation) })),
+    hypotheses: [...result.hypotheses].sort((left, right) => left.priority - right.priority).slice(0, 6).map(item => ({
+      id: item.id,
+      hazardType: item.hazardType,
+      hypothesis: compact(item.hypothesis),
+      status: item.status,
+      requiredChecks: item.requiredChecks.slice(0, 4).map(check => compact(check, 220)),
+    })),
+    hydrology: hydrology ? {
+      waterChangeState: hydrology.water_change_state,
+      temporalBasis: compact(hydrology.temporal_basis),
+      inflowOutflowStatus: hydrology.inflow_outflow_status,
+      candidateFeatures: hydrology.candidate_features.slice(0, 8).map(item => compact(item, 220)),
+      mainAndTributaryContext: compact(hydrology.main_and_tributary_context),
+      causeStatus: hydrology.cause_status,
+    } : undefined,
+    waterExtrema: !test001 && waterExtrema ? {
+      status: waterExtrema.status,
+      mostVisibleWaterYear: waterExtrema.most_visible_water_year,
+      leastVisibleWaterYear: waterExtrema.least_visible_water_year,
+      comparedYears: waterExtrema.compared_years,
+      method: waterExtrema.method,
+      basis: compact(waterExtrema.basis),
+    } : undefined,
+    regionalPatrol: patrol ? {
+      status: patrol.status,
+      requestedTiles: patrol.requested_tiles,
+      inspectedTiles: patrol.inspected_tiles,
+      frameWidthKm: patrol.frame_width_km,
+      sourceDate: patrol.source_date,
+      nominalResolutionM: patrol.nominal_resolution_m,
+      aoiAreaKm2: patrol.aoi_area_km2,
+      sampledAreaUpperBoundKm2: patrol.nominal_sampled_area_upper_bound_km2,
+      coverageUpperBoundPercent: patrol.nominal_coverage_upper_bound_percent,
+      uninspectedAreaLowerBoundPercent: patrol.uninspected_area_lower_bound_percent,
+      fullCoverage: false,
+      temporalChangeSupportedByPatrolAlone: false,
+      tileManifest: patrol.tile_manifest.map(tile => ({ tileId: tile.tile_id, latitude: tile.latitude, longitude: tile.longitude, status: tile.status })),
+      assessmentStatus: patrolAssessment?.status,
+      assessmentOverview: patrolAssessment?.overview ? compact(patrolAssessment.overview, 520) : undefined,
+      tileFindings: patrolAssessment?.tile_findings.map(finding => ({
+        tileId: finding.tile_id,
+        surfaceClass: finding.surface_class,
+        hydrologyFeature: finding.hydrology_feature,
+        observation: compact(finding.observation, 360),
+        confidence: finding.confidence,
+      })),
+    } : undefined,
+    test001Finding: test001 ? {
+      focus: {
+        latitude: test001.correctedPondSeed.lat,
+        longitude: test001.correctedPondSeed.lon,
+        frameWidthM: test001.requestedFrameWidthM,
+      },
+      state: 'NEAR_TOTAL_HISTORICAL_OPEN_WATER_STATE_TRANSITION_STRONGLY_SUPPORTED',
+      historicalPersistentFootprintHa: test001.historicalPersistentFootprintHa,
+      repeatSupportedRangeHa: [test001.repeatSupportedRangeM2[0] / 10_000, test001.repeatSupportedRangeM2[1] / 10_000],
+      approximateDisappearedHistoricalFootprintHa: test001.approximateDisappearedHistoricalFootprintHa,
+      mostVisibleHistoricalYear: test001.mostVisibleHistoricalYear,
+      mostVisibleHistoricalAreaHa: test001.mostVisibleHistoricalAreaHa,
+      leastVisibleEndpointYear: test001.leastVisibleEndpointYear,
+      exactOpenWaterArea2026M2: null,
+      exactLossPercent: null,
+      causeStatus: 'NOT_ESTABLISHED',
+      alertStatus: 'HIGH_PRIORITY_MONITORING_ANOMALY_REQUIRES_INVESTIGATION',
+    } : undefined,
+    imagery: {
+      inspectedByModel: result.imagery.visuallyInspectedByModel,
+      galleryImages: result.imagery.slots.filter(item => item.status === 'image').length,
+      requestedYears: result.imagery.requestedYears.length,
+      missingYears: result.imagery.missingYears,
+      modelInputRule: authenticity?.model_input_rule ?? 'LEGACY_UNDECLARED',
+      originalModelInputs: authenticity?.original_model_input_count ?? 0,
+      derivedModelInputs: authenticity?.derived_model_input_count ?? 0,
+      aiGeneratedModelInputs: authenticity?.ai_generated_model_input_count ?? 0,
+    },
+    sources: result.sourceStatus.slice(0, 16).map(item => ({ name: item.name, provider: item.provider, state: item.state, sourceUrl: item.sourceUrl })),
+    limitations: result.limitations.slice(0, 8).map(item => compact(item)),
+    displaySettings: { ...display, evidenceMeaning: 'DISPLAY_ONLY_NOT_MODEL_INPUT' },
+    learningStatus: 'CURATION_REQUIRED_NOT_AUTOMATIC_TRAINING',
+    humanDecisionRequired: true,
+  }
+}
+
+export type ResearchSeriesCriteria = {
+  latitude: number
+  longitude: number
+  radiusKm: number
+  startYear: number
+  endYear: number
+  season: string
+  timelineMode: string
+  hazards: string[]
+  spatialMode: 'overview' | 'regional-patrol'
+}
+
+export function countMatchingResearchRuns(entries: ResearchArchiveEntry[], criteria: ResearchSeriesCriteria) {
+  if (![criteria.latitude, criteria.longitude, criteria.radiusKm, criteria.startYear, criteria.endYear].every(Number.isFinite)) return 0
+  const expectedHazards = [...new Set(criteria.hazards)].sort().join('|')
+  const runIds = new Set(entries.filter(entry => {
+    const entrySpatialMode = entry.regionalPatrol ? 'regional-patrol' : 'overview'
+    return Math.abs(entry.area.latitude - criteria.latitude) <= 0.00001
+      && Math.abs(entry.area.longitude - criteria.longitude) <= 0.00001
+      && Math.abs(entry.area.radiusKm - criteria.radiusKm) <= 0.001
+      && entry.period.startYear === criteria.startYear
+      && entry.period.endYear === criteria.endYear
+      && entry.period.season === criteria.season
+      && entry.period.timelineMode === criteria.timelineMode
+      && entrySpatialMode === criteria.spatialMode
+      && [...new Set(entry.hazards)].sort().join('|') === expectedHazards
+  }).map(entry => entry.runId))
+  return runIds.size
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value))
+}
+
+function isFiniteNumber(value: unknown) {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function isStringArray(value: unknown) {
+  return Array.isArray(value) && value.every(item => typeof item === 'string')
+}
+
+function isArchiveEntry(value: unknown): value is ResearchArchiveEntry {
+  if (!isRecord(value)) return false
+  const area = value.area
+  const period = value.period
+  const imagery = value.imagery
+  const display = value.displaySettings
+  if (!isRecord(area) || !isRecord(period) || !isRecord(imagery) || !isRecord(display)) return false
+
+  const observationsValid = Array.isArray(value.observations) && value.observations.every(item => (
+    isRecord(item)
+    && typeof item.evidenceClass === 'string'
+    && typeof item.statement === 'string'
+    && typeof item.limitation === 'string'
+  ))
+  const hypothesesValid = Array.isArray(value.hypotheses) && value.hypotheses.every(item => (
+    isRecord(item)
+    && typeof item.id === 'string'
+    && typeof item.hazardType === 'string'
+    && typeof item.hypothesis === 'string'
+    && typeof item.status === 'string'
+    && isStringArray(item.requiredChecks)
+  ))
+  const sourcesValid = Array.isArray(value.sources) && value.sources.every(item => (
+    isRecord(item)
+    && typeof item.name === 'string'
+    && typeof item.provider === 'string'
+    && typeof item.state === 'string'
+    && typeof item.sourceUrl === 'string'
+  ))
+  const hydrologyValid = value.hydrology === undefined || (
+    isRecord(value.hydrology)
+    && typeof value.hydrology.waterChangeState === 'string'
+    && typeof value.hydrology.temporalBasis === 'string'
+    && typeof value.hydrology.inflowOutflowStatus === 'string'
+    && isStringArray(value.hydrology.candidateFeatures)
+    && typeof value.hydrology.mainAndTributaryContext === 'string'
+    && typeof value.hydrology.causeStatus === 'string'
+  )
+  let waterExtremaValid = value.waterExtrema === undefined
+  if (isRecord(value.waterExtrema)
+    && Array.isArray(value.waterExtrema.comparedYears)
+    && value.waterExtrema.comparedYears.every(Number.isInteger)
+    && value.waterExtrema.method === 'QUALITATIVE_VISUAL_RANKING_OF_SUPPLIED_IMAGES'
+    && typeof value.waterExtrema.basis === 'string'
+    && value.waterExtrema.basis.trim().length > 0) {
+    const comparedYears = value.waterExtrema.comparedYears as number[]
+    const periodContainsComparedYears = Number.isInteger(period.startYear)
+      && Number.isInteger(period.endYear)
+      && comparedYears.every(year => year >= (period.startYear as number) && year <= (period.endYear as number))
+    if (value.waterExtrema.status === 'ESTABLISHED') {
+      waterExtremaValid = Number.isInteger(value.waterExtrema.mostVisibleWaterYear)
+        && Number.isInteger(value.waterExtrema.leastVisibleWaterYear)
+        && value.waterExtrema.mostVisibleWaterYear !== value.waterExtrema.leastVisibleWaterYear
+        && comparedYears.length >= 2
+        && periodContainsComparedYears
+        && comparedYears.includes(value.waterExtrema.mostVisibleWaterYear as number)
+        && comparedYears.includes(value.waterExtrema.leastVisibleWaterYear as number)
+    } else if (value.waterExtrema.status === 'INSUFFICIENT_EVIDENCE') {
+      waterExtremaValid = value.waterExtrema.mostVisibleWaterYear === null
+        && value.waterExtrema.leastVisibleWaterYear === null
+    }
+  }
+  const test001FindingValid = value.test001Finding === undefined || (
+    isRecord(value.test001Finding)
+    && isRecord(value.test001Finding.focus)
+    && isFiniteNumber(value.test001Finding.focus.latitude)
+    && isFiniteNumber(value.test001Finding.focus.longitude)
+    && isFiniteNumber(value.test001Finding.focus.frameWidthM)
+    && value.test001Finding.state === 'NEAR_TOTAL_HISTORICAL_OPEN_WATER_STATE_TRANSITION_STRONGLY_SUPPORTED'
+    && isFiniteNumber(value.test001Finding.historicalPersistentFootprintHa)
+    && Array.isArray(value.test001Finding.repeatSupportedRangeHa)
+    && value.test001Finding.repeatSupportedRangeHa.length === 2
+    && value.test001Finding.repeatSupportedRangeHa.every(isFiniteNumber)
+    && isFiniteNumber(value.test001Finding.approximateDisappearedHistoricalFootprintHa)
+    && Number.isInteger(value.test001Finding.mostVisibleHistoricalYear)
+    && isFiniteNumber(value.test001Finding.mostVisibleHistoricalAreaHa)
+    && value.test001Finding.leastVisibleEndpointYear === 2026
+    && value.test001Finding.exactOpenWaterArea2026M2 === null
+    && value.test001Finding.exactLossPercent === null
+    && value.test001Finding.causeStatus === 'NOT_ESTABLISHED'
+    && value.test001Finding.alertStatus === 'HIGH_PRIORITY_MONITORING_ANOMALY_REQUIRES_INVESTIGATION'
+  )
+  const regionalPatrolValid = value.regionalPatrol === undefined || (
+    isRecord(value.regionalPatrol)
+    && typeof value.regionalPatrol.status === 'string'
+    && isFiniteNumber(value.regionalPatrol.requestedTiles)
+    && isFiniteNumber(value.regionalPatrol.inspectedTiles)
+    && isFiniteNumber(value.regionalPatrol.frameWidthKm)
+    && (value.regionalPatrol.sourceDate === null || typeof value.regionalPatrol.sourceDate === 'string')
+    && (value.regionalPatrol.nominalResolutionM === null || isFiniteNumber(value.regionalPatrol.nominalResolutionM))
+    && isFiniteNumber(value.regionalPatrol.aoiAreaKm2)
+    && isFiniteNumber(value.regionalPatrol.sampledAreaUpperBoundKm2)
+    && isFiniteNumber(value.regionalPatrol.coverageUpperBoundPercent)
+    && isFiniteNumber(value.regionalPatrol.uninspectedAreaLowerBoundPercent)
+    && value.regionalPatrol.fullCoverage === false
+    && value.regionalPatrol.temporalChangeSupportedByPatrolAlone === false
+    && Array.isArray(value.regionalPatrol.tileManifest)
+    && value.regionalPatrol.tileManifest.every(item => (
+      isRecord(item)
+      && typeof item.tileId === 'string'
+      && isFiniteNumber(item.latitude)
+      && isFiniteNumber(item.longitude)
+      && typeof item.status === 'string'
+    ))
+    && (value.regionalPatrol.assessmentStatus === undefined || typeof value.regionalPatrol.assessmentStatus === 'string')
+    && (value.regionalPatrol.assessmentOverview === undefined || typeof value.regionalPatrol.assessmentOverview === 'string')
+    && (value.regionalPatrol.tileFindings === undefined || (
+      Array.isArray(value.regionalPatrol.tileFindings)
+      && value.regionalPatrol.tileFindings.every(item => (
+        isRecord(item)
+        && typeof item.tileId === 'string'
+        && typeof item.surfaceClass === 'string'
+        && typeof item.hydrologyFeature === 'string'
+        && typeof item.observation === 'string'
+        && typeof item.confidence === 'string'
+      ))
+    ))
+  )
+  const imageryAuthenticityValid = imagery.modelInputRule === undefined || (
+    (imagery.modelInputRule === 'ORIGINAL_OFFICIAL_SATELLITE_PRODUCTS_ONLY' || imagery.modelInputRule === 'LEGACY_UNDECLARED')
+    && isFiniteNumber(imagery.originalModelInputs)
+    && isFiniteNumber(imagery.derivedModelInputs)
+    && isFiniteNumber(imagery.aiGeneratedModelInputs)
+    && (imagery.modelInputRule !== 'ORIGINAL_OFFICIAL_SATELLITE_PRODUCTS_ONLY' || (
+      imagery.originalModelInputs === imagery.inspectedByModel
+      && imagery.derivedModelInputs === 0
+      && imagery.aiGeneratedModelInputs === 0
+    ))
+  )
+
+  return value.schemaVersion === '1.0'
+    && typeof value.id === 'string'
+    && typeof value.runId === 'string'
+    && typeof value.savedAt === 'string'
+    && Number.isFinite(Date.parse(value.savedAt))
+    && typeof value.title === 'string'
+    && typeof value.classification === 'string'
+    && typeof value.signalState === 'string'
+    && typeof value.verificationState === 'string'
+    && typeof area.resolvedName === 'string'
+    && isFiniteNumber(area.latitude)
+    && isFiniteNumber(area.longitude)
+    && isFiniteNumber(area.radiusKm)
+    && isFiniteNumber(period.startYear)
+    && isFiniteNumber(period.endYear)
+    && typeof period.season === 'string'
+    && typeof period.timelineMode === 'string'
+    && isStringArray(value.hazards)
+    && isStringArray(value.shortSummary)
+    && observationsValid
+    && hypothesesValid
+    && hydrologyValid
+    && waterExtremaValid
+    && test001FindingValid
+    && regionalPatrolValid
+    && isFiniteNumber(imagery.inspectedByModel)
+    && isFiniteNumber(imagery.galleryImages)
+    && isFiniteNumber(imagery.requestedYears)
+    && isFiniteNumber(imagery.missingYears)
+    && imageryAuthenticityValid
+    && sourcesValid
+    && isStringArray(value.limitations)
+    && typeof display.preset === 'string'
+    && isFiniteNumber(display.brightness)
+    && isFiniteNumber(display.contrast)
+    && isFiniteNumber(display.saturation)
+    && isFiniteNumber(display.hue)
+    && display.evidenceMeaning === 'DISPLAY_ONLY_NOT_MODEL_INPUT'
+    && value.learningStatus === 'CURATION_REQUIRED_NOT_AUTOMATIC_TRAINING'
+    && value.humanDecisionRequired === true
+}
+
+export function readResearchArchive(): ResearchArchiveEntry[] {
+  const normalize = (entry: ResearchArchiveEntry): ResearchArchiveEntry => {
+    if (!entry.test001Finding) return entry
+    return {
+      ...entry,
+      shortSummary: entry.shortSummary.filter(item => !item.startsWith('Widoczna woda —')),
+      waterExtrema: undefined,
+    }
+  }
+
+  const read = (storage: Storage | undefined, key: string) => {
+    if (!storage) return null
+    try {
+      const raw = storage.getItem(key)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as unknown
+      return Array.isArray(parsed)
+        ? parsed.filter(isArchiveEntry).map(normalize).slice(0, RESEARCH_ARCHIVE_LIMIT)
+        : null
+    } catch {
+      return null
+    }
+  }
+
+  const local = read(typeof localStorage === 'undefined' ? undefined : localStorage, RESEARCH_ARCHIVE_KEY)
+  if (local !== null) {
+    memoryArchive = local
+    memoryFallbackActive = false
+    return local
+  }
+
+  const backup = read(typeof localStorage === 'undefined' ? undefined : localStorage, RESEARCH_ARCHIVE_BACKUP_KEY)
+  if (backup !== null) {
+    memoryArchive = backup
+    memoryFallbackActive = false
+    return backup
+  }
+
+  const session = read(typeof sessionStorage === 'undefined' ? undefined : sessionStorage, RESEARCH_ARCHIVE_KEY)
+  if (session !== null) {
+    memoryArchive = session
+    memoryFallbackActive = false
+    return session
+  }
+
+  return memoryFallbackActive ? memoryArchive : []
+}
+
+function writeAndVerify(storage: Storage, key: string, serialized: string, entryId: string) {
+  try {
+    storage.setItem(key, serialized)
+    const persisted = storage.getItem(key)
+    if (!persisted) return false
+    const parsed = JSON.parse(persisted) as unknown
+    return Array.isArray(parsed) && parsed.some(item => isArchiveEntry(item) && item.id === entryId)
+  } catch {
+    return false
+  }
+}
+
+export function saveResearchArchiveEntry(entry: ResearchArchiveEntry): ResearchArchiveSaveResult {
+  if (!isArchiveEntry(entry)) throw new Error('Skrót badania jest niepełny i nie został zapisany.')
+  const archive = [entry, ...readResearchArchive().filter(item => item.runId !== entry.runId)].slice(0, RESEARCH_ARCHIVE_LIMIT)
+  const serialized = JSON.stringify(archive)
+  memoryArchive = archive
+
+  if (typeof localStorage !== 'undefined' && writeAndVerify(localStorage, RESEARCH_ARCHIVE_KEY, serialized, entry.id)) {
+    // A second compact copy lets the reader recover when one browser record is damaged.
+    writeAndVerify(localStorage, RESEARCH_ARCHIVE_BACKUP_KEY, serialized, entry.id)
+    memoryFallbackActive = false
+    return { entries: archive, storage: 'local' }
+  }
+
+  if (typeof sessionStorage !== 'undefined' && writeAndVerify(sessionStorage, RESEARCH_ARCHIVE_KEY, serialized, entry.id)) {
+    memoryFallbackActive = false
+    return { entries: archive, storage: 'session' }
+  }
+
+  // The current SPA route can still show the record even when Android privacy
+  // settings block both browser stores. The UI explicitly labels this fallback.
+  memoryFallbackActive = true
+  return { entries: archive, storage: 'memory' }
+}

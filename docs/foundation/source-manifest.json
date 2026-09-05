@@ -1,0 +1,826 @@
+{
+  "source_repository": "Terraforming-Planet/ForgeMCP-Multi-Agent-Research---Game-Studio",
+  "source_commit": "bf18b297ff49a510c69578c98ece0d2224d34a44",
+  "files": [
+    {
+      "source_path": ".github/workflows/chrome-webmcp-smoke.yml",
+      "copied_path": "docs/foundation/workflows/chrome-webmcp-smoke.yml.disabled",
+      "sha256": "d56f6b147b07d44650325b77cabd75ace0b9ec9a7e5f3dc2b805256cc04fb912"
+    },
+    {
+      "source_path": ".github/workflows/ci.yml",
+      "copied_path": "docs/foundation/workflows/ci.yml.disabled",
+      "sha256": "e25f2b830477ae8469072d87530a4268c4ada6393d48f45e29520dbb71f10023"
+    },
+    {
+      "source_path": ".github/workflows/codex-forgemcp-e2e.yml",
+      "copied_path": "docs/foundation/workflows/codex-forgemcp-e2e.yml.disabled",
+      "sha256": "fe8dddc33e0c5804a5b2f1bef438c9ed6d9eae7b56cadf83ca0a4dee28e4ad00"
+    },
+    {
+      "source_path": ".github/workflows/pages.yml",
+      "copied_path": "docs/foundation/workflows/pages.yml.disabled",
+      "sha256": "d754451c140161d623654823592652d25c7fbb21a24cf6f007345d90c5e9fae7"
+    },
+    {
+      "source_path": ".gitignore",
+      "copied_path": ".gitignore",
+      "sha256": "335346c9cd7b4617959c191614ecb62f6204f4b61b24ba6b8a1f79494866914d"
+    },
+    {
+      "source_path": ".openai/hosting.json",
+      "copied_path": "docs/foundation/hosting.original.json",
+      "sha256": "62f36e01c3d37673ff2eff10eb3b21b7b399ca250e78eb511b5f2edb6b275d6d"
+    },
+    {
+      "source_path": ".oxlintrc.json",
+      "copied_path": ".oxlintrc.json",
+      "sha256": "b4d344818a1e1bf43997e4744a9153c8eef770c98b58229cd86363dabb85ded4"
+    },
+    {
+      "source_path": "LICENSE",
+      "copied_path": "LICENSE",
+      "sha256": "678ae05ad436690d9dac37bedc80a0fa04c8e5aac0a410f1071e6f3c6e9d4ebd"
+    },
+    {
+      "source_path": "README.md",
+      "copied_path": "docs/foundation/UPSTREAM_README.md",
+      "sha256": "753facb098af1f9521169d855c8c9459147f49fffe53bdb786fefc9f846aea2c"
+    },
+    {
+      "source_path": "THIRD_PARTY_NOTICES.md",
+      "copied_path": "THIRD_PARTY_NOTICES.md",
+      "sha256": "10a3eb94252236c08ee7759b0ad363b537a157ffa617c9911cb8d74be4e7a431"
+    },
+    {
+      "source_path": "docs/CHALLENGE_WORK.md",
+      "copied_path": "docs/CHALLENGE_WORK.md",
+      "sha256": "3bedf8dabd5e80295828ccc5873aa9f56a3e491f972a31634a9d7c8296ab07df"
+    },
+    {
+      "source_path": "docs/CODEX_E2E_CHALLENGE_PASS.md",
+      "copied_path": "docs/CODEX_E2E_CHALLENGE_PASS.md",
+      "sha256": "9b0f61a6af6070000500a850ef7826bb333976be3403a4fdb7adf39b3082b30d"
+    },
+    {
+      "source_path": "docs/DATA_SOURCES.md",
+      "copied_path": "docs/DATA_SOURCES.md",
+      "sha256": "37489cfef8dcad9796b1c1a527804fa72d31a093f6dd891e5a455442fb38f14d"
+    },
+    {
+      "source_path": "docs/DEMO_SCRIPT.md",
+      "copied_path": "docs/DEMO_SCRIPT.md",
+      "sha256": "ee4cd1d004258eb174bb95c2031c096e23ef425e51c0108341dd380f1e538a4f"
+    },
+    {
+      "source_path": "docs/JUDGE_TESTING.md",
+      "copied_path": "docs/JUDGE_TESTING.md",
+      "sha256": "f0b09deb6f1d237e0c317a9a04c9ef2c9b458a881f89755a08f508907e13e88e"
+    },
+    {
+      "source_path": "docs/LABMCP_HAZARD_INVESTIGATION.md",
+      "copied_path": "docs/LABMCP_HAZARD_INVESTIGATION.md",
+      "sha256": "571fb88c1e5ebf7ec9749dbba7955389cddd060fb4fdb139f00b564ca7db064e"
+    },
+    {
+      "source_path": "docs/LABMCP_TEST_001.md",
+      "copied_path": "docs/LABMCP_TEST_001.md",
+      "sha256": "b66cd4f820c7b67eda79bcd31a19593a8eae471a12c85221840e38f3dd8b1e48"
+    },
+    {
+      "source_path": "docs/LIMITATIONS.md",
+      "copied_path": "docs/LIMITATIONS.md",
+      "sha256": "20751f71dde9876b0e6ec2ae439068c003ddd7a7c9564f353a4bc9eb16e935d8"
+    },
+    {
+      "source_path": "docs/PREMIUM_ASSET_PACK.md",
+      "copied_path": "docs/PREMIUM_ASSET_PACK.md",
+      "sha256": "69af37a9a193d760e01cd8e04966a4bd946fca77635d77346394f514465ced67"
+    },
+    {
+      "source_path": "docs/PRODUCT_LAB.md",
+      "copied_path": "docs/PRODUCT_LAB.md",
+      "sha256": "786dcaec394efeab744c8d1c598d15d35e352196c97492ca263e59a1a90b3915"
+    },
+    {
+      "source_path": "docs/REVIEWER_DEMO_SCRIPT.md",
+      "copied_path": "docs/REVIEWER_DEMO_SCRIPT.md",
+      "sha256": "ea7c9958497ebc30c8a672141af003206919f6e5c5473897360c831ac6ce1f42"
+    },
+    {
+      "source_path": "docs/SECURITY.md",
+      "copied_path": "docs/SECURITY.md",
+      "sha256": "ec9a02b723c5cc57646ff4bd63c4b2cbfcc900fb61b37a7b497bca8ad557a38d"
+    },
+    {
+      "source_path": "docs/SUBMISSION_CHECKLIST.md",
+      "copied_path": "docs/SUBMISSION_CHECKLIST.md",
+      "sha256": "49be09938aef1ff3435dfefc6280d78c05fc61deab2ff6eef16546746eca6b9f"
+    },
+    {
+      "source_path": "docs/WEBMCP.md",
+      "copied_path": "docs/WEBMCP.md",
+      "sha256": "1f1a6cc2be83864ebc3eb99fe0ab175868d60f792c9fbc09bb7da5566e03b19d"
+    },
+    {
+      "source_path": "index.html",
+      "copied_path": "index.html",
+      "sha256": "58f847b716a102de40657a4ba699de58fb9216ce59843f2ed93aa9c2d5fa47db"
+    },
+    {
+      "source_path": "netlify.toml",
+      "copied_path": "netlify.toml",
+      "sha256": "cd6e98b93058ac365f3e6954546f6ffa48c0b861f1c9aad7266e077b98d66265"
+    },
+    {
+      "source_path": "package-lock.json",
+      "copied_path": "package-lock.json",
+      "sha256": "608d39aab8ba33f5f5ae0fdd5797d637ae92dcc9dff683a82c1a0fab3b6859bf"
+    },
+    {
+      "source_path": "package.json",
+      "copied_path": "package.json",
+      "sha256": "0091ce8561a7905fd45ed37a179dbd1656738b2cafb38343e25a9bd19369db74"
+    },
+    {
+      "source_path": "public/favicon.svg",
+      "copied_path": "public/favicon.svg",
+      "sha256": "61bc9a161de58248288e6905425d7180f0624c2865007b97d763fdac12043a66"
+    },
+    {
+      "source_path": "public/icons.svg",
+      "copied_path": "public/icons.svg",
+      "sha256": "b45fa506195cfcdef406ba9f0c77b36ddc1a7c224040926ec70abc2fdea7b93a"
+    },
+    {
+      "source_path": "public/playable-worlds/index.html",
+      "copied_path": "public/playable-worlds/index.html",
+      "sha256": "c9ffc736fd798d086c79b64372a8afc493d4baf16c8adbe271c5e575284eed1b"
+    },
+    {
+      "source_path": "scripts/chrome-webmcp-smoke.mjs",
+      "copied_path": "scripts/chrome-webmcp-smoke.mjs",
+      "sha256": "683848de5da9a9f32da93297eaf623f2c049375e7f32e07aa5009a2cfb896fd3"
+    },
+    {
+      "source_path": "scripts/responsive-home-smoke.mjs",
+      "copied_path": "scripts/responsive-home-smoke.mjs",
+      "sha256": "bff10b406a5358257ff29786ca04416eb90a4665409fa7ebeb6baa468a14d208"
+    },
+    {
+      "source_path": "src/App.css",
+      "copied_path": "src/App.css",
+      "sha256": "6e25a776d3e8102da5bacb3cb99f4a5fc662a2e01e6143140671a556d28c3d5c"
+    },
+    {
+      "source_path": "src/App.tsx",
+      "copied_path": "src/App.tsx",
+      "sha256": "6b7c64a2f937f0d4539f279b4baca58f8d2c5e1a014bb0b341529a1eb602cf4e"
+    },
+    {
+      "source_path": "src/agents/registry.ts",
+      "copied_path": "src/agents/registry.ts",
+      "sha256": "3eb4dc1967819fa93f956a2fbb00c11f969564d56affc853c2409623f3a20e42"
+    },
+    {
+      "source_path": "src/assets/earth-figurine-concept.webp",
+      "copied_path": "src/assets/earth-figurine-concept.webp",
+      "sha256": "d690f6b1de018dfd94a98418539a06dc989107ddf0e93beaa64d21a5b782f838"
+    },
+    {
+      "source_path": "src/assets/forgemcp-hero-background.webp",
+      "copied_path": "src/assets/forgemcp-hero-background.webp",
+      "sha256": "f532b633b85188cd357085fa6e5420707bf174605a98d1b18a479e77ef001380"
+    },
+    {
+      "source_path": "src/assets/hero.png",
+      "copied_path": "src/assets/hero.png",
+      "sha256": "881ffbcaafc212e49addad08846a5b82761355fa20624253af3477ba33262c5c"
+    },
+    {
+      "source_path": "src/assets/react.svg",
+      "copied_path": "src/assets/react.svg",
+      "sha256": "35ef61ed53b323ae94a16a8ec659b3d0af3880698791133f23b084085ab1c2e5"
+    },
+    {
+      "source_path": "src/assets/research-stations-concepts.webp",
+      "copied_path": "src/assets/research-stations-concepts.webp",
+      "sha256": "103c9862908244f6695050a947baa1dfccdb0d04105f5ab77adceeb6ebbf6f67"
+    },
+    {
+      "source_path": "src/assets/vite.svg",
+      "copied_path": "src/assets/vite.svg",
+      "sha256": "5be21acd42eb7b896e517f4e0f0f11eb5c5d9e54fbbcebe9453f033008fcca6f"
+    },
+    {
+      "source_path": "src/components/ApprovalQueue.tsx",
+      "copied_path": "src/components/ApprovalQueue.tsx",
+      "sha256": "2a3e735b1a0a9ce5bded1353425796f77b7f3cdd3cd62a2dcf38f339fee34c9f"
+    },
+    {
+      "source_path": "src/components/BasicGame3DGenerator.tsx",
+      "copied_path": "src/components/BasicGame3DGenerator.tsx",
+      "sha256": "e3e479bcdc9f8b6f0ea82147c5470ad314cd005e76298260abaf0ebeb9cd85da"
+    },
+    {
+      "source_path": "src/components/ChallengeEvidence.tsx",
+      "copied_path": "src/components/ChallengeEvidence.tsx",
+      "sha256": "5027b9ee863b8774e844929518881dcd1e1914ad51f2df312ab12072afda5995"
+    },
+    {
+      "source_path": "src/components/CubeLab.tsx",
+      "copied_path": "src/components/CubeLab.tsx",
+      "sha256": "4490077b3c7efb7f79efa4614200b0cb6b7d812aa9b9e662627cf1c6f1e6dfc3"
+    },
+    {
+      "source_path": "src/components/CubeOwnerTrainingPanel.tsx",
+      "copied_path": "src/components/CubeOwnerTrainingPanel.tsx",
+      "sha256": "79f96e4cdc1864b0e7da793ae86f14329a4d18629c42d2b459d36fbb12edc8cc"
+    },
+    {
+      "source_path": "src/components/CubePremiumAssetStudio.tsx",
+      "copied_path": "src/components/CubePremiumAssetStudio.tsx",
+      "sha256": "288d0a11d349d9997c991d12972971d6351d6bd4a5540b76f4417997da8d8ae3"
+    },
+    {
+      "source_path": "src/components/CubePremiumModelLabV2.tsx",
+      "copied_path": "src/components/CubePremiumModelLabV2.tsx",
+      "sha256": "934c182b2a0c494f759f2ca869fce578de583e2a315bc3474c52efbb5c9caf38"
+    },
+    {
+      "source_path": "src/components/CubePremiumSubscription.css",
+      "copied_path": "src/components/CubePremiumSubscription.css",
+      "sha256": "3c302aa47731894438475e1e21b32bf1719fd4a20708b6f4cd838c3a9239cb92"
+    },
+    {
+      "source_path": "src/components/CubePremiumSubscription.tsx",
+      "copied_path": "src/components/CubePremiumSubscription.tsx",
+      "sha256": "0ab0281ce9bd44f4802daa7af60148ed2ed64a2b2f8cc87fd105c5402718d7a9"
+    },
+    {
+      "source_path": "src/components/EnhancedProceduralAssetViewer.tsx",
+      "copied_path": "src/components/EnhancedProceduralAssetViewer.tsx",
+      "sha256": "62ff066c79ee791ab7e8e0a4395abe4032738c72aad031377f7aac9119097877"
+    },
+    {
+      "source_path": "src/components/GameStudio.tsx",
+      "copied_path": "src/components/GameStudio.tsx",
+      "sha256": "26eef28a6891e29b143b53899e76c494e070fc496e368265f008f7fc30f9c16c"
+    },
+    {
+      "source_path": "src/components/ImageryControls.tsx",
+      "copied_path": "src/components/ImageryControls.tsx",
+      "sha256": "cf82bed0228a9e883acefa2304a2ae6f3bb78474d3981ebbae474b9bd4806273"
+    },
+    {
+      "source_path": "src/components/LabMcp.tsx",
+      "copied_path": "src/components/LabMcp.tsx",
+      "sha256": "d8c48854b6390602bdc32c635134d7cd32c4ebbff9882fa2299a177a402cd600"
+    },
+    {
+      "source_path": "src/components/LiveProjectFrame.tsx",
+      "copied_path": "src/components/LiveProjectFrame.tsx",
+      "sha256": "e12e7c9e4865e4a6d7a6270929670ca735b2e6cf32c43c0d67b44b2d46096241"
+    },
+    {
+      "source_path": "src/components/MiniChessGame.css",
+      "copied_path": "src/components/MiniChessGame.css",
+      "sha256": "26b1e394305cb38a807868037134ede399ca2198c27990aae3a0d51913d7ef61"
+    },
+    {
+      "source_path": "src/components/MiniChessGame.tsx",
+      "copied_path": "src/components/MiniChessGame.tsx",
+      "sha256": "00b3090120f35ad917de819402c15c5a19c82a34d1d3b73e67f98608c560e092"
+    },
+    {
+      "source_path": "src/components/PlayableStationWorlds.tsx",
+      "copied_path": "src/components/PlayableStationWorlds.tsx",
+      "sha256": "673a63526804f6c296eaf319953c3ae182f4aa24c37241b5ee9a470f03c7fc16"
+    },
+    {
+      "source_path": "src/components/ProceduralAssetViewer.tsx",
+      "copied_path": "src/components/ProceduralAssetViewer.tsx",
+      "sha256": "3b984b4ee963fafc0e5bffa44e9fb67e241fbfca0109aee8d33cbebd5b8c5efd"
+    },
+    {
+      "source_path": "src/components/ProductLab.tsx",
+      "copied_path": "src/components/ProductLab.tsx",
+      "sha256": "8d7b08025ac4bbc5a41fa216cca098aeb0130ef87165a0884b3c3e17c80095db"
+    },
+    {
+      "source_path": "src/components/ProvenanceViewer.tsx",
+      "copied_path": "src/components/ProvenanceViewer.tsx",
+      "sha256": "c0a605e9359ddcf02684c1dc18a68ab487d32c740afdf4bb88498de81700a026"
+    },
+    {
+      "source_path": "src/components/ResearchArchive.tsx",
+      "copied_path": "src/components/ResearchArchive.tsx",
+      "sha256": "9b9e2cc5ea144ee42a4ae8820f55f2f89aa06739b55eb2aca9f2b9eb5df3d3d1"
+    },
+    {
+      "source_path": "src/components/ResearchErrorBoundary.tsx",
+      "copied_path": "src/components/ResearchErrorBoundary.tsx",
+      "sha256": "cec97d161a9477520704411e6a301e1042337cacb0fa222c338bb40b9e9f53cc"
+    },
+    {
+      "source_path": "src/components/ResearchStation3DWorkbench.tsx",
+      "copied_path": "src/components/ResearchStation3DWorkbench.tsx",
+      "sha256": "206e906f3d6b01969b891859b2304bbcd03bbd33e763d5ffb3ab4e4f8488d7f9"
+    },
+    {
+      "source_path": "src/components/ResearchStations.tsx",
+      "copied_path": "src/components/ResearchStations.tsx",
+      "sha256": "693b9b1e839582d1395301eefdcc4de661addfb9cf5f794d875cae53bcfbab2d"
+    },
+    {
+      "source_path": "src/components/StationConceptVisual.tsx",
+      "copied_path": "src/components/StationConceptVisual.tsx",
+      "sha256": "4989d93d2f30a548106c69eaa123119f92c42f11e038c33a809ffa6773fd79b6"
+    },
+    {
+      "source_path": "src/components/StatusBadge.tsx",
+      "copied_path": "src/components/StatusBadge.tsx",
+      "sha256": "31d45c1bf6d085fd6507cf709fdbc290dfad41a57a149b817ac176e82798d25d"
+    },
+    {
+      "source_path": "src/components/Timeline.tsx",
+      "copied_path": "src/components/Timeline.tsx",
+      "sha256": "61a18d87b21f750ccfa849a8b9b1096037be9ff147f26342763a64239419e7ba"
+    },
+    {
+      "source_path": "src/components/ToolInspector.tsx",
+      "copied_path": "src/components/ToolInspector.tsx",
+      "sha256": "0ad833ce78c965e8a69608edf4ccc39ff60c92e38945f715ca9747ca0b669e8d"
+    },
+    {
+      "source_path": "src/coordinator/workflows.ts",
+      "copied_path": "src/coordinator/workflows.ts",
+      "sha256": "64303d70e5ecc95b183dc04a6135af21f2f89b6c9890eb1a585edec3815df0a8"
+    },
+    {
+      "source_path": "src/data/ownerCubePipeline.ts",
+      "copied_path": "src/data/ownerCubePipeline.ts",
+      "sha256": "550eca3dec7a930b56fc50dee9d5583e808a030aafce63e64a55cafb3c3a542c"
+    },
+    {
+      "source_path": "src/data/researchStations.ts",
+      "copied_path": "src/data/researchStations.ts",
+      "sha256": "628aa386dc2be1516812a388cb758dbc66bacc0daeb86642479d3ac9c29950c5"
+    },
+    {
+      "source_path": "src/game/basicGameGenerator.ts",
+      "copied_path": "src/game/basicGameGenerator.ts",
+      "sha256": "7ff0c6ed8e56f35ffa6c0fa3c6d97f4feaeb771784188a7d56312e88fe1e43c5"
+    },
+    {
+      "source_path": "src/game/miniChessEngine.ts",
+      "copied_path": "src/game/miniChessEngine.ts",
+      "sha256": "67d017d0835c15bfdac8d4721e61a02459ab5fbf5811ef07bff77f5aa5e01837"
+    },
+    {
+      "source_path": "src/index.css",
+      "copied_path": "src/index.css",
+      "sha256": "0c0c2fe7079d02ba90a843938d0796ee7d4e33b96cef63dceab1a5d657d9d6bf"
+    },
+    {
+      "source_path": "src/integrations/commerce/proceduralAssets.ts",
+      "copied_path": "src/integrations/commerce/proceduralAssets.ts",
+      "sha256": "c11ff1ea1724d4e4cde7d93d0c01d29462b298a09c182f7d2292d8e7c59b240b"
+    },
+    {
+      "source_path": "src/integrations/commerce/productLab.ts",
+      "copied_path": "src/integrations/commerce/productLab.ts",
+      "sha256": "0baf511aae6111de9db50eaef08b9c1250f879cac58535b022b80637e09c889d"
+    },
+    {
+      "source_path": "src/integrations/cube/adapter.ts",
+      "copied_path": "src/integrations/cube/adapter.ts",
+      "sha256": "c464df810a45f9ec7e26e4ac230b0c58e46050cfe64ff11efe96314ddc8c101d"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/board/Board3D.ts",
+      "copied_path": "src/integrations/cube/engine/board/Board3D.ts",
+      "sha256": "542dccf09ea9e305d16cefe2de90f77e1265f801689dc6342a295e77bcfc6dbc"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/board/index.ts",
+      "copied_path": "src/integrations/cube/engine/board/index.ts",
+      "sha256": "4d7f2d8fb8cfaf0a6623bb84ac19b3b2bb4193b71f292f9722fa7e1e1ad5ffe7"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/coordinates/Coordinate3D.ts",
+      "copied_path": "src/integrations/cube/engine/coordinates/Coordinate3D.ts",
+      "sha256": "d3c7f70473f0fa7a0ccc5e2d60e60ea3f6fd51ce324915ac9acdc7ac612958e1"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/coordinates/SquareAddress.ts",
+      "copied_path": "src/integrations/cube/engine/coordinates/SquareAddress.ts",
+      "sha256": "306744323ff6629df9614e04d3ead484f475482c2badc670cc153eff5f06a512"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/coordinates/index.ts",
+      "copied_path": "src/integrations/cube/engine/coordinates/index.ts",
+      "sha256": "0d8f5f4e3b457b7a8d7b331135ae862929f79a9fb97f1d9670e96d5fc52b1d89"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/index.ts",
+      "copied_path": "src/integrations/cube/engine/index.ts",
+      "sha256": "d647a1910fb4044868442dcc750274b6399a7eff05613b32b91fdc23e94eb0fc"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/moves/DirectionVectors.ts",
+      "copied_path": "src/integrations/cube/engine/moves/DirectionVectors.ts",
+      "sha256": "a4239f45f53116d08bb5f20ca52eacc720fe09ff4d9e72a43c6f63db72a38336"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/moves/LeapingMoveGenerator.ts",
+      "copied_path": "src/integrations/cube/engine/moves/LeapingMoveGenerator.ts",
+      "sha256": "d8defe0c7e0d19e6afd994a5b9637b8e6a9bca22d8d676871efb8a6dac1acdca"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/moves/Move.ts",
+      "copied_path": "src/integrations/cube/engine/moves/Move.ts",
+      "sha256": "121677d841fdbbeb225740215b109ecf5cfd9c3cddfa0c5ecae6519f2eed546e"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/moves/MoveFactory.ts",
+      "copied_path": "src/integrations/cube/engine/moves/MoveFactory.ts",
+      "sha256": "b28b0931b1ccd3e6b41e663c94640161e7643bd69cd428b7de23d9a005bd5c5d"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/moves/MoveGenerator.ts",
+      "copied_path": "src/integrations/cube/engine/moves/MoveGenerator.ts",
+      "sha256": "84e8b0f9777515343b18a22adc014cc8eda2dbabd8d69a6fa6e1c901a16f7c68"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/moves/PawnMoveGenerator.ts",
+      "copied_path": "src/integrations/cube/engine/moves/PawnMoveGenerator.ts",
+      "sha256": "ccf3f5fc62f024c5c93e1cd2d36936ecee44e19505b1865ce5cd45863aed488f"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/moves/SlidingMoveGenerator.ts",
+      "copied_path": "src/integrations/cube/engine/moves/SlidingMoveGenerator.ts",
+      "sha256": "5fc3c0184c55fbef70760aae17deb609d6046a909fd6a87ace4ca370ce900538"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/moves/index.ts",
+      "copied_path": "src/integrations/cube/engine/moves/index.ts",
+      "sha256": "1d1308e77bbfbaa9f3461126b5cd840ac17969a401bc449b07549c6f360a4fe2"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/pieces/Piece.ts",
+      "copied_path": "src/integrations/cube/engine/pieces/Piece.ts",
+      "sha256": "c2bd125529eec50b8aab06ceaf9639e1b5e92005fd6d80e6f13459d639b3aeff"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/pieces/index.ts",
+      "copied_path": "src/integrations/cube/engine/pieces/index.ts",
+      "sha256": "d5b12e1ece5455b58120f46addd178747d88b766640397c36bc1435ea65560c2"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/rules/AttackDetector.ts",
+      "copied_path": "src/integrations/cube/engine/rules/AttackDetector.ts",
+      "sha256": "1869b637795c591e7c50ce1c1523b62e5bc3b1fcfc8473bf5948e60612762866"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/rules/CheckDetector.ts",
+      "copied_path": "src/integrations/cube/engine/rules/CheckDetector.ts",
+      "sha256": "6582ff4b092c0e0cceb270d243bfd0ed44c204b7b9b21dd63e45c2335a62978d"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/rules/GameTermination.ts",
+      "copied_path": "src/integrations/cube/engine/rules/GameTermination.ts",
+      "sha256": "dde01e2f2740ec31d971cdfd0bd5ceb73b40d22c920d5c40d26df471c7e35a0e"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/rules/LegalMoveGenerator.ts",
+      "copied_path": "src/integrations/cube/engine/rules/LegalMoveGenerator.ts",
+      "sha256": "237e6de90b5fc522379d28dee525a7ef32e8ecbfc795a6ee26b15f2ddb2ea1b2"
+    },
+    {
+      "source_path": "src/integrations/cube/engine/rules/index.ts",
+      "copied_path": "src/integrations/cube/engine/rules/index.ts",
+      "sha256": "98b83f31fb7570af426b93942455a72599ce615eae97a3f67693148096bdb154"
+    },
+    {
+      "source_path": "src/integrations/cube/lab.ts",
+      "copied_path": "src/integrations/cube/lab.ts",
+      "sha256": "9243b35cfbb59bba599df864298b793c92b10721d17fdf3903a9ee6a59d6b252"
+    },
+    {
+      "source_path": "src/integrations/cube/ownerAssetIntake.ts",
+      "copied_path": "src/integrations/cube/ownerAssetIntake.ts",
+      "sha256": "604365c37e1f2be166e7933c454541b421bbeaabfa34886ab60b2eba95e03eed"
+    },
+    {
+      "source_path": "src/integrations/cube/ownerReferenceGenerator.ts",
+      "copied_path": "src/integrations/cube/ownerReferenceGenerator.ts",
+      "sha256": "8809d0835e6449b7367728979fcc4b8661216476945cc8ac79e26a3abcd29594"
+    },
+    {
+      "source_path": "src/integrations/cube/premiumGeometryV2.ts",
+      "copied_path": "src/integrations/cube/premiumGeometryV2.ts",
+      "sha256": "0c7076d6aa4dcb70e455effe23d426c4de83de756c599140cfbca02baf7046ae"
+    },
+    {
+      "source_path": "src/integrations/cube/premiumTrial.ts",
+      "copied_path": "src/integrations/cube/premiumTrial.ts",
+      "sha256": "1ebbef185d259d9c71f66fbd58666179223a9bd0c670a20347807d2aef27101a"
+    },
+    {
+      "source_path": "src/integrations/terra/adapter.ts",
+      "copied_path": "src/integrations/terra/adapter.ts",
+      "sha256": "e2b58499f9b958c2ce378edaefa590ee0bf69af6152b2a00865891f204bc86d7"
+    },
+    {
+      "source_path": "src/integrations/terra/earthGuardianUpgrade.ts",
+      "copied_path": "src/integrations/terra/earthGuardianUpgrade.ts",
+      "sha256": "711e1d0c079d21e129887d975b8f49f36702851081a50429cd25d6c8b22d7968"
+    },
+    {
+      "source_path": "src/integrations/terra/hazardInvestigation.ts",
+      "copied_path": "src/integrations/terra/hazardInvestigation.ts",
+      "sha256": "9d98090f42a21ae1ea4a86f952989de0858fe8fe1f4ec7a51edc6bffda9cda39"
+    },
+    {
+      "source_path": "src/integrations/terra/imageryDisplay.ts",
+      "copied_path": "src/integrations/terra/imageryDisplay.ts",
+      "sha256": "6afe8f8c77a571c0639807be65c2f3c9366dea4ab1712c7f0cc1ffbb13b325f5"
+    },
+    {
+      "source_path": "src/integrations/terra/labmcp.ts",
+      "copied_path": "src/integrations/terra/labmcp.ts",
+      "sha256": "bc2e6359f95bff0fa8b81b653e838cf819c9312e1c1e5030e9cd657c4c2582b7"
+    },
+    {
+      "source_path": "src/integrations/terra/saharaExcavatorAsset.ts",
+      "copied_path": "src/integrations/terra/saharaExcavatorAsset.ts",
+      "sha256": "630df52a2d9c82fc3293c3484417a1a8cdb197901b49c8548b8e13ac67ff0823"
+    },
+    {
+      "source_path": "src/integrations/terra/terraMaterialRepair.ts",
+      "copied_path": "src/integrations/terra/terraMaterialRepair.ts",
+      "sha256": "5fb870ee84ddbe7efc32d994744bf07169abdffd9b1b55245e515216660cf375"
+    },
+    {
+      "source_path": "src/integrations/visual/workflow.ts",
+      "copied_path": "src/integrations/visual/workflow.ts",
+      "sha256": "15c90f5a33fbeef344e77945c1110f94c50b043b24bc0bf1742a07ac8415f355"
+    },
+    {
+      "source_path": "src/lib/reportDisplay.ts",
+      "copied_path": "src/lib/reportDisplay.ts",
+      "sha256": "bf4c4918822869853c9f21d909f97b1962e7e25e44b317fa5a640f2f287fb230"
+    },
+    {
+      "source_path": "src/lib/researchArchive.ts",
+      "copied_path": "src/lib/researchArchive.ts",
+      "sha256": "745256284d907619f0477aec9b3286f4c0cc52a5718403872a818fb6213185a2"
+    },
+    {
+      "source_path": "src/lib/storage.ts",
+      "copied_path": "src/lib/storage.ts",
+      "sha256": "12c2c8064a16f3e05652139f052d8d661a1c58e53a48c7c9c6dcd72eddefa6f3"
+    },
+    {
+      "source_path": "src/main.tsx",
+      "copied_path": "src/main.tsx",
+      "sha256": "610ba27ee2b468081184af201884e1194ea2d06b8bc54428a77b7704c9a6327d"
+    },
+    {
+      "source_path": "src/reviewer.css",
+      "copied_path": "src/reviewer.css",
+      "sha256": "525a3754278c23aa97c155590bddd32a313ead236d30514fdb7e13f93dac0968"
+    },
+    {
+      "source_path": "src/reviewerCubePublicEntry.ts",
+      "copied_path": "src/reviewerCubePublicEntry.ts",
+      "sha256": "d8300b2daeb7821aaae5646f3e6e3bdb71b3ecf3ab9faff8d939be802513313e"
+    },
+    {
+      "source_path": "src/reviewerDirectProjectLinks.css",
+      "copied_path": "src/reviewerDirectProjectLinks.css",
+      "sha256": "d6a5f64b4cbb2bf6edac67cc9c0a1ef7a69cce8e5fab480fb2699039275c69cb"
+    },
+    {
+      "source_path": "src/reviewerDirectProjectLinks.ts",
+      "copied_path": "src/reviewerDirectProjectLinks.ts",
+      "sha256": "ba280fe260d066cde24eeb3e13f7027c684ff45cdd79015bec33c87337d43979"
+    },
+    {
+      "source_path": "src/tests/approval.test.tsx",
+      "copied_path": "src/tests/approval.test.tsx",
+      "sha256": "b81aa5cfd3e0b7e27fc3f46059ff51f2c1a7358e7f136dfa74a7be2fe11ff5de"
+    },
+    {
+      "source_path": "src/tests/basic-game-generator.test.ts",
+      "copied_path": "src/tests/basic-game-generator.test.ts",
+      "sha256": "572ea078994bc3bfe6e0a8da3a53780bc837ddea8a458645588707ce6d9d1e5f"
+    },
+    {
+      "source_path": "src/tests/coordinator-visual.test.ts",
+      "copied_path": "src/tests/coordinator-visual.test.ts",
+      "sha256": "f15cde90f09bcd2e05c3952b3ae0cc1a25b2908c73d9ccdeaa6efcd611fe9d4c"
+    },
+    {
+      "source_path": "src/tests/cube-lab.test.ts",
+      "copied_path": "src/tests/cube-lab.test.ts",
+      "sha256": "f02d9210263d8377136cf0b865e923358143c6e1fabb1b87986d395428ef5c8c"
+    },
+    {
+      "source_path": "src/tests/cube-premium-subscription.test.tsx",
+      "copied_path": "src/tests/cube-premium-subscription.test.tsx",
+      "sha256": "eedba92069f6ce92f0bc05928069f970d82f9673ce5e318bc95cf1d08ebae358"
+    },
+    {
+      "source_path": "src/tests/dashboard.test.tsx",
+      "copied_path": "src/tests/dashboard.test.tsx",
+      "sha256": "983b58b07abab29a86562320cdc2f913849dff42df980e1f8ef849a127a0b01d"
+    },
+    {
+      "source_path": "src/tests/detection.test.ts",
+      "copied_path": "src/tests/detection.test.ts",
+      "sha256": "54153050b09dadcce3be73e9d9c459bfac43120c399f7900d5e34c1f62ad4d82"
+    },
+    {
+      "source_path": "src/tests/earth-guardian-v5.test.ts",
+      "copied_path": "src/tests/earth-guardian-v5.test.ts",
+      "sha256": "d2721d8e3d9995833cd58ca4246a8b15416bc1554a59331869fa081b6b7a628e"
+    },
+    {
+      "source_path": "src/tests/failure-handling.test.ts",
+      "copied_path": "src/tests/failure-handling.test.ts",
+      "sha256": "db80c0997818e770bc4cdfc686b2e70fa51c7161cc6cfb1166cd4063e4208ae3"
+    },
+    {
+      "source_path": "src/tests/game-studio-ui.test.tsx",
+      "copied_path": "src/tests/game-studio-ui.test.tsx",
+      "sha256": "e6d6dee193aef75c47b1c2aea47a43e9893201d1f729fe1c19f7f7cb98d77ea8"
+    },
+    {
+      "source_path": "src/tests/hazard-investigation.test.ts",
+      "copied_path": "src/tests/hazard-investigation.test.ts",
+      "sha256": "500bf527444c37ae704f5ad222a0d576d9d0ac01150a52f92f6bbec32b2ea48e"
+    },
+    {
+      "source_path": "src/tests/hydrology-screening.test.ts",
+      "copied_path": "src/tests/hydrology-screening.test.ts",
+      "sha256": "ee76667e0f7557769e3bedec64cb69728e0d4fbfcd20ca380be13eac7616b3e7"
+    },
+    {
+      "source_path": "src/tests/imagery-display.test.ts",
+      "copied_path": "src/tests/imagery-display.test.ts",
+      "sha256": "2d3db76ccf2b00f9a2b5e6eeda3a4b55259a4f5ca538bbb3a3f1772cfb471e29"
+    },
+    {
+      "source_path": "src/tests/labmcp-gallery.test.tsx",
+      "copied_path": "src/tests/labmcp-gallery.test.tsx",
+      "sha256": "3b3fe1635d7a4332c546f464b64cc40a2c96f0b8639f595c8448ff97ee5c28c9"
+    },
+    {
+      "source_path": "src/tests/labmcp.test.ts",
+      "copied_path": "src/tests/labmcp.test.ts",
+      "sha256": "759f3160d576e26ae34d79c44028082968edddf70a6a802d52bc9c3fa79a6f9d"
+    },
+    {
+      "source_path": "src/tests/live-project-previews.test.tsx",
+      "copied_path": "src/tests/live-project-previews.test.tsx",
+      "sha256": "a1d32e7c1ff7c68afcb7df6bb1736001749cf0c56427465a0dd0ba71b35220da"
+    },
+    {
+      "source_path": "src/tests/mini-chess-game.test.tsx",
+      "copied_path": "src/tests/mini-chess-game.test.tsx",
+      "sha256": "25ed9c2df9f8ff0615e8df25714e3c1e9fa4d6f658ab4bfc7996ee30c70ad1a6"
+    },
+    {
+      "source_path": "src/tests/mobile-report.test.ts",
+      "copied_path": "src/tests/mobile-report.test.ts",
+      "sha256": "061ca690209bb92584fae1dae9c5b80b095a5b082ae8d837b7f3b86e6ebf5e25"
+    },
+    {
+      "source_path": "src/tests/owner-asset-intake.test.ts",
+      "copied_path": "src/tests/owner-asset-intake.test.ts",
+      "sha256": "c57618287b43200bd0623d5d080d17b32df0ce943a1e9c708ceac66b53da68da"
+    },
+    {
+      "source_path": "src/tests/playable-research-worlds.test.ts",
+      "copied_path": "src/tests/playable-research-worlds.test.ts",
+      "sha256": "fac12900f6449197672f0f6df09748c6cdf247df9da843ccbb41ba681ad0126f"
+    },
+    {
+      "source_path": "src/tests/premium-geometry-v2.test.ts",
+      "copied_path": "src/tests/premium-geometry-v2.test.ts",
+      "sha256": "df9644176261cf56fe630445dd0825c70b76c8c382a4141da7b1370b4a34cf46"
+    },
+    {
+      "source_path": "src/tests/product-lab.test.tsx",
+      "copied_path": "src/tests/product-lab.test.tsx",
+      "sha256": "2843d125e151551a196a56f80ba395a3eeeeaec00fb26a9524db4f65376e29bc"
+    },
+    {
+      "source_path": "src/tests/registry.test.ts",
+      "copied_path": "src/tests/registry.test.ts",
+      "sha256": "4b04595df4ea620eb767152ac5039b236c271028378af7b4cb4ca44c523e1208"
+    },
+    {
+      "source_path": "src/tests/research-archive.test.ts",
+      "copied_path": "src/tests/research-archive.test.ts",
+      "sha256": "c37b7d2721ae174cd4dcef361af13f16754c830333f30b36219abf56aaae6f06"
+    },
+    {
+      "source_path": "src/tests/research-stations-ui.test.tsx",
+      "copied_path": "src/tests/research-stations-ui.test.tsx",
+      "sha256": "8e07f2a90296f29201e18ffaf3cbaa3df31226bdd20d8f5142ab24e089e6faec"
+    },
+    {
+      "source_path": "src/tests/reviewer-direct-project-links.test.tsx",
+      "copied_path": "src/tests/reviewer-direct-project-links.test.tsx",
+      "sha256": "2bb0fbb95426a7c7f0d5936eb0513952db42c2f92be2b7f37f8976f42b52a1ea"
+    },
+    {
+      "source_path": "src/tests/reviewer-home.test.tsx",
+      "copied_path": "src/tests/reviewer-home.test.tsx",
+      "sha256": "5b6a2dc95ad088f5577442310f79f460689b3563724ed509b69bf975c9a4079c"
+    },
+    {
+      "source_path": "src/tests/schemas.test.ts",
+      "copied_path": "src/tests/schemas.test.ts",
+      "sha256": "22d87db8ddb4497a94aa7c66b090f71b05725c7b46f74a3fc10df85562d23814"
+    },
+    {
+      "source_path": "src/tests/setup.ts",
+      "copied_path": "src/tests/setup.ts",
+      "sha256": "977afde26bba6a51325908cd7713cbfdc87d18f06b78b237c8f364c44864b7de"
+    },
+    {
+      "source_path": "src/tests/storage.test.ts",
+      "copied_path": "src/tests/storage.test.ts",
+      "sha256": "f525174177097ac1b3512c5e152eb708430305eff602d3aa3c34e447f5897ea0"
+    },
+    {
+      "source_path": "src/tests/terra-material-repair.test.ts",
+      "copied_path": "src/tests/terra-material-repair.test.ts",
+      "sha256": "17da8c79d0511040d5ddd53d46aff85d1a24ee2daae2e87d69f9ef560b0fecc1"
+    },
+    {
+      "source_path": "src/tests/tool-execution.test.ts",
+      "copied_path": "src/tests/tool-execution.test.ts",
+      "sha256": "3632b4fc32b774274f2e510bc5a6d432feb1bf8cbe377c47f8be26f7357ad832"
+    },
+    {
+      "source_path": "src/tests/workflow.test.ts",
+      "copied_path": "src/tests/workflow.test.ts",
+      "sha256": "715ab9466e5ddd2577d4372ba9c9e85bffe85b9551285682fab035c7cd0e5fb8"
+    },
+    {
+      "source_path": "src/tests/workspace-choice.test.tsx",
+      "copied_path": "src/tests/workspace-choice.test.tsx",
+      "sha256": "6e114ff0cd84c814723d8591f98ec0170b2d35578ab700e3ae91bde50fd018b3"
+    },
+    {
+      "source_path": "src/types/core.ts",
+      "copied_path": "src/types/core.ts",
+      "sha256": "a3847f4fb84bc8eb188a49faabe03a274130b007106bce4dcb44b0b546e88304"
+    },
+    {
+      "source_path": "src/verification/engine.ts",
+      "copied_path": "src/verification/engine.ts",
+      "sha256": "dcdcb7db859d52727bb64861b531dba5328f69978145fd76a100e310c91e7ade"
+    },
+    {
+      "source_path": "src/webmcp/contracts.ts",
+      "copied_path": "src/webmcp/contracts.ts",
+      "sha256": "60ded5c43d5e8fe0a7476ff868cc892f1957d61e2379e16287bb9ee7d24f50e9"
+    },
+    {
+      "source_path": "src/webmcp/detection.ts",
+      "copied_path": "src/webmcp/detection.ts",
+      "sha256": "6e83d25a4a557279b5f3b2d66712d897d4c7658961799703b1a3318169468bbf"
+    },
+    {
+      "source_path": "src/webmcp/registry.ts",
+      "copied_path": "src/webmcp/registry.ts",
+      "sha256": "c1d7efd0f1753e7d016deb1e6b3cca9960e023cd7e77dd0af95dffcb082ea032"
+    },
+    {
+      "source_path": "tsconfig.app.json",
+      "copied_path": "tsconfig.app.json",
+      "sha256": "8e5d12ba330e7d86409edec74b95451e0db22ee09b9426c94b5bf817571eddb0"
+    },
+    {
+      "source_path": "tsconfig.json",
+      "copied_path": "tsconfig.json",
+      "sha256": "770b4140bbb581e2dfd9ea9946ffc9c75a1d86ba7d2db5f77c83e37cbdf9d808"
+    },
+    {
+      "source_path": "tsconfig.node.json",
+      "copied_path": "tsconfig.node.json",
+      "sha256": "d366cc0827139db39c61815f22491bbfda56c654354a42ad7795143d314e45e8"
+    },
+    {
+      "source_path": "vite.config.ts",
+      "copied_path": "vite.config.ts",
+      "sha256": "9ae78c16c80fceb5a68dcd205752ba352496c0654aa51e5e9655ac0f0ac8c496"
+    }
+  ]
+}
