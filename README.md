@@ -8,7 +8,7 @@ Klient opisuje figurkę lub część → powstaje model 3D i podgląd → klient
 
 TikTok Shop ma być kanałem sprzedaży. Docelowy zasięg jest światowy, wdrażany etapami po weryfikacji obsługiwanych rynków, dostawców i dostawy. Zakres obejmuje też dropshipping gotowych produktów, w tym rozważaną klawiaturę „Codex Micro”; producent, dostępność i warunki współpracy pozostają do potwierdzenia.
 
-**Stan tej kopii:** strona główna ma integrację tekst-na-3D Meshy (geometria → tekstury), podgląd i eksport GLB/STL. Uruchomienie wymaga własnego klucza i kredytów API Meshy. Na tym etapie połączenie produkcyjne z kontem nie zostało zweryfikowane; testy używają odpowiedzi zastępczych API. Wymiary i kąty są opcjonalne. Zachowano osobny edytor brył parametrycznych. TikTok Shop, płatności i produkcja pozostają niepodłączone.
+**Stan tej kopii:** studio Codex + Blender, bez płatnego generatora i kluczy API. Strona przyjmuje geometrię od agenta WebMCP lub import GLB/JSON, daje podgląd i eksport. Do pobrania jest autorski dodatek Blender z importem modeli i opcjonalnym generowaniem przez lokalne Ollama. Przygotowano rzeczywisty model smoka: 94 części, 36 960 trójkątów i tekstury proceduralne. Wymiary i obroty są opcjonalne. Strona nie uruchamia samoczynnie Codexa, Blendera ani lokalnego modelu. Dodatek wymaga uruchomienia na komputerze; nie został jeszcze sprawdzony w rzeczywistym Blenderze.
 
 ## Fundament konkursowy
 
@@ -27,7 +27,7 @@ Treść Devpost jest kopią aktualnego, edytowalnego projektu pobraną podczas i
 | Element | Obecny stan | Dalsza praca |
 | --- | --- | --- |
 | Podgląd modeli i eksport glTF/PNG | Kod skopiowany z Product Lab | Figurki, części i nowe formaty eksportu |
-| Generowanie z opisu | Integracja Meshy + osobny tryb parametryczny | Podłączenie własnego konta API i sprawdzenie rzeczywistej generacji |
+| Modelowanie agentowe | Dowolne siatki WebMCP, import GLB/JSON, dodatek Blender | Uruchomienie dodatku i lokalnego AI na komputerze użytkownika |
 | Szkice produktów i zapytań B2B | Lokalne szkice Shopify/B2B | Osobny adapter TikTok Shop i rzeczywiści wykonawcy |
 | Koordynator i narzędzia WebMCP | Skopiowane z ForgeMCP | Zadania ofert, modeli, zamówień i wysyłek |
 | Zamówienia, płatności, produkcja | Integracje niepodłączone | Integracja, weryfikacja i test pełnego przebiegu |
@@ -39,9 +39,11 @@ npm ci
 npm run dev
 ```
 
-Strona główna `/#/` otwiera generowanie z opisu. W panelu „Połączenie AI” można podać klucz Meshy tylko na czas bieżącej karty. Alternatywnie administrator ustawia sekret `MESHY_API_KEY` w środowisku Sites. Tekst i dyktowanie przygotowują opis, a przycisk rozpoczyna płatne zadanie. Samo pisanie nie uruchamia generacji. Wymiary i obroty są schowane w opcjonalnym panelu. Tryb „Bryły parametryczne” zachowuje dotychczasową edycję lokalną i narzędzia WebMCP.
+Strona główna `/#/` otwiera studio Codex + Blender. Można otworzyć gotowy projekt smoka, pobrać scenę do Blendera, zaimportować GLB/JSON, opcjonalnie zmienić wymiary i pobrać GLB/STL. Polecenie tekstowe przygotowuje żądanie dla agenta; samo kliknięcie nie wywołuje LLM. Agent korzysta z `get_3d_modeling_request`, `get_3d_scene_schema` i `apply_3d_model_scene`. Gdy agent nie ma dostępu do strony, użytkownik przenosi przygotowany model przez plik.
 
-`npm run dev` uruchamia interfejs Vite. Integracja API wymaga środowiska Worker z obsługą `src/studio/server.ts`; samo Vite nie emuluje zaplecza. `npm run build` tworzy `dist/client` i Worker ESM `dist/server/index.js`, ze statycznym bindingiem `ASSETS`. Nie kopiuj klucza do zmiennych `VITE_*`.
+Dodatek do Blendera znajduje się w `blender_addon/froge_studio`. Obsługuje dane geometrii oraz lokalne Ollama pod `127.0.0.1:11434`. Model lokalny wybiera użytkownik spośród zainstalowanych modeli; dodatek nie pobiera modeli ani nie korzysta z chmury. Nie wykonuje kodu zwróconego przez AI.
+
+`npm run dev` uruchamia interfejs. `npm run build` wymaga Node i Python 3 (wyłącznie biblioteka standardowa), generuje model i ZIP dodatku, następnie buduje Vite i Worker. Nie wymaga instalacji Blendera. Stare trasy płatnego API odpowiadają 410 i nie wykonują połączeń z dostawcą.
 
 Dawna strona konkursowa: `/#/contest`. Laboratorium modeli i szkiców handlowych: `/#/shop-lab`. Szczegóły: [Studio 3D](docs/STUDIO_3D.md).
 

@@ -1,7 +1,8 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { Link } from 'react-router-dom'
 import type { Group } from 'three'
-import { api, followJob, modelBytes, savedJob, saveJob, type Job } from '../studio/generation'
+import { sceneModel, sceneSchema, type ModelScene } from '../studio/scene'
+import { getAgentScene, subscribeAgentScene, requestAgentModel, invalidateAgentRequest } from '../studio/agentSceneStore'
 import type { Adjustments } from '../studio/aiModel'
 import { useDictation } from '../studio/useDictation'
 import { ParametricModelStudio } from './ParametricModelStudio'
@@ -13,69 +14,64 @@ type Engine = typeof import('../studio/aiModel')
 const defaults: Adjustments = { dimensions: ['', '', ''], angles: ['', '', ''] }
 export function ModelStudio() {
   const [mode, setMode] = useState<'ai' | 'local'>('ai')
-  const [prompt, setPrompt] = useState(''), [textures, setTextures] = useState(true)
-  const [key, setKey] = useState(''), [connected, setConnected] = useState(false), [configured, setConfigured] = useState(false), [checking, setChecking] = useState(false)
-  const [connectionOpen, setConnectionOpen] = useState(false), [connectionError, setConnectionError] = useState('')
-  const [busy, setBusy] = useState(false), [note, setNote] = useState(''), [error, setError] = useState(''), [progress, setProgress] = useState(0)
-  const [job, setJob] = useState<Job | null>(savedJob), [resultJob, setResultJob] = useState<Job | null>(null)
-  const [source, setSource] = useState<Group | null>(null), [model, setModel] = useState<Group | null>(null), [size, setSize] = useState<number[]>([])
-  const [adjustments, setAdjustments] = useState<Adjustments>(defaults), [adjustmentError, setAdjustmentError] = useState(''), [exporting, setExporting] = useState(false)
-  const engine = useRef<Engine | null>(null), operation = useRef<AbortController | null>(null), sourceRef = useRef<Group | null>(null)
-  const speech = useDictation(text => setPrompt(text))
-  useEffect(() => {
-    const controller = new AbortController()
-    api<{ configured: boolean }>('config', '', controller.signal).then(config => { setConfigured(config.configured); setConnected(config.configured) }).catch(() => { /* Generation reports service errors on action. */ })
-    return () => { controller.abort(); operation.current?.abort(); if (sourceRef.current) engine.current?.disposeModel(sourceRef.current) }
-  }, [])
-  useEffect(() => {
-    if (!source || !engine.current) return
-    try { const next = engine.current.transformModel(source, adjustments); setModel(next); setSize(engine.current.modelSize(next)); setAdjustmentError('') } catch (e) { setAdjustmentError((e as Error).message) }
-  }, [source, adjustments])
-  function remember(next: Job) { setJob(next); saveJob(next) }
-  async function verify() {
-    setChecking(true); setConnectionError('')
-    try { await api('verify', key); setConnected(true); setConnectionOpen(false) } catch (e) { setConnected(false); setConnectionError((e as Error).message) } finally { setChecking(false) }
+  const [prompt,setPrompt]=useState(''),[name,setName]=useState(''),[sceneData,setSceneData]=useState<ModelScene|null>(null)
+  const [busy,setBusy]=useState(false),[note,setNote]=useState(''),[error,setError]=useState('')
+  const [source,setSource]=useState<Group|null>(null),[model,setModel]=useState<Group|null>(null),[size,setSize]=useState<number[]>([])
+  const [adjustments,setAdjustments]=useState<Adjustments>(defaults),[adjustmentError,setAdjustmentError]=useState(''),[exporting,setExporting]=useState(false)
+  const engine=useRef<Engine|null>(null),sourceRef=useRef<Group|null>(null),loadRevision=useRef(0)
+  const agent=useSyncExternalStore(subscribeAgentScene,getAgentScene)
+  const speech=useDictation(text=>setPrompt(text))
+  useEffect(()=>()=>{loadRevision.current++;if(sourceRef.current)engine.current?.disposeModel(sourceRef.current)},[])
+  useEffect(()=>{if(agent.scene)void showScene(agent.scene,'Agent dostarczył model: '+agent.scene.name)},[agent.scene])
+  useEffect(()=>{if(!source||!engine.current)return;try{const next=engine.current.transformModel(source,adjustments);setModel(next);setSize(engine.current.modelSize(next));setAdjustmentError('')}catch(e){setAdjustmentError((e as Error).message)}},[source,adjustments])
+  function prepareRequest() {
+    try { requestAgentModel(prompt); setError(''); setNote('Polecenie czeka na agenta. Samo kliknięcie nie uruchamia Codexa ani Blendera.'); } catch (e) { setError((e as Error).message) }
   }
-  async function run(resume?: Job, previewOnly = false) {
-    if (operation.current) return
-    if (!connected) { setConnectionOpen(true); setError('Aby tworzyć modele z dowolnego opisu, najpierw podłącz konto Meshy poniżej.'); return }
-    if (!resume && (!prompt.trim() || prompt.length > 800)) { setError('Wpisz opis od 1 do 800 znaków. Nie musisz podawać wymiarów.'); return }
-    const controller = new AbortController(); operation.current = controller
-    setBusy(true); setError(''); setProgress(0); setNote(resume ? 'Sprawdzam zapisane zadanie…' : 'Wysyłam opis do Meshy…')
+  async function showScene(value: unknown, label: string) {
+    const revision=++loadRevision.current
+    setBusy(true); setError('')
     try {
-      let current = resume
-      if (!current) {
-        const created = await api<{ id: string }>('tasks', key, controller.signal, { action: 'preview', prompt: prompt.trim() })
-        current = { id: created.id, prompt: prompt.trim(), textured: textures, stage: 'preview' }; remember(current)
-      }
-      const completed = await followJob(previewOnly ? { ...current, textured: false } : current, key, controller.signal, (task, j) => {
-        setProgress(task.progress); setNote((j.stage === 'preview' ? 'Tworzę geometrię' : 'Nakładam tekstury') + ` · ${task.progress}%`)
-      }, remember)
-      setNote('Pobieram model 3D…')
-      const bytes = await modelBytes(completed.id, key, controller.signal)
+      const scene = sceneSchema.parse(value)
       engine.current ??= await import('../studio/aiModel')
-      const loaded = await engine.current.loadModel(bytes)
-      if (controller.signal.aborted) { engine.current.disposeModel(loaded); return }
+      const loaded = sceneModel(scene)
+      try {engine.current.transformModel(loaded, defaults)}catch(e){engine.current.disposeModel(loaded);throw e}
+      if(revision!==loadRevision.current){engine.current.disposeModel(loaded);return}
       if (sourceRef.current) engine.current.disposeModel(sourceRef.current)
-      sourceRef.current = loaded; setSource(loaded); setResultJob(completed)
-      setNote(completed.stage === 'refine' ? 'Gotowe — model z teksturami.' : 'Gotowe — geometria bez tekstur.'); setProgress(100)
-    } catch (e) {
-      if (controller.signal.aborted) setNote('Śledzenie wstrzymane. Zadanie może nadal działać w Meshy; wznowienie sprawdza jego wynik.')
-      else { setError((e as Error).message); setNote('Model nie został zastąpiony. Możesz wznowić sprawdzanie zapisanego zadania.') }
-    } finally { if (operation.current === controller) { operation.current = null; setBusy(false) } }
+      sourceRef.current = loaded; setSource(loaded); setSceneData(scene); setName(scene.name); setNote(label)
+    } catch (e) { setError('Nie udało się wczytać sceny: ' + (e as Error).message) } finally { setBusy(false) }
+  }
+  async function example() {
+    invalidateAgentRequest()
+    setBusy(true);setError('')
+    try { const response = await fetch('/models/codex-dragon.froge.json'); if (!response.ok) throw new Error('Plik modelu niedostępny.'); await showScene(await response.json(), 'Gotowy projekt smoka przygotowany przez Codexa. To przykład, nie wynik wpisanego właśnie opisu.') } catch (e) { setError((e as Error).message); setBusy(false) }
+  }
+  async function importFile(file?: File) {
+    if (!file) return
+    invalidateAgentRequest()
+    if (file.size > 64 * 1024 * 1024) {setError('Maksymalny rozmiar pliku to 64 MB.');return}
+    if (file.name.toLowerCase().endsWith('.json')) {try {if(file.size>16*1024*1024)throw new Error('Limit sceny JSON to 16 MB.');await showScene(JSON.parse(await file.text()),'Wczytano scenę do dalszej edycji.')}catch(e){setError((e as Error).message)};return}
+    setBusy(true);setError('')
+    try {engine.current ??= await import('../studio/aiModel');const loaded=await engine.current.loadModel(await file.arrayBuffer());engine.current.transformModel(loaded,defaults);if(sourceRef.current)engine.current.disposeModel(sourceRef.current);sourceRef.current=loaded;setSource(loaded);setSceneData(null);setName(file.name);setNote('Wczytano model GLB. Możesz go skalować i eksportować.')}catch(e){setError((e as Error).message)}finally{setBusy(false)}
+  }
+  function saveJson(filename: string, value: unknown) {
+    const url=URL.createObjectURL(new Blob([JSON.stringify(value)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)
+  }
+  async function copyRequest() {
+    const text='Wykonaj dla mnie model 3D: '+prompt+'\nUżyj darmowego modelowania i tekstur, bez płatnego API. Dostarcz GLB albo scenę Froge JSON do importu. Jeżeli masz dostęp do WebMCP tej strony, odczytaj get_3d_modeling_request i get_3d_scene_schema, a wynik zastosuj przez apply_3d_model_scene. Nie zastępuj opisu niepasującym presetem.'
+    try {await navigator.clipboard.writeText(text);setNote('Skopiowano. Wklej polecenie w rozmowie z Codexem.')}catch{setError('Schowek jest niedostępny. Zaznacz opis i skopiuj go ręcznie.')}
   }
   async function download(format: 'glb' | 'stl') {
     if (!model || !engine.current) return
     setExporting(true); setError('')
     try {
       const blob = await engine.current.exportModel(model, format), url = URL.createObjectURL(blob)
-      const a = document.createElement('a'); a.href = url; a.download = `froge-${resultJob?.id ?? 'model'}${format === 'stl' ? '-mm' : ''}.${format}`; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000)
+      const a = document.createElement('a'); a.href = url; a.download = `froge-model${format === 'stl' ? '-mm' : ''}.${format}`; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch { setError('Nie udało się wyeksportować modelu. Spróbuj ponownie.') } finally { setExporting(false) }
   }
   function field(group: 'dimensions' | 'angles', index: number, value: string) {
     setAdjustments(previous => { const next = { ...previous, [group]: [...previous[group]] as [string,string,string] }; next[group][index] = value; return next })
   }
-  const tabs = <div className="ai-mode"><button aria-pressed={mode === 'ai'} onClick={() => setMode('ai')}>Model z opisu · AI</button><button aria-pressed={mode === 'local'} onClick={() => setMode('local')}>Bryły parametryczne</button></div>
+  const tabs = <div className="ai-mode"><button aria-pressed={mode === 'ai'} onClick={() => setMode('ai')}>Codex + Blender</button><button aria-pressed={mode === 'local'} onClick={() => setMode('local')}>Bryły parametryczne</button></div>
   if (mode === 'local') return <>{tabs}<ParametricModelStudio /></>
   return <div className="model-studio ai-studio">
     {tabs}
@@ -83,31 +79,23 @@ export function ModelStudio() {
     <div className="ai-layout">
       <section className="studio-panel studio-command" aria-label="Generowanie modelu z opisu">
         <label className="studio-prompt-label" htmlFor="ai-prompt">Co mam stworzyć?</label>
-        <textarea id="ai-prompt" value={prompt} maxLength={800} rows={6} onChange={e => setPrompt(e.target.value)} placeholder="Np. rozłożysty dąb z grubym pniem, korzeniami i zielonymi liśćmi, realistyczna kora…" />
-        <div className="ai-prompt-meta"><span>Dowolny opis obiektu</span><span>{prompt.length}/800</span></div>
-        <div className="studio-examples">{['Drzewo dąb z liśćmi i korzeniami', 'Figurka smoka z rozłożonymi skrzydłami', 'Rakieta kosmiczna z oknem'].map(text => <button key={text} onClick={() => setPrompt(text)}>{text}</button>)}</div>
-        <label className="studio-switch"><input type="checkbox" checked={textures} onChange={e => setTextures(e.target.checked)} />Dodaj tekstury</label>
-        <button className="studio-primary" disabled={busy || !prompt.trim()} onClick={() => void run()}>{busy ? 'Generowanie w toku…' : 'Generuj model 3D'} <span>↗</span></button>
-        <p className="studio-helper">Generacja używa kredytów API Meshy i może potrwać kilka minut. Pisanie i dyktowanie zmieniają opis; przycisk rozpoczyna nowe zadanie.</p>
-        <button className={speech.listening ? 'studio-mic is-listening' : 'studio-mic'} aria-pressed={speech.listening} disabled={!speech.supported} onClick={speech.listening ? speech.stop : speech.start}>{speech.listening ? 'Zatrzymaj dyktowanie' : 'Dyktuj opis'}</button>
-        <small className="studio-helper">{speech.supported ? 'Mikrofon włącza się po kliknięciu. Rozpoznawanie mowy korzysta z usługi przeglądarki.' : 'Możesz podyktować opis mikrofonem klawiatury telefonu.'}</small>
+        <textarea id="ai-prompt" value={prompt} maxLength={2000} rows={5} onChange={e=>setPrompt(e.target.value)} placeholder="Np. figurka zielonego smoka z rogami, wąsami i łuskami…" />
+        <div className="ai-prompt-meta"><span>Bez wymaganych wymiarów</span><span>{prompt.length}/2000</span></div>
+        <button className="studio-primary" disabled={!prompt.trim()} onClick={prepareRequest}>Przygotuj polecenie dla agenta <span>↗</span></button>
+        <p className="studio-helper">Agent tworzy geometrię i tekstury. Strona nie uruchamia samodzielnie tej rozmowy z Codexem. Po przygotowaniu polecenia poproś agenta przeglądarki o wykonanie lub skopiuj opis do czatu.</p>
+        {agent.request && <div className="ai-resume"><button onClick={()=>void copyRequest()}>Kopiuj polecenie do Codexa</button><button onClick={()=>saveJson('polecenie-blender.json',{type:'froge-modeling-request',version:1,prompt:agent.request!.prompt})}>Pobierz polecenie do Blendera</button></div>}
+        <button className={speech.listening?'studio-mic is-listening':'studio-mic'} aria-pressed={speech.listening} disabled={!speech.supported} onClick={speech.listening?speech.stop:speech.start}>{speech.listening?'Zatrzymaj dyktowanie':'Dyktuj opis'}</button>
+        <small className="studio-helper">{speech.supported?'Dyktowanie wpisuje tekst. Mikrofon włącza się po kliknięciu i korzysta z usługi przeglądarki.':'Możesz użyć mikrofonu klawiatury telefonu.'}</small>
         {speech.interim && <p>{speech.interim}</p>}{speech.error && <p role="alert" className="studio-error">{speech.error}</p>}
-        <details className="ai-connection" open={connectionOpen} onToggle={e => setConnectionOpen(e.currentTarget.open)}><summary>Połączenie AI · {connected ? (configured ? 'skonfigurowane' : 'sprawdzone') : 'wymaga podłączenia'}</summary>
-          <p>Podłącz klucz API z konta Meshy. Opis i klucz są przesyłane do Meshy przez tę stronę. Klucz wpisany tutaj pozostaje tylko w pamięci karty.</p>
-          <a href="https://www.meshy.ai/settings/api" target="_blank" rel="noreferrer">Otwórz ustawienia API Meshy ↗</a>
-          <label className="studio-field">Klucz API Meshy<input type="password" value={key} autoComplete="off" spellCheck={false} placeholder={configured ? 'Używany jest klucz serwera' : 'Wklej klucz API tutaj'} onChange={e => { setKey(e.target.value); setConnected(false) }} /></label>
-          <button disabled={checking || (!key.trim() && !configured)} onClick={() => void verify()}>{checking ? 'Sprawdzam…' : 'Sprawdź połączenie'}</button>
-          {connectionError && <p role="alert" className="studio-error">{connectionError}</p>}
-        </details>
-        {(busy || note) && <div className="ai-progress" role="status"><p>{note}</p>{busy && <progress max={100} value={progress} aria-label="Postęp bieżącego etapu" />}</div>}
-        {busy && <button onClick={() => operation.current?.abort()}>Wstrzymaj śledzenie</button>}
+        <div className="blender-addon"><h2>Blender · darmowy warsztat 3D</h2><p>Wczytaj model od Codexa albo generuj z opisu przez lokalne Ollama na komputerze. Dodatek tworzy edytowalne części i tekstury, bez płatnego API.</p><a className="blender-download" href="/downloads/froge-blender-addon.zip" download>Pobierz dodatek do Blendera ↓</a><details><summary>Jak uruchomić na komputerze?</summary><ol><li>Zainstaluj <a href="https://www.blender.org/download/" target="_blank" rel="noreferrer">Blendera</a> (4.2 lub nowszy).</li><li>W Preferences → Add-ons → Install from Disk wybierz pobrany ZIP i włącz Froge Studio.</li><li>W widoku 3D naciśnij N i otwórz zakładkę Froge. Wczytaj scenę JSON z tej strony.</li><li>Opcjonalne generowanie z opisu: zainstaluj <a href="https://ollama.com/download" target="_blank" rel="noreferrer">Ollama</a> i lokalny model odpowiedni do Twojego komputera. W dodatku kliknij „Sprawdź lokalne modele”, wpisz opis i „Generuj lokalnie”.</li><li>Wyeksportuj GLB i wczytaj go tutaj. Projekt Blendera zapiszesz przez File → Save As.</li></ol><p>Blender działa na komputerze. Ta strona na telefonie nie uruchomi go sama. Lokalny model AI jest osobny od Codexa; jakość zależy od modelu i sprzętu.</p><a href="/downloads/BLENDER-INSTRUKCJA.txt" download>Pobierz instrukcję</a></details></div>
+        {(note||agent.status==='waiting') && <div className="ai-progress" role="status"><p>{agent.status==='waiting'?agent.note:note}</p></div>}
         {error && <p role="alert" className="studio-error">{error}</p>}
-        {job && !busy && <div className="ai-resume"><button onClick={() => void run(job)}>Sprawdź zapisane zadanie</button>{(job.previewId || job.stage === 'preview') && <button onClick={() => void run({ ...job, id: job.previewId || job.id, stage: 'preview' }, true)}>Pobierz samą geometrię</button>}<small>Zadanie: {job.id}</small></div>}
       </section>
       <section className="studio-canvas-panel" aria-label="Wynik generowania">
-        <div className="studio-canvas-heading"><div><small>{resultJob ? 'TWÓJ MODEL' : 'OBSZAR ROBOCZY'}</small><h2>{resultJob?.prompt || 'Tu pojawi się Twój model'}</h2></div></div>
-        {model ? <Suspense fallback={<p className="ai-empty">Ładuję podgląd…</p>}><Viewer model={model} /></Suspense> : <div className="ai-empty"><b>{busy ? 'Trwa tworzenie modelu' : 'Zacznij od pomysłu'}</b><p>{busy ? 'Po zakończeniu zobaczysz tutaj przestrzenną geometrię.' : 'Drzewo, figurka, pojazd lub część. Wpisz opis po lewej i kliknij „Generuj model 3D”.'}</p>{!connected && <button onClick={() => setConnectionOpen(true)}>Podłącz generator AI</button>}</div>}
-        {model && <><div className="studio-measures">{['SZEROKOŚĆ X', 'WYSOKOŚĆ Y', 'GŁĘBOKOŚĆ Z'].map((label, i) => <div key={label}><small>{label}</small><b>{size[i]?.toFixed(2)} <span>cm</span></b></div>)}</div><div className="studio-export"><p>{resultJob?.stage === 'refine' ? 'Model zawiera tekstury.' : 'Podgląd geometrii — bez tekstur.'} Eksport uwzględnia widoczną skalę i obrót.</p><div className="studio-export-buttons"><button disabled={exporting || !!adjustmentError} onClick={() => void download('glb')}>Pobierz GLB</button><button disabled={exporting || !!adjustmentError} onClick={() => void download('stl')}>Pobierz STL · mm</button></div><p>STL nie zawiera tekstur. Model AI wymaga sprawdzenia i ewentualnej naprawy przed drukiem lub użyciem jako część techniczna.</p></div></>}
+        <div className="studio-canvas-heading"><div><small>{model?'TWÓJ MODEL':'OBSZAR ROBOCZY'}</small><h2>{name||'Modelowanie bez płatnego generatora'}</h2></div></div>
+        {model?<Suspense fallback={<p className="ai-empty">Ładuję podgląd…</p>}><Viewer model={model}/></Suspense>:<div className="ai-empty"><b>{busy?'Wczytuję geometrię…':'Obejrzyj smoka stworzonego przez Codexa'}</b><p>Model z przestrzennymi łuskowanymi powierzchniami, rogami, wąsami i czterema łapami. Gotowy przykład do otwarcia i edycji w Blenderze.</p><button disabled={busy} onClick={()=>void example()}>Otwórz model smoka</button></div>}
+        <div className="studio-export"><div className="studio-export-buttons"><button disabled={busy} onClick={()=>void example()}>Przykład · smok Codexa</button><label className="blender-import">Wczytaj GLB lub scenę JSON<input aria-label="Wczytaj model GLB lub JSON" type="file" accept=".glb,.json" disabled={busy} onChange={e=>{void importFile(e.target.files?.[0]);e.target.value=''}}/></label></div></div>
+        {model && <><div className="studio-measures">{['SZEROKOŚĆ X','WYSOKOŚĆ Y','GŁĘBOKOŚĆ Z'].map((label,i)=><div key={label}><small>{label}</small><b>{size[i]?.toFixed(2)} <span>cm</span></b></div>)}</div><div className="studio-export"><p>GLB zachowuje materiały i tekstury. Eksport GLB/STL uwzględnia widoczną skalę i obrót.</p><div className="studio-export-buttons"><button disabled={exporting||!!adjustmentError} onClick={()=>void download('glb')}>Pobierz GLB + tekstury</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('stl')}>Pobierz STL · mm</button>{sceneData && <button onClick={()=>saveJson('model-blender.froge.json',sceneData)}>Scena do dodatku Blender · JSON</button>}</div><p>JSON zachowuje części w źródłowej skali, przed zmianami wymiarów i obrotów. STL nie zawiera tekstur. Przed drukiem sprawdź siatkę i połącz przecinające się części.</p></div></>}
         <details className="ai-adjustments"><summary>Wymiary i kąty · opcjonalnie</summary><p>Zostaw puste, aby zachować proporcje. Domyślnie najdłuższy bok ma 10 cm. Jeden wymiar skaluje całość proporcjonalnie; kilka wymiarów może zmienić proporcje.</p><div className="ai-fields">{['Szerokość X', 'Wysokość Y', 'Głębokość Z'].map((label,i) => <label key={label}>{label} · cm<input type="number" min="0.1" max="1000" step="0.1" placeholder="Automatycznie" value={adjustments.dimensions[i]} onChange={e => field('dimensions', i, e.target.value)} /></label>)}</div><p>Kąty obrotu modelu (nie kąty konstrukcyjne). Wymiary powyżej dotyczą obiektu przed obrotem.</p><div className="ai-fields">{['X','Y','Z'].map((label,i) => <label key={label}>Obrót {label} · °<input type="number" min="-360" max="360" placeholder="0" value={adjustments.angles[i]} onChange={e => field('angles',i,e.target.value)} /></label>)}</div><button onClick={() => setAdjustments(defaults)}>Wyczyść ustawienia</button>{adjustmentError && <p role="alert" className="studio-error">{adjustmentError} Podgląd zachowuje ostatnią poprawną skalę.</p>}</details>
       </section>
     </div>

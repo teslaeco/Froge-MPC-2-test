@@ -1,54 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { BoxGeometry, Group, Mesh, MeshBasicMaterial } from 'three'
 import { ModelStudio } from '../components/ModelStudio'
 import worker from '../studio/server'
-import { followJob, type Job } from '../studio/generation'
 import { exportModel, modelSize, transformModel, EMPTY_ADJUSTMENTS } from '../studio/aiModel'
-
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); sessionStorage.clear() })
-const env = { ASSETS: { fetch: async () => new Response('asset') } }
-const request = (body: unknown, key = 'test-key') => new Request('https://studio.test/api/3d/tasks', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-meshy-key': key, Origin: 'https://studio.test' }, body: JSON.stringify(body) })
-
-describe('freeform 3D service boundary', () => {
-  it('sends an oak description verbatim to generation with no required dimensions', async () => {
-    const remote = vi.fn().mockResolvedValue(Response.json({ result: 'task-12345678' })); vi.stubGlobal('fetch', remote)
-    const result = await worker.fetch(request({ action: 'preview', prompt: 'A teraz zrób drzewo dąb' }), env)
-    expect(result.status).toBe(201)
-    expect(await result.json()).toEqual({ id: 'task-12345678' })
-    expect(JSON.parse(remote.mock.calls[0][1].body)).toMatchObject({ prompt: 'A teraz zrób drzewo dąb', mode: 'preview', target_formats: ['glb'] })
-    expect(remote.mock.calls[0][1].headers.Authorization).toBe('Bearer test-key')
-  })
-  it('reports missing key, invalid input and insufficient credits without a fake result', async () => {
-    const remote = vi.fn().mockResolvedValue(new Response('', { status: 402 })); vi.stubGlobal('fetch', remote)
-    expect((await worker.fetch(request({ action: 'preview', prompt: 'dąb' }, ''), env)).status).toBe(503)
-    expect((await worker.fetch(request({ action: 'preview', prompt: '' }), env)).status).toBe(400)
-    expect(remote).not.toHaveBeenCalled()
-    const result = await worker.fetch(request({ action: 'preview', prompt: 'dąb' }), env)
-    expect(result.status).toBe(402); expect(await result.json()).toMatchObject({ error: expect.stringContaining('kredytów') })
-  })
-  it('blocks foreign origins and arbitrary asset URLs', async () => {
-    const foreign = new Request('https://studio.test/api/3d/tasks', { method: 'POST', headers: { Origin: 'https://other.test' } })
-    expect((await worker.fetch(foreign, { ...env, MESHY_API_KEY: 'secret' })).status).toBe(403)
-    const remote = vi.fn().mockResolvedValue(Response.json({ status: 'SUCCEEDED', model_urls: { glb: 'https://evil.test/model.glb' } })); vi.stubGlobal('fetch', remote)
-    const result = await worker.fetch(new Request('https://studio.test/api/3d/tasks/task-12345678/model'), { ...env, MESHY_API_KEY: 'secret' })
-    expect(result.status).toBe(502); expect(remote).toHaveBeenCalledTimes(1)
-  })
-  it('runs preview then textures and remembers the new task before downloading', async () => {
-    const remote = vi.fn().mockResolvedValueOnce(Response.json({ id: 'preview-1234', status: 'SUCCEEDED', progress: 100, hasModel: true })).mockResolvedValueOnce(Response.json({ id: 'refine-5678' })).mockResolvedValueOnce(Response.json({ id: 'refine-5678', status: 'SUCCEEDED', progress: 100, hasModel: true }))
-    vi.stubGlobal('fetch', remote); const saved: Job[] = []
-    const result = await followJob({ id: 'preview-1234', prompt: 'dąb', stage: 'preview', textured: true }, 'key', new AbortController().signal, () => {}, job => saved.push(job))
-    expect(result).toMatchObject({ id: 'refine-5678', previewId: 'preview-1234', stage: 'refine' })
-    expect(saved.at(-1)).toEqual(result)
-    expect(JSON.parse(remote.mock.calls[1][1].body)).toEqual({ action: 'refine', id: 'preview-1234', prompt: 'dąb' })
-  })
-  it('never retries a texture POST with uncertain outcome', async () => {
-    const remote = vi.fn().mockResolvedValue(Response.json({ status: 'SUCCEEDED', progress: 100, hasModel: true })); vi.stubGlobal('fetch', remote)
-    await expect(followJob({ id: 'preview-1234', prompt: 'dąb', stage: 'preview', textured: true, textureRequestUncertain: true }, 'key', new AbortController().signal, () => {}, () => {})).rejects.toThrow('Brak potwierdzenia')
-    expect(remote).toHaveBeenCalledTimes(1)
-  })
-})
+import { sceneSchema,sceneModel,type ModelScene } from '../studio/scene'
+import { getAgentScene,requestAgentModel,applyAgentScene,invalidateAgentRequest } from '../studio/agentSceneStore'
+import { agentSceneTools } from '../studio/agentSceneTools'
+afterEach(()=>{cleanup();vi.unstubAllGlobals();invalidateAgentRequest()})
+const example:ModelScene={version:1,name:'Custom tetrahedron',description:'Arbitrary mesh',parts:[{name:'Part',vertices:[0,0,0, 1,0,0, 0,1,0, 0,0,1],triangles:[0,2,1,0,1,3,0,3,2,1,2,3],uv:[0,0,1,0,0,1,1,1],color:'#218a56',roughness:.6,metalness:0,pattern:'scales'}]}
 describe('optional dimensions and actual export', () => {
   it('preserves proportions by default and exports the adjusted geometry in millimetres', async () => {
     const source = new Group(); source.add(new Mesh(new BoxGeometry(2,4,2), new MeshBasicMaterial()))
@@ -62,15 +23,37 @@ describe('optional dimensions and actual export', () => {
     expect(Math.max(...y) - Math.min(...y)).toBeCloseTo(50)
     expect(() => transformModel(source, { ...EMPTY_ADJUSTMENTS, dimensions: ['', '-2', ''] })).toThrow()
   })
-  it('opens on freeform input with optional controls collapsed and clear connection setup', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json({ configured: false })))
-    render(<MemoryRouter><ModelStudio /></MemoryRouter>)
-    const summary = screen.getByText('Wymiary i kąty · opcjonalnie')
-    expect(summary.closest('details')?.open).toBe(false)
-    expect(screen.queryByRole('heading', { name: 'Rakieta kosmiczna' })).toBeNull()
-    fireEvent.change(screen.getByLabelText('Co mam stworzyć?'), { target: { value: 'A teraz zrób drzewo dąb' } })
-    fireEvent.click(screen.getByRole('button', { name: /Generuj model 3D/ }))
-    await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('podłącz konto Meshy'))
-    expect(screen.getByText(/Połączenie AI ·/).closest('details')?.open).toBe(true)
-  })
+})
+
+describe('Codex and Blender modeling',()=>{
+ it('accepts arbitrary geometry and rejects bad indices, UV and executable fields',()=>{
+  expect(sceneModel(example).children).toHaveLength(1)
+  expect(sceneSchema.safeParse({...example,code:'do something'}).success).toBe(false)
+  expect(sceneSchema.safeParse({...example,parts:[{...example.parts[0],triangles:[0,1,99]}]}).success).toBe(false)
+  expect(sceneSchema.safeParse({...example,parts:[{...example.parts[0],uv:[]}]}).success).toBe(false)
+ })
+ it('applies an agent model and refuses stale requests or results after manual import',async()=>{
+  requestAgentModel('Zrób drzewo dąb');const before=getAgentScene()
+  expect(await agentSceneTools.find(t=>t.name==='apply_3d_model_scene')!.execute({scene:example,expectedRevision:before.revision,requestId:before.request!.id})).toMatchObject({state:'PASS'})
+  expect(getAgentScene().scene?.name).toBe(example.name)
+  requestAgentModel('Teraz zrób smoka')
+  expect(applyAgentScene(example,before.revision,before.request!.id).state).toBe('CONFLICT')
+  const pending=getAgentScene();invalidateAgentRequest()
+  expect(applyAgentScene(example,pending.revision,pending.request!.id).state).toBe('CONFLICT')
+ })
+ it('does not call a paid provider and retires the former API',async()=>{
+  const remote=vi.fn();vi.stubGlobal('fetch',remote)
+  const result=await worker.fetch(new Request('https://studio.test/api/3d/tasks',{method:'POST'}),{ASSETS:{fetch:async()=>new Response('asset')}})
+  expect(result.status).toBe(410);expect(remote).not.toHaveBeenCalled()
+ })
+ it('keeps dimensions optional and queues a request without claiming generation',()=>{
+  const remote=vi.fn();vi.stubGlobal('fetch',remote)
+  render(<MemoryRouter><ModelStudio/></MemoryRouter>)
+  expect(screen.getByText('Wymiary i kąty · opcjonalnie').closest('details')?.open).toBe(false)
+  expect(screen.queryByLabelText('Klucz API Meshy')).toBeNull()
+  expect(screen.getByRole('link',{name:/Pobierz dodatek do Blendera/}).getAttribute('href')).toBe('/downloads/froge-blender-addon.zip')
+  fireEvent.change(screen.getByLabelText('Co mam stworzyć?'),{target:{value:'Zrób smoka'}})
+  fireEvent.click(screen.getByRole('button',{name:/Przygotuj polecenie dla agenta/}))
+  expect(getAgentScene().status).toBe('waiting');expect(getAgentScene().scene).toBeNull();expect(remote).not.toHaveBeenCalled()
+ })
 })

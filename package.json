@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build && vite build --ssr src/studio/server.ts && node scripts/prepare-worker.mjs",
+    "build": "python3 scripts/package-blender.py && tsc -b && vite build && vite build --ssr src/studio/server.ts && node scripts/prepare-worker.mjs",
     "lint": "oxlint",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",

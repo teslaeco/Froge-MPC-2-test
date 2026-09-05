@@ -1,26 +1,38 @@
-# Studio 3D z dowolnego opisu
+# Codex + Blender — Studio 3D
 
-Domyślny tryb strony głównej wysyła pełny opis do Meshy, zamiast przepuszczać go przez parser czterech brył. Nie ma listy dozwolonych nazw obiektów. Generator może przyjąć np. „A teraz zrób drzewo dąb”; jakość i zgodność wyniku zależą od Meshy. Nie jest to CAD ani gwarancja wykonania każdego pomysłu.
+## Co działa w kodzie
 
-## Podłączenie i użycie
+- Wycofano integrację Meshy, formularz klucza, płatne żądania i kolejkę dostawcy. Dotychczasowe adresy `/api/3d/` zwracają 410 bez połączeń z dostawcą.
+- Strona przyjmuje GLB i własny format Froge JSON z dowolną geometrią: wierzchołki, trójkąty, UV, materiały i proceduralne tekstury. Nie rozpoznaje nazw obiektów przez wybór czterech presetów. Nie uruchamia jednak samodzielnie LLM ani tej rozmowy.
+- Agent WebMCP odczytuje polecenie przez `get_3d_modeling_request`, sprawdza format przez `get_3d_scene_schema` i dostarcza wynik przez `apply_3d_model_scene`. Wymagane requestId i revision odrzucają wyniki dla starszych poleceń. Ręczny import unieważnia wcześniejsze żądanie.
+- Osobna zakładka zachowuje lokalny edytor brył parametrycznych.
+- Dodatek do Blendera można pobrać z `/downloads/froge-blender-addon.zip`; instrukcję z `/downloads/BLENDER-INSTRUKCJA.txt`. Paczka jest odtwarzana ze źródeł podczas budowania.
 
-1. Otwórz „Połączenie AI”, podaj własny klucz API Meshy i sprawdź połączenie. Klucz jest trzymany w pamięci karty, nie w localStorage, sessionStorage, repozytorium ani eksporcie. Może być też skonfigurowany jako sekret serwera `MESHY_API_KEY` przez administratora strony. Nie wklejaj go do rozmowy.
-2. Wpisz lub podyktuj opis (do 800 znaków). Żaden wymiar ani kąt nie jest wymagany. Kliknięcie „Generuj model 3D” wysyła zadanie korzystające z kredytów API Meshy. W tym trybie pisanie nie uruchamia automatycznych płatnych żądań.
-3. Aplikacja tworzy geometrię przez Meshy-6, następnie opcjonalnie nakłada tekstury PBR 2K. Wyświetla postęp bieżącego etapu zwracany przez API. To asynchroniczne generowanie, nie rozmowa Realtime/Astra ani edycja geometrii podczas mówienia. Kolejny opis tworzy nowy model, nie edytuje semantycznie poprzedniego.
-4. „Wstrzymaj śledzenie” zatrzymuje oczekiwanie w przeglądarce, nie usuwa ani nie anuluje zadania Meshy. Identyfikator, opis i etap są zapisywane w sessionStorage na czas karty. „Sprawdź zapisane zadanie” wznawia odczyt bez ponownego tworzenia geometrii. Niepewnego żądania tekstur nie ponawiamy automatycznie. Po błędzie tekstur można osobno pobrać geometrię.
-5. Gotowy model można obrócić, skalować i pobrać jako GLB z materiałami lub STL w mm. Podgląd i eksport korzystają z tego samego obiektu Three.js. Pliki nie są przechowywane trwale przez stronę — pobierz je, zanim zasoby Meshy wygasną.
+## Blender i lokalne AI
 
-## Opcjonalne wymiary
+Dodatek jest przeznaczony dla Blendera 4.2+. Importuje scenę JSON do nowej kolekcji, nie kasuje istniejących obiektów. Tworzy siatki i mapy UV, pakuje tekstury do projektu, eksportuje wybraną kolekcję GLB. Pełen projekt zapisuje się standardowo przez File > Save As.
 
-Domyślnie najdłuższy bok ma 10 cm. Puste pola zachowują proporcje. Jeden wymiar ustawia skalę proporcjonalnie; kilka wymiarów pozwala zmienić proporcje. Wymiary są w cm, obrót w stopniach wokół osi X/Y/Z. Są to obroty całego obiektu, nie precyzyjne kąty konstrukcyjne. Gabaryty pod podglądem mierzone są po obrocie. GLB używa metrów, STL milimetrów. Dokładne wymiary zapisane jedynie w opisie nie są gwarantowane przez generator — do dokładnego skalowania użyj opcjonalnych pól.
+Opcjonalne projektowanie z opisu działa przez Ollama na tym samym komputerze. Dodatek odczytuje listę już zainstalowanych modeli; nie pobiera nic samodzielnie i odrzuca modele oznaczone jako chmurowe. Użytkownik wpisuje opis w dodatku albo wczytuje plik polecenia ze strony. Lokalny model zwraca strukturalny plan kompozycji sfer, prostopadłościanów, rur oraz własnych siatek. Biblioteka geometryczna zamienia go w zwalidowaną siatkę. Jest to modelowanie kompozycyjne, nie fotorealistyczna rekonstrukcja ani system CAD. Jakość dowolnego opisu zależy od użytego modelu. Ollama jest osobnym AI, nie Codexem.
 
-## Zaplecze i granice weryfikacji
+Żądanie do Ollama wykonuje wątek korzystający tylko z biblioteki standardowej Pythona. Wszystkie operacje Blender API wykonuje timer głównego wątku. AI nie może dostarczać kodu do wykonania. Przycisk odrzucenia wyniku nie gwarantuje zatrzymania obliczeń po stronie Ollama.
 
-Worker udostępnia tylko konkretne operacje Meshy pod `/api/3d/`. Klucz przekazuje wyłącznie do API Meshy, nie do adresu pliku. Pobiera GLB z dozwolonych hostów zasobów Meshy, odrzuca przekierowania oraz obce źródła żądań. Klucz nie jest logowany. Strona zachowuje dotychczasowy dostęp prywatny. Publikacja szerzej wymaga własnej polityki autoryzacji, limitów i rozliczania generacji. Limit podglądu: 64 MB i milion trójkątów; zewnętrzne zasoby GLB są odrzucane, Draco jest obsługiwane lokalnym dekoderem.
+**Nie ma bezpośredniego połączenia telefonu z desktopowym Blenderem ani stale działającego agenta.** Potrzebny jest komputer z Blenderem; przy lokalnym AI także z uruchomionym Ollama. Strona pozostaje podglądem i miejscem wymiany poleceń/plików. Agent z dostępem WebMCP może aktualizować stronę; zwykłe otwarcie jej nie dowodzi obecności agenta.
 
-Testy sprawdzają wysłanie opisu dębu bez wymiarów, etapy preview/refine, brak klucza, brak kredytów, niedozwolone źródła i adresy plików, nieponawianie niepewnych operacji, skalowanie, eksport STL oraz interfejs. Testy API korzystają z kontrolowanych odpowiedzi zastępczych. Nie przeprowadzono rzeczywistej płatnej generacji, ponieważ nie podłączono klucza konta. Mikrofon i renderowanie na telefonie nie były testowane na urządzeniu. Przed drukiem lub użyciem technicznym wymagana jest kontrola i ewentualna naprawa siatki.
+## Przykład: smok Codexa
 
-Dokumentacja integracji: [Meshy Text to 3D](https://docs.meshy.ai/en/api/text-to-3d), [uwierzytelnienie](https://docs.meshy.ai/en/api/authentication), [GLTFLoader](https://threejs.org/docs/pages/GLTFLoader.html), [GLTFExporter](https://threejs.org/docs/pages/GLTFExporter.html).
+Skrypt `scripts/create-dragon.py` tworzy autorski szkic orientalnego smoka: 94 edytowalne części, 36 960 trójkątów, łuskowany korpus, złoty brzuch, rogi, oczy, wąsy, cztery łapy i podstawka. To gotowy przykład utworzony programowo przez Codexa; nie jest wynikiem każdego nowo wpisanego polecenia ani wierną kopią konkretnej postaci. Przecinające się części wymagają scalenia i kontroli przed drukiem. `scripts/package-blender.py` odtwarza model i ZIP z kodu źródłowego, bez Blendera i sieci.
+
+## Wymiary, tekstury i eksport
+
+Wymiary i obroty są opcjonalne. Domyślnie najdłuższy bok ma 10 cm. Jeden podany wymiar skaluje proporcjonalnie, kilka może zmienić proporcje. Kąty obracają cały model; nie określają kątów konstrukcyjnych. GLB ma jednostki metrów, STL należy importować w mm. Eksportowany Froge JSON zachowuje źródłowe współrzędne w cm przed zmianami skali i obrotu. Blender konwertuje osie (x,y,z) → (x,-z,y) i cm → m.
+
+Tekstury są rzeczywistymi mapami 128×128 dla materiałów solid/scales/bark, bez płatnej usługi. Każda część ma UV. Geometria źródłowa i podgląd są wspólne z eksportem; GLB/STL zachowują transformację podglądu. Żaden wynik nie otrzymuje automatycznej gwarancji gotowości do produkcji.
+
+## Weryfikacja i ograniczenia
+
+Testy obejmują walidację siatek i indeksów, odrzucanie kodu i starych wyników, brak płatnych wywołań, opcjonalny panel wymiarów, skalę STL, dodatnią orientację siatek sfer/prostopadłościanów/rur, poprawność sceny smoka, składnię Pythona i paczkę ZIP. Wykonano podgląd kontrolny geometrii smoka. Próba instalacji Blender bpy nie powiodła się, więc **nie przeprowadzono testu dodatku we właściwym Blenderze ani rzeczywistego generowania przez Ollama**. Nie testowano mikrofonu na telefonie.
+
+Źródła interfejsów: [Blender Python API](https://docs.blender.org/api/current/), [Ollama structured outputs](https://docs.ollama.com/capabilities/structured-outputs), [Ollama chat API](https://docs.ollama.com/api/chat).
 
 ---
 

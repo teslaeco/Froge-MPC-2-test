@@ -1,0 +1,56 @@
+FROGE STUDIO — CODEX + BLENDER
+
+1. Model przygotowany przez Codexa (nie wymaga Ollama)
+- Otwórz studio i kliknij „Otwórz model smoka”.
+- Pobierz „Scena do dodatku Blender · JSON”.
+- Zainstaluj Blender 4.2 lub nowszy na komputerze.
+- Preferences > Add-ons > Install from Disk: wybierz froge-blender-addon.zip.
+- Włącz dodatek Froge Studio. W widoku 3D naciśnij N, zakładka Froge.
+- Kliknij „Wczytaj scene / polecenie JSON” i wybierz scenę.
+- Model powstanie w nowej kolekcji; istniejące obiekty nie są kasowane.
+- File > Save As zapisuje projekt .blend.
+- „Eksportuj ostatni model GLB” zapisuje geometrię z teksturami.
+
+2. Automatyczne projektowanie z opisu bez płatnego API
+- Opcjonalnie zainstaluj Ollama: https://ollama.com/download
+- Pobierz w Ollama model lokalny odpowiedni dla pamięci RAM/VRAM komputera.
+  Pobranie modelu wymaga internetu i może zajmować kilka GB. Dodatek nie
+  instaluje modeli samoczynnie ani nie korzysta z modeli chmurowych.
+- Ollama musi działać na tym samym komputerze (127.0.0.1:11434).
+- W dodatku kliknij „Sprawdz lokalne modele”; w razie potrzeby zmień nazwę.
+- Wpisz opis lub wczytaj plik polecenie-blender.json z naszej strony.
+- Kliknij „Generuj lokalnie”. Oczekuj wyniku, zwykle kilka minut zależnie
+  od sprzętu/modelu. Blender stosuje tylko zwalidowaną geometrię JSON.
+- Lokalny model nie jest Codexem. Projektuje kompozycje brył, rur i siatek.
+  Jakość nie jest gwarantowana. To nie odpowiednik fotorealistycznego
+  rekonstruktora tekst-na-3D ani automatyczny system CAD.
+
+3. Współpraca z Codexem
+- Na stronie wpisz opis, przygotuj polecenie i przekaż je agentowi.
+- Agent przeglądarki z WebMCP może użyć get_3d_modeling_request,
+  get_3d_scene_schema i apply_3d_model_scene.
+- Sam przycisk strony nie uruchamia czatu ani agenta.
+- Gdy agent nie ma dostępu do strony, poproś w czacie o plik GLB albo
+  Froge JSON i wczytaj go przez „Wczytaj GLB lub scenę JSON”.
+- Nie ma bezpośredniego, stale działającego połączenia telefonu z Blenderem.
+
+Wymiary i tekstury
+- Wymiary/kąty na stronie są opcjonalne. Startowo najdłuższy bok ma 10 cm.
+- Froge JSON: współrzędne w cm, oś Y w górę. Blender: metry, Z w górę.
+- JSON zachowuje źródłową geometrię, bez późniejszych zmian skali/obrotu.
+- GLB/STL ze strony zachowują skalę i obrót podglądu; STL należy importować w mm.
+- Materiały mają własne tekstury 128x128: jednolite, łuski, kora.
+- Scena smoka ma oddzielne elementy i przecięcia. Przed drukiem trzeba
+  sprawdzić szczelność, połączyć części i dobrać grubości/podpory.
+
+Stan weryfikacji
+- Sprawdzono matematyczne tworzenie siatek, walidację danych, przekazywanie
+  poleceń, kod interfejsu i budowanie aplikacji.
+- W tym środowisku nie udało się uruchomić Blendera. Dodatku nie zweryfikowano
+  w jego rzeczywistym interfejsie ani z działającym modelem Ollama.
+- Dodatek nie wykonuje kodu zwróconego przez AI, nie wysyła danych do
+  płatnych generatorów i kontaktuje się tylko z lokalnym Ollama.
+
+Dokumentacja:
+https://docs.blender.org/api/current/
+https://docs.ollama.com/capabilities/structured-outputs
