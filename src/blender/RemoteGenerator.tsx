@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob } from './client'
 import './generator.css'
+import { OpenAISettings } from './OpenAISettings'
 
 export const oracleInstallCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ssh-key-2026-09-06.key" "$HOME/froge-oracle-connector.zip" opc@141.148.242.30:/home/opc/froge-oracle-connector.zip &&
 ssh -T -o IdentitiesOnly=yes -o ServerAliveInterval=30 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'mkdir -p "$HOME/froge-connector" && python3 -m zipfile -e "$HOME/froge-oracle-connector.zip" "$HOME/froge-connector" && bash "$HOME/froge-connector/install.sh"'`
@@ -107,12 +108,14 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
   }
   return <div className="remote-generator">
     <div className="blender-connection" role="status">
-      <strong>{connection === null ? 'Sprawdzam serwer…' : connection.ready ? 'AI + Blender gotowe' : connection.connected ? 'Serwer nie jest jeszcze gotowy' : 'Serwer niepołączony'}</strong>
+      <strong>{connection === null ? 'Sprawdzam serwer…' : connection.ready ? connection.provider === 'openai' ? 'OpenAI + Blender gotowe' : 'AI + Blender gotowe' : connection.connected ? 'Serwer nie jest jeszcze gotowy' : 'Serwer niepołączony'}</strong>
       <p>{connection?.detail || 'Odczytuję zapisane połączenie.'}</p>
       {connection?.model && <small>Model AI: {connection.model}</small>}
       <button onClick={() => setSetup(value => !value)} aria-expanded={setup}>{setup ? 'Zamknij ustawienia' : connection?.connected ? 'Ustawienia serwera' : 'Połącz serwer Blendera'}</button>
     </div>
-    {setup && <div className="blender-setup">
+    {setup && connection?.connected && <OpenAISettings connection={connection} busy={busy} onSaved={refreshConnection}/>}
+    {setup && <details className="blender-setup" open={!connection?.connected}>
+      <summary>{connection?.connected ? 'Zmień połączenie z Oracle' : 'Połącz Oracle'}</summary>
       <details><summary>Pierwsze połączenie z Oracle</summary>
         <ol><li><a href="/downloads/froge-oracle-connector.zip" download>Pobierz instalator Oracle</a>.</li><li>Prześlij ZIP w Oracle Cloud Shell przez Menu → Upload.</li><li>Wklej poniższe polecenie do Cloud Shell. Łączy się z Twoją obecną maszyną i instaluje lokalne AI oraz program obsługujący zlecenia.</li></ol>
         <pre tabIndex={0}>{oracleInstallCommand}</pre>
@@ -125,13 +128,13 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       <button disabled={connecting || !endpoint.trim() || !code.trim()} onClick={() => void connect()}>{connecting ? 'Łączę…' : 'Zapisz połączenie'}</button>
       <p>Wklej kod wyświetlony przez instalator. Klucz SSH pozostaje w Oracle Cloud Shell.</p>
       <p>Połączenie korzysta z tunelu testowego. Po jego restarcie adres może się zmienić.</p>
-    </div>}
+    </details>}
     <button className="studio-primary" disabled={busy || !connection?.ready || !prompt.trim()} onClick={() => void generate()}>{busy ? 'Generowanie w toku…' : 'Generuj model 3D'}</button>
-    <p className="studio-helper">Lokalne AI tworzy instrukcje, a Twój Blender buduje nową geometrię i materiały. Na serwerze z dwoma rdzeniami może to potrwać kilka minut. Jakość zależy od opisu i modelu AI.</p>
+    <p className="studio-helper">{connection?.provider === 'openai' ? 'OpenAI Astra tworzy instrukcje, a Blender buduje geometrię i materiały. Po zakończeniu zobaczysz zmierzony czas obu etapów.' : 'Instrukcje tworzy lokalny Qwen na Oracle. Możesz podłączyć OpenAI w ustawieniach serwera. Blender zapisuje gotowy model z materiałami.'}</p>
     {active && <div className={'generation-job state-' + active.state} role="status">
       <strong>{active.state === 'succeeded' ? displayed ? 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
       <p className="generation-prompt">{active.prompt}</p><p>{active.detail === 'timed out' ? 'AI nie odpowiedziało w limicie czasu. Model nie został zapisany.' : active.detail}</p>
-      {active.state === 'failed' && <button disabled={busy || !connection?.ready} onClick={() => void generate(active.prompt)}>Ponów ten opis</button>}
+      {['failed', 'cancelled'].includes(active.state) && <button disabled={busy || !connection?.ready} onClick={() => void generate(active.prompt)}>Ponów ten opis</button>}
       {!finished(active) && <button onClick={() => void cancel()}>Anuluj zlecenie</button>}
       {active.state === 'succeeded' && !displayed && <button onClick={() => void openModel(active)}>Wczytaj wynik do podglądu</button>}
     </div>}

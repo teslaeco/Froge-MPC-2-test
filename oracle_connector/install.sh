@@ -15,6 +15,7 @@ if ! podman image exists localhost/froge-blender:local; then
   echo "Brak zainstalowanego obrazu Blendera. Najpierw zakoncz instalacje Blendera."
   exit 1
 fi
+python3 "$base/runtime_check.py"
 mkdir -p "$base/state" "$base/ollama" "$base/bin" "$HOME/.config/systemd/user"
 chmod 700 "$base/state"
 if [ ! -x "$base/ollama/bin/ollama" ]; then

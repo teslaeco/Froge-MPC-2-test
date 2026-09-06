@@ -7,9 +7,10 @@ import sqlite3
 import subprocess
 import time
 import urllib.request
+from runtime_check import RuntimeUnavailable, setup_runtime
 
-FILES = ('code_policy.py', 'ai_stream.py', 'server.py', 'runtime/run.py')
-EXPECTED_VERSION = 3
+FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py')
+EXPECTED_VERSION = 4
 
 
 def replace(path, data):
@@ -38,6 +39,10 @@ def update(source, target):
         busy = db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]
         if busy:
             raise RuntimeError('Zlecenie jest jeszcze aktywne. Poczekaj na wynik lub anuluj je na stronie, potem ponow aktualizacje.')
+        try:
+            setup_runtime()
+        except RuntimeUnavailable as error:
+            raise RuntimeError('Kontener Blendera nadal nie startuje. Nie zmieniono programu. Pokaz ten komunikat: ' + error.detail) from None
         subprocess.run(command + ['stop', 'froge-worker.service'], check=True, timeout=30)
     try:
         backup = state / 'code-backups' / str(time.time_ns())
@@ -56,7 +61,7 @@ def update(source, target):
                 with urllib.request.urlopen(request, timeout=2) as response:
                     if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
                         print('FROGE_UPDATE_OK')
-                        print('Polaczenie i pobrane modele zachowane. Odswiez Froge i wybierz: Ponow ten opis.')
+                        print('Odswiez Froge. W Ustawieniach serwera wybierz OpenAI i podlacz klucz API, potem ponow opis.')
                         return
             except (OSError, ValueError):
                 pass

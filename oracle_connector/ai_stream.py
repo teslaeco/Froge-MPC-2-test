@@ -3,30 +3,58 @@ import json
 import os
 import selectors
 import subprocess
+import tempfile
 import time
+from contextlib import ExitStack
 
 
-def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, validate_chunk=None):
+class OpenAIServiceError(RuntimeError):
+    """A sanitized provider failure, never raw upstream response text."""
+
+
+def openai_error(code):
+    if code in (401, 'invalid_api_key'):
+        return 'OpenAI odrzucilo klucz API. Sprawdz klucz w ustawieniach.'
+    if code in (403, 404, 'model_not_found', 'permission_denied'):
+        return 'Klucz OpenAI nie ma dostepu do modelu gpt-6-astra.'
+    if code in (429, 'insufficient_quota', 'rate_limit_exceeded'):
+        return 'OpenAI API: limit zapytan lub brak dostepnych srodkow. Sprawdz limity i rozliczenia API.'
+    return 'OpenAI API nie zakonczylo zadania. Sprawdz dostep do modelu i limity API.'
+
+
+def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, validate_chunk=None,
+                response_protocol='ollama', api_key=None, usage_callback=None):
     """Curl owns the socket; the worker can cancel even before HTTP headers arrive.
 
     There is deliberately no short inactivity timeout: loading/prefill on CPU may
     be silent. The entire request, including silent waits, has a fixed deadline.
     No prompts are placed in command-line arguments or diagnostic output.
     """
+    is_openai = response_protocol == 'responses'
+    timeout_message = ('OpenAI przekroczylo limit 3 minut na instrukcje. Model nie zostal zapisany.'
+                       if is_openai else 'AI przekroczylo laczny limit 30 minut. Model nie zostal zapisany.')
     if cancelled.is_set():
         raise InterruptedError('Zlecenie anulowane.')
     if timeout <= 0:
-        raise TimeoutError('AI przekroczylo laczny limit 30 minut. Model nie zostal zapisany.')
+        raise TimeoutError(timeout_message)
     started = time.monotonic()
     last_data = started
     next_progress = started
-    command = ['curl', '--silent', '--show-error', '--no-buffer', '--fail-with-body',
+    command = ['curl', '-q', '--silent', '--show-error', '--no-buffer', '--fail-with-body',
                '--noproxy', '*', '--connect-timeout', str(min(15, timeout)),
                '--max-time', str(timeout), '--header', 'Content-Type: application/json',
                '--data-binary', '@-', url]
     # Supply stdin from a temporary file, avoiding a blocking write to a full pipe.
-    import tempfile
-    with tempfile.TemporaryFile() as request_body:
+    with ExitStack() as stack:
+        request_body = stack.enter_context(tempfile.TemporaryFile())
+        if api_key:
+            # Keep the credential out of process arguments, logs and generated code.
+            headers = stack.enter_context(tempfile.NamedTemporaryFile(mode='w+', encoding='utf-8'))
+            headers.write('Authorization: Bearer ' + api_key + '\n')
+            headers.flush()
+            command[2:2] = ['--header', '@' + headers.name]
+        if is_openai:
+            command[2:2] = ['--write-out', '\nFROGE_HTTP_STATUS:%{http_code}\n']
         request_body.write(json.dumps(payload).encode())
         request_body.seek(0)
         process = subprocess.Popen(command, stdin=request_body, stdout=subprocess.PIPE,
@@ -39,13 +67,14 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
         pieces = []
         characters = size = 0
         completed = False
+        http_status = 0
         try:
             while selector.get_map():
                 now = time.monotonic()
                 if cancelled.is_set():
                     raise InterruptedError('Zlecenie anulowane.')
                 if now - started >= timeout:
-                    raise TimeoutError('AI przekroczylo laczny limit 30 minut. Model nie zostal zapisany.')
+                    raise TimeoutError(timeout_message)
                 if now >= next_progress:
                     progress(characters, now - started, now - last_data)
                     next_progress = now + interval
@@ -65,10 +94,38 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
                             raise ValueError('Nieprawidlowa odpowiedz AI: zbyt duzy fragment.')
                         if not raw.strip():
                             continue
+                        if is_openai:
+                            if raw.startswith(b'FROGE_HTTP_STATUS:'):
+                                http_status = int(raw.split(b':', 1)[1])
+                                continue
+                            if not raw.startswith(b'data:'):
+                                continue
+                            raw = raw[5:].strip()
+                            if raw == b'[DONE]':
+                                continue
                         item = json.loads(raw)
-                        if item.get('error'):
-                            raise ValueError(str(item['error'])[:500])
-                        content = item.get('message', {}).get('content', '')
+                        if is_openai:
+                            event = item.get('type')
+                            response = item.get('response') or {}
+                            if event in ('error', 'response.failed'):
+                                failure = response.get('error') or item.get('error') or item
+                                raise OpenAIServiceError(openai_error(failure.get('code') if isinstance(failure, dict) else None))
+                            if event in ('response.refusal.delta', 'response.refusal.done'):
+                                raise OpenAIServiceError('OpenAI odmowilo przygotowania tych instrukcji.')
+                            if event == 'response.incomplete':
+                                raise ValueError('Skrypt AI zostal uciety. Uzyj krotszych funkcji i petli; zwroc kompletny model.')
+                            content = item.get('delta', '') if event == 'response.output_text.delta' else ''
+                            if event == 'response.completed':
+                                if response.get('status') != 'completed':
+                                    raise ValueError('OpenAI nie potwierdzilo kompletnej odpowiedzi.')
+                                completed = True
+                                if usage_callback:
+                                    usage = response.get('usage') or {}
+                                    usage_callback({k: v for k, v in usage.items() if k in ('input_tokens', 'output_tokens', 'total_tokens') and type(v) is int})
+                        else:
+                            if item.get('error'):
+                                raise ValueError(str(item['error'])[:500])
+                            content = item.get('message', {}).get('content', '')
                         if not isinstance(content, str):
                             raise ValueError('Nieprawidlowa odpowiedz AI.')
                         if content:
@@ -80,7 +137,7 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
                             raise ValueError('AI zwrocilo zbyt dlugi skrypt.')
                         if content and validate_chunk is not None:
                             validate_chunk(content)
-                        if item.get('done'):
+                        if not is_openai and item.get('done'):
                             if item.get('done_reason') == 'length':
                                 raise ValueError('Skrypt AI zostal uciety. Uprosc model i uzyj petli zamiast dlugich list.')
                             completed = True
@@ -90,12 +147,14 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
             try:
                 result = process.wait(timeout=remaining)
             except subprocess.TimeoutExpired:
-                raise TimeoutError('AI przekroczylo laczny limit 30 minut. Model nie zostal zapisany.') from None
+                raise TimeoutError(timeout_message) from None
             if cancelled.is_set():
                 raise InterruptedError('Zlecenie anulowane.')
             if result == 28:
                 raise TimeoutError('AI nie zakonczylo odpowiedzi w limicie czasu. Model nie zostal zapisany.')
             if result:
+                if is_openai:
+                    raise OpenAIServiceError(openai_error(http_status))
                 detail = stderr.decode('utf-8', errors='replace').strip()[-500:]
                 raise ConnectionError('Przerwane polaczenie z lokalnym AI. ' + detail)
             if not completed or not characters:

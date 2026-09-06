@@ -54,3 +54,27 @@ it('retries the saved description after refresh even when the input is empty', a
   expect(JSON.parse(request.body).prompt).toBe(original.prompt)
   expect(JSON.parse(request.body).id).not.toBe(original.id)
 })
+
+it('configures Astra through the owner API and clears the password field after saving', async () => {
+  let provider = 'ollama'
+  const apiKey = 'sk-fixture-' + 'a'.repeat(30)
+  const fetcher = vi.fn(async (url, _init) => {
+    const path = String(url)
+    if (path.endsWith('/ai')) { provider = 'openai'; return Response.json({ saved: true }) }
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, provider, connectorVersion: 4, model: provider === 'openai' ? 'gpt-6-astra' : 'qwen2.5-coder:7b' })
+    return Response.json({ jobs: [] })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<RemoteGenerator prompt="Dąb z lampkami" onStart={() => 1} onResult={vi.fn()}/>)
+  await screen.findByText('AI + Blender gotowe')
+  fireEvent.click(screen.getByRole('button', { name: 'Ustawienia serwera' }))
+  const input = screen.getByLabelText('Klucz API OpenAI')
+  expect(input).toHaveAttribute('type', 'password')
+  fireEvent.change(input, { target: { value: apiKey } })
+  fireEvent.click(screen.getByRole('button', { name: 'Podłącz OpenAI' }))
+  await screen.findByText('OpenAI + Blender gotowe')
+  expect(input).toHaveValue('')
+  const saved = fetcher.mock.calls.find(([url]) => String(url).endsWith('/ai'))!
+  expect(JSON.parse(saved[1].body)).toEqual({ provider: 'openai', apiKey })
+  expect(localStorage.length).toBe(0)
+})

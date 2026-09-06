@@ -91,8 +91,9 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       if (request.method === 'GET') {
         if (!connection) return reply({ connected: false, ready: false, detail: 'Połącz swój serwer, aby generować modele z opisu.' })
         try {
-          const state = await (await remote(connection.endpoint, token, '/v1/health')).json() as { ready: boolean; model: string; detail: string }
-          return reply({ connected: true, ready: state.ready === true, model: state.model, endpoint: connection.endpoint, detail: state.detail })
+          const state = await (await remote(connection.endpoint, token, '/v1/health')).json() as { ready: boolean; model: string; detail: string; provider?: string; connectorVersion?: number }
+          return reply({ connected: true, ready: state.ready === true, model: state.model, endpoint: connection.endpoint, detail: state.detail,
+            provider: state.provider === 'openai' ? 'openai' : 'ollama', connectorVersion: state.connectorVersion || 1 })
         } catch { return reply({ connected: true, ready: false, endpoint: connection.endpoint, detail: 'Brak łączności z serwerem. Jeśli tunel został uruchomiony ponownie, wpisz nowy adres i kod połączenia.' }) }
       }
       if (request.method === 'POST') {
@@ -107,6 +108,23 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
         return reply({ connected: true })
       }
       throw new ApiError('Niedozwolona metoda.', 405)
+    }
+    if (url.pathname === '/api/blender/ai') {
+      if (request.method !== 'POST') throw new ApiError('Niedozwolona metoda.', 405)
+      if (!connection) throw new ApiError('Najpierw połącz serwer Blendera.', 409)
+      const input = await jsonInput(request)
+      if (input.provider !== 'openai' && input.provider !== 'ollama') throw new ApiError('Wybierz dostawcę AI.')
+      if (input.apiKey !== undefined && (typeof input.apiKey !== 'string' || !/^sk-[A-Za-z0-9_-]{20,500}$/.test(input.apiKey))) throw new ApiError('Wklej pełny klucz API OpenAI zaczynający się od sk-.')
+      try {
+        // No credentials are returned, logged, or persisted in browser storage/D1.
+        // The existing paired worker stores this key outside the Blender container.
+        const response = await remote(connection.endpoint, token, '/v1/ai', { method: 'POST', body: JSON.stringify({ provider: input.provider, ...(input.provider === 'openai' && input.apiKey ? { apiKey: input.apiKey } : {}) }) })
+        await response.body?.cancel()
+      } catch (error) {
+        if (error instanceof ApiError && error.status === 404) throw new ApiError('Zainstaluj aktualizację froge-oracle-openai.zip na Oracle, a następnie podłącz OpenAI.', 409)
+        throw error
+      }
+      return reply({ saved: true })
     }
     if (url.pathname === '/api/blender/jobs') {
       if (request.method === 'GET') {

@@ -105,6 +105,18 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual(self.call('/v1/pair', {'client': 'owner-a'}, self.config['code'])[0], 401)
         self.assertNotIn(self.config['token'], json.dumps(self.call('/v1/health')))
 
+    def test_ai_configuration_requires_the_worker_credential_and_rejects_busy_jobs(self):
+        key = 'sk-fixture-' + 'a' * 30
+        with patch.object(server.openai_provider, 'verify_key', return_value=key) as verify:
+            self.assertEqual(self.call('/v1/ai', {'provider': 'openai', 'apiKey': key}, token='invalid')[0], 401)
+            verify.assert_not_called()
+            status, data = self.call('/v1/ai', {'provider': 'openai', 'apiKey': key})
+            self.assertEqual(status, 200)
+            self.assertEqual(data, {'saved': True})
+            self.assertNotIn(key, json.dumps(data))
+        self.call('/v1/jobs', {'id': JOB, 'prompt': 'Dab'})
+        self.assertEqual(self.call('/v1/ai', {'provider': 'ollama'})[0], 409)
+
     def test_queue_idempotency_cancellation_and_no_phantom_artifact(self):
         data = {'id': JOB, 'prompt': 'Duży dąb z liśćmi'}
         self.assertEqual(self.call('/v1/jobs', data)[0], 202)

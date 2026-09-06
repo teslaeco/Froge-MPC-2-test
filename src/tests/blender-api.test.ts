@@ -73,6 +73,26 @@ describe('private Blender request lifecycle with real SQLite', () => {
     expect((await request('jobs/' + id, 'GET', undefined, 'owner-b')).status).toBe(404)
     expect((await request('jobs/' + id + '/model', 'GET', undefined, 'owner-b')).status).toBe(404)
   })
+  it('sends OpenAI setup only to the paired worker and returns no API credential', async () => {
+    const apiKey = 'sk-fixture-' + 'a'.repeat(30)
+    expect((await request('ai', 'POST', { provider: 'openai', apiKey })).status).toBe(409)
+    await pair()
+    const upstream = vi.fn(async (_url, init) => {
+      expect(String(_url)).toBe(endpoint + '/v1/ai')
+      expect(init.redirect).toBe('manual')
+      expect(init.headers.Authorization).toBe('Bearer ' + token)
+      expect(JSON.parse(init.body)).toEqual({ provider: 'openai', apiKey })
+      return Response.json({ saved: true, apiKey })
+    })
+    vi.stubGlobal('fetch', upstream)
+    expect((await request('ai', 'POST', { provider: 'openai', apiKey }, 'owner-b')).status).toBe(409)
+    expect((await request('ai', 'POST', { provider: 'openai', apiKey }, 'owner-a', 'https://other.test')).status).toBe(403)
+    const response = await request('ai', 'POST', { provider: 'openai', apiKey })
+    expect(await response.json()).toEqual({ saved: true })
+    expect(upstream).toHaveBeenCalledTimes(1)
+    expect(JSON.stringify(db.prepare('SELECT * FROM blender_connections').all())).not.toContain(apiKey)
+    expect((await request('ai', 'POST', { provider: 'openai', apiKey: apiKey + '\n' })).status).toBe(400)
+  })
   it.each([301, 302, 303, 307, 308])('refuses HTTP %i during pairing without forwarding the code or storing a credential', async status => {
     const upstream = vi.fn(async (_url, init) => {
       expect(init.redirect).toBe('manual')

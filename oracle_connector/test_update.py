@@ -17,6 +17,8 @@ class UpdateTests(unittest.TestCase):
         self.source.mkdir(); (self.target / 'state').mkdir(parents=True)
         (self.source / 'server.py').write_text('version = 2\n')
         (self.source / 'ai_stream.py').write_text('updated = True\n')
+        (self.source / 'openai_provider.py').write_text('model = "gpt-6-astra"\n')
+        (self.source / 'runtime_check.py').write_text('cpu_limit = 2\n')
         (self.source / 'code_policy.py').write_text('policy = "strict-with-early-check"\n')
         (self.target / 'code_policy.py').write_text('policy = "strict"\n')
         (self.target / 'server.py').write_text('version = 1\n')
@@ -29,8 +31,11 @@ class UpdateTests(unittest.TestCase):
         self.original_config = self.config.read_bytes()
         with sqlite3.connect(self.target / 'state/jobs.sqlite') as db:
             db.execute('CREATE TABLE jobs(state TEXT)')
+        self.runtime_check = patch.object(apply_update, 'setup_runtime')
+        self.runtime_check.start()
 
     def tearDown(self):
+        self.runtime_check.stop()
         self.temp.cleanup()
 
     def test_update_preserves_pairing_and_keeps_backup(self):
@@ -61,8 +66,17 @@ class UpdateTests(unittest.TestCase):
                 apply_update.update(self.source, self.target)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 1\n')
         self.assertFalse((self.target / 'ai_stream.py').exists())
+        self.assertFalse((self.target / 'openai_provider.py').exists())
         self.assertEqual((self.target / 'code_policy.py').read_text(), 'policy = "strict"\n')
         self.assertEqual((self.target / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')
+        self.assertEqual(self.config.read_bytes(), self.original_config)
+
+    def test_runtime_failure_stops_update_before_replacing_code_or_stopping_worker(self):
+        with patch.object(apply_update, 'setup_runtime', side_effect=apply_update.RuntimeUnavailable('controller `cpu` is not available')), patch.object(apply_update.subprocess, 'run') as service:
+            with self.assertRaisesRegex(RuntimeError, 'Kontener Blendera'):
+                apply_update.update(self.source, self.target)
+            service.assert_not_called()
+        self.assertEqual((self.target / 'server.py').read_text(), 'version = 1\n')
         self.assertEqual(self.config.read_bytes(), self.original_config)
 
 

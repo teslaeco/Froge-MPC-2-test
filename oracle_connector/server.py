@@ -18,19 +18,22 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, repair_instruction, validate_code
 from ai_stream import stream_chat
+import openai_provider
+from ai_stream import OpenAIServiceError
+from runtime_check import IMAGE, sandbox_options, verify_runtime
 
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 3
+CONNECTOR_VERSION = 4
 OLLAMA = 'http://127.0.0.1:11434'
-IMAGE = 'localhost/froge-blender:local'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 LOCK = threading.RLock()
 WAKE = threading.Event()
 CANCEL = {}
+RUNNING = set()
 PAIR_ATTEMPTS = []
 SYSTEM = '''You are a Blender 4.3 procedural 3D artist. Return ONLY one complete Python script.
 Create a NEW detailed mesh that matches the user's exact description, not a generic example.
@@ -94,6 +97,12 @@ def ollama_json(path, payload=None, timeout=10):
         return json.loads(response.read(2 * 1024 * 1024))
 
 def health():
+    selected = ai_settings()
+    if selected.get('provider') == 'openai':
+        ready = bool(selected.get('api_key'))
+        return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
+                'detail': 'OpenAI Astra jest polaczone. Blender wykona model na Oracle.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
+                'connectorVersion': CONNECTOR_VERSION}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
@@ -101,11 +110,40 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION}
+        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION}
     except Exception:
-        return {'ready': False, 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION}
+        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION}
 
-def generate_code(messages, job_id, cancelled, deadline=None, attempt=1):
+def ai_settings():
+    path = STATE / 'ai-provider.json'
+    return json.loads(path.read_text()) if path.exists() else {'provider': 'ollama'}
+
+def ai_busy():
+    with database() as db:
+        return bool(RUNNING or db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0])
+
+def configure_ai(data):
+    provider = data.get('provider')
+    if provider not in ('openai', 'ollama'):
+        raise ValueError('Nieprawidlowy dostawca AI.')
+    with LOCK:
+        if ai_busy():
+            return False
+        selected = ai_settings()
+    if provider == 'openai':
+        # Model access is checked without sending a paid generation request.
+        supplied = data.get('apiKey') or selected.get('api_key')
+        selected['api_key'] = openai_provider.verify_key(supplied)
+    selected['provider'] = provider
+    with LOCK:
+        if ai_busy():
+            return False
+        write_json(STATE / 'ai-provider.json', selected)
+    return True
+
+def generate_code(messages, job_id, cancelled, deadline=None, attempt=1, selected=None):
+    selected = selected or ai_settings()
+    is_openai = selected.get('provider') == 'openai'
     payload = {'model': MODEL, 'messages': messages, 'stream': True, 'keep_alive': 0,
                'options': {'temperature': 0.2 if attempt == 1 else 0.1, 'num_ctx': 8192, 'num_predict': 5000, 'num_thread': 2}}
     def progress(characters, elapsed, silent):
@@ -114,33 +152,35 @@ def generate_code(messages, job_id, cancelled, deadline=None, attempt=1):
         if characters:
             detail = 'AI tworzy instrukcje: %d znakow. Ostatnie dane %d s temu.' % (characters, silent)
         else:
-            detail = 'AI laduje model lub analizuje opis; oczekiwanie na pierwsze instrukcje.'
+            detail = 'OpenAI Astra analizuje opis; oczekiwanie na instrukcje.' if is_openai else 'AI laduje model lub analizuje opis; oczekiwanie na pierwsze instrukcje.'
         status(job_id, 'generating', prefix + detail)
-    remaining = 1800 if deadline is None else deadline - time.monotonic()
+    remaining = (openai_provider.TIME_LIMIT if is_openai else 1800) if deadline is None else deadline - time.monotonic()
     guard = StreamPolicyGuard()
+    if is_openai:
+        def usage(record):
+            write_json(JOBS / job_id / ('ai-attempt-%d-usage.json' % attempt), {'model': openai_provider.MODEL, **record})
+        return extract_code(openai_provider.generate(messages, selected['api_key'], cancelled, progress,
+                                                     remaining, guard.feed, usage))
     return extract_code(stream_chat(OLLAMA + '/api/chat', payload, cancelled, progress, timeout=remaining, validate_chunk=guard.feed))
 
 def blender_command(job_id, folder):
-    return ['podman', 'run', '--rm', '--pull=never', '--name', 'froge-job-' + job_id,
-            '--network=none', '--read-only', '--cap-drop=ALL', '--security-opt=no-new-privileges',
-            '--userns=keep-id', '--memory=4g', '--memory-swap=4g', '--cpus=2', '--pids-limit=256',
-            '--tmpfs', '/tmp:rw,size=256m', '--shm-size=128m', '-e', 'HOME=/tmp',
+    return ['podman', 'run', '--rm', '--pull=never', '--name', 'froge-job-' + job_id] + sandbox_options() + [
             '-v', str(ROOT / 'runtime') + ':/runner:ro,Z', '-v', str(folder) + ':/work:rw,Z',
             IMAGE, '--background', '--factory-startup', '--threads', '2', '--python-exit-code', '1',
             '--python', '/runner/run.py']
 
-def run_blender(job_id, folder, cancelled):
+def run_blender(job_id, folder, cancelled, timeout=600):
     log_path = folder / 'blender.log'
     with log_path.open('wb') as log:
         process = subprocess.Popen(blender_command(job_id, folder), stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)
         started = time.monotonic()
         while process.poll() is None:
-            if cancelled.wait(1) or time.monotonic() - started > 600:
+            if cancelled.wait(1) or time.monotonic() - started > timeout:
                 subprocess.run(['podman', 'kill', 'froge-job-' + job_id], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
                 process.wait(timeout=20)
                 if cancelled.is_set():
                     raise InterruptedError('Zlecenie anulowane.')
-                raise TimeoutError('Blender przekroczyl limit 10 minut. Uprosc opis.')
+                raise TimeoutError('Blender przekroczyl limit %d minut. Uprosc opis.' % (timeout // 60))
         if process.returncode:
             tail = log_path.read_bytes()[-3500:].decode('utf-8', errors='replace')
             raise ValueError('Blender nie skonczyl modelu: ' + tail)
@@ -161,17 +201,31 @@ def worker():
             if not row:
                 continue
             job = dict(row)
+            RUNNING.add(job['id'])
             cancelled = CANCEL.setdefault(job['id'], threading.Event())
             db.execute("UPDATE jobs SET state='generating',detail='AI analizuje opis…' WHERE id=?", (job['id'],))
         folder = JOBS / job['id']
         folder.mkdir(mode=0o700, exist_ok=True)
         messages = [{'role': 'system', 'content': SYSTEM}, {'role': 'user', 'content': job['prompt']}]
         code = ''
-        deadline = time.monotonic() + 1800
+        started = time.monotonic()
+        ai_seconds = blender_seconds = 0
         try:
+            status(job['id'], 'generating', 'Sprawdzam, czy Blender moze uruchomic model…')
+            verify_runtime()
+            selected = ai_settings()
+            is_openai = selected.get('provider') == 'openai'
+            deadline = started + (openai_provider.TIME_LIMIT if is_openai else 1800)
+            if is_openai:
+                messages[0]['content'] += '\nKeep the script compact: target under 1800 output tokens. Use loops and supplied helpers for repeated details. Preserve the requested shape and materials.'
+            write_json(folder / 'provider.json', {'provider': selected.get('provider'), 'model': openai_provider.MODEL if is_openai else MODEL})
             for attempt in range(2):
                 try:
-                    code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1)
+                    phase_started = time.monotonic()
+                    try:
+                        code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1, selected)
+                    finally:
+                        ai_seconds += time.monotonic() - phase_started
                     draft = folder / ('attempt-%d.py' % (attempt + 1))
                     draft.write_text(code, encoding='utf-8')
                     os.chmod(draft, 0o600)
@@ -180,8 +234,14 @@ def worker():
                     if cancelled.is_set():
                         raise InterruptedError('Zlecenie anulowane.')
                     status(job['id'], 'building', 'Blender tworzy siatke, tekstury UV i plik GLB…')
-                    run_blender(job['id'], folder, cancelled)
-                    status(job['id'], 'succeeded', 'Nowy model gotowy. Zapisano geometrie i materialy w GLB.')
+                    phase_started = time.monotonic()
+                    try:
+                        run_blender(job['id'], folder, cancelled, timeout=180 if is_openai else 600)
+                    finally:
+                        blender_seconds += time.monotonic() - phase_started
+                    elapsed = time.monotonic() - started
+                    write_json(folder / 'timing.json', {'total_seconds': round(elapsed, 2), 'ai_seconds': round(ai_seconds, 2), 'blender_seconds': round(blender_seconds, 2)})
+                    status(job['id'], 'succeeded', 'Model gotowy w %.1f s. Instrukcje AI: %.1f s; Blender: %.1f s. Zapisano GLB z materialami.' % (elapsed, ai_seconds, blender_seconds))
                     break
                 except (ValueError, SyntaxError) as error:
                     if isinstance(error, CodePolicyError) and error.partial_code:
@@ -207,7 +267,9 @@ def worker():
                 detail = 'Brak odpowiedzi lokalnego AI. Sprawdz usluge Ollama i sprobuj ponownie.'
             status(job['id'], 'failed', detail[-600:])
         finally:
-            CANCEL.pop(job['id'], None)
+            with LOCK:
+                CANCEL.pop(job['id'], None)
+                RUNNING.discard(job['id'])
 
 class Handler(BaseHTTPRequestHandler):
     server_version = 'Froge/1'
@@ -273,6 +335,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({'error': 'Wymagane polaczenie z kontem Froge.'}, 401)
             if not write and self.path == '/v1/health':
                 return self.send_json(health())
+            if write and self.path == '/v1/ai':
+                if not configure_ai(self.input()):
+                    return self.send_json({'error': 'Anuluj aktywne zlecenie i poczekaj na zatrzymanie, zanim zmienisz AI.'}, 409)
+                return self.send_json({'saved': True})
             if write and self.path == '/v1/jobs':
                 data = self.input()
                 job_id, prompt = data.get('id'), data.get('prompt')
@@ -287,7 +353,7 @@ class Handler(BaseHTTPRequestHandler):
                     if db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]:
                         return self.send_json({'error': 'Serwer wykonuje poprzedni model. Poczekaj na wynik lub anuluj tamto zlecenie.'}, 409)
                     if not health()['ready']:
-                        return self.send_json({'error': 'Lokalne AI nie jest jeszcze gotowe. Poczekaj na zakonczenie pobierania modelu.'}, 409)
+                        return self.send_json({'error': 'Wybrane AI nie jest jeszcze gotowe. Sprawdz ustawienia.'}, 409)
                     if shutil.disk_usage(STATE).free < 2 * 1024**3:
                         return self.send_json({'error': 'Na serwerze zostalo mniej niz 2 GB wolnego miejsca.'}, 409)
                     if db.execute('SELECT COUNT(*) FROM jobs').fetchone()[0] >= 300:
@@ -329,6 +395,8 @@ class Handler(BaseHTTPRequestHandler):
             if action:
                 return self.send_json({'error': 'Nie znaleziono funkcji.'}, 404)
             return self.send_json(dict(row))
+        except OpenAIServiceError as error:
+            self.send_json({'error': str(error)}, 422)
         except (ValueError, TypeError, KeyError):
             self.send_json({'error': 'Nieprawidlowe dane zadania.'}, 400)
         except (BrokenPipeError, ConnectionResetError):

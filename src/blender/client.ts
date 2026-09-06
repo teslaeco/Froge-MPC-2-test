@@ -1,5 +1,5 @@
 export type GenerationJob = { id: string; prompt: string; state: string; detail: string; created: string; updated: string; hasModel: boolean }
-export type BlenderConnection = { connected: boolean; ready: boolean; endpoint?: string; model?: string; detail: string }
+export type BlenderConnection = { connected: boolean; ready: boolean; endpoint?: string; model?: string; detail: string; provider?: 'ollama' | 'openai'; connectorVersion?: number }
 export const finished = (job: GenerationJob) => ['succeeded', 'failed', 'cancelled'].includes(job.state)
 export async function blenderRequest<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch('/api/blender/' + path, options)
