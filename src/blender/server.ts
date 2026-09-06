@@ -56,7 +56,19 @@ async function unseal(value: string, owner: string, env: BlenderEnv) {
   return new TextDecoder().decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(data.iv), additionalData: new TextEncoder().encode(owner) }, await key(env), new Uint8Array(data.data)))
 }
 async function remote(endpoint: string, credential: string, path: string, options: RequestInit = {}) {
-  const response = await fetch(validateEndpoint(endpoint) + path, { ...options, redirect: 'error', signal: AbortSignal.timeout(25000), headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + credential } })
+  const target = validateEndpoint(endpoint) + path
+  let response: Response
+  try {
+    // Workers rejects redirect:"error" when constructing the request. Inspect
+    // redirects ourselves and never forward the credential to another address.
+    response = await fetch(target, { ...options, redirect: 'manual', signal: AbortSignal.timeout(25000), headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + credential } })
+  } catch {
+    throw new ApiError('Strona nie otrzymała odpowiedzi z serwera Oracle. Sprawdź, czy adres tunelu jest aktualny, i spróbuj ponownie.', 502)
+  }
+  if (response.status >= 300 && response.status < 400) {
+    await response.body?.cancel()
+    throw new ApiError('Serwer zwrócił przekierowanie. Wklej bezpośredni adres HTTPS podany przez instalator.', 502)
+  }
   if (!response.ok) {
     let message = 'Serwer jest niedostępny. Sprawdź połączenie w ustawieniach.'
     try { const data = JSON.parse(new TextDecoder().decode(await boundedBody(response.body, 8000))); if (typeof data.error === 'string') message = data.error.slice(0, 500) } catch { /* Do not echo HTML or secrets from upstream. */ }

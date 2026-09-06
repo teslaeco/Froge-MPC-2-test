@@ -73,6 +73,27 @@ describe('private Blender request lifecycle with real SQLite', () => {
     expect((await request('jobs/' + id, 'GET', undefined, 'owner-b')).status).toBe(404)
     expect((await request('jobs/' + id + '/model', 'GET', undefined, 'owner-b')).status).toBe(404)
   })
+  it.each([301, 302, 303, 307, 308])('refuses HTTP %i during pairing without forwarding the code or storing a credential', async status => {
+    const upstream = vi.fn(async (_url, init) => {
+      expect(init.redirect).toBe('manual')
+      return new Response(null, { status, headers: { Location: 'https://another-server.example/collect' } })
+    })
+    vi.stubGlobal('fetch', upstream)
+    const response = await request('connection', 'POST', { endpoint, code: 'a'.repeat(32) })
+    expect(response.status).toBe(502)
+    expect((await response.json()).error).toContain('przekierowanie')
+    expect(upstream).toHaveBeenCalledTimes(1)
+    expect(db.prepare('SELECT COUNT(*) AS total FROM blender_connections').get()!.total).toBe(0)
+  })
+  it('reports a transport error without exposing a credential or pretending pairing succeeded', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new TypeError('transport error: ' + token) }))
+    const response = await request('connection', 'POST', { endpoint, code: 'a'.repeat(32) })
+    expect(response.status).toBe(502)
+    const data = await response.json()
+    expect(data.error).toContain('Oracle')
+    expect(JSON.stringify(data)).not.toContain(token)
+    expect(db.prepare('SELECT COUNT(*) AS total FROM blender_connections').get()!.total).toBe(0)
+  })
   it('submits an exact prompt once and persists the returned GLB for the same owner', async () => {
     await pair(); expect((await submit()).status).toBe(202)
     const remote = vi.mocked(fetch)
