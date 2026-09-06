@@ -1,7 +1,54 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { RemoteGenerator } from '../blender/RemoteGenerator'
-afterEach(() => { cleanup(); vi.unstubAllGlobals() })
+import { blenderRequest } from '../blender/client'
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers() })
+
+it('recovers the same job after a lost mobile connection without starting another generation', async () => {
+  const job = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb z 20 lampkami', state: 'generating', detail: 'AI projektuje scenę: 205 znaków. Ostatnie dane 0 s temu.', hasModel: false }
+  let reachable = false
+  const onResult = vi.fn(async () => true)
+  const fetcher = vi.fn(async (url, _init) => {
+    const path = String(url)
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, provider: 'ollama', connectorVersion: 6 })
+    if (path.endsWith('/jobs')) return Response.json({ jobs: [job] })
+    if (!reachable) throw new TypeError('Failed to fetch')
+    if (path.endsWith('/model')) return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'model/gltf-binary' } })
+    return Response.json({ job: { ...job, state: 'succeeded', detail: 'Model gotowy', hasModel: true } })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<RemoteGenerator prompt={job.prompt} onStart={() => 8} onResult={onResult}/>)
+  await screen.findByText('Postęp chwilowo niedostępny')
+  expect(screen.getByText(job.detail).closest('details')).not.toHaveAttribute('open')
+  expect(screen.queryByText('Failed to fetch')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Podłącz Astrę' })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'Generowanie w toku…' })).toBeDisabled()
+  reachable = true
+  fireEvent(window, new Event('online'))
+  await screen.findByText('Nowy model w podglądzie')
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  expect(onResult).toHaveBeenCalledExactlyOnceWith(expect.anything(), expect.objectContaining({ id: job.id, state: 'succeeded' }), 8)
+  expect(fetcher.mock.calls.every(([, init]) => !init?.method || init.method === 'GET')).toBe(true)
+})
+
+it('ends a stalled request so that status recovery can continue', async () => {
+  vi.useFakeTimers()
+  vi.stubGlobal('fetch', vi.fn((_url, options) => new Promise((_resolve, reject) => {
+    options.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')))
+  })))
+  const request = blenderRequest('connection')
+  const rejected = expect(request).rejects.toMatchObject({ retryable: true, message: 'Nie otrzymałem odpowiedzi na czas. Sprawdź połączenie z internetem.' })
+  await vi.advanceTimersByTimeAsync(60000)
+  await rejected
+})
+
+it('asks for sign-in after an expired session instead of continually treating it as generation progress', async () => {
+  const job = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb', state: 'generating', detail: '', hasModel: false }
+  vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: true, ready: true, connectorVersion: 6 } : String(url).endsWith('/jobs') ? { jobs: [job] } : { error: 'Authentication required' }, { status: String(url).endsWith(job.id) ? 401 : 200 })))
+  render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)
+  await screen.findByRole('button', { name: 'Odśwież i zaloguj się' })
+  expect(screen.queryByText('Ponawiam odczyt tego samego zlecenia.')).not.toBeInTheDocument()
+})
 
 it('does not re-execute an incompatible geometry script or generate on the old worker', async () => {
   const job = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb', state: 'failed', detail: '/work/generate.py cannot unpack non-iterable Object object', hasModel: false }

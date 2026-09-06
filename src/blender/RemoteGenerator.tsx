@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob } from './client'
+import { BlenderRequestError, blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob } from './client'
 import './generator.css'
 import { OpenAISettings, SceneContractUpdate } from './OpenAISettings'
 
@@ -12,10 +12,12 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
   const [endpoint, setEndpoint] = useState(''), [code, setCode] = useState('')
   const [connecting, setConnecting] = useState(false), [submitting, setSubmitting] = useState(false)
   const [setup, setSetup] = useState(false), [error, setError] = useState(''), [copyNote, setCopyNote] = useState('')
+  const [connectionError, setConnectionError] = useState(''), [jobError, setJobError] = useState<Error | null>(null)
   const [active, setActive] = useState<GenerationJob | null>(null), [recent, setRecent] = useState<GenerationJob[]>([])
   const [displayed, setDisplayed] = useState(false)
   const callbacks = useRef({ onStart, onResult }); callbacks.current = { onStart, onResult }
   const revision = useRef(0), serial = useRef(0), loaded = useRef(''), mounted = useRef(true)
+  const retryPoll = useRef<() => void>(() => {})
   const busy = submitting || (!!active && !finished(active))
   const currentWorker = (connection?.connectorVersion || 1) >= 6
   const canGenerate = !!connection?.ready && currentWorker
@@ -23,14 +25,17 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
   async function refreshConnection() {
     try {
       const result = await blenderRequest<BlenderConnection>('connection')
-      if (mounted.current) setConnection(result)
-    } catch (e) { if (mounted.current) setError((e as Error).message) }
+      if (mounted.current) {
+        setConnection(previous => result.connected && previous?.connected && result.endpoint === previous.endpoint ? { ...previous, ...result } : result)
+        setConnectionError('')
+      }
+    } catch (e) { if (mounted.current) setConnectionError((e as Error).message) }
   }
   function selectJob(job: GenerationJob) {
     serial.current++
     revision.current = callbacks.current.onStart()
     loaded.current = ''
-    setDisplayed(false); setError(''); setActive(job)
+    setDisplayed(false); setError(''); setJobError(null); setActive(job)
   }
   useEffect(() => {
     mounted.current = true
@@ -45,31 +50,50 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
   }, [])
   useEffect(() => {
     if (!active) return
-    let stopped = false, timer: number | undefined
+    let stopped = false, inFlight = false, timer: number | undefined
+    const controller = new AbortController()
     const jobId = active.id, visualRevision = revision.current
     async function poll() {
+      if (stopped || inFlight) return
+      if (timer) window.clearTimeout(timer)
+      inFlight = true
+      let nextPoll: number | undefined
       try {
-        const { job } = await blenderRequest<{ job: GenerationJob }>('jobs/' + jobId)
+        const { job } = await blenderRequest<{ job: GenerationJob }>('jobs/' + jobId, { signal: controller.signal })
         if (stopped) return
         setActive(job)
         setRecent(items => [job, ...items.filter(item => item.id !== job.id)].slice(0, 10))
-        setError('')
         if (job.state === 'succeeded' && loaded.current !== jobId) {
-          const bytes = await generatedModel(jobId)
+          const bytes = await generatedModel(jobId, { signal: controller.signal })
           if (stopped) return
           const shown = await callbacks.current.onResult(bytes, job, visualRevision)
           if (stopped) return
           loaded.current = jobId; setDisplayed(shown)
         }
-        if (!finished(job)) timer = window.setTimeout(() => void poll(), 5000)
+        setJobError(null)
+        if (!finished(job)) nextPoll = 5000
       } catch (e) {
         if (stopped) return
-        setError((e as Error).message)
-        timer = window.setTimeout(() => void poll(), 10000)
+        setJobError(e as Error)
+        if (e instanceof BlenderRequestError && e.retryable) nextPoll = 10000
+      } finally {
+        inFlight = false
+        if (!stopped && nextPoll) timer = window.setTimeout(() => void poll(), nextPoll)
       }
     }
+    const retry = () => void poll()
+    const visible = () => { if (document.visibilityState === 'visible') retry() }
+    retryPoll.current = retry
+    window.addEventListener('online', retry)
+    document.addEventListener('visibilitychange', visible)
     void poll()
-    return () => { stopped = true; if (timer) window.clearTimeout(timer) }
+    return () => {
+      stopped = true; controller.abort()
+      if (timer) window.clearTimeout(timer)
+      window.removeEventListener('online', retry)
+      document.removeEventListener('visibilitychange', visible)
+      retryPoll.current = () => {}
+    }
   }, [active?.id])
 
   async function connect() {
@@ -90,7 +114,7 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       const { job } = await blenderRequest<{ job: GenerationJob }>('jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) })
       if (!mounted.current || serial.current !== requestSerial) return
       revision.current = nextRevision; loaded.current = ''
-      setDisplayed(false); setActive(job)
+      setDisplayed(false); setJobError(null); setActive(job)
       setRecent(items => [job, ...items].slice(0, 10))
     } catch (e) { if (mounted.current) setError((e as Error).message) } finally { if (mounted.current) setSubmitting(false) }
   }
@@ -114,7 +138,8 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       <p>{connection?.detail || 'Odczytuję zapisane połączenie.'}</p>
       {connection?.model && <small>Model AI: {connection.model}</small>}
       <button onClick={() => setSetup(value => !value)} aria-expanded={setup}>{setup ? 'Zamknij ustawienia' : connection?.connected ? 'Ustawienia serwera' : 'Połącz serwer Blendera'}</button>
-      {connection?.connected && connection.provider !== 'openai' && !setup && <button disabled={busy} onClick={() => setSetup(true)}>Podłącz Astrę</button>}
+      {connection?.connected && connection.provider !== 'openai' && !setup && <button onClick={() => setSetup(true)}>Podłącz Astrę</button>}
+      {connectionError && <p className="studio-error" role="alert">{connectionError}</p>}
     </div>
     {connection?.connected && !currentWorker && <SceneContractUpdate/>}
     {setup && connection?.connected && <OpenAISettings connection={connection} busy={busy} onSaved={refreshConnection}/>}
@@ -136,9 +161,12 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
     <button className="studio-primary" disabled={busy || !canGenerate || !prompt.trim()} onClick={() => void generate()}>{busy ? 'Generowanie w toku…' : 'Generuj model 3D'}</button>
     <p className="studio-helper">{connection?.provider === 'openai' ? 'Astra projektuje scenę. Po sprawdzeniu planu Blender tworzy geometrię i materiały. Wynik pokaże zmierzony czas obu etapów.' : 'Wybrany jest lokalny Qwen, który może działać wolno na tym serwerze. Przycisk „Podłącz Astrę” pozwala wybrać OpenAI API.'}</p>
     {active && <div className={'generation-job state-' + active.state} role="status">
-      <strong>{active.state === 'succeeded' ? displayed ? 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
+      <strong>{jobError && !finished(active) ? 'Postęp chwilowo niedostępny' : active.state === 'succeeded' ? displayed ? 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
       <p className="generation-prompt">{active.prompt}</p>
-      {active.state === 'failed' && active.detail.includes('/work/generate.py') ? <>
+      {jobError && !finished(active) ? <>
+        <p>Zlecenie może nadal działać na Oracle. Sprawdzam jego status.</p>
+        <details><summary>Ostatni odebrany status</summary><p>{active.detail}</p></details>
+      </> : active.state === 'failed' && active.detail.includes('/work/generate.py') ? <>
         <p>Wygenerowany skrypt zawiera błąd. Model nie został utworzony.</p>
         <details><summary>Szczegóły błędu</summary><p>{active.detail}</p></details>
         {currentWorker && active.detail.includes('RGBA') ? <>
@@ -149,6 +177,13 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       {['failed', 'cancelled'].includes(active.state) && <button disabled={busy || !canGenerate} onClick={() => void generate(active.prompt)}>Ponów ten opis</button>}
       {!finished(active) && <button onClick={() => void cancel()}>Anuluj zlecenie</button>}
       {active.state === 'succeeded' && !displayed && <button onClick={() => void openModel(active)}>Wczytaj wynik do podglądu</button>}
+      {jobError && <div className="studio-error" role="alert">
+        <p>{jobError.message}</p>
+        {jobError instanceof BlenderRequestError && jobError.retryable && <p>Ponawiam odczyt tego samego zlecenia.</p>}
+        {jobError instanceof BlenderRequestError && [401, 403].includes(jobError.status)
+          ? <button onClick={() => window.location.reload()}>Odśwież i zaloguj się</button>
+          : <button onClick={() => retryPoll.current()}>Sprawdź status teraz</button>}
+      </div>}
     </div>}
     {error && <p className="studio-error" role="alert">{error}</p>}
     {recent.filter(job => job.hasModel && job.id !== active?.id).length > 0 && <details className="generation-history"><summary>Poprzednie modele</summary>{recent.filter(job => job.hasModel && job.id !== active?.id).map(job => <button key={job.id} disabled={busy} onClick={() => selectJob(job)}>{job.prompt.slice(0, 100)}</button>)}</details>}

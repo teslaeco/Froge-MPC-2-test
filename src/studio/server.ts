@@ -7,7 +7,14 @@ export default {async fetch(request:Request,env:Environment):Promise<Response>{
  if(url.pathname.startsWith('/api/blender/'))return blenderApi(request,env)
  if(url.pathname.startsWith('/api/commerce/'))return commerceApi(request,env)
  if(url.pathname.startsWith('/api/3d/'))return Response.json({error:'Płatny generator został usunięty. Użyj Codexa lub dodatku Blender z lokalnym AI.'},{status:410,headers:{'Cache-Control':'no-store'}})
- const result=await env.ASSETS.fetch(request)
- if(result.status===404&&request.method==='GET'&&request.headers.get('accept')?.includes('text/html'))return env.ASSETS.fetch(new Request(new URL('/index.html',url),request))
+ let result=await env.ASSETS.fetch(request)
+ if(result.status===404&&request.method==='GET'&&request.headers.get('accept')?.includes('text/html'))result=await env.ASSETS.fetch(new Request(new URL('/index.html',url),request))
+ // The entry document must pick up the current hashed bundle after an update.
+ // Preserve caching for versioned JavaScript, images and downloadable models.
+ if(result.headers.get('content-type')?.includes('text/html')){
+  const headers=new Headers(result.headers)
+  headers.set('Cache-Control','private, no-store')
+  return new Response(result.body,{status:result.status,statusText:result.statusText,headers})
+ }
  return result
 }}
