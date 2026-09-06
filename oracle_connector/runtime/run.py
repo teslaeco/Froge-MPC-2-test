@@ -46,6 +46,8 @@ def make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0):
         pixels[:, :, :3] = np.clip(texture[:, :, None] * rgb, 0, 1)
         image = bpy.data.images.new(str(name)[:64] + '-UV', width=n, height=n, alpha=False)
         image.pixels.foreach_set(pixels.reshape(-1))
+        image.update()
+        image.file_format = 'PNG'
         image.pack()
         node = material.node_tree.nodes.new('ShaderNodeTexImage')
         node.image = image
@@ -144,7 +146,9 @@ def finish():
     for image in bpy.data.images:
         if image.size[0] > 1024 or image.size[1] > 1024:
             image.scale(min(image.size[0], 1024), min(image.size[1], 1024))
-        if image.has_data:
+        # Packing an unchanged generated image again can discard its packed PNG
+        # in Blender 4.3 when it has no external filepath. Preserve those bytes.
+        if image.has_data and (image.packed_file is None or image.is_dirty):
             image.pack()
     bpy.ops.wm.save_as_mainfile(filepath='/work/model.blend')
     bpy.ops.export_scene.gltf(filepath='/work/model.glb', export_format='GLB', export_image_format='AUTO', export_cameras=False, export_lights=False)

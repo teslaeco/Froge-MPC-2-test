@@ -16,7 +16,7 @@ import time
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from code_policy import extract_code, validate_code
+from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, repair_instruction, validate_code
 from ai_stream import stream_chat
 
 ROOT = Path(__file__).resolve().parent
@@ -24,6 +24,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
+CONNECTOR_VERSION = 3
 OLLAMA = 'http://127.0.0.1:11434'
 IMAGE = 'localhost/froge-blender:local'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
@@ -39,10 +40,16 @@ and suitable colours. For a tree distinguish trunk, tapered curved branches, cro
 For other objects design their own shapes; there is no fixed list of allowed objects.
 Allowed imports: bpy, math, random, mathutils. Never access files, OS, network, wm, render,
 handlers, drivers or other applications. Do not export or save; the host does that afterward.
+NO INPUT FILES EXIST. Never use bpy.data.images.load or ANY .load(), .open(), .save(),
+file paths or external images. Every material MUST be created with make_material below.
+Do not create image-loading or texture-node boilerplate: make_material does it for you.
 Available helpers already in scope (do NOT import them):
 make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0) -> material.
   rgb is a 3-number tuple from 0 to 1. Patterns: plain, bark, wood, leaf, stone, fabric, metal.
   The helper creates a real packed 512px UV texture, which is included in the GLB.
+  Example: bark_material = make_material("bark", (0.27, 0.14, 0.06), "bark")
+  Example: leaf_material = make_material("leaves", (0.12, 0.36, 0.05), "leaf")
+  Pass the returned material to geometry helpers. Never redefine these helpers.
 mesh_object(name, vertices, faces, material) -> mesh object. vertices=[(x,y,z),...], faces=index tuples.
 tube(name, points, radii, material, sides=12) -> capped curved tapered tube. len(radii)=len(points).
 ellipsoid(name, center, scale, material, subdivisions=2) -> smooth mesh object.
@@ -94,13 +101,13 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'model': MODEL, 'detail': detail, 'connectorVersion': 2}
+        return {'ready': ready, 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION}
     except Exception:
-        return {'ready': False, 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': 2}
+        return {'ready': False, 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION}
 
 def generate_code(messages, job_id, cancelled, deadline=None, attempt=1):
     payload = {'model': MODEL, 'messages': messages, 'stream': True, 'keep_alive': 0,
-               'options': {'temperature': 0.35, 'num_ctx': 8192, 'num_predict': 5000, 'num_thread': 2}}
+               'options': {'temperature': 0.2 if attempt == 1 else 0.1, 'num_ctx': 8192, 'num_predict': 5000, 'num_thread': 2}}
     def progress(characters, elapsed, silent):
         clock = '%d:%02d' % (int(elapsed) // 60, int(elapsed) % 60)
         prefix = 'Proba %d/2. Czas tej proby: %s. ' % (attempt, clock)
@@ -110,7 +117,8 @@ def generate_code(messages, job_id, cancelled, deadline=None, attempt=1):
             detail = 'AI laduje model lub analizuje opis; oczekiwanie na pierwsze instrukcje.'
         status(job_id, 'generating', prefix + detail)
     remaining = 1800 if deadline is None else deadline - time.monotonic()
-    return extract_code(stream_chat(OLLAMA + '/api/chat', payload, cancelled, progress, timeout=remaining))
+    guard = StreamPolicyGuard()
+    return extract_code(stream_chat(OLLAMA + '/api/chat', payload, cancelled, progress, timeout=remaining, validate_chunk=guard.feed))
 
 def blender_command(job_id, folder):
     return ['podman', 'run', '--rm', '--pull=never', '--name', 'froge-job-' + job_id,
@@ -164,6 +172,9 @@ def worker():
             for attempt in range(2):
                 try:
                     code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1)
+                    draft = folder / ('attempt-%d.py' % (attempt + 1))
+                    draft.write_text(code, encoding='utf-8')
+                    os.chmod(draft, 0o600)
                     validate_code(code)
                     (folder / 'generate.py').write_text(code, encoding='utf-8')
                     if cancelled.is_set():
@@ -173,12 +184,21 @@ def worker():
                     status(job['id'], 'succeeded', 'Nowy model gotowy. Zapisano geometrie i materialy w GLB.')
                     break
                 except (ValueError, SyntaxError) as error:
+                    if isinstance(error, CodePolicyError) and error.partial_code:
+                        draft = folder / ('attempt-%d.rejected.py' % (attempt + 1))
+                        draft.write_text(error.partial_code, encoding='utf-8')
+                        os.chmod(draft, 0o600)
+                    write_json(folder / ('attempt-%d-error.json' % (attempt + 1)), {'error': str(error)[-2500:]})
                     if attempt:
                         raise
                     status(job['id'], 'retrying', 'Pierwsza proba nie przeszla kontroli. AI poprawia instrukcje…')
-                    if code:
+                    if isinstance(error, CodePolicyError):
+                        # Start policy repair from the original request and safe examples,
+                        # not the rejected file-loading code that the model may imitate.
+                        messages = messages[:2]
+                    elif code:
                         messages.append({'role': 'assistant', 'content': code[-20000:]})
-                    messages.append({'role': 'user', 'content': 'Fix this error. Return a COMPLETE corrected script, not a patch. Keep the original requested object. Error: ' + str(error)[-2500:]})
+                    messages.append({'role': 'user', 'content': repair_instruction(error)})
         except InterruptedError:
             status(job['id'], 'cancelled', 'Zlecenie anulowane.')
         except Exception as error:

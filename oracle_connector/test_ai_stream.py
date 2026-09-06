@@ -7,6 +7,7 @@ import unittest
 import urllib.request
 
 from ai_stream import stream_chat
+from code_policy import CodePolicyError, StreamPolicyGuard
 
 
 class DelayedOllama(BaseHTTPRequestHandler):
@@ -79,6 +80,16 @@ class StreamTests(unittest.TestCase):
         self.http.events = [(0, {'message': {'content': 'import math\n'}})]
         with self.assertRaisesRegex(ValueError, 'kompletnego skryptu'):
             stream_chat(self.url, self.payload, threading.Event(), lambda *_: None, timeout=2)
+
+    def test_forbidden_load_stops_the_real_http_stream_before_the_rest_arrives(self):
+        self.http.delay = 0
+        self.http.events = [(0, {'message': {'content': 'bpy.data.images.load("missing.png")\n'}}),
+                            (0.8, {'done': True})]
+        started = time.monotonic()
+        with self.assertRaises(CodePolicyError):
+            stream_chat(self.url, self.payload, threading.Event(), lambda *_: None,
+                        timeout=2, validate_chunk=StreamPolicyGuard().feed)
+        self.assertLess(time.monotonic() - started, 0.5)
 
     def test_truncated_response_and_model_errors_are_explicit(self):
         self.http.delay = 0

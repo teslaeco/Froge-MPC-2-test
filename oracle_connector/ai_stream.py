@@ -6,7 +6,7 @@ import subprocess
 import time
 
 
-def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8):
+def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, validate_chunk=None):
     """Curl owns the socket; the worker can cancel even before HTTP headers arrive.
 
     There is deliberately no short inactivity timeout: loading/prefill on CPU may
@@ -78,6 +78,8 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8):
                             size += len(content.encode())
                         if size > 80000:
                             raise ValueError('AI zwrocilo zbyt dlugi skrypt.')
+                        if content and validate_chunk is not None:
+                            validate_chunk(content)
                         if item.get('done'):
                             if item.get('done_reason') == 'length':
                                 raise ValueError('Skrypt AI zostal uciety. Uprosc model i uzyj petli zamiast dlugich list.')

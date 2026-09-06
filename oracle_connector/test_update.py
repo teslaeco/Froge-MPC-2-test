@@ -17,7 +17,13 @@ class UpdateTests(unittest.TestCase):
         self.source.mkdir(); (self.target / 'state').mkdir(parents=True)
         (self.source / 'server.py').write_text('version = 2\n')
         (self.source / 'ai_stream.py').write_text('updated = True\n')
+        (self.source / 'code_policy.py').write_text('policy = "strict-with-early-check"\n')
+        (self.target / 'code_policy.py').write_text('policy = "strict"\n')
         (self.target / 'server.py').write_text('version = 1\n')
+        (self.source / 'runtime').mkdir()
+        (self.target / 'runtime').mkdir()
+        (self.source / 'runtime/run.py').write_text('preserve_packed_images = True\n')
+        (self.target / 'runtime/run.py').write_text('preserve_packed_images = False\n')
         self.config = self.target / 'state/config.json'
         self.config.write_text(json.dumps({'token': 'local-test-token', 'client': 'owner', 'code': 'unchanged'}))
         self.original_config = self.config.read_bytes()
@@ -28,12 +34,15 @@ class UpdateTests(unittest.TestCase):
         self.temp.cleanup()
 
     def test_update_preserves_pairing_and_keeps_backup(self):
-        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(b'{"connectorVersion":2}')):
+        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'connectorVersion': apply_update.EXPECTED_VERSION}).encode())):
             apply_update.update(self.source, self.target)
         self.assertEqual(self.config.read_bytes(), self.original_config)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 2\n')
+        self.assertEqual((self.target / 'code_policy.py').read_text(), 'policy = "strict-with-early-check"\n')
+        self.assertEqual((self.target / 'runtime/run.py').read_text(), 'preserve_packed_images = True\n')
         backups = list((self.target / 'state/code-backups').glob('*/server.py'))
         self.assertEqual(backups[0].read_text(), 'version = 1\n')
+        self.assertEqual((backups[0].parent / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')
         self.assertEqual([call.args[0][-1] for call in service.call_args_list], ['froge-worker.service'] * 2)
 
     def test_active_job_prevents_service_stop_and_code_replacement(self):
@@ -52,6 +61,8 @@ class UpdateTests(unittest.TestCase):
                 apply_update.update(self.source, self.target)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 1\n')
         self.assertFalse((self.target / 'ai_stream.py').exists())
+        self.assertEqual((self.target / 'code_policy.py').read_text(), 'policy = "strict"\n')
+        self.assertEqual((self.target / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')
         self.assertEqual(self.config.read_bytes(), self.original_config)
 
 

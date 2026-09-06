@@ -10,11 +10,49 @@ import urllib.error
 import urllib.request
 
 import server
-from code_policy import extract_code, validate_code
+from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, repair_instruction, validate_code
 
 JOB = '12345678-1234-4234-8234-123456789abc'
 
 class CodePolicyTests(unittest.TestCase):
+    def test_rejects_load_while_streaming_and_gives_a_safe_material_repair(self):
+        guard = StreamPolicyGuard()
+        guard.feed('import bpy\ntexture = bpy.data.images.lo')
+        with self.assertRaises(CodePolicyError) as failure:
+            guard.feed('ad("invented_bark.png")\n')
+        error = failure.exception
+        self.assertEqual(error.operation, 'load')
+        self.assertIn('invented_bark.png', error.partial_code)
+        guidance = repair_instruction(error)
+        self.assertIn('NO INPUT ASSET FILES EXIST', guidance)
+        self.assertIn('make_material', guidance)
+        self.assertIn('ORIGINAL requested object', guidance)
+
+    def test_early_check_ignores_strings_comments_and_partial_attribute_names(self):
+        guard = StreamPolicyGuard()
+        for fragment in ['# Never call .load()\n', 'label = ".load()"\n',
+                         '"""example: .load()\nstill just text"""\n',
+                         'obj.lo', 'ad_more()\n']:
+            guard.feed(fragment)
+        validate_code(extract_code(guard.text))
+
+    def test_complete_ast_check_still_rejects_file_access_and_hidden_operations(self):
+        for bad in ['bpy.data.images.load("file.png")', 'open("file.png")',
+                    'bpy.data.libraries.load("scene.blend")', 'import os',
+                    'f"{bpy.data.images.load(chr(120))}"']:
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                validate_code(bad)
+
+    def test_material_examples_are_valid_and_use_existing_helpers(self):
+        script = ('bark = make_material("oak_bark", (0.27, 0.14, 0.06), "bark")\n'
+                  'leaves = make_material("oak_leaves", (0.12, 0.36, 0.05), "leaf")\n'
+                  'tube("trunk", [(0,0,0), (0,0,2)], [0.2,0.1], bark)\n'
+                  'mesh_object("leaf", [(0,0,2), (0.3,0.1,2.1), (0.1,0.3,2)], [(0,1,2)], leaves)\n')
+        guard = StreamPolicyGuard()
+        for line in script.splitlines(True):
+            guard.feed(line)
+        self.assertEqual(validate_code(script), script)
+
     def test_accepts_modeling_and_rejects_files_network_and_introspection(self):
         code = 'import math\nm = make_material("bark", (0.3, 0.2, 0.1), "bark")\nfor n in range(5):\n    ellipsoid("leaf", (n, 0, 1), (1, 1, 1), m)'
         self.assertEqual(validate_code(extract_code('```python\n' + code + '\n```')), code)

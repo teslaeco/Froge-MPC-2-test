@@ -22,6 +22,15 @@ per attempt. The local request uses curl (installed by `install.sh`), with a tot
 live wait/progress messages and cancellation even before the first HTTP headers arrive.
 There is no 180-second inactivity cutoff during model loading or prompt evaluation.
 Incomplete streams are rejected, even if they contain syntactically valid partial code.
+Forbidden attribute operations such as `.load` are detected on complete code lines during
+streaming, with strings/comments ignored. The full AST policy still runs before every
+execution and the container boundary is unchanged. Materials use `make_material` and its
+packed procedural textures; no input image files are assumed to exist. Policy failures get
+an English repair instruction with valid helper examples and the original user request,
+without repeating rejected file-loading code. Drafts and rejection details are retained
+privately under the job directory for diagnosis, and rejected drafts are never executed.
+The renderer preserves unchanged packed texture bytes instead of packing them twice:
+repacking a generated image without an external filepath can discard its PNG in Blender 4.3.
 One active job is allowed.
 Quality and exact adherence depend on the local model. This is procedural AI modeling,
 not a pretrained image-to-3D or photogrammetry service. Textures are procedural packed UV images.
@@ -55,7 +64,11 @@ The Site requires a server-only `BLENDER_SETTINGS_KEY` runtime secret (32 random
 64 lowercase hex characters). Preserve it across deployments. It is never included in this ZIP.
 The local HTTP/SQLite, API and UI tests cover authorization, pairing, job identity, cancellation,
 artifact transfer and explicit failures. They do not validate actual Ollama output quality or
-execute Blender; verify the first real generated asset after installing on Oracle.
+execute Blender. The separate `verify_blender_runtime.py` smoke test runs the actual renderer
+with `bpy` 4.3 and a controlled two-mesh fixture, checks geometry and verifies two embedded
+PNG textures in the GLB. The test environment uses `bpy==4.3.0` and `numpy==1.26.4`.
+This checks the renderer, not AI quality or the ARM64 deployment; verify the first real
+generated asset after installing on Oracle.
 
 Status and logs:
 
@@ -67,10 +80,11 @@ sudo journalctl _SYSTEMD_USER_UNIT=froge-worker.service _SYSTEMD_USER_UNIT=froge
 For an existing installation, download `froge-oracle-update.zip` from the Site, upload it to
 Cloud Shell, copy it to the VM and extract it into a separate directory. Run its
 `apply_update.py` as `opc`. It checks that no job is active, backs up the replaced code,
-updates only `server.py` and `ai_stream.py`, restarts only `froge-worker.service`, and verifies
+updates `server.py`, `ai_stream.py`, `code_policy.py` and `runtime/run.py`, restarts only `froge-worker.service`, and verifies
 its authenticated health response. It preserves pairing, the tunnel, downloaded AI weights
 and all jobs. Failed startup restores the old code. After `FROGE_UPDATE_OK`, refresh the Site
 and use **Ponów ten opis** on the failed job to submit the same prompt as a new job.
+`froge-oracle-texture-fix.zip` is the explicitly named version-3 download for this update.
 
 To stop the services:
 

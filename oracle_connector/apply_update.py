@@ -8,10 +8,12 @@ import subprocess
 import time
 import urllib.request
 
-FILES = ('ai_stream.py', 'server.py')
+FILES = ('code_policy.py', 'ai_stream.py', 'server.py', 'runtime/run.py')
+EXPECTED_VERSION = 3
 
 
 def replace(path, data):
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     temporary = path.with_name(path.name + '.update-tmp')
     temporary.write_bytes(data)
     os.chmod(temporary, 0o600)
@@ -52,7 +54,7 @@ def update(source, target):
         for _ in range(20):
             try:
                 with urllib.request.urlopen(request, timeout=2) as response:
-                    if json.loads(response.read(10000)).get('connectorVersion') == 2:
+                    if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
                         print('FROGE_UPDATE_OK')
                         print('Polaczenie i pobrane modele zachowane. Odswiez Froge i wybierz: Ponow ten opis.')
                         return

@@ -14,7 +14,8 @@ with zipfile.ZipFile(root/'public/downloads/froge-oracle-connector.zip','w',zipf
         archive.writestr(info,(root/'oracle_connector'/name).read_bytes())
 print('Packaged Oracle connector')
 with zipfile.ZipFile(root/'public/downloads/froge-oracle-update.zip','w',zipfile.ZIP_DEFLATED) as archive:
-    for name in ['server.py', 'ai_stream.py', 'apply_update.py']:
+    for name in ['server.py', 'ai_stream.py', 'code_policy.py', 'runtime/run.py', 'apply_update.py']:
         info=zipfile.ZipInfo(name,date_time=(2026,9,6,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED
         archive.writestr(info,(root/'oracle_connector'/name).read_bytes())
 print('Packaged Oracle worker update')
+(root/'public/downloads/froge-oracle-texture-fix.zip').write_bytes((root/'public/downloads/froge-oracle-update.zip').read_bytes())

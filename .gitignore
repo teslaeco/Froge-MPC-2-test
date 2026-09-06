@@ -32,6 +32,8 @@ dist-ssr
 /public/models/codex-dragon-design.json
 /public/downloads/froge-blender-addon.zip
 /public/downloads/froge-oracle-connector.zip
+/public/downloads/froge-oracle-update.zip
+/public/downloads/froge-oracle-texture-fix.zip
 /oracle_connector/state/
 /oracle_connector/ollama/
 /oracle_connector/bin/
