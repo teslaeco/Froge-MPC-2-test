@@ -3,11 +3,21 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { RemoteGenerator } from '../blender/RemoteGenerator'
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+it('does not re-execute an incompatible geometry script or generate on the old worker', async () => {
+  const job = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb', state: 'failed', detail: '/work/generate.py cannot unpack non-iterable Object object', hasModel: false }
+  vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: true, ready: true, connectorVersion: 5 } : String(url).endsWith('/jobs') ? { jobs: [job] } : { job })))
+  render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)
+  await screen.findByText('Zaktualizuj generator na Oracle')
+  await screen.findByText('Nie udało się wygenerować modelu')
+  expect(screen.queryByRole('button', { name: 'Wykonaj zapisany skrypt' })).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeDisabled()
+})
+
 it('offers saved-script execution without requiring ready AI or submitting a new description', async () => {
   const original = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb z lampkami', state: 'failed', detail: '/work/generate.py generated_type RGBA', hasModel: false }
   const fetcher = vi.fn(async (url, init) => {
     const path = String(url)
-    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: false, connectorVersion: 5 })
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: false, connectorVersion: 6 })
     if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job: { ...original, ...JSON.parse(init.body), state: 'failed', detail: 'fixture complete' } })
     if (path.endsWith('/jobs')) return Response.json({ jobs: [original] })
     return Response.json({ job: original })
@@ -38,7 +48,7 @@ it.each(['succeeded', 'failed'])('uses the real %s response and never selects a 
   const job = { id: '12345678-1234-4234-8234-123456789abc', prompt, state: 'queued', detail: '', hasModel: false }
   const fetcher = vi.fn(async (url, init) => {
     const path = String(url)
-    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true })
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, connectorVersion: 6 })
     if (path.endsWith('/model')) return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'model/gltf-binary' } })
     if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job })
     if (path.endsWith('/jobs')) return Response.json({ jobs: [] })
@@ -46,7 +56,7 @@ it.each(['succeeded', 'failed'])('uses the real %s response and never selects a 
   })
   vi.stubGlobal('fetch', fetcher)
   render(<RemoteGenerator prompt={prompt} onStart={() => 7} onResult={onResult}/>)
-  await screen.findByText('AI + Blender gotowe')
+  await screen.findByText('Lokalny Qwen + Blender')
   fireEvent.click(screen.getByRole('button', { name: 'Generuj model 3D' }))
   await screen.findByText(state === 'succeeded' ? 'Nowy model w podglądzie' : 'Nie udało się wygenerować modelu')
   const submitted = fetcher.mock.calls.find(([, init]) => init?.method === 'POST')!
@@ -60,7 +70,7 @@ it('retries the saved description after refresh even when the input is empty', a
   const original = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Duży dąb z korą i liśćmi', state: 'failed', detail: 'timed out', hasModel: false }
   const fetcher = vi.fn(async (url, init) => {
     const path = String(url)
-    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true })
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, connectorVersion: 6 })
     if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job: { ...JSON.parse(init.body), state: 'queued', detail: 'Opis przyjety.', hasModel: false } })
     if (path.endsWith('/jobs')) return Response.json({ jobs: [original] })
     return Response.json({ job: original })
@@ -87,7 +97,7 @@ it('configures Astra through the owner API and clears the password field after s
   })
   vi.stubGlobal('fetch', fetcher)
   render(<RemoteGenerator prompt="Dąb z lampkami" onStart={() => 1} onResult={vi.fn()}/>)
-  await screen.findByText('AI + Blender gotowe')
+  await screen.findByText('Lokalny Qwen + Blender')
   fireEvent.click(screen.getByRole('button', { name: 'Ustawienia serwera' }))
   const input = screen.getByLabelText('Klucz API OpenAI')
   expect(input).toHaveAttribute('type', 'password')

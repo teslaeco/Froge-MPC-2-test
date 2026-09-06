@@ -10,6 +10,10 @@ import sys
 import numpy as np
 from mathutils import Vector
 
+# Blender's --python launcher need not add the script's directory to sys.path.
+# Only our read-only renderer directory is added, never the writable job folder.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 def make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0):
     if len(bpy.data.materials) >= 8:
         raise ValueError('Use at most 8 materials, reusing them across objects.')
@@ -156,6 +160,14 @@ def finish():
 
 if __name__ == '__main__':
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    if Path('/work/scene.json').is_file():
+        from scene_contract import parse_scene
+        from build_scene import build_scene
+        scene = parse_scene(Path('/work/scene.json').read_text(encoding='utf-8'))
+        build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
+        finish()
+        print('FROGE_MODEL_READY')
+        raise SystemExit(0)
     code = Path('/work/generate.py').read_text(encoding='utf-8')
     # Validation is also done on the host. Secrets and the host filesystem are never mounted.
     allowed = {'abs', 'all', 'any', 'bool', 'dict', 'enumerate', 'float', 'int', 'isinstance', 'len', 'list', 'max', 'min', 'pow', 'print', 'range', 'reversed', 'round', 'set', 'sorted', 'str', 'sum', 'tuple', 'zip', 'Exception', 'ValueError'}

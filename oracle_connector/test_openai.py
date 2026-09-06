@@ -14,6 +14,7 @@ from ai_stream import OpenAIServiceError, stream_chat
 from code_policy import CodePolicyError, StreamPolicyGuard
 import openai_provider
 import server
+from runtime.scene_contract import SCHEMA
 
 FAKE_KEY = 'sk-local-fixture-' + 'x' * 30
 
@@ -110,13 +111,14 @@ class ResponsesTests(unittest.TestCase):
 
     def test_astra_payload_uses_fixed_official_origin_low_reasoning_and_output_limit(self):
         with patch.object(openai_provider, 'stream_chat', return_value='code') as stream:
-            openai_provider.generate([{'role': 'user', 'content': 'Dab'}], FAKE_KEY, threading.Event(), lambda *_: None, 120, lambda *_: None, lambda *_: None)
+            openai_provider.generate([{'role': 'user', 'content': 'Dab'}], FAKE_KEY, threading.Event(), lambda *_: None, 120, None, lambda *_: None, schema=SCHEMA)
         args, kwargs = stream.call_args
         self.assertEqual(args[0], 'https://api.openai.com/v1/responses')
         self.assertEqual(args[1]['model'], 'gpt-6-astra')
         self.assertEqual(args[1]['reasoning'], {'effort': 'low'})
         self.assertEqual(args[1]['max_output_tokens'], 4500)
         self.assertFalse(args[1]['store'])
+        self.assertEqual(args[1]['text']['format'], {'type':'json_schema','name':'froge_scene','strict':True,'schema':SCHEMA})
         self.assertNotIn(FAKE_KEY, json.dumps(args[1]))
         self.assertEqual(kwargs['api_key'], FAKE_KEY)
 

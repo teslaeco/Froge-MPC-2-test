@@ -147,6 +147,8 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
         if (existing.prompt !== input.prompt.trim()) throw new ApiError('Identyfikator dotyczy innego opisu.', 409)
         return reply({ job: publicJob(existing) })
       }
+      const capabilities = await (await remote(connection.endpoint, token, '/v1/health')).json() as { connectorVersion?: number }
+      if ((capabilities.connectorVersion || 1) < 6) throw new ApiError('Zainstaluj aktualizację froge-oracle-scene-v6.zip na Oracle. Nowe modele wymagają sprawdzanego planu sceny.', 409)
       const now = new Date().toISOString()
       const created = await db.prepare('INSERT INTO blender_jobs (id,owner,endpoint,prompt,state,detail,created,updated) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(input.id, owner, connection.endpoint, input.prompt.trim(), 'submitting', 'Wysyłanie opisu do serwera…', now, now).run()
       if (created.meta.changes !== 1) throw new ApiError('Identyfikator zlecenia jest już zajęty.', 409)

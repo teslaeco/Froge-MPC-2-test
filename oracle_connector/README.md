@@ -3,26 +3,33 @@
 This is the text → selected AI → Blender → GLB worker for the private Froge test studio.
 It is separate from the desktop Blender add-on and the example dragon.
 
-## Saved-script recovery (version 5)
+## Checked scene plans (version 6)
 
-AI sometimes redefined `make_material`, replacing the supplied renderer helper with an
-invalid implementation such as `image.generated_type = 'RGBA'`. The worker now validates
-the entire original source, removes plain top-level definitions of the reserved helpers,
-and validates the prepared source again before execution. Calls and geometry remain in
-the script; the provided, tested helpers supply materials and meshes. Other rebinding or
-nested replacement of helper names is rejected. Forbidden operations are still rejected,
-even if they occur inside a helper definition that would otherwise be removed.
+New generation produces a compact JSON scene, not executable model-written Python.
+`runtime/scene_contract.py` is the single schema shared by OpenAI Structured Outputs,
+Ollama's structured output request, host validation, and Blender validation. The host
+checks names, material references, finite bounds, face indices, degenerate faces, copy
+references and aggregate geometry budgets. Blender executes only the fixed operations
+in `runtime/build_scene.py`; it never evaluates expressions from the plan.
 
-For a failed job with a saved `generate.py`, the studio offers **Wykonaj zapisany skrypt**.
-It creates a separate job from that script and its original description. It checks owner,
-endpoint, source-job state and source size, retains the original failure and source, and
-runs the same policy and container checks. This path makes no AI request and never falls
-back to AI automatically. Other errors in the saved code can still cause failure.
-The real Blender smoke test reproduces the enum error and verifies its correction plus
-two embedded PNG textures; it does not run the user's complete Oracle script.
+The operations cover custom meshes, curved tapered tubes, lathes, boxes, ellipsoids,
+translated copies, a parameterized branching oak with lobed leaves, and a garland with
+an exact bulb count. This is a procedural asset vocabulary, not unrestricted Blender
+scripting. Other shapes can be composed from the general operations. Geometry quality
+and whether those parts match a new prompt still depend on the selected AI model.
+The prepared oak fixture is authored and tested; it is never substituted for a user's
+AI job or reported as a successful OpenAI generation.
 
-Install `froge-oracle-rebuild.zip` using the normal updater, refresh the studio and use
-the saved-script button. The OpenAI settings remain available for new descriptions.
+Version 5 incorrectly removed generated geometry helper definitions while retaining
+callers that could expect `(vertices, faces)` instead of a Blender Object. Version 6
+rejects that legacy mismatch before execution. It never silently replaces a geometry
+function. Limited replay of a compatible material-only script remains available, but
+an incompatible stored geometry script requires a fresh scene plan. Original job files
+and failures are retained.
+
+Install `froge-oracle-scene-v6.zip`, refresh the studio, connect OpenAI and generate a
+new model. The Site refuses new jobs on older workers rather than launching an obsolete
+code-generation attempt.
 
 Requirements: the existing Oracle Linux 9 ARM instance, user `opc`, the already-tested
 `localhost/froge-blender:local` Podman image, and about 10 GB additional free disk space.
@@ -44,7 +51,7 @@ returned to the browser, persisted in browser storage/D1, included in model inpu
 in process arguments, logged, or mounted in the Blender container. Requests use the fixed
 official HTTPS API origin and never follow redirects. Switching AI requires no active job.
 
-OpenAI uses low reasoning effort, compact helper-based code, streamed responses, and a
+OpenAI uses low reasoning effort, a compact schema-constrained scene plan, streamed responses, and a
 4500 output-token cap. At most two attempts share a 3-minute instruction deadline;
 Blender is limited to 3 minutes per attempt. These are failure limits, not speed promises.
 Provider errors are explicit and never silently fall back to local Qwen. Successful jobs
@@ -72,24 +79,17 @@ by the installer's container check, not by the local tests.
 6. Enter any model description and click **Generuj model 3D**. The request creates a new job;
    there is no keyword-to-example fallback. The model appears only after valid GLB export.
 
-With local Qwen, a model run may take several minutes on 2 CPU cores. Code generation attempts share
-a 30-minute deadline and each response is capped at 5000 output tokens; Blender gets 10 minutes
-per attempt. The local request uses curl (installed by `install.sh`), with a total deadline,
-live wait/progress messages and cancellation even before the first HTTP headers arrive.
-There is no 180-second inactivity cutoff during model loading or prompt evaluation.
-Incomplete streams are rejected, even if they contain syntactically valid partial code.
-Forbidden attribute operations such as `.load` are detected on complete code lines during
-streaming, with strings/comments ignored. The full AST policy still runs before every
-execution and the container boundary is unchanged. Materials use `make_material` and its
-packed procedural textures; no input image files are assumed to exist. Policy failures get
-an English repair instruction with valid helper examples and the original user request,
-without repeating rejected file-loading code. Drafts and rejection details are retained
-privately under the job directory for diagnosis, and rejected drafts are never executed.
-The renderer preserves unchanged packed texture bytes instead of packing them twice:
-repacking a generated image without an external filepath can discard its PNG in Blender 4.3.
-One active job is allowed.
-Quality and exact adherence depend on the selected model. This is procedural AI modeling,
-not a pretrained image-to-3D or photogrammetry service. Textures are procedural packed UV images.
+Local Qwen uses the same JSON contract, a 1800 output-token cap and a shared 3-minute
+AI deadline. It keeps the loaded model for five minutes to avoid loading weights for
+every follow-up. A timeout ends the job without another AI attempt. Failed validation
+can trigger one repair within the original deadline. Blender is capped at 3 minutes
+per execution. These are failure limits, not guaranteed completion times. The streaming
+transport supports progress and cancellation even before the first HTTP response headers.
+Incomplete responses are rejected. No provider is silently substituted.
+
+One active job is allowed. Textures are procedural packed 512px UV images. Emission is
+exported as a PBR material; bloom and illumination of neighboring objects depend on the
+viewer's rendering features. This is not a pretrained image-to-3D service.
 
 The worker listens on loopback only. Cloudflare Quick Tunnel exposes its authenticated API over
 HTTPS without adding inbound ports to the VM. Quick Tunnels are for testing, have no uptime SLA,
@@ -105,13 +105,12 @@ Generate a fresh pairing code and read the current tunnel URL with:
 python3 ~/froge-connector/server.py --pair-info
 ```
 
-The generator returns Python which is syntax/policy checked and run in a separate rootless
-Podman container. The container has no network, a read-only root filesystem, dropped capabilities,
+The validated JSON scene is built in a separate rootless Podman container. The container has no network, a read-only root filesystem, dropped capabilities,
 no new privileges, a 4 GB RAM limit, 2 CPUs, and a 256-process limit. Only its own job directory
 and the read-only renderer are mounted; SSH keys, API tokens and the worker database are excluded.
-The Python filter is defense in depth, not a general-purpose Python security sandbox.
+The Python filter remains defense in depth for legacy saved-script replay only.
 
-Completed `.blend`, `.glb`, generated source and logs remain under `state/jobs/<id>/` on the VM.
+Completed `.blend`, `.glb`, scene plans, legacy source and logs remain under `state/jobs/<id>/` on the VM.
 The Site imports GLB into private R2 storage after successful generation and keeps owner-scoped
 job metadata in D1. Restarted in-progress jobs report failure rather than silently duplicating work.
 Limits are 12 MB per GLB and 300 retained jobs; archiving old VM jobs is a separate explicit action.
@@ -157,3 +156,13 @@ Sources: [Ollama Linux](https://docs.ollama.com/linux),
 [OpenAI streaming](https://developers.openai.com/api/docs/guides/streaming-responses),
 [systemd delegation](https://systemd.io/CGROUP_DELEGATION/),
 [Cloudflare Quick Tunnels](https://developers.cloudflare.com/cloudflare-one/networks/connectors/cloudflare-tunnel/do-more-with-tunnels/trycloudflare/).
+
+## Reproducible verification
+
+Run `python3 -m unittest discover -s oracle_connector -p 'test_*.py' -v` for data-contract,
+transport, authentication, cancellation and updater checks. With a Python environment
+containing bpy 4.3, run `python verify_scene_runtime.py` to build complete oak and rocket
+fixtures, validate their GLB payloads, verify two embedded oak PNG textures and 20 distinct
+bulb meshes, then reimport the GLBs in Blender. `--output /absolute/directory` also saves
+the oak and a review render. This does not call OpenAI or measure Oracle ARM performance.
+See `docs/ASTRA-3D-NOTES.md` in the project for the documentation review and measured results.

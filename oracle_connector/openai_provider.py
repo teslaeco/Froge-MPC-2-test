@@ -36,9 +36,12 @@ def verify_key(value):
     return value
 
 
-def generate(messages, api_key, cancelled, progress, timeout, validate_chunk, usage_callback):
+def generate(messages, api_key, cancelled, progress, timeout, validate_chunk, usage_callback, schema=None):
     payload = {'model': MODEL, 'input': messages, 'stream': True, 'store': False,
                'reasoning': {'effort': 'low'}, 'max_output_tokens': 4500}
+    if schema is not None:
+        payload['text'] = {'format': {'type': 'json_schema', 'name': 'froge_scene',
+                                      'strict': True, 'schema': schema}}
     return stream_chat(API + '/responses', payload, cancelled, progress, timeout=timeout,
                        interval=2, validate_chunk=validate_chunk, response_protocol='responses',
                        api_key=api_key, usage_callback=usage_callback)

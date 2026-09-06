@@ -49,7 +49,7 @@ export function ModelStudio() {
       if (sourceRef.current) engine.current.disposeModel(sourceRef.current)
       sourceRef.current = loaded
       setSource(loaded); setSceneData(null); setAdjustments(defaults)
-      setName(job.prompt.slice(0, 120)); setNote('Nowy model utworzony przez lokalne AI i Blender na Twoim serwerze. Możesz go obracać, pobrać lub dodać do katalogu.')
+      setName(job.prompt.slice(0, 120)); setNote('Wczytano model utworzony przez Blender na Twoim serwerze. Możesz go obracać, pobrać lub dodać do katalogu.')
       return true
     } catch (e) {
       if (loaded && loaded !== sourceRef.current) engine.current?.disposeModel(loaded)

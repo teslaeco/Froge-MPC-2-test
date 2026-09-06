@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "name": "Dąb z 20 ciepłymi lampkami świątecznymi",
+  "materials": [
+    {"name":"kora","rgb":[0.27,0.14,0.06],"pattern":"bark","roughness":0.88,"metallic":0,"emission":0},
+    {"name":"liscie","rgb":[0.11,0.32,0.035],"pattern":"leaf","roughness":0.76,"metallic":0,"emission":0},
+    {"name":"przewod","rgb":[0.025,0.055,0.02],"pattern":"plain","roughness":0.65,"metallic":0,"emission":0},
+    {"name":"cieple-lampki","rgb":[1,0.63,0.18],"pattern":"plain","roughness":0.22,"metallic":0,"emission":3}
+  ],
+  "parts": [
+    {"kind":"oak","name":"dab","material":"kora","leaf_material":"liscie","center":[0,0,0],"height":6,"crown_radius":2.5,"trunk_radius":0.36,"seed":41},
+    {"kind":"garland","name":"lampki","material":"przewod","bulb_material":"cieple-lampki","center":[0,0,0],"radius":2.85,"bottom":3.1,"top":5.9,"turns":2.5,"bulbs":20,"bulb_radius":0.115}
+  ]
+}

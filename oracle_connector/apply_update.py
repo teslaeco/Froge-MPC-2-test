@@ -9,8 +9,8 @@ import time
 import urllib.request
 from runtime_check import RuntimeUnavailable, setup_runtime
 
-FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py')
-EXPECTED_VERSION = 5
+FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py')
+EXPECTED_VERSION = 6
 
 
 def replace(path, data):
@@ -61,7 +61,7 @@ def update(source, target):
                 with urllib.request.urlopen(request, timeout=2) as response:
                     if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
                         print('FROGE_UPDATE_OK')
-                        print('Odswiez Froge. Dla bledu materialow wybierz: Wykonaj zapisany skrypt. Nowe opisy moga korzystac z OpenAI po podlaczeniu klucza w ustawieniach.')
+                        print('Odswiez Froge. W ustawieniach podlacz OpenAI Astra i wygeneruj NOWY model. Stary skrypt ma niezgodne typy geometrii. Nowa wersja uzywa sprawdzanego planu sceny JSON.')
                         return
             except (OSError, ValueError):
                 pass

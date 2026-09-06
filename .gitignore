@@ -41,3 +41,5 @@ dist-ssr
 /oracle_connector/bin/
 __pycache__/
 *.pyc
+
+/public/downloads/froge-oracle-scene-v6.zip

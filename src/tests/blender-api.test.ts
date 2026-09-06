@@ -16,7 +16,7 @@ async function pair() {
   expect((await request('connection', 'POST', { endpoint, code: 'a'.repeat(32) })).status).toBe(200)
 }
 async function submit() {
-  vi.stubGlobal('fetch', vi.fn(async () => Response.json({ state: 'queued' }, { status: 202 })))
+  vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/health') ? { connectorVersion: 6 } : { state: 'queued' }, { status: 202 })))
   return request('jobs', 'POST', { id, prompt: 'Duży dąb z korą i liśćmi' })
 }
 function minimalGlb() {
@@ -51,6 +51,16 @@ beforeEach(() => {
 afterEach(() => { db.close(); vi.unstubAllGlobals() })
 
 describe('private Blender request lifecycle with real SQLite', () => {
+  it('rejects new generation on a worker without the scene contract before queuing', async () => {
+    await pair()
+    const upstream = vi.fn(async () => Response.json({ connectorVersion: 5, ready: true }))
+    vi.stubGlobal('fetch', upstream)
+    const response = await request('jobs', 'POST', { id, prompt: 'Dąb' })
+    expect(response.status).toBe(409)
+    expect((await response.json()).error).toContain('scene-v6')
+    expect(db.prepare('SELECT COUNT(*) AS total FROM blender_jobs').get()!.total).toBe(0)
+    expect(upstream).toHaveBeenCalledTimes(1)
+  })
   it('rebuilds only the same owner failed script on a compatible worker', async () => {
     await pair(); await submit()
     db.prepare("UPDATE blender_jobs SET state='failed' WHERE id=?").run(id)
@@ -63,7 +73,7 @@ describe('private Blender request lifecycle with real SQLite', () => {
     expect((await request('jobs', 'POST', input, 'owner-b')).status).toBe(409)
     expect((await request('jobs', 'POST', { ...input, prompt: 'Inny model' })).status).toBe(409)
     expect((await request('jobs', 'POST', input)).status).toBe(409)
-    version = 5
+    version = 6
     expect((await request('jobs', 'POST', input)).status).toBe(202)
     const sent = upstream.mock.calls.find(([url]) => String(url).endsWith('/v1/jobs'))!
     expect(JSON.parse(sent[1].body)).toEqual(input)
@@ -135,9 +145,9 @@ describe('private Blender request lifecycle with real SQLite', () => {
   it('submits an exact prompt once and persists the returned GLB for the same owner', async () => {
     await pair(); expect((await submit()).status).toBe(202)
     const remote = vi.mocked(fetch)
-    expect(JSON.parse(String(remote.mock.calls[0][1]?.body))).toEqual({ id, prompt: 'Duży dąb z korą i liśćmi' })
+    expect(JSON.parse(String(remote.mock.calls.find(([url]) => String(url).endsWith('/v1/jobs'))?.[1]?.body))).toEqual({ id, prompt: 'Duży dąb z korą i liśćmi' })
     expect((await request('jobs', 'POST', { id, prompt: 'Duży dąb z korą i liśćmi' })).status).toBe(200)
-    expect(remote).toHaveBeenCalledTimes(1)
+    expect(remote).toHaveBeenCalledTimes(2)
     expect((await request('jobs', 'POST', { id, prompt: 'Smok' })).status).toBe(409)
     const bytes = minimalGlb()
     vi.stubGlobal('fetch', vi.fn(async url => String(url).endsWith('/model') ? new Response(bytes) : Response.json({ state: 'succeeded', detail: 'ready' })))

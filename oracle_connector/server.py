@@ -21,13 +21,15 @@ from ai_stream import stream_chat
 import openai_provider
 from ai_stream import OpenAIServiceError
 from runtime_check import IMAGE, sandbox_options, verify_runtime
+from runtime.scene_contract import SCHEMA, PROMPT, parse_scene
 
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 5
+CONNECTOR_VERSION = 6
+AI_TIME_LIMIT = 180
 OLLAMA = 'http://127.0.0.1:11434'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 LOCK = threading.RLock()
@@ -35,39 +37,7 @@ WAKE = threading.Event()
 CANCEL = {}
 RUNNING = set()
 PAIR_ATTEMPTS = []
-SYSTEM = '''You are a Blender 4.3 procedural 3D artist. Return ONLY one complete Python script.
-Start by CALLING the existing helpers. Do not implement make_material, tube, ellipsoid,
-mesh_object or join_meshes: they are already defined, tested and available in scope.
-Create a NEW detailed mesh that matches the user's exact description, not a generic example.
-The scene starts EMPTY. Use metres and Z up. Make a complete three-dimensional asset with
-recognizable silhouette, meaningful details, smooth organic forms or precise mechanical parts,
-and suitable colours. For a tree distinguish trunk, tapered curved branches, crown and leaves.
-For other objects design their own shapes; there is no fixed list of allowed objects.
-Allowed imports: bpy, math, random, mathutils. Never access files, OS, network, wm, render,
-handlers, drivers or other applications. Do not export or save; the host does that afterward.
-NO INPUT FILES EXIST. Never use bpy.data.images.load or ANY .load(), .open(), .save(),
-file paths or external images. Every material MUST be created with make_material below.
-Do not create image-loading or texture-node boilerplate: make_material does it for you.
-Available helpers already in scope (do NOT import them):
-make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0) -> material.
-  rgb is a 3-number tuple from 0 to 1. Patterns: plain, bark, wood, leaf, stone, fabric, metal.
-  The helper creates a real packed 512px UV texture, which is included in the GLB.
-  Example: bark_material = make_material("bark", (0.27, 0.14, 0.06), "bark")
-  Example: leaf_material = make_material("leaves", (0.12, 0.36, 0.05), "leaf")
-  Pass the returned material to geometry helpers. Never redefine these helpers.
-mesh_object(name, vertices, faces, material) -> mesh object. vertices=[(x,y,z),...], faces=index tuples.
-tube(name, points, radii, material, sides=12) -> capped curved tapered tube. len(radii)=len(points).
-ellipsoid(name, center, scale, material, subdivisions=2) -> smooth mesh object.
-join_meshes(objects, name) -> combine mesh objects. Use it for many small leaves or details.
-You may also use ordinary bpy mesh operators. Reuse materials. Use custom meshes for shapes
-that cannot be represented well by spheres or cubes. Organic foliage should have distinct
-leaf-shaped surfaces and branching, not just a single green sphere. Use loops and functions
-to construct detail efficiently. Never define classes or use introspection.
-Limits: 256 objects (join small repeated parts), 200000 vertices, 400000 triangles,
-at most 8 materials/images, 60KB Python source. Keep every axis of the whole asset nonzero.
-Do not use subdivision modifiers with levels greater than 2. Deterministic random seed allowed.
-Do not call make_material with a hexadecimal colour string; use an RGB tuple.
-Return code only, without explanations or markdown prose.'''
+SYSTEM = PROMPT
 
 def write_json(path, value):
     temporary = path.with_suffix('.tmp')
@@ -103,12 +73,12 @@ def health():
     if selected.get('provider') == 'openai':
         ready = bool(selected.get('api_key'))
         return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
-                'detail': 'OpenAI Astra jest polaczone. Blender wykona model na Oracle.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
+                'detail': 'OpenAI Astra jest polaczone. Blender wykona sprawdzony plan sceny.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
                 'connectorVersion': CONNECTOR_VERSION}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
-        detail = 'AI i Blender sa gotowe.' if ready else 'Pobieranie lub przygotowanie lokalnego modelu AI. Pierwsze uruchomienie trwa dluzej.'
+        detail = 'Lokalny Qwen na CPU. Ten tryb moze byc wolny; Astra wymaga podlaczenia OpenAI API.' if ready else 'Pobieranie lub przygotowanie lokalnego modelu AI. Pierwsze uruchomienie trwa dluzej.'
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
@@ -146,24 +116,23 @@ def configure_ai(data):
 def generate_code(messages, job_id, cancelled, deadline=None, attempt=1, selected=None):
     selected = selected or ai_settings()
     is_openai = selected.get('provider') == 'openai'
-    payload = {'model': MODEL, 'messages': messages, 'stream': True, 'keep_alive': 0,
-               'options': {'temperature': 0.2 if attempt == 1 else 0.1, 'num_ctx': 8192, 'num_predict': 5000, 'num_thread': 2}}
+    payload = {'model': MODEL, 'messages': messages, 'stream': True, 'keep_alive': '5m', 'format': SCHEMA,
+               'options': {'temperature': 0.2 if attempt == 1 else 0.1, 'num_ctx': 8192, 'num_predict': 1800, 'num_thread': 2}}
     def progress(characters, elapsed, silent):
         clock = '%d:%02d' % (int(elapsed) // 60, int(elapsed) % 60)
         prefix = 'Proba %d/2. Czas tej proby: %s. ' % (attempt, clock)
         if characters:
-            detail = 'AI tworzy instrukcje: %d znakow. Ostatnie dane %d s temu.' % (characters, silent)
+            detail = 'AI projektuje scene: %d znakow. Ostatnie dane %d s temu.' % (characters, silent)
         else:
             detail = 'OpenAI Astra analizuje opis; oczekiwanie na instrukcje.' if is_openai else 'AI laduje model lub analizuje opis; oczekiwanie na pierwsze instrukcje.'
         status(job_id, 'generating', prefix + detail)
-    remaining = (openai_provider.TIME_LIMIT if is_openai else 1800) if deadline is None else deadline - time.monotonic()
-    guard = StreamPolicyGuard()
+    remaining = AI_TIME_LIMIT if deadline is None else deadline - time.monotonic()
     if is_openai:
         def usage(record):
             write_json(JOBS / job_id / ('ai-attempt-%d-usage.json' % attempt), {'model': openai_provider.MODEL, **record})
-        return extract_code(openai_provider.generate(messages, selected['api_key'], cancelled, progress,
-                                                     remaining, guard.feed, usage))
-    return extract_code(stream_chat(OLLAMA + '/api/chat', payload, cancelled, progress, timeout=remaining, validate_chunk=guard.feed))
+        return openai_provider.generate(messages, selected['api_key'], cancelled, progress,
+                                        remaining, None, usage, schema=SCHEMA)
+    return stream_chat(OLLAMA + '/api/chat', payload, cancelled, progress, timeout=remaining)
 
 def blender_command(job_id, folder):
     return ['podman', 'run', '--rm', '--pull=never', '--name', 'froge-job-' + job_id] + sandbox_options() + [
@@ -219,9 +188,7 @@ def worker():
             is_openai = selected.get('provider') == 'openai'
             saved_script = folder / 'saved-script.py'
             reuse = saved_script.is_file()
-            deadline = started + (openai_provider.TIME_LIMIT if is_openai else 1800)
-            if is_openai:
-                messages[0]['content'] += '\nKeep the script compact: target under 1800 output tokens. Use loops and supplied helpers for repeated details. Preserve the requested shape and materials.'
+            deadline = started + AI_TIME_LIMIT
             write_json(folder / 'provider.json', {'provider': 'saved-script' if reuse else selected.get('provider'), 'model': None if reuse else openai_provider.MODEL if is_openai else MODEL})
             for attempt in range(1 if reuse else 2):
                 try:
@@ -233,18 +200,22 @@ def worker():
                             code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1, selected)
                         finally:
                             ai_seconds += time.monotonic() - phase_started
-                    draft = folder / ('attempt-%d.py' % (attempt + 1))
+                    draft = folder / ('attempt-%d.%s' % (attempt + 1, 'py' if reuse else 'json'))
                     draft.write_text(code, encoding='utf-8')
                     os.chmod(draft, 0o600)
-                    code, replaced = prepare_code(code)
-                    write_json(folder / ('attempt-%d-helpers.json' % (attempt + 1)), {'restored_helpers': replaced})
-                    (folder / 'generate.py').write_text(code, encoding='utf-8')
+                    if reuse:
+                        code, replaced = prepare_code(code)
+                        write_json(folder / ('attempt-%d-helpers.json' % (attempt + 1)), {'restored_helpers': replaced})
+                        (folder / 'generate.py').write_text(code, encoding='utf-8')
+                    else:
+                        scene = parse_scene(code)
+                        write_json(folder / 'scene.json', scene)
                     if cancelled.is_set():
                         raise InterruptedError('Zlecenie anulowane.')
-                    status(job['id'], 'building', 'Blender tworzy siatke, tekstury UV i plik GLB…')
+                    status(job['id'], 'building', 'Plan sprawdzony. Blender buduje geometrie i zapisuje GLB…')
                     phase_started = time.monotonic()
                     try:
-                        run_blender(job['id'], folder, cancelled, timeout=180 if is_openai or reuse else 600)
+                        run_blender(job['id'], folder, cancelled, timeout=180)
                     finally:
                         blender_seconds += time.monotonic() - phase_started
                     elapsed = time.monotonic() - started
@@ -261,15 +232,13 @@ def worker():
                     if attempt or reuse:
                         raise
                     status(job['id'], 'retrying', 'Pierwsza proba nie przeszla kontroli. AI poprawia instrukcje…')
-                    if isinstance(error, CodePolicyError):
-                        # Start policy repair from the original request and safe examples,
-                        # not the rejected file-loading code that the model may imitate.
-                        messages = messages[:2]
-                    elif code:
+                    if code:
                         messages.append({'role': 'assistant', 'content': code[-20000:]})
-                    messages.append({'role': 'user', 'content': repair_instruction(error)})
+                    messages.append({'role': 'user', 'content': 'Return a complete corrected scene JSON for the ORIGINAL request. Preserve its requested features. Fix this validation/build error: ' + str(error)[-1800:]})
         except InterruptedError:
             status(job['id'], 'cancelled', 'Zlecenie anulowane.')
+        except TimeoutError:
+            status(job['id'], 'failed', 'Przekroczono limit czasu. Nie uruchamiam kolejnej dlugiej proby. Jesli wybrano Qwen, podlacz OpenAI Astra w ustawieniach.')
         except Exception as error:
             detail = str(error)
             if isinstance(error, urllib.error.URLError):

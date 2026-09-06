@@ -79,12 +79,21 @@ def prepare_code(code):
     # A helper replacement never makes forbidden file/network operations acceptable.
     validate_code(code, allow_helper_definitions=True)
     tree = ast.parse(code)
+    # Geometry definitions may have different return types. Never replace them
+    # and keep their callers: that caused the Object unpacking failure in v5.
+    if any(isinstance(node, ast.FunctionDef) and node.name in HELPERS - {'make_material'} for node in ast.walk(tree)):
+        raise ValueError('Zapisany skrypt ma niezgodne funkcje geometrii. Utworz nowy model w trybie planu sceny.')
     replaced = [node for node in tree.body if isinstance(node, ast.FunctionDef)
-                and node.name in HELPERS and not node.decorator_list]
+                and node.name == 'make_material' and not node.decorator_list]
     if replaced:
         tree.body = [node for node in tree.body if node not in replaced]
         code = ast.unparse(tree)
     validate_code(code)
+    for node in ast.walk(ast.parse(code)):
+        if (isinstance(node, ast.Assign) and isinstance(node.value, ast.Call)
+                and isinstance(node.value.func, ast.Name) and node.value.func.id in HELPERS
+                and any(isinstance(target, (ast.Tuple, ast.List)) for target in node.targets)):
+            raise ValueError('Zapisany skrypt oczekuje innych wynikow funkcji geometrii. Utworz nowy model w trybie planu sceny.')
     return code, [node.name for node in replaced]
 
 
