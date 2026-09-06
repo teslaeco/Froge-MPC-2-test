@@ -5,6 +5,7 @@ import re
 import tokenize
 
 IMPORTS = {'bpy', 'math', 'random', 'mathutils'}
+HELPERS = {'make_material', 'mesh_object', 'tube', 'ellipsoid', 'join_meshes'}
 BLOCKED = {'open', 'exec', 'eval', 'compile', '__import__', 'globals', 'locals', 'vars',
            'getattr', 'setattr', 'delattr', 'breakpoint', 'input', 'help', 'dir', 'type',
            'object', 'memoryview', 'classmethod', 'staticmethod', 'property'}
@@ -73,13 +74,34 @@ def extract_code(text):
     blocks = re.findall(r'```(?:python|py)?\s*\n(.*?)```', text, re.S | re.I)
     return (max(blocks, key=len) if blocks else text).strip()
 
-def validate_code(code):
+def prepare_code(code):
+    # Inspect the entire original program first, including discarded definitions.
+    # A helper replacement never makes forbidden file/network operations acceptable.
+    validate_code(code, allow_helper_definitions=True)
+    tree = ast.parse(code)
+    replaced = [node for node in tree.body if isinstance(node, ast.FunctionDef)
+                and node.name in HELPERS and not node.decorator_list]
+    if replaced:
+        tree.body = [node for node in tree.body if node not in replaced]
+        code = ast.unparse(tree)
+    validate_code(code)
+    return code, [node.name for node in replaced]
+
+
+def validate_code(code, *, allow_helper_definitions=False):
     if not isinstance(code, str) or not code.strip() or len(code.encode()) > 60000:
         raise ValueError('AI musi zwrocic kompletny skrypt Python do 60 KB.')
     tree = ast.parse(code)
     if sum(1 for _ in ast.walk(tree)) > 12000:
         raise ValueError('Skrypt przekracza limit zlozonosci.')
     for node in ast.walk(tree):
+        binding = (node.id if isinstance(node, ast.Name) and isinstance(node.ctx, (ast.Store, ast.Del)) else
+                   node.arg if isinstance(node, ast.arg) else
+                   node.name if isinstance(node, ast.ExceptHandler) else
+                   (node.asname or node.name) if isinstance(node, ast.alias) else
+                   node.name if isinstance(node, ast.FunctionDef) and not allow_helper_definitions else None)
+        if binding in HELPERS:
+            raise ValueError('Nie nadpisuj gotowej funkcji %s. Wywolaj funkcje dostarczona przez Froge.' % binding)
         if isinstance(node, ast.Import):
             if any(n.name not in IMPORTS for n in node.names):
                 raise ValueError('Dozwolone importy: bpy, math, random, mathutils.')

@@ -10,11 +10,32 @@ import urllib.error
 import urllib.request
 
 import server
-from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, repair_instruction, validate_code
+from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, prepare_code, repair_instruction, validate_code
 
 JOB = '12345678-1234-4234-8234-123456789abc'
 
 class CodePolicyTests(unittest.TestCase):
+    def test_restores_reserved_helper_and_preserves_model_calls(self):
+        raw = 'def make_material(name, rgb, pattern):\n    image.generated_type = "RGBA"\n    return None\nbark = make_material("trunk", (0.27,0.14,0.06), "bark")\n'
+        code, replaced = prepare_code(raw)
+        calls = []
+        def trusted(*args):
+            calls.append(args)
+            return 'trusted material'
+        scope = {'make_material': trusted}
+        exec(code, scope)
+        self.assertEqual(scope['bark'], 'trusted material')
+        self.assertEqual(calls, [('trunk', (0.27,0.14,0.06), 'bark')])
+        self.assertEqual(replaced, ['make_material'])
+        self.assertNotIn('generated_type', code)
+        for shadow in ['make_material = 4', 'def outer(make_material):\n    pass', 'from math import sin as make_material', 'def outer():\n    def make_material():\n        pass']:
+            with self.subTest(shadow=shadow), self.assertRaises(ValueError):
+                prepare_code(shadow)
+
+    def test_helper_restoration_never_hides_forbidden_file_operations(self):
+        with self.assertRaises(CodePolicyError):
+            prepare_code('def make_material(name, rgb, pattern):\n    return bpy.data.images.load("file.png")\n')
+
     def test_rejects_load_while_streaming_and_gives_a_safe_material_repair(self):
         guard = StreamPolicyGuard()
         guard.feed('import bpy\ntexture = bpy.data.images.lo')
@@ -104,6 +125,30 @@ class WorkerHTTPTests(unittest.TestCase):
         server.write_json(server.CONFIG, config)
         self.assertEqual(self.call('/v1/pair', {'client': 'owner-a'}, self.config['code'])[0], 401)
         self.assertNotIn(self.config['token'], json.dumps(self.call('/v1/health')))
+
+    def test_saved_script_rebuild_preserves_original_and_never_calls_ai(self):
+        original = 'def make_material(name, rgb, pattern):\n    image.generated_type = "RGBA"\nbark = make_material("trunk", (0.27,0.14,0.06), "bark")\n'
+        folder = server.JOBS / JOB
+        folder.mkdir(); (folder / 'generate.py').write_text(original)
+        with server.database() as db:
+            db.execute('INSERT INTO jobs VALUES (?,?,?,?,0,0)', (JOB, 'Dab z lampkami', 'failed', 'RGBA'))
+        rebuilt = '12345678-1234-4234-8234-123456789abd'
+        status, _ = self.call('/v1/jobs', {'id': rebuilt, 'prompt': 'Dab z lampkami', 'sourceJobId': JOB})
+        self.assertEqual(status, 202)
+        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'generate_code') as ai, patch.object(server, 'run_blender') as blender:
+            wake.wait.side_effect = [None, StopIteration]
+            with self.assertRaises(StopIteration):
+                server.worker()
+            ai.assert_not_called()
+            blender.assert_called_once()
+        self.assertEqual((folder / 'generate.py').read_text(), original)
+        self.assertNotIn('generated_type', (server.JOBS / rebuilt / 'generate.py').read_text())
+        status, result = self.call('/v1/jobs/' + rebuilt)
+        self.assertEqual(result['state'], 'succeeded')
+        self.assertIn('bez nowego zapytania do AI', result['detail'])
+        other = '12345678-1234-4234-8234-123456789abe'
+        self.assertEqual(self.call('/v1/jobs', {'id': other, 'prompt': 'Inny obiekt', 'sourceJobId': JOB})[0], 409)
+        self.assertEqual(self.call('/v1/jobs', {'id': other, 'prompt': 'Dab z lampkami', 'sourceJobId': '../../secret'})[0], 400)
 
     def test_ai_configuration_requires_the_worker_credential_and_rejects_busy_jobs(self):
         key = 'sk-fixture-' + 'a' * 30

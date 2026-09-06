@@ -3,6 +3,27 @@
 This is the text → selected AI → Blender → GLB worker for the private Froge test studio.
 It is separate from the desktop Blender add-on and the example dragon.
 
+## Saved-script recovery (version 5)
+
+AI sometimes redefined `make_material`, replacing the supplied renderer helper with an
+invalid implementation such as `image.generated_type = 'RGBA'`. The worker now validates
+the entire original source, removes plain top-level definitions of the reserved helpers,
+and validates the prepared source again before execution. Calls and geometry remain in
+the script; the provided, tested helpers supply materials and meshes. Other rebinding or
+nested replacement of helper names is rejected. Forbidden operations are still rejected,
+even if they occur inside a helper definition that would otherwise be removed.
+
+For a failed job with a saved `generate.py`, the studio offers **Wykonaj zapisany skrypt**.
+It creates a separate job from that script and its original description. It checks owner,
+endpoint, source-job state and source size, retains the original failure and source, and
+runs the same policy and container checks. This path makes no AI request and never falls
+back to AI automatically. Other errors in the saved code can still cause failure.
+The real Blender smoke test reproduces the enum error and verifies its correction plus
+two embedded PNG textures; it does not run the user's complete Oracle script.
+
+Install `froge-oracle-rebuild.zip` using the normal updater, refresh the studio and use
+the saved-script button. The OpenAI settings remain available for new descriptions.
+
 Requirements: the existing Oracle Linux 9 ARM instance, user `opc`, the already-tested
 `localhost/froge-blender:local` Podman image, and about 10 GB additional free disk space.
 The installer uses official ARM64 Ollama and Cloudflare downloads. The selected local
@@ -119,8 +140,8 @@ Cloud Shell, copy it to the VM and extract it into a separate directory. Run its
 `apply_update.py` as `opc`. It checks that no job is active, backs up the replaced code,
 updates `server.py`, `ai_stream.py`, `openai_provider.py`, `runtime_check.py`, `code_policy.py` and `runtime/run.py`, restarts only `froge-worker.service`, and verifies
 its authenticated health response. It preserves pairing, the tunnel, downloaded AI weights
-and all jobs. Failed startup restores the old code. `froge-oracle-openai.zip` is the explicitly
-named version-4 download. After `FROGE_UPDATE_OK`, refresh the Site, connect OpenAI in
+and all jobs. Failed startup restores the old code. `froge-oracle-rebuild.zip` is the explicitly
+named version-5 download. After `FROGE_UPDATE_OK`, refresh the Site, connect OpenAI in
 **Ustawienia serwera**, then use **Ponów ten opis** on a failed or cancelled job. The legacy
 `froge-oracle-texture-fix.zip` download is retained as an alias of the current update.
 

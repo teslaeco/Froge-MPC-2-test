@@ -51,6 +51,24 @@ beforeEach(() => {
 afterEach(() => { db.close(); vi.unstubAllGlobals() })
 
 describe('private Blender request lifecycle with real SQLite', () => {
+  it('rebuilds only the same owner failed script on a compatible worker', async () => {
+    await pair(); await submit()
+    db.prepare("UPDATE blender_jobs SET state='failed' WHERE id=?").run(id)
+    const rebuilt = '12345678-1234-4234-8234-123456789abd'
+    let version = 4
+    const upstream = vi.fn(async (url, _init) => Response.json(String(url).endsWith('/pair') ? { token } : String(url).endsWith('/health') ? { connectorVersion: version } : { state: 'queued' }))
+    vi.stubGlobal('fetch', upstream)
+    expect((await request('connection', 'POST', { endpoint, code: 'a'.repeat(32) }, 'owner-b')).status).toBe(200)
+    const input = { id: rebuilt, prompt: 'Duży dąb z korą i liśćmi', sourceJobId: id }
+    expect((await request('jobs', 'POST', input, 'owner-b')).status).toBe(409)
+    expect((await request('jobs', 'POST', { ...input, prompt: 'Inny model' })).status).toBe(409)
+    expect((await request('jobs', 'POST', input)).status).toBe(409)
+    version = 5
+    expect((await request('jobs', 'POST', input)).status).toBe(202)
+    const sent = upstream.mock.calls.find(([url]) => String(url).endsWith('/v1/jobs'))!
+    expect(JSON.parse(sent[1].body)).toEqual(input)
+    expect(db.prepare('SELECT state FROM blender_jobs WHERE id=?').get(id)?.state).toBe('failed')
+  })
   it('requires authentication, same-origin writes and the restricted HTTPS tunnel namespace', async () => {
     expect((await request('jobs', 'GET', undefined, '')).status).toBe(401)
     expect((await request('connection', 'POST', {}, 'owner-a', 'https://other.test')).status).toBe(403)

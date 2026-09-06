@@ -3,6 +3,27 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { RemoteGenerator } from '../blender/RemoteGenerator'
 afterEach(() => { cleanup(); vi.unstubAllGlobals() })
 
+it('offers saved-script execution without requiring ready AI or submitting a new description', async () => {
+  const original = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb z lampkami', state: 'failed', detail: '/work/generate.py generated_type RGBA', hasModel: false }
+  const fetcher = vi.fn(async (url, init) => {
+    const path = String(url)
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: false, connectorVersion: 5 })
+    if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job: { ...original, ...JSON.parse(init.body), state: 'failed', detail: 'fixture complete' } })
+    if (path.endsWith('/jobs')) return Response.json({ jobs: [original] })
+    return Response.json({ job: original })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<RemoteGenerator prompt="" onStart={() => 1} onResult={vi.fn()}/>)
+  const button = await screen.findByRole('button', { name: 'Wykonaj zapisany skrypt' })
+  expect(button).toBeEnabled()
+  expect(screen.getByText('Szczegóły błędu').parentElement).not.toHaveAttribute('open')
+  fireEvent.click(button)
+  await waitFor(() => expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(true))
+  const sent = fetcher.mock.calls.find(([, init]) => init?.method === 'POST')!
+  expect(JSON.parse(sent[1].body)).toMatchObject({ prompt: original.prompt, sourceJobId: original.id })
+  expect(JSON.parse(sent[1].body).id).not.toBe(original.id)
+})
+
 it('requires the actual paired server before submitting generation', async () => {
   vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: false, ready: false } : { jobs: [] })))
   render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)

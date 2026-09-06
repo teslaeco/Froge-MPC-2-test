@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob } from './client'
 import './generator.css'
-import { OpenAISettings } from './OpenAISettings'
+import { OpenAISettings, SavedScriptUpdate } from './OpenAISettings'
 
 export const oracleInstallCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ssh-key-2026-09-06.key" "$HOME/froge-oracle-connector.zip" opc@141.148.242.30:/home/opc/froge-oracle-connector.zip &&
 ssh -T -o IdentitiesOnly=yes -o ServerAliveInterval=30 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'mkdir -p "$HOME/froge-connector" && python3 -m zipfile -e "$HOME/froge-oracle-connector.zip" "$HOME/froge-connector" && bash "$HOME/froge-connector/install.sh"'`
@@ -78,10 +78,10 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       await refreshConnection()
     } catch (e) { setError((e as Error).message) } finally { setConnecting(false) }
   }
-  async function generate(requestedPrompt = prompt) {
-    if (busy || !connection?.ready || !requestedPrompt.trim()) return
+  async function generate(requestedPrompt = prompt, sourceJobId?: string) {
+    if (busy || !(sourceJobId ? connection?.connected : connection?.ready) || !requestedPrompt.trim()) return
     setSubmitting(true); setError('')
-    const input = { id: crypto.randomUUID(), prompt: requestedPrompt.trim() }
+    const input = { id: crypto.randomUUID(), prompt: requestedPrompt.trim(), ...(sourceJobId ? { sourceJobId } : {}) }
     const requestSerial = ++serial.current
     const nextRevision = callbacks.current.onStart()
     try {
@@ -133,7 +133,15 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
     <p className="studio-helper">{connection?.provider === 'openai' ? 'OpenAI Astra tworzy instrukcje, a Blender buduje geometrię i materiały. Po zakończeniu zobaczysz zmierzony czas obu etapów.' : 'Instrukcje tworzy lokalny Qwen na Oracle. Możesz podłączyć OpenAI w ustawieniach serwera. Blender zapisuje gotowy model z materiałami.'}</p>
     {active && <div className={'generation-job state-' + active.state} role="status">
       <strong>{active.state === 'succeeded' ? displayed ? 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
-      <p className="generation-prompt">{active.prompt}</p><p>{active.detail === 'timed out' ? 'AI nie odpowiedziało w limicie czasu. Model nie został zapisany.' : active.detail}</p>
+      <p className="generation-prompt">{active.prompt}</p>
+      {active.state === 'failed' && active.detail.includes('/work/generate.py') ? <>
+        <p>Wygenerowany skrypt zawiera błąd. Model nie został utworzony.</p>
+        <details><summary>Szczegóły błędu</summary><p>{active.detail}</p></details>
+        {(connection?.connectorVersion || 1) >= 5 ? <>
+          <p>Możesz wykonać zapisany skrypt z poprawioną funkcją materiałów. Nie wysyłamy wtedy nowego zapytania do AI.</p>
+          <button disabled={busy || !connection?.connected} onClick={() => void generate(active.prompt, active.id)}>Wykonaj zapisany skrypt</button>
+        </> : <SavedScriptUpdate/>}
+      </> : <p>{active.detail === 'timed out' ? 'AI nie odpowiedziało w limicie czasu. Model nie został zapisany.' : active.detail}</p>}
       {['failed', 'cancelled'].includes(active.state) && <button disabled={busy || !connection?.ready} onClick={() => void generate(active.prompt)}>Ponów ten opis</button>}
       {!finished(active) && <button onClick={() => void cancel()}>Anuluj zlecenie</button>}
       {active.state === 'succeeded' && !displayed && <button onClick={() => void openModel(active)}>Wczytaj wynik do podglądu</button>}

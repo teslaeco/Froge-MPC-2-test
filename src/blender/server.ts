@@ -135,6 +135,13 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       if (!connection) throw new ApiError('Najpierw połącz serwer Blendera.', 409)
       const input = await jsonInput(request)
       if (typeof input.id !== 'string' || !uuid.test(input.id) || typeof input.prompt !== 'string' || !input.prompt.trim() || input.prompt.length > 2000) throw new ApiError('Wpisz opis od 1 do 2000 znaków.')
+      if (input.sourceJobId !== undefined) {
+        if (typeof input.sourceJobId !== 'string' || !uuid.test(input.sourceJobId) || input.sourceJobId === input.id) throw new ApiError('Nieprawidłowe zlecenie źródłowe.')
+        const source = await db.prepare('SELECT * FROM blender_jobs WHERE id=? AND owner=?').bind(input.sourceJobId, owner).first<Job>()
+        if (!source || source.state !== 'failed' || source.endpoint !== connection.endpoint || source.prompt !== input.prompt.trim()) throw new ApiError('Nie znaleziono pasującego nieudanego zlecenia.', 409)
+        const state = await (await remote(connection.endpoint, token, '/v1/health')).json() as { connectorVersion?: number }
+        if ((state.connectorVersion || 1) < 5) throw new ApiError('Najpierw zainstaluj aktualizację froge-oracle-rebuild.zip na Oracle.', 409)
+      }
       const existing = await db.prepare('SELECT * FROM blender_jobs WHERE id=? AND owner=?').bind(input.id, owner).first<Job>()
       if (existing) {
         if (existing.prompt !== input.prompt.trim()) throw new ApiError('Identyfikator dotyczy innego opisu.', 409)
@@ -144,8 +151,8 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       const created = await db.prepare('INSERT INTO blender_jobs (id,owner,endpoint,prompt,state,detail,created,updated) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(input.id, owner, connection.endpoint, input.prompt.trim(), 'submitting', 'Wysyłanie opisu do serwera…', now, now).run()
       if (created.meta.changes !== 1) throw new ApiError('Identyfikator zlecenia jest już zajęty.', 409)
       try {
-        await remote(connection.endpoint, token, '/v1/jobs', { method: 'POST', body: JSON.stringify({ id: input.id, prompt: input.prompt.trim() }) })
-        await db.prepare('UPDATE blender_jobs SET state=?,detail=? WHERE id=? AND owner=? AND state=?').bind('queued', 'Opis przyjęty. Oczekiwanie na AI…', input.id, owner, 'submitting').run()
+        await remote(connection.endpoint, token, '/v1/jobs', { method: 'POST', body: JSON.stringify({ id: input.id, prompt: input.prompt.trim(), ...(input.sourceJobId ? { sourceJobId: input.sourceJobId } : {}) }) })
+        await db.prepare('UPDATE blender_jobs SET state=?,detail=? WHERE id=? AND owner=? AND state=?').bind('queued', input.sourceJobId ? 'Wykonuję zapisany skrypt bez nowego zapytania do AI…' : 'Opis przyjęty. Oczekiwanie na AI…', input.id, owner, 'submitting').run()
       } catch (error) {
         // The remote may have accepted a request before its HTTP response was lost.
         // Polling the same ID resolves that ambiguity and never starts a duplicate job.

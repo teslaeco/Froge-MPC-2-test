@@ -16,7 +16,7 @@ import time
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, repair_instruction, validate_code
+from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, prepare_code, repair_instruction, validate_code
 from ai_stream import stream_chat
 import openai_provider
 from ai_stream import OpenAIServiceError
@@ -27,7 +27,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 4
+CONNECTOR_VERSION = 5
 OLLAMA = 'http://127.0.0.1:11434'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 LOCK = threading.RLock()
@@ -36,6 +36,8 @@ CANCEL = {}
 RUNNING = set()
 PAIR_ATTEMPTS = []
 SYSTEM = '''You are a Blender 4.3 procedural 3D artist. Return ONLY one complete Python script.
+Start by CALLING the existing helpers. Do not implement make_material, tube, ellipsoid,
+mesh_object or join_meshes: they are already defined, tested and available in scope.
 Create a NEW detailed mesh that matches the user's exact description, not a generic example.
 The scene starts EMPTY. Use metres and Z up. Make a complete three-dimensional asset with
 recognizable silhouette, meaningful details, smooth organic forms or precise mechanical parts,
@@ -215,33 +217,40 @@ def worker():
             verify_runtime()
             selected = ai_settings()
             is_openai = selected.get('provider') == 'openai'
+            saved_script = folder / 'saved-script.py'
+            reuse = saved_script.is_file()
             deadline = started + (openai_provider.TIME_LIMIT if is_openai else 1800)
             if is_openai:
                 messages[0]['content'] += '\nKeep the script compact: target under 1800 output tokens. Use loops and supplied helpers for repeated details. Preserve the requested shape and materials.'
-            write_json(folder / 'provider.json', {'provider': selected.get('provider'), 'model': openai_provider.MODEL if is_openai else MODEL})
-            for attempt in range(2):
+            write_json(folder / 'provider.json', {'provider': 'saved-script' if reuse else selected.get('provider'), 'model': None if reuse else openai_provider.MODEL if is_openai else MODEL})
+            for attempt in range(1 if reuse else 2):
                 try:
-                    phase_started = time.monotonic()
-                    try:
-                        code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1, selected)
-                    finally:
-                        ai_seconds += time.monotonic() - phase_started
+                    if reuse:
+                        code = saved_script.read_text(encoding='utf-8')
+                    else:
+                        phase_started = time.monotonic()
+                        try:
+                            code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1, selected)
+                        finally:
+                            ai_seconds += time.monotonic() - phase_started
                     draft = folder / ('attempt-%d.py' % (attempt + 1))
                     draft.write_text(code, encoding='utf-8')
                     os.chmod(draft, 0o600)
-                    validate_code(code)
+                    code, replaced = prepare_code(code)
+                    write_json(folder / ('attempt-%d-helpers.json' % (attempt + 1)), {'restored_helpers': replaced})
                     (folder / 'generate.py').write_text(code, encoding='utf-8')
                     if cancelled.is_set():
                         raise InterruptedError('Zlecenie anulowane.')
                     status(job['id'], 'building', 'Blender tworzy siatke, tekstury UV i plik GLB…')
                     phase_started = time.monotonic()
                     try:
-                        run_blender(job['id'], folder, cancelled, timeout=180 if is_openai else 600)
+                        run_blender(job['id'], folder, cancelled, timeout=180 if is_openai or reuse else 600)
                     finally:
                         blender_seconds += time.monotonic() - phase_started
                     elapsed = time.monotonic() - started
                     write_json(folder / 'timing.json', {'total_seconds': round(elapsed, 2), 'ai_seconds': round(ai_seconds, 2), 'blender_seconds': round(blender_seconds, 2)})
-                    status(job['id'], 'succeeded', 'Model gotowy w %.1f s. Instrukcje AI: %.1f s; Blender: %.1f s. Zapisano GLB z materialami.' % (elapsed, ai_seconds, blender_seconds))
+                    detail = ('Model gotowy w %.1f s. Wykorzystano zapisany skrypt, bez nowego zapytania do AI.' % elapsed if reuse else 'Model gotowy w %.1f s. Instrukcje AI: %.1f s; Blender: %.1f s. Zapisano GLB z materialami.' % (elapsed, ai_seconds, blender_seconds))
+                    status(job['id'], 'succeeded', detail)
                     break
                 except (ValueError, SyntaxError) as error:
                     if isinstance(error, CodePolicyError) and error.partial_code:
@@ -249,7 +258,7 @@ def worker():
                         draft.write_text(error.partial_code, encoding='utf-8')
                         os.chmod(draft, 0o600)
                     write_json(folder / ('attempt-%d-error.json' % (attempt + 1)), {'error': str(error)[-2500:]})
-                    if attempt:
+                    if attempt or reuse:
                         raise
                     status(job['id'], 'retrying', 'Pierwsza proba nie przeszla kontroli. AI poprawia instrukcje…')
                     if isinstance(error, CodePolicyError):
@@ -342,6 +351,9 @@ class Handler(BaseHTTPRequestHandler):
             if write and self.path == '/v1/jobs':
                 data = self.input()
                 job_id, prompt = data.get('id'), data.get('prompt')
+                source_id = data.get('sourceJobId')
+                if source_id is not None and (not isinstance(source_id, str) or not UUID.fullmatch(source_id) or source_id == job_id):
+                    raise ValueError('Nieprawidlowe zlecenie zrodlowe.')
                 if not isinstance(job_id, str) or not UUID.fullmatch(job_id) or not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 2000:
                     raise ValueError('Nieprawidlowy opis lub identyfikator zlecenia.')
                 with LOCK, database() as db:
@@ -352,12 +364,31 @@ class Handler(BaseHTTPRequestHandler):
                         return self.send_json(dict(prior))
                     if db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]:
                         return self.send_json({'error': 'Serwer wykonuje poprzedni model. Poczekaj na wynik lub anuluj tamto zlecenie.'}, 409)
-                    if not health()['ready']:
+                    if source_id is None and not health()['ready']:
                         return self.send_json({'error': 'Wybrane AI nie jest jeszcze gotowe. Sprawdz ustawienia.'}, 409)
                     if shutil.disk_usage(STATE).free < 2 * 1024**3:
                         return self.send_json({'error': 'Na serwerze zostalo mniej niz 2 GB wolnego miejsca.'}, 409)
                     if db.execute('SELECT COUNT(*) FROM jobs').fetchone()[0] >= 300:
                         return self.send_json({'error': 'Osiagnieto limit 300 zlecen. Zarchiwizuj modele na serwerze przed dalsza praca.'}, 409)
+                    if (JOBS / job_id).exists():
+                        return self.send_json({'error': 'Identyfikator zlecenia jest juz zajety. Sprobuj ponownie.'}, 409)
+                    if source_id is not None:
+                        source = db.execute('SELECT * FROM jobs WHERE id=?', (source_id,)).fetchone()
+                        source_path = JOBS / source_id / 'generate.py'
+                        if not source or source['state'] != 'failed' or source['prompt'] != prompt.strip() or not source_path.is_file():
+                            return self.send_json({'error': 'Brak zapisanego skryptu dla tego nieudanego zlecenia.'}, 409)
+                        if source_path.stat().st_size > 60000:
+                            return self.send_json({'error': 'Zapisany skrypt przekracza limit rozmiaru.'}, 409)
+                        saved_code = source_path.read_text(encoding='utf-8')
+                        try:
+                            prepare_code(saved_code)
+                        except (ValueError, SyntaxError):
+                            return self.send_json({'error': 'Zapisany skrypt wymaga nowych instrukcji AI; nie zostal uruchomiony.'}, 409)
+                        destination = JOBS / job_id
+                        destination.mkdir(mode=0o700)
+                        (destination / 'saved-script.py').write_text(saved_code, encoding='utf-8')
+                        os.chmod(destination / 'saved-script.py', 0o600)
+                        write_json(destination / 'source-job.json', {'id': source_id})
                     now = time.time()
                     db.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?)', (job_id, prompt.strip(), 'queued', 'Opis przyjety.', now, now))
                 WAKE.set()

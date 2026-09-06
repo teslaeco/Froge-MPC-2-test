@@ -4,6 +4,17 @@ import { blenderRequest, type BlenderConnection } from './client'
 export const oracleOpenAIUpdateCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ssh-key-2026-09-06.key" "$HOME/froge-oracle-openai.zip" opc@141.148.242.30:/home/opc/froge-oracle-openai.zip &&
 ssh -T -o IdentitiesOnly=yes -o ConnectTimeout=20 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'python3 -m zipfile -e "$HOME/froge-oracle-openai.zip" "$HOME/froge-openai-update" && python3 "$HOME/froge-openai-update/apply_update.py"'`
 
+export const oracleRebuildUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-rebuild.zip').replaceAll('froge-openai-update', 'froge-rebuild-update')
+
+export function SavedScriptUpdate() {
+  return <div className="blender-setup">
+    <strong>Wykorzystaj zapisany skrypt</strong>
+    <p>Aktualizacja przywraca gotową funkcję materiałów i pozwala ponownie wykonać skrypt bez czekania na AI.</p>
+    <a href="/downloads/froge-oracle-rebuild.zip" download>Pobierz poprawkę materiałów</a>
+    <details><summary>Jak zainstalować poprawkę?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Poczekaj na Completed i wklej:</p><pre tabIndex={0}>{oracleRebuildUpdateCommand}</pre><p>Po FROGE_UPDATE_OK odśwież stronę i wybierz „Wykonaj zapisany skrypt”.</p></details>
+  </div>
+}
+
 export function OpenAISettings({ connection, busy, onSaved }: { connection: BlenderConnection; busy: boolean; onSaved: () => Promise<void> }) {
   const [apiKey, setApiKey] = useState(''), [saving, setSaving] = useState(false), [note, setNote] = useState('')
   async function save(provider: 'openai' | 'ollama') {

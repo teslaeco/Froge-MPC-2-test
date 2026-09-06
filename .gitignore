@@ -35,6 +35,7 @@ dist-ssr
 /public/downloads/froge-oracle-update.zip
 /public/downloads/froge-oracle-texture-fix.zip
 /public/downloads/froge-oracle-openai.zip
+/public/downloads/froge-oracle-rebuild.zip
 /oracle_connector/state/
 /oracle_connector/ollama/
 /oracle_connector/bin/

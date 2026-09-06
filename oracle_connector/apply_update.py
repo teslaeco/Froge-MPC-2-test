@@ -10,7 +10,7 @@ import urllib.request
 from runtime_check import RuntimeUnavailable, setup_runtime
 
 FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py')
-EXPECTED_VERSION = 4
+EXPECTED_VERSION = 5
 
 
 def replace(path, data):
@@ -61,7 +61,7 @@ def update(source, target):
                 with urllib.request.urlopen(request, timeout=2) as response:
                     if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
                         print('FROGE_UPDATE_OK')
-                        print('Odswiez Froge. W Ustawieniach serwera wybierz OpenAI i podlacz klucz API, potem ponow opis.')
+                        print('Odswiez Froge. Dla bledu materialow wybierz: Wykonaj zapisany skrypt. Nowe opisy moga korzystac z OpenAI po podlaczeniu klucza w ustawieniach.')
                         return
             except (OSError, ValueError):
                 pass

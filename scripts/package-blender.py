@@ -20,3 +20,4 @@ with zipfile.ZipFile(root/'public/downloads/froge-oracle-update.zip','w',zipfile
 print('Packaged Oracle worker update')
 (root/'public/downloads/froge-oracle-texture-fix.zip').write_bytes((root/'public/downloads/froge-oracle-update.zip').read_bytes())
 (root/'public/downloads/froge-oracle-openai.zip').write_bytes((root/'public/downloads/froge-oracle-update.zip').read_bytes())
+(root/'public/downloads/froge-oracle-rebuild.zip').write_bytes((root/'public/downloads/froge-oracle-update.zip').read_bytes())

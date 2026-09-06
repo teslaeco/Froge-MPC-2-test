@@ -9,7 +9,7 @@ import struct
 import tempfile
 
 import bpy
-from code_policy import StreamPolicyGuard, validate_code
+from code_policy import StreamPolicyGuard, prepare_code, validate_code
 
 FIXTURE = '''bark = make_material("oak_bark", (0.27, 0.14, 0.06), "bark")
 leaves = make_material("oak_leaves", (0.12, 0.36, 0.05), "leaf")
@@ -17,15 +17,30 @@ tube("trunk", [(0,0,0), (0.1,0,1), (0.2,0.1,2)], [0.18,0.12,0.04], bark)
 mesh_object("leaf", [(0.2,0.1,2), (0.4,0.1,2.1), (0.6,0.3,2.05), (0.3,0.3,2)], [(0,1,2), (0,2,3)], leaves)
 '''
 
+BROKEN_HELPER = '''def make_material(name, rgb, pattern='plain'):
+    image = bpy.data.images.new("broken", width=8, height=8)
+    image.generated_type = 'RGBA'
+    return None
+'''
+
 
 def main():
-    validate_code(FIXTURE)
+    # Reproduce the observed enum error with actual Blender before checking repair.
+    try:
+        exec(BROKEN_HELPER + 'make_material("test", (0.2,0.3,0.4))', {'bpy': bpy})
+    except TypeError as error:
+        assert 'RGBA' in str(error)
+    else:
+        raise AssertionError('Expected the observed invalid texture enum error')
+    prepared, restored = prepare_code(BROKEN_HELPER + FIXTURE)
+    assert restored == ['make_material']
+    validate_code(prepared)
     guard = StreamPolicyGuard()
-    guard.feed(FIXTURE)
+    guard.feed(prepared)
     runtime = Path(__file__).resolve().parent / 'runtime/run.py'
     with tempfile.TemporaryDirectory(prefix='froge-blender-') as directory:
         folder = Path(directory)
-        (folder / 'generate.py').write_text(FIXTURE)
+        (folder / 'generate.py').write_text(prepared)
         source = runtime.read_text().replace('/work/', folder.as_posix() + '/')
         exec(compile(source, str(runtime), 'exec'), {'__name__': '__main__', '__file__': str(runtime)})
         data = (folder / 'model.glb').read_bytes()
@@ -48,7 +63,7 @@ def main():
         report = json.loads((folder / 'result.json').read_text())
         assert report['objects'] == 2 and report['triangles'] > 0
         print(json.dumps({'blender': bpy.app.version_string, 'bytes': len(data),
-                          'embedded_png_textures': len(images), **report}))
+                          'embedded_png_textures': len(images), 'restored_helpers': restored, **report}))
 
 
 if __name__ == '__main__':
