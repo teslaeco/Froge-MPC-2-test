@@ -34,3 +34,23 @@ it.each(['succeeded', 'failed'])('uses the real %s response and never selects a 
   else expect(onResult).not.toHaveBeenCalled()
   expect(fetcher.mock.calls.every(([url]) => !String(url).includes('/models/'))).toBe(true)
 })
+
+it('retries the saved description after refresh even when the input is empty', async () => {
+  const original = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Duży dąb z korą i liśćmi', state: 'failed', detail: 'timed out', hasModel: false }
+  const fetcher = vi.fn(async (url, init) => {
+    const path = String(url)
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true })
+    if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job: { ...JSON.parse(init.body), state: 'queued', detail: 'Opis przyjety.', hasModel: false } })
+    if (path.endsWith('/jobs')) return Response.json({ jobs: [original] })
+    return Response.json({ job: original })
+  })
+  vi.stubGlobal('fetch', fetcher)
+  render(<RemoteGenerator prompt="" onStart={() => 1} onResult={vi.fn()}/>)
+  const retry = await screen.findByRole('button', { name: 'Ponów ten opis' })
+  expect(screen.getByText('AI nie odpowiedziało w limicie czasu. Model nie został zapisany.')).toBeInTheDocument()
+  fireEvent.click(retry)
+  await waitFor(() => expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(true))
+  const [, request] = fetcher.mock.calls.find(([, init]) => init?.method === 'POST')!
+  expect(JSON.parse(request.body).prompt).toBe(original.prompt)
+  expect(JSON.parse(request.body).id).not.toBe(original.id)
+})

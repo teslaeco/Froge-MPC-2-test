@@ -17,6 +17,7 @@ import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from code_policy import extract_code, validate_code
+from ai_stream import stream_chat
 
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / 'state'
@@ -93,39 +94,23 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'model': MODEL, 'detail': detail}
+        return {'ready': ready, 'model': MODEL, 'detail': detail, 'connectorVersion': 2}
     except Exception:
-        return {'ready': False, 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.'}
+        return {'ready': False, 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': 2}
 
-def generate_code(messages, job_id, cancelled):
+def generate_code(messages, job_id, cancelled, deadline=None, attempt=1):
     payload = {'model': MODEL, 'messages': messages, 'stream': True, 'keep_alive': 0,
                'options': {'temperature': 0.35, 'num_ctx': 8192, 'num_predict': 5000, 'num_thread': 2}}
-    req = urllib.request.Request(OLLAMA + '/api/chat', data=json.dumps(payload).encode(), headers={'Content-Type': 'application/json'})
-    text = ''
-    started = time.monotonic()
-    last_update = 0
-    with urllib.request.urlopen(req, timeout=180) as response:
-        for raw in response:
-            if cancelled.is_set():
-                raise InterruptedError('Zlecenie anulowane.')
-            if time.monotonic() - started > 1800:
-                raise TimeoutError('AI przekroczylo limit 30 minut. Uprosc opis i sprobuj ponownie.')
-            if len(raw) > 200000:
-                raise ValueError('Nieprawidlowa odpowiedz AI.')
-            item = json.loads(raw)
-            if item.get('error'):
-                raise ValueError(str(item['error'])[:500])
-            text += item.get('message', {}).get('content', '')
-            if len(text.encode()) > 80000:
-                raise ValueError('AI zwrocilo zbyt dlugi skrypt.')
-            if time.monotonic() - last_update > 8:
-                status(job_id, 'generating', 'AI uklada geometrie i materialy: odebrano %d znakow instrukcji.' % len(text))
-                last_update = time.monotonic()
-            if item.get('done'):
-                if item.get('done_reason') == 'length':
-                    raise ValueError('Skrypt AI zostal uciety. Uprosc model i uzyj petli zamiast dlugich list.')
-                break
-    return extract_code(text)
+    def progress(characters, elapsed, silent):
+        clock = '%d:%02d' % (int(elapsed) // 60, int(elapsed) % 60)
+        prefix = 'Proba %d/2. Czas tej proby: %s. ' % (attempt, clock)
+        if characters:
+            detail = 'AI tworzy instrukcje: %d znakow. Ostatnie dane %d s temu.' % (characters, silent)
+        else:
+            detail = 'AI laduje model lub analizuje opis; oczekiwanie na pierwsze instrukcje.'
+        status(job_id, 'generating', prefix + detail)
+    remaining = 1800 if deadline is None else deadline - time.monotonic()
+    return extract_code(stream_chat(OLLAMA + '/api/chat', payload, cancelled, progress, timeout=remaining))
 
 def blender_command(job_id, folder):
     return ['podman', 'run', '--rm', '--pull=never', '--name', 'froge-job-' + job_id,
@@ -174,10 +159,11 @@ def worker():
         folder.mkdir(mode=0o700, exist_ok=True)
         messages = [{'role': 'system', 'content': SYSTEM}, {'role': 'user', 'content': job['prompt']}]
         code = ''
+        deadline = time.monotonic() + 1800
         try:
             for attempt in range(2):
                 try:
-                    code = generate_code(messages, job['id'], cancelled)
+                    code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1)
                     validate_code(code)
                     (folder / 'generate.py').write_text(code, encoding='utf-8')
                     if cancelled.is_set():

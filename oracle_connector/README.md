@@ -16,8 +16,13 @@ Qwen2.5-Coder 7B model is about 4.7 GB; inference runs on CPU. No paid AI API is
 6. Enter any model description and click **Generuj model 3D**. The request creates a new job;
    there is no keyword-to-example fallback. The model appears only after valid GLB export.
 
-The first model run may take several minutes on 2 CPU cores. Code generation is capped at
-30 minutes and 5000 output tokens; Blender gets 10 minutes. One active job is allowed.
+The first model run may take several minutes on 2 CPU cores. Code generation attempts share
+a 30-minute deadline and each response is capped at 5000 output tokens; Blender gets 10 minutes
+per attempt. The local request uses curl (installed by `install.sh`), with a total deadline,
+live wait/progress messages and cancellation even before the first HTTP headers arrive.
+There is no 180-second inactivity cutoff during model loading or prompt evaluation.
+Incomplete streams are rejected, even if they contain syntactically valid partial code.
+One active job is allowed.
 Quality and exact adherence depend on the local model. This is procedural AI modeling,
 not a pretrained image-to-3D or photogrammetry service. Textures are procedural packed UV images.
 
@@ -56,8 +61,16 @@ Status and logs:
 
 ```bash
 systemctl --user status froge-worker froge-ollama froge-tunnel
-journalctl --user -u froge-worker -n 60 --no-pager
+sudo journalctl _SYSTEMD_USER_UNIT=froge-worker.service _SYSTEMD_USER_UNIT=froge-ollama.service -n 60 --no-pager
 ```
+
+For an existing installation, download `froge-oracle-update.zip` from the Site, upload it to
+Cloud Shell, copy it to the VM and extract it into a separate directory. Run its
+`apply_update.py` as `opc`. It checks that no job is active, backs up the replaced code,
+updates only `server.py` and `ai_stream.py`, restarts only `froge-worker.service`, and verifies
+its authenticated health response. It preserves pairing, the tunnel, downloaded AI weights
+and all jobs. Failed startup restores the old code. After `FROGE_UPDATE_OK`, refresh the Site
+and use **Ponów ten opis** on the failed job to submit the same prompt as a new job.
 
 To stop the services:
 

@@ -77,10 +77,10 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       await refreshConnection()
     } catch (e) { setError((e as Error).message) } finally { setConnecting(false) }
   }
-  async function generate() {
-    if (busy || !connection?.ready || !prompt.trim()) return
+  async function generate(requestedPrompt = prompt) {
+    if (busy || !connection?.ready || !requestedPrompt.trim()) return
     setSubmitting(true); setError('')
-    const input = { id: crypto.randomUUID(), prompt: prompt.trim() }
+    const input = { id: crypto.randomUUID(), prompt: requestedPrompt.trim() }
     const requestSerial = ++serial.current
     const nextRevision = callbacks.current.onStart()
     try {
@@ -130,7 +130,8 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
     <p className="studio-helper">Lokalne AI tworzy instrukcje, a Twój Blender buduje nową geometrię i materiały. Na serwerze z dwoma rdzeniami może to potrwać kilka minut. Jakość zależy od opisu i modelu AI.</p>
     {active && <div className={'generation-job state-' + active.state} role="status">
       <strong>{active.state === 'succeeded' ? displayed ? 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
-      <p className="generation-prompt">{active.prompt}</p><p>{active.detail}</p>
+      <p className="generation-prompt">{active.prompt}</p><p>{active.detail === 'timed out' ? 'AI nie odpowiedziało w limicie czasu. Model nie został zapisany.' : active.detail}</p>
+      {active.state === 'failed' && <button disabled={busy || !connection?.ready} onClick={() => void generate(active.prompt)}>Ponów ten opis</button>}
       {!finished(active) && <button onClick={() => void cancel()}>Anuluj zlecenie</button>}
       {active.state === 'succeeded' && !displayed && <button onClick={() => void openModel(active)}>Wczytaj wynik do podglądu</button>}
     </div>}
