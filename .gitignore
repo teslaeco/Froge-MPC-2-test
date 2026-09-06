@@ -31,5 +31,9 @@ dist-ssr
 /public/models/codex-dragon.froge.json
 /public/models/codex-dragon-design.json
 /public/downloads/froge-blender-addon.zip
+/public/downloads/froge-oracle-connector.zip
+/oracle_connector/state/
+/oracle_connector/ollama/
+/oracle_connector/bin/
 __pycache__/
 *.pyc

@@ -46,14 +46,15 @@ describe('Codex and Blender modeling',()=>{
   const result=await worker.fetch(new Request('https://studio.test/api/3d/tasks',{method:'POST'}),{ASSETS:{fetch:async()=>new Response('asset')}})
   expect(result.status).toBe(410);expect(remote).not.toHaveBeenCalled()
  })
- it('keeps dimensions optional and queues a request without claiming generation',()=>{
-  const remote=vi.fn();vi.stubGlobal('fetch',remote)
+ it('keeps dimensions optional and queues a manual agent request without submitting a generation job',()=>{
+  const remote=vi.fn(async(url)=>Response.json(String(url).endsWith('/connection')?{connected:false,ready:false}:{jobs:[]}));vi.stubGlobal('fetch',remote)
   render(<MemoryRouter><ModelStudio/></MemoryRouter>)
   expect(screen.getByText('Wymiary i kąty · opcjonalnie').closest('details')?.open).toBe(false)
   expect(screen.queryByLabelText('Klucz API Meshy')).toBeNull()
   expect(screen.getByRole('link',{name:/Pobierz dodatek do Blendera/}).getAttribute('href')).toBe('/downloads/froge-blender-addon.zip')
   fireEvent.change(screen.getByLabelText('Co mam stworzyć?'),{target:{value:'Zrób smoka'}})
+  fireEvent.click(screen.getByText('Praca z Codexem przez WebMCP'))
   fireEvent.click(screen.getByRole('button',{name:/Przygotuj polecenie dla agenta/}))
-  expect(getAgentScene().status).toBe('waiting');expect(getAgentScene().scene).toBeNull();expect(remote).not.toHaveBeenCalled()
+  expect(getAgentScene().status).toBe('waiting');expect(getAgentScene().scene).toBeNull();expect(remote.mock.calls.every(([url])=>String(url).startsWith('/api/blender/'))).toBe(true)
  })
 })
