@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "name": "Broad adult, shared garment material, raised hand",
+  "materials": [
+    {
+      "name": "skin",
+      "rgb": [
+        0.48,
+        0.285,
+        0.17
+      ],
+      "pattern": "skin",
+      "roughness": 0.6,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "hair",
+      "rgb": [
+        0.024,
+        0.026,
+        0.029
+      ],
+      "pattern": "plain",
+      "roughness": 0.6,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "hoodie",
+      "rgb": [
+        0.043,
+        0.052,
+        0.067
+      ],
+      "pattern": "fabric",
+      "roughness": 0.9,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "pants",
+      "rgb": [
+        0.055,
+        0.071,
+        0.09
+      ],
+      "pattern": "fabric",
+      "roughness": 0.8,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "shoes",
+      "rgb": [
+        0.72,
+        0.76,
+        0.8
+      ],
+      "pattern": "plain",
+      "roughness": 0.6,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "gold",
+      "rgb": [
+        0.83,
+        0.56,
+        0.13
+      ],
+      "pattern": "metal",
+      "roughness": 0.24,
+      "metallic": 0.85,
+      "emission": 0
+    },
+    {
+      "name": "eyes",
+      "rgb": [
+        0.92,
+        0.92,
+        0.87
+      ],
+      "pattern": "plain",
+      "roughness": 0.6,
+      "metallic": 0,
+      "emission": 0
+    }
+  ],
+  "parts": [
+    {
+      "kind": "person",
+      "name": "raper",
+      "center": [
+        0,
+        0,
+        0
+      ],
+      "height": 1.8,
+      "skin_material": "skin",
+      "hair_material": "hair",
+      "top_material": "hoodie",
+      "trouser_material": "hoodie",
+      "shoe_material": "shoes",
+      "accent_material": "gold",
+      "eye_material": "eyes",
+      "build": "broad",
+      "presentation": "androgynous",
+      "outfit": "casual",
+      "headwear": "none",
+      "pose": "performing",
+      "necklace": false,
+      "microphone": false
+    }
+  ]
+}

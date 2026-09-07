@@ -31,6 +31,7 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'runtime/detailed_geometry.py').write_text('geometry_version = 7\n')
         (self.target / 'runtime/run.py').write_text('preserve_packed_images = False\n')
         (self.source / 'runtime/anatomy.py').write_text('anatomy_version = 8\n')
+        (self.source / 'runtime/wardrobe.py').write_text('wardrobe_version = 9\n')
         shutil.copytree(Path(__file__).parent/'runtime/assets', self.source/'runtime/assets')
         self.config = self.target / 'state/config.json'
         self.config.write_text(json.dumps({'token': 'local-test-token', 'client': 'owner', 'code': 'unchanged'}))

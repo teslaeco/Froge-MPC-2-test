@@ -28,7 +28,7 @@ function. Limited replay of a compatible material-only script remains available,
 an incompatible stored geometry script requires a fresh scene plan. Original job files
 and failures are retained.
 
-Install `froge-oracle-characters-v8.zip`, refresh the studio and generate a
+Install `froge-oracle-wardrobe-v9.zip`, refresh the studio and generate a
 new model. An already configured OpenAI key is preserved. The Site refuses new jobs on older workers rather than launching an obsolete
 code-generation attempt.
 
@@ -168,7 +168,7 @@ Cloud Shell, copy it to the VM and extract it into a separate directory. Run its
 `apply_update.py` as `opc`. It checks that no job is active, backs up the replaced code,
 updates `server.py`, `ai_stream.py`, `openai_provider.py`, `runtime_check.py`, `code_policy.py` and the trusted runtime modules, restarts only `froge-worker.service`, and verifies
 its authenticated health response. It preserves pairing, the tunnel, downloaded AI weights
-and all jobs. Failed startup restores the old code. `froge-oracle-characters-v8.zip` is the current named update; older download names are
+and all jobs. Failed startup restores the old code. `froge-oracle-wardrobe-v9.zip` is the current named update; older download names are
 retained as aliases. After `FROGE_UPDATE_OK`, refresh the Site and use **Ponów ten opis**
 on a failed or cancelled job. OpenAI settings remain unchanged. The legacy
 `froge-oracle-texture-fix.zip` download is retained as an alias of the current update.
@@ -195,3 +195,5 @@ fixtures, validate their GLB payloads, verify two embedded oak PNG textures and 
 bulb meshes, then reimport the GLBs in Blender. `--output /absolute/directory` also saves
 each model and review renders; `--scene rapper.scene.json` selects one fixture. This does not call OpenAI or measure Oracle ARM performance.
 See `docs/ASTRA-3D-NOTES.md` in the project for the documentation review and measured results.
+
+Version 9 adds separate top/trouser unions, post-union localized folds, sewn pocket panels, cuffs and a folded hood. Sneakers use flat rubber soles, layered uppers, quarter panels, crossed laces and heel tabs. The wardrobe remains a generic procedural design, not an automatic guarantee of retail or print quality. `wardrobe.py` is trusted bundled runtime code and is included in updater rollback.

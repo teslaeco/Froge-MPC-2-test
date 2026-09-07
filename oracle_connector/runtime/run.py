@@ -168,7 +168,7 @@ def finish():
         if image.has_data and (image.packed_file is None or image.is_dirty):
             image.pack()
     bpy.ops.wm.save_as_mainfile(filepath='/work/model.blend')
-    bpy.ops.export_scene.gltf(filepath='/work/model.glb', export_format='GLB', export_image_format='AUTO', export_cameras=False, export_lights=False)
+    bpy.ops.export_scene.gltf(filepath='/work/model.glb', export_format='GLB', export_image_format='AUTO', export_cameras=False, export_lights=False, export_extras=True)
     Path('/work/result.json').write_text(json.dumps({'vertices': vertices, 'triangles': triangles, 'objects': len(objects), 'images': len(bpy.data.images)}))
 
 if __name__ == '__main__':

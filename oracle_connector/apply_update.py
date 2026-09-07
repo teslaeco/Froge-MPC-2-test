@@ -11,8 +11,8 @@ import urllib.request
 from runtime_check import RuntimeUnavailable, setup_runtime
 
 ASSETS = ('anatomy.json.gz', 'male-skin.png', 'female-skin.png', 'LICENSE.CC0.md', 'SOURCES.md', 'manifest.json')
-FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py') + tuple('runtime/assets/'+name for name in ASSETS)
-EXPECTED_VERSION = 8
+FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py', 'runtime/wardrobe.py') + tuple('runtime/assets/'+name for name in ASSETS)
+EXPECTED_VERSION = 9
 
 
 def replace(path, data):
@@ -66,7 +66,7 @@ def update(source, target):
                 with urllib.request.urlopen(request, timeout=2) as response:
                     if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
                         print('FROGE_UPDATE_OK')
-                        print('Odswiez Froge i wygeneruj NOWY model. Wersja 8 dodaje baze anatomiczna twarzy i dloni oraz tekstury skory. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Odswiez Froge i wygeneruj NOWY model. Wersja 9 dodaje kroj ubran, faldy, kieszenie i szczegolowe sneakersy. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass

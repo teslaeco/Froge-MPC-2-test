@@ -11,3 +11,6 @@
 .planned-marketplaces li span{display:block;font-size:11px;color:#a8b7c6;margin-top:9px}
 @media(max-width:1000px){.planned-marketplaces{flex-direction:column;align-items:stretch;gap:20px}.planned-marketplaces ul{margin:0;justify-content:space-between}.planned-marketplaces li{flex:1;max-width:180px;min-width:0}.marketplace-logo-shopify img{width:100%;max-width:145px}}
 @media(max-width:480px){.planned-marketplaces{padding:18px}.planned-marketplaces ul{gap:8px}.marketplace-logo{height:66px;padding:8px}.marketplace-logo img{height:40px}.planned-marketplaces li span{font-size:10px}}
+
+.planned-marketplaces{flex-wrap:wrap}.planned-marketplaces ul{display:grid;grid-template-columns:repeat(4,minmax(110px,1fr));flex:1;gap:14px}.planned-marketplaces li{width:auto;max-width:none}.planned-marketplaces li span{font-size:12px}.planned-marketplaces .planned-marketplaces-label{font-size:12px}.planned-marketplaces p{font-size:14px}.marketplace-logo-shopify img{max-width:100%}
+@media(max-width:640px){.planned-marketplaces ul{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.planned-marketplaces li{max-width:none}.marketplace-logo{height:78px;padding:16px}.planned-marketplaces li span{font-size:12px}}

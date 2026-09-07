@@ -10,7 +10,7 @@ it('recovers the same job after a lost mobile connection without starting anothe
   const onResult = vi.fn(async () => true)
   const fetcher = vi.fn(async (url, _init) => {
     const path = String(url)
-    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, provider: 'ollama', connectorVersion: 8 })
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, provider: 'ollama', connectorVersion: 9 })
     if (path.endsWith('/jobs')) return Response.json({ jobs: [job] })
     if (!reachable) throw new TypeError('Failed to fetch')
     if (path.endsWith('/model')) return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'model/gltf-binary' } })
@@ -44,13 +44,13 @@ it('ends a stalled request so that status recovery can continue', async () => {
 
 it('asks for sign-in after an expired session instead of continually treating it as generation progress', async () => {
   const job = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb', state: 'generating', detail: '', hasModel: false }
-  vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: true, ready: true, connectorVersion: 8 } : String(url).endsWith('/jobs') ? { jobs: [job] } : { error: 'Authentication required' }, { status: String(url).endsWith(job.id) ? 401 : 200 })))
+  vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: true, ready: true, connectorVersion: 9 } : String(url).endsWith('/jobs') ? { jobs: [job] } : { error: 'Authentication required' }, { status: String(url).endsWith(job.id) ? 401 : 200 })))
   render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)
   await screen.findByRole('button', { name: 'Odśwież i zaloguj się' })
   expect(screen.queryByText('Ponawiam odczyt tego samego zlecenia.')).not.toBeInTheDocument()
 })
 
-it.each([5, 6])('requires the geometry update on worker v%i', async version => {
+it.each([5, 6, 7, 8])('requires the geometry update on worker v%i', async version => {
   const job = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb', state: 'failed', detail: '/work/generate.py cannot unpack non-iterable Object object', hasModel: false }
   vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: true, ready: true, connectorVersion: version } : String(url).endsWith('/jobs') ? { jobs: [job] } : { job })))
   render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)
@@ -64,7 +64,7 @@ it('offers saved-script execution without requiring ready AI or submitting a new
   const original = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb z lampkami', state: 'failed', detail: '/work/generate.py generated_type RGBA', hasModel: false }
   const fetcher = vi.fn(async (url, init) => {
     const path = String(url)
-    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: false, connectorVersion: 8 })
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: false, connectorVersion: 9 })
     if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job: { ...original, ...JSON.parse(init.body), state: 'failed', detail: 'fixture complete' } })
     if (path.endsWith('/jobs')) return Response.json({ jobs: [original] })
     return Response.json({ job: original })
@@ -95,7 +95,7 @@ it.each(['succeeded', 'failed'])('uses the real %s response and never selects a 
   const job = { id: '12345678-1234-4234-8234-123456789abc', prompt, state: 'queued', detail: '', hasModel: false }
   const fetcher = vi.fn(async (url, init) => {
     const path = String(url)
-    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, connectorVersion: 8 })
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, connectorVersion: 9 })
     if (path.endsWith('/model')) return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'model/gltf-binary' } })
     if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job })
     if (path.endsWith('/jobs')) return Response.json({ jobs: [] })
@@ -117,7 +117,7 @@ it('retries the saved description after refresh even when the input is empty', a
   const original = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Duży dąb z korą i liśćmi', state: 'failed', detail: 'timed out', hasModel: false }
   const fetcher = vi.fn(async (url, init) => {
     const path = String(url)
-    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, connectorVersion: 8 })
+    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, connectorVersion: 9 })
     if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job: { ...JSON.parse(init.body), state: 'queued', detail: 'Opis przyjety.', hasModel: false } })
     if (path.endsWith('/jobs')) return Response.json({ jobs: [original] })
     return Response.json({ job: original })

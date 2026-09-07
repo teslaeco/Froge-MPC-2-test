@@ -67,7 +67,7 @@ def render_review(folder, name='oak-lights.scene.json'):
     scene.world.use_nodes = True
     scene.world.node_tree.nodes['Background'].inputs[0].default_value=(0.055,0.075,0.09,1)
     scene.world.node_tree.nodes['Background'].inputs[1].default_value=.45
-    scene.render.engine='CYCLES'; scene.cycles.samples=16
+    scene.render.engine='CYCLES'; scene.cycles.samples=16; scene.cycles.use_denoising=True
     scene.render.threads_mode='FIXED'; scene.render.threads=2
     scene.render.resolution_x=900; scene.render.resolution_y=1000; scene.render.resolution_percentage=100
     scene.render.image_settings.file_format='PNG'; scene.render.filepath=str(folder/'review.png')
@@ -78,6 +78,16 @@ def render_review(folder, name='oak-lights.scene.json'):
         camera.data.ortho_scale=.37
         scene.render.filepath=str(folder/'face-review.png')
         bpy.ops.render.render(write_still=True)
+        for label, location, aim, scale in [
+            ('shoes',(.46,-1,.35),(0,-.07,.13),.47),
+            ('clothes',(.7,-3,1.55),(0,0,1.15),.91),
+            ('back',(-1,4,2.05),(0,0,.92),2.12),
+        ]:
+            camera.location=location
+            camera.rotation_euler=(Vector(aim)-camera.location).to_track_quat('-Z','Y').to_euler()
+            camera.data.ortho_scale=scale
+            scene.render.filepath=str(folder/(label+'-review.png'))
+            bpy.ops.render.render(write_still=True)
 
 
 def verify(name, folder, render=False):
@@ -88,6 +98,21 @@ def verify(name, folder, render=False):
     code=(ROOT/'runtime/run.py').read_text().replace('/work/', str(folder)+'/')
     scope={'__name__':'froge_runtime_fixture', '__file__': str(ROOT/'runtime/run.py')}
     exec(compile(code, 'runtime/run.py', 'exec'), scope)
+    if name.startswith('rapper'):
+        # Check flat sole solids independently, before final material grouping.
+        import wardrobe
+        material=scope['make_material']('footwear-check',[.4,.4,.4])
+        shoe_parts=wardrobe.sneaker(0,0,.08,material,material,material,scope['mesh_object'],scope['tube'])
+        for obj in shoe_parts:
+            if obj.get('shoe_solid'):
+                mesh=bmesh.new();mesh.from_mesh(obj.data)
+                assert all(e.is_manifold for e in mesh.edges), obj.name
+                assert mesh.calc_volume(signed=True)>0, obj.name
+                assert all(f.calc_area()>1e-12 for f in mesh.faces), obj.name
+                mesh.free()
+                if obj.name.startswith('rubber'):
+                    assert abs(min(v.co.z for v in obj.data.vertices))<1e-7
+        bpy.ops.wm.read_factory_settings(use_empty=True)
     built=build_scene(scene, *(scope[n] for n in ['make_material','mesh_object','tube','ellipsoid','join_meshes']))
     if name.startswith('dubai'):
         for key in ('tower','spire'):
@@ -124,6 +149,12 @@ def verify(name, folder, render=False):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(folder/'model.glb'))
     assert any(o.type=='MESH' for o in bpy.context.scene.objects)
+    if name.startswith('rapper'):
+        meshes=[o for o in bpy.context.scene.objects if o.type=='MESH']
+        assert any(o.get('froge_kind')=='person' for o in meshes)
+        assert all(all(__import__('math').isfinite(c) for c in v.co) for o in meshes for v in o.data.vertices)
+        bounds=[o.matrix_world@v.co for o in meshes for v in o.data.vertices]
+        assert abs(max(v.z for v in bounds)-min(v.z for v in bounds)-scene['parts'][0]['height'])<.005
     if render:render_review(folder,name)
     return result
 

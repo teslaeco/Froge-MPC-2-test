@@ -104,7 +104,7 @@ polygonal architecture. Loft sections specify a center and two elliptical radii,
 continuous sculpted bodies and limbs instead of disconnected balls and cylinders.
 Use person for adult human figurines, rappers and singers: it uses a licensed anatomical adult base
 with connected nose/lips/eyelids/ears, UV skin texture, five-finger hands, fitted headwear,
-continuous clothing and shoes. Use a separate skin material with pattern skin, matte
+layered clothing with seams, pockets, compression folds, ribbed cuffs and detailed sneakers. Use a separate skin material with pattern skin, matte
 fabric for clothes and a separate eye material (dark iris color or neutral white).
 Choose the person's palette, build, presentation, clothing, pose, headwear and accessories
 to match the description. Add separate requested props using other operations. Person

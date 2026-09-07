@@ -16,7 +16,7 @@ async function pair() {
   expect((await request('connection', 'POST', { endpoint, code: 'a'.repeat(32) })).status).toBe(200)
 }
 async function submit() {
-  vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/health') ? { connectorVersion: 8 } : { state: 'queued' }, { status: 202 })))
+  vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/health') ? { connectorVersion: 9 } : { state: 'queued' }, { status: 202 })))
   return request('jobs', 'POST', { id, prompt: 'Duży dąb z korą i liśćmi' })
 }
 function minimalGlb() {
@@ -57,7 +57,7 @@ describe('private Blender request lifecycle with real SQLite', () => {
     vi.stubGlobal('fetch', upstream)
     const response = await request('jobs', 'POST', { id, prompt: 'Dąb' })
     expect(response.status).toBe(409)
-    expect((await response.json()).error).toContain('characters-v8')
+    expect((await response.json()).error).toContain('wardrobe-v9')
     expect(db.prepare('SELECT COUNT(*) AS total FROM blender_jobs').get()!.total).toBe(0)
     expect(upstream).toHaveBeenCalledTimes(1)
   })
@@ -73,7 +73,7 @@ describe('private Blender request lifecycle with real SQLite', () => {
     expect((await request('jobs', 'POST', input, 'owner-b')).status).toBe(409)
     expect((await request('jobs', 'POST', { ...input, prompt: 'Inny model' })).status).toBe(409)
     expect((await request('jobs', 'POST', input)).status).toBe(409)
-    version = 8
+    version = 9
     expect((await request('jobs', 'POST', input)).status).toBe(202)
     const sent = upstream.mock.calls.find(([url]) => String(url).endsWith('/v1/jobs'))!
     expect(JSON.parse(sent[1].body)).toEqual(input)
