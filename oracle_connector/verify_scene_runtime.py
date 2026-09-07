@@ -12,6 +12,7 @@ import tempfile
 import time
 
 import bpy
+import bmesh
 from mathutils import Vector
 
 ROOT = Path(__file__).resolve().parent
@@ -48,16 +49,19 @@ def inspect_glb(path):
     return doc, len(data)
 
 
-def render_review(folder):
-    bpy.ops.object.camera_add(location=(10, -13, 9))
+def render_review(folder, name='oak-lights.scene.json'):
+    person=name.startswith('rapper')
+    tower=name.startswith('dubai')
+    target=Vector((0,0,.90 if person else 4.2 if tower else 3))
+    bpy.ops.object.camera_add(location=(2.1, -6, 2.6) if person else (11,-17,10) if tower else (10,-13,9))
     camera = bpy.context.object
-    camera.rotation_euler = (Vector((0,0,3))-camera.location).to_track_quat('-Z','Y').to_euler()
-    camera.data.type = 'ORTHO'; camera.data.ortho_scale = 8.2
+    camera.rotation_euler = (target-camera.location).to_track_quat('-Z','Y').to_euler()
+    camera.data.type = 'ORTHO'; camera.data.ortho_scale = 2.12 if person else 10 if tower else 8.2
     bpy.context.scene.camera = camera
     for location, energy, size in [((3,-5,9), 2200, 7), ((-5,1,6), 1700, 5), ((1,5,8), 2300, 4)]:
         bpy.ops.object.light_add(type='AREA', location=location)
         light = bpy.context.object; light.data.energy = energy; light.data.shape='DISK'; light.data.size=size
-        light.rotation_euler = (Vector((0,0,3))-light.location).to_track_quat('-Z','Y').to_euler()
+        light.rotation_euler = (target-light.location).to_track_quat('-Z','Y').to_euler()
     scene = bpy.context.scene
     scene.world = bpy.data.worlds.new('review-world')
     scene.world.use_nodes = True
@@ -66,8 +70,14 @@ def render_review(folder):
     scene.render.engine='CYCLES'; scene.cycles.samples=16
     scene.render.threads_mode='FIXED'; scene.render.threads=2
     scene.render.resolution_x=900; scene.render.resolution_y=1000; scene.render.resolution_percentage=100
-    scene.render.image_settings.file_format='PNG'; scene.render.filepath=str(folder/'oak-review.png')
+    scene.render.image_settings.file_format='PNG'; scene.render.filepath=str(folder/'review.png')
     bpy.ops.render.render(write_still=True)
+    if person:
+        camera.location=(.35,-3,1.72)
+        camera.rotation_euler=(Vector((0,0,1.65))-camera.location).to_track_quat('-Z','Y').to_euler()
+        camera.data.ortho_scale=.37
+        scene.render.filepath=str(folder/'face-review.png')
+        bpy.ops.render.render(write_still=True)
 
 
 def verify(name, folder, render=False):
@@ -79,6 +89,15 @@ def verify(name, folder, render=False):
     scope={'__name__':'froge_runtime_fixture', '__file__': str(ROOT/'runtime/run.py')}
     exec(compile(code, 'runtime/run.py', 'exec'), scope)
     built=build_scene(scene, *(scope[n] for n in ['make_material','mesh_object','tube','ellipsoid','join_meshes']))
+    if name.startswith('dubai'):
+        for key in ('tower','spire'):
+            mesh=bmesh.new();mesh.from_mesh(built[key][0].data)
+            assert all(e.is_manifold for e in mesh.edges), key
+            assert mesh.calc_volume(signed=True)>0, key
+            assert all(f.calc_area()>1e-12 for f in mesh.faces), key
+            mesh.free()
+    if name.startswith('rapper'):
+        assert sum(len(o.data.vertices) for group in built.values() for o in group)>50000
     if name.startswith('oak'):
         assert len(built)==2
         assert len(built['dab'][1].data.vertices)>40000
@@ -88,25 +107,26 @@ def verify(name, folder, render=False):
     document, size=inspect_glb(folder/'model.glb')
     report=json.loads((folder/'result.json').read_text())
     assert report['vertices']<200000 and report['triangles']<400000
+    assert size<=12*1024*1024
     if name.startswith('oak'):
         assert len(document['images'])==2
         assert any(max(m.get('emissiveFactor',[0]))>0 for m in document['materials'])
     result={'scene':name,'blender':bpy.app.version_string,'seconds':round(time.monotonic()-started,2),'glb_bytes':size,**report}
     print(json.dumps(result),flush=True)
     (folder/'verification.json').write_text(json.dumps(result,indent=2))
-    if render:render_review(folder)
     # Reimport the self-contained GLB to exercise the exporter/importer contract.
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(folder/'model.glb'))
     assert any(o.type=='MESH' for o in bpy.context.scene.objects)
+    if render:render_review(folder,name)
     return result
 
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--output');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--output');parser.add_argument('--scene');args=parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='froge-scene-') as temporary:
         base=Path(temporary)
-        verify('rocket.scene.json',base)
-        oak=Path(args.output) if args.output else base
-        oak.mkdir(parents=True,exist_ok=True)
-        verify('oak-lights.scene.json',oak,render=bool(args.output))
+        for name in ([args.scene] if args.scene else ['rocket.scene.json','oak-lights.scene.json','rapper.scene.json','dubai-tower.scene.json']):
+            folder=(Path(args.output) if args.output else base)/name.replace('.scene.json','')
+            folder.mkdir(parents=True,exist_ok=True)
+            verify(name,folder,render=bool(args.output))

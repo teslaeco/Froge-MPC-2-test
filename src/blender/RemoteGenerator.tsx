@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { BlenderRequestError, blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob } from './client'
 import './generator.css'
-import { OpenAISettings, SceneContractUpdate } from './OpenAISettings'
+import { OpenAISettings, GeometryUpdate } from './OpenAISettings'
 
 export const oracleInstallCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ssh-key-2026-09-06.key" "$HOME/froge-oracle-connector.zip" opc@141.148.242.30:/home/opc/froge-oracle-connector.zip &&
 ssh -T -o IdentitiesOnly=yes -o ServerAliveInterval=30 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'mkdir -p "$HOME/froge-connector" && python3 -m zipfile -e "$HOME/froge-oracle-connector.zip" "$HOME/froge-connector" && bash "$HOME/froge-connector/install.sh"'`
@@ -19,7 +19,7 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
   const revision = useRef(0), serial = useRef(0), loaded = useRef(''), mounted = useRef(true)
   const retryPoll = useRef<() => void>(() => {})
   const busy = submitting || (!!active && !finished(active))
-  const currentWorker = (connection?.connectorVersion || 1) >= 6
+  const currentWorker = (connection?.connectorVersion || 1) >= 7
   const canGenerate = !!connection?.ready && currentWorker
 
   async function refreshConnection() {
@@ -141,7 +141,7 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       {connection?.connected && connection.provider !== 'openai' && !setup && <button onClick={() => setSetup(true)}>Podłącz Astrę</button>}
       {connectionError && <p className="studio-error" role="alert">{connectionError}</p>}
     </div>
-    {connection?.connected && !currentWorker && <SceneContractUpdate/>}
+    {connection?.connected && !currentWorker && <GeometryUpdate/>}
     {setup && connection?.connected && <OpenAISettings connection={connection} busy={busy} onSaved={refreshConnection}/>}
     {setup && <details className="blender-setup" open={!connection?.connected}>
       <summary>{connection?.connected ? 'Zmień połączenie z Oracle' : 'Połącz Oracle'}</summary>

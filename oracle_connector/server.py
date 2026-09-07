@@ -28,7 +28,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 6
+CONNECTOR_VERSION = 7
 AI_TIME_LIMIT = 180
 OLLAMA = 'http://127.0.0.1:11434'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
@@ -117,7 +117,7 @@ def generate_code(messages, job_id, cancelled, deadline=None, attempt=1, selecte
     selected = selected or ai_settings()
     is_openai = selected.get('provider') == 'openai'
     payload = {'model': MODEL, 'messages': messages, 'stream': True, 'keep_alive': '5m', 'format': SCHEMA,
-               'options': {'temperature': 0.2 if attempt == 1 else 0.1, 'num_ctx': 8192, 'num_predict': 1800, 'num_thread': 2}}
+               'options': {'temperature': 0.2 if attempt == 1 else 0.1, 'num_ctx': 8192, 'num_predict': 3000, 'num_thread': 2}}
     def progress(characters, elapsed, silent):
         clock = '%d:%02d' % (int(elapsed) // 60, int(elapsed) % 60)
         prefix = 'Proba %d/2. Czas tej proby: %s. ' % (attempt, clock)

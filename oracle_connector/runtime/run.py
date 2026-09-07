@@ -44,6 +44,15 @@ def make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0):
             texture = 0.9 + 0.12 * np.sin(x * 350) * np.cos(y * 350) + 0.1 * noise
         elif pattern == 'metal':
             texture = 0.94 + 0.06 * np.sin(x * 1100) + 0.08 * noise
+        elif pattern == 'windows':
+            cols, rows = 12, 48
+            fx, fy = (x*cols)%1, (y*rows)%1
+            panes = rng.uniform(.56, 1.06, (rows, cols))
+            texture = panes[np.minimum((y*rows).astype(int),rows-1),np.minimum((x*cols).astype(int),cols-1)]
+            texture = texture * (.88+.16*fx) + .08*np.sin(y*math.pi*4)
+            texture = np.where((fx<.04)|(fy<.08),1.35,texture)
+        elif pattern == 'skin':
+            texture = .985 + .022*noise + .006*np.sin(x*310)*np.cos(y*370)
         else:
             texture = 0.85 + 0.16 * np.sin(x * 40 + np.sin(y * 18)) + 0.22 * noise
         pixels = np.ones((n, n, 4), dtype=np.float32)
@@ -95,8 +104,8 @@ def tube(name, points, radii, material, sides=12):
         uv.data[loop.index].uv = (j / sides, ring / (len(points) - 1))
     return obj
 
-def ellipsoid(name, center, scale, material, subdivisions=2):
-    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=max(1, min(3, int(subdivisions))), radius=1, location=center)
+def ellipsoid(name, center, scale, material, subdivisions=4):
+    bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=max(1, min(4, int(subdivisions))), radius=1, location=center)
     obj = bpy.context.object
     obj.name, obj.scale = str(name)[:80], scale
     if material:

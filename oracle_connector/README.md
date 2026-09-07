@@ -3,7 +3,7 @@
 This is the text → selected AI → Blender → GLB worker for the private Froge test studio.
 It is separate from the desktop Blender add-on and the example dragon.
 
-## Checked scene plans (version 6)
+## Checked scene plans (version 7)
 
 New generation produces a compact JSON scene, not executable model-written Python.
 `runtime/scene_contract.py` is the single schema shared by OpenAI Structured Outputs,
@@ -12,7 +12,8 @@ checks names, material references, finite bounds, face indices, degenerate faces
 references and aggregate geometry budgets. Blender executes only the fixed operations
 in `runtime/build_scene.py`; it never evaluates expressions from the plan.
 
-The operations cover custom meshes, curved tapered tubes, lathes, boxes, ellipsoids,
+The operations cover custom meshes, curved tapered tubes, lathes, smooth lofts,
+noncircular stepped extrusions, detailed generic adult figures, boxes, ellipsoids,
 translated copies, a parameterized branching oak with lobed leaves, and a garland with
 an exact bulb count. This is a procedural asset vocabulary, not unrestricted Blender
 scripting. Other shapes can be composed from the general operations. Geometry quality
@@ -27,9 +28,25 @@ function. Limited replay of a compatible material-only script remains available,
 an incompatible stored geometry script requires a fresh scene plan. Original job files
 and failures are retained.
 
-Install `froge-oracle-scene-v6.zip`, refresh the studio, connect OpenAI and generate a
-new model. The Site refuses new jobs on older workers rather than launching an obsolete
+Install `froge-oracle-geometry-v7.zip`, refresh the studio and generate a
+new model. An already configured OpenAI key is preserved. The Site refuses new jobs on older workers rather than launching an obsolete
 code-generation attempt.
+
+
+Version 7 accepts valid closed, descending and stepped lathe cross-sections. Radius
+zero closes an axis cap; negative radii, crossings and zero-area sections are rejected.
+Points are never sorted or silently substituted. `extrusion` supports noncircular
+ordered XY outlines and stepped levels with separate facade and terrace materials.
+The `windows` pattern is a packed facade image. This fixes a class of profiles rejected
+by the v6 monotonic-height check, not every possible invalid AI plan.
+
+`person` constructs a generic adult with a dense sculpted face, separate fingers,
+rounded headwear, joined garment surfaces, sneakers and optional necklace/microphone.
+Its fixed remesh/subdivision resolution and material grouping stay within the existing
+scene and GLB budgets. These are procedural figurines, not photorealistic scans or
+identity-accurate reconstructions. General `loft`, `mesh`, `lathe` and `extrusion` parts
+remain available; prompts are not mapped to saved example files. Saved v6 models are
+not modified by the update and must be generated again to use the new geometry.
 
 Requirements: the existing Oracle Linux 9 ARM instance, user `opc`, the already-tested
 `localhost/froge-blender:local` Podman image, and about 10 GB additional free disk space.
@@ -79,7 +96,7 @@ by the installer's container check, not by the local tests.
 6. Enter any model description and click **Generuj model 3D**. The request creates a new job;
    there is no keyword-to-example fallback. The model appears only after valid GLB export.
 
-Local Qwen uses the same JSON contract, a 1800 output-token cap and a shared 3-minute
+Local Qwen uses the same JSON contract, a 3000 output-token cap and a shared 3-minute
 AI deadline. It keeps the loaded model for five minutes to avoid loading weights for
 every follow-up. A timeout ends the job without another AI attempt. Failed validation
 can trigger one repair within the original deadline. Blender is capped at 3 minutes
@@ -137,11 +154,11 @@ sudo journalctl _SYSTEMD_USER_UNIT=froge-worker.service _SYSTEMD_USER_UNIT=froge
 For an existing installation, download `froge-oracle-update.zip` from the Site, upload it to
 Cloud Shell, copy it to the VM and extract it into a separate directory. Run its
 `apply_update.py` as `opc`. It checks that no job is active, backs up the replaced code,
-updates `server.py`, `ai_stream.py`, `openai_provider.py`, `runtime_check.py`, `code_policy.py` and `runtime/run.py`, restarts only `froge-worker.service`, and verifies
+updates `server.py`, `ai_stream.py`, `openai_provider.py`, `runtime_check.py`, `code_policy.py` and the trusted runtime modules, restarts only `froge-worker.service`, and verifies
 its authenticated health response. It preserves pairing, the tunnel, downloaded AI weights
-and all jobs. Failed startup restores the old code. `froge-oracle-rebuild.zip` is the explicitly
-named version-5 download. After `FROGE_UPDATE_OK`, refresh the Site, connect OpenAI in
-**Ustawienia serwera**, then use **Ponów ten opis** on a failed or cancelled job. The legacy
+and all jobs. Failed startup restores the old code. `froge-oracle-geometry-v7.zip` is the current named update; older download names are
+retained as aliases. After `FROGE_UPDATE_OK`, refresh the Site and use **Ponów ten opis**
+on a failed or cancelled job. OpenAI settings remain unchanged. The legacy
 `froge-oracle-texture-fix.zip` download is retained as an alias of the current update.
 
 To stop the services:
@@ -161,8 +178,8 @@ Sources: [Ollama Linux](https://docs.ollama.com/linux),
 
 Run `python3 -m unittest discover -s oracle_connector -p 'test_*.py' -v` for data-contract,
 transport, authentication, cancellation and updater checks. With a Python environment
-containing bpy 4.3, run `python verify_scene_runtime.py` to build complete oak and rocket
+containing bpy 4.3, run `python verify_scene_runtime.py` to build complete oak, rocket, rapper and tower
 fixtures, validate their GLB payloads, verify two embedded oak PNG textures and 20 distinct
 bulb meshes, then reimport the GLBs in Blender. `--output /absolute/directory` also saves
-the oak and a review render. This does not call OpenAI or measure Oracle ARM performance.
+each model and review renders; `--scene rapper.scene.json` selects one fixture. This does not call OpenAI or measure Oracle ARM performance.
 See `docs/ASTRA-3D-NOTES.md` in the project for the documentation review and measured results.

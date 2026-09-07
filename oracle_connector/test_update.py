@@ -27,6 +27,7 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'runtime/run.py').write_text('preserve_packed_images = True\n')
         (self.source / 'runtime/scene_contract.py').write_text('schema_version = 1\n')
         (self.source / 'runtime/build_scene.py').write_text('data_only = True\n')
+        (self.source / 'runtime/detailed_geometry.py').write_text('geometry_version = 7\n')
         (self.target / 'runtime/run.py').write_text('preserve_packed_images = False\n')
         self.config = self.target / 'state/config.json'
         self.config.write_text(json.dumps({'token': 'local-test-token', 'client': 'owner', 'code': 'unchanged'}))
@@ -49,6 +50,7 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual((self.target / 'runtime/run.py').read_text(), 'preserve_packed_images = True\n')
         self.assertTrue((self.target / 'runtime/scene_contract.py').is_file())
         self.assertTrue((self.target / 'runtime/build_scene.py').is_file())
+        self.assertTrue((self.target / 'runtime/detailed_geometry.py').is_file())
         backups = list((self.target / 'state/code-backups').glob('*/server.py'))
         self.assertEqual(backups[0].read_text(), 'version = 1\n')
         self.assertEqual((backups[0].parent / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')
@@ -73,6 +75,7 @@ class UpdateTests(unittest.TestCase):
         self.assertFalse((self.target / 'openai_provider.py').exists())
         self.assertFalse((self.target / 'runtime/scene_contract.py').exists())
         self.assertFalse((self.target / 'runtime/build_scene.py').exists())
+        self.assertFalse((self.target / 'runtime/detailed_geometry.py').exists())
         self.assertEqual((self.target / 'code_policy.py').read_text(), 'policy = "strict"\n')
         self.assertEqual((self.target / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')
         self.assertEqual(self.config.read_bytes(), self.original_config)

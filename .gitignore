@@ -43,3 +43,5 @@ __pycache__/
 *.pyc
 
 /public/downloads/froge-oracle-scene-v6.zip
+
+/public/downloads/froge-oracle-geometry-v7.zip

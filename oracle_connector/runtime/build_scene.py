@@ -4,6 +4,7 @@ import random
 
 import bpy
 from mathutils import Vector
+from detailed_geometry import loft, revolve, person, extrusion
 
 
 def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes):
@@ -87,6 +88,9 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
         if kind == 'oak':
             objects[name] = oak(p)
             continue
+        if kind == 'person':
+            objects[name] = person(p, materials, mesh_object, tube, ellipsoid, join_meshes)
+            continue
         if kind == 'garland':
             base = Vector(p['center'])
             def point(t):
@@ -100,7 +104,7 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
                 center = point((i+.5)/p['bulbs'])
                 center.z -= p['bulb_radius']*.8
                 bulbs.append(ellipsoid(name+'-bulb-%02d'%(i+1), center,
-                                       (p['bulb_radius'],)*2+(p['bulb_radius']*1.35,), materials[p['bulb_material']]))
+                                       (p['bulb_radius'],)*2+(p['bulb_radius']*1.35,), materials[p['bulb_material']], subdivisions=3))
             light = join_meshes(bulbs, name+'-bulbs')
             light['bulb_count'] = p['bulbs']
             objects[name] = [wire, light]
@@ -116,26 +120,12 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
             obj = tube(name, p['points'], p['radii'], material, p['sides'])
         elif kind == 'mesh':
             obj = mesh_object(name, p['vertices'], p['faces'], material)
+        elif kind == 'loft':
+            obj = loft(name, p['sections'], p['sides'], material, mesh_object)
+        elif kind == 'extrusion':
+            obj = extrusion(p, material, materials[p['cap_material']], mesh_object)
         elif kind == 'lathe':
-            verts, faces, rings = [], [], []
-            base, sides = Vector(p['center']), p['sides']
-            for radius, z in p['profile']:
-                ring = []
-                for i in range(sides if radius > 0 else 1):
-                    ring.append(len(verts))
-                    verts.append(tuple(base+Vector((radius*math.cos(i*math.tau/sides), radius*math.sin(i*math.tau/sides), z))))
-                rings.append(ring)
-            for a, b in zip(rings, rings[1:]):
-                for i in range(sides):
-                    if len(a) == 1 and len(b) == 1:
-                        break
-                    face = [a[i%len(a)], a[(i+1)%len(a)], b[(i+1)%len(b)], b[i%len(b)]]
-                    faces.append(tuple(dict.fromkeys(face)))
-            if len(rings[0]) > 1:
-                faces.append(tuple(reversed(rings[0])))
-            if len(rings[-1]) > 1:
-                faces.append(tuple(rings[-1]))
-            obj = mesh_object(name, verts, faces, material)
+            obj = revolve(name, p['profile'], p['center'], p['sides'], material, mesh_object)
         elif kind == 'copies':
             source = objects[p['source']][0]
             copies = []

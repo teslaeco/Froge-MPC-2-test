@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import server
 from code_policy import prepare_code
-from runtime.scene_contract import SCHEMA, parse_scene, validate_scene
+from runtime.scene_contract import SCHEMA, parse_scene, validate_scene, lathe_profile, polygon_outline
 
 EXAMPLES = Path(__file__).parent/'examples'
 
@@ -18,10 +18,36 @@ class SceneContractTests(unittest.TestCase):
         self.oak=json.loads((EXAMPLES/'oak-lights.scene.json').read_text())
 
     def test_complete_oak_and_rocket_use_the_shared_contract(self):
-        for name in ['oak-lights.scene.json','rocket.scene.json']:
+        for name in ['oak-lights.scene.json','rocket.scene.json','rapper.scene.json','dubai-tower.scene.json']:
             value=parse_scene((EXAMPLES/name).read_text())
             self.assertEqual(value['version'],1)
         self.assertEqual(self.oak['parts'][1]['bulbs'],20)
+
+    def test_closed_descending_and_stepped_profiles_keep_their_outline(self):
+        cases=[[[1,0],[1,2],[.4,2],[.4,3],[0,4]],
+               [[0,4],[.4,3],[.4,2],[1,2],[1,0]],
+               [[0,0],[1,0],[1,2],[0,3],[0,0]],
+               [[.8,0],[1,0],[1,2],[.8,2],[.8,0]]]
+        for profile in cases:
+            with self.subTest(profile=profile):
+                outline=lathe_profile(profile)
+                self.assertTrue(all(point in [(r,z) for r,z in profile]+[(0,profile[-1][1]),(0,profile[0][1])] for point in outline))
+                self.assertGreater(len(outline),2)
+
+    def test_crossing_negative_radius_and_zero_volume_remain_invalid(self):
+        for profile in [[[0,0],[2,2],[0,2],[2,0],[0,0]], [[-1,0],[1,1]], [[0,0],[0,2]], [[1,0],[2,0]]]:
+            with self.subTest(profile=profile),self.assertRaises(ValueError):lathe_profile(profile)
+        with self.assertRaises(ValueError):polygon_outline([[0,0],[2,2],[0,2],[2,0]])
+
+    def test_person_materials_and_loft_and_extrusion_controls(self):
+        person=parse_scene((EXAMPLES/'rapper.scene.json').read_text())
+        for field,val in [('skin_material','missing'),('pose','unknown'),('necklace',1)]:
+            scene=deepcopy(person);scene['parts'][0][field]=val
+            with self.assertRaises(ValueError):validate_scene(scene)
+        tower=parse_scene((EXAMPLES/'dubai-tower.scene.json').read_text())
+        tower['parts'][0]['levels'][1]['z']=-1
+        with self.assertRaises(ValueError):validate_scene(tower)
+        with self.assertRaises(ValueError):validate_scene({**self.oak,'parts':[{'kind':'loft','name':'bad','material':'kora','sides':32,'sections':[{'center':[0,0,0],'radii':[1,1]}]*2}]})
 
     def test_rejects_code_unknown_operations_extra_fields_and_nonfinite_values(self):
         for text in ['ellipsoid("x", [0,0,0], [1,1,1], None)', '{"version":1,"version":1}']:

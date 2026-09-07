@@ -5,14 +5,14 @@ export const oracleOpenAIUpdateCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ss
 ssh -T -o IdentitiesOnly=yes -o ConnectTimeout=20 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'python3 -m zipfile -e "$HOME/froge-oracle-openai.zip" "$HOME/froge-openai-update" && python3 "$HOME/froge-openai-update/apply_update.py"'`
 
 export const oracleRebuildUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-rebuild.zip').replaceAll('froge-openai-update', 'froge-rebuild-update')
-export const oracleSceneUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-scene-v6.zip').replaceAll('froge-openai-update', 'froge-scene-v6-update')
+export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-geometry-v7.zip').replaceAll('froge-openai-update', 'froge-geometry-v7-update')
 
-export function SceneContractUpdate() {
+export function GeometryUpdate() {
   return <div className="blender-setup">
     <strong>Zaktualizuj generator na Oracle</strong>
-    <p>Nowa wersja sprawdza plan modelu przed wykonaniem w Blenderze. Usuwa przyczynę błędów niezgodnych funkcji geometrii.</p>
-    <a href="/downloads/froge-oracle-scene-v6.zip" download>Pobierz aktualizację generatora</a>
-    <details><summary>Jak zainstalować aktualizację?</summary><p>Prześlij ZIP w Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{oracleSceneUpdateCommand}</pre><p>Po FROGE_UPDATE_OK odśwież stronę, podłącz OpenAI i utwórz nowy model.</p></details>
+    <p>Poprawka obsługuje uskoki i zamknięte profile wieżowców oraz dokładniejsze twarze, dłonie i ubrania postaci.</p>
+    <a href="/downloads/froge-oracle-geometry-v7.zip" download>Pobierz aktualizację generatora</a>
+    <details><summary>Jak zainstalować aktualizację?</summary><p>Prześlij ZIP w Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{oracleGeometryUpdateCommand}</pre><p>Po FROGE_UPDATE_OK odśwież stronę i utwórz nowy model. Zapisany klucz OpenAI i połączenie zostają zachowane.</p></details>
   </div>
 }
 
