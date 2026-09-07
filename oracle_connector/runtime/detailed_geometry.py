@@ -157,7 +157,7 @@ def person(p, materials, mesh_object, tube, ellipsoid, join_meshes):
         sleeve_path=path
         if tee:
             sleeve_path=path[:3]+[tuple(path[3][:3])+(.064,.063)]
-            parts.append(anatomy.forearm(side,path[3][:3],path[-1][:3],p['presentation'],skin,mesh_object,include_hand=not raised))
+            parts.append(anatomy.forearm(side,path[3][:3],path[-1][:3],p['presentation'],skin,mesh_object,include_hand=not raised,sleeve_axis=Vector(path[3][:3])-Vector(path[2][:3])))
             sleeve_ends.append((side,path[3][:3],(Vector(path[3][:3])-Vector(path[2][:3])).normalized()))
         shaped('sleeve',sleeve_path,top,.014,48)
         x,y,z=path[-1][:3]

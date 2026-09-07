@@ -114,6 +114,10 @@ def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
             if radial>1:
                 scale=1-weight*(1-1/radial)
                 v.x*=scale;v.y=(v.y+.020)*scale-.020
+        # The hidden base sits inside the shirt; never poke through its front.
+        base_weight=1-step(1.485,1.535,v.z)
+        v.x*=1-.08*base_weight
+        v.y=(v.y+.010)*(1-.24*base_weight)-.010
     subdivide(obj,1)
     parts=[obj]
     hair_shader=hair_material.node_tree.nodes.get('Principled BSDF')
@@ -251,7 +255,7 @@ def hand(side, wrist, direction, presentation, material, mesh_object, raised=Fal
     return obj
 
 
-def forearm(side, elbow, wrist, presentation, material, mesh_object, include_hand=False):
+def forearm(side, elbow, wrist, presentation, material, mesh_object, include_hand=False, sleeve_axis=None):
     """Repose a licensed forearm with its original skin UVs, bounded at both ends."""
     prefix='l' if side==1 else 'r'
     obj=base_part(('left' if side==1 else 'right')+'-forearm',presentation,material,mesh_object)
@@ -266,6 +270,9 @@ def forearm(side, elbow, wrist, presentation, material, mesh_object, include_han
         along=d.dot(axis);radial=d-axis*along
         slim=.78+.22*max(0,min(1,along/(end-source).length))
         vertex.co=Vector(elbow)+rotation@(radial*slim+axis*along*length)
+    if sleeve_axis is not None:
+        opening_axis=Vector(sleeve_axis).normalized()
+        trim(obj,Vector(elbow)-opening_axis*.018,opening_axis)
     subdivide(obj,1)
     return obj
 
