@@ -12,3 +12,5 @@ Brands remain the property of their respective owners. Retrieved 2026-09-07.
 
 ## AliExpress
 Original unmodified corporate PNG (5315 x 1155), obtained from https://www.alibabagroup.com/en-US/about-alibaba-businesses-1747705938191581184 . Asset: https://data.alibabagroup.com/ecms-files/1514443390/308b90cb-c141-43e2-8469-1980521d5e9c/Logo_AliExpress.png . Used only to identify the planned integration; no partnership or active connection is claimed.
+
+Shopify white wordmark: original transparent PNG from https://cdn.shopify.com/static/brand-assets/shopify-monotone.zip, linked by https://www.shopify.com/brand-assets (2026-09-07).

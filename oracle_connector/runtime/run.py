@@ -28,6 +28,10 @@ def make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0):
     if pattern in ('skin', 'fabric'):
         shader.inputs['Metallic'].default_value = 0
         shader.inputs['Roughness'].default_value = max(.5 if pattern == 'skin' else .75, float(roughness))
+    if pattern in ('cotton','denim'):
+        import textiles
+        textiles.apply(material,pattern,rgb)
+        return material
     if pattern != 'plain':
         n = 512
         seed = int.from_bytes(hashlib.sha256(str(name).encode()).digest()[:4], 'little')

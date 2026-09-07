@@ -139,6 +139,11 @@ def verify(name, folder, render=False):
     report=json.loads((folder/'result.json').read_text())
     assert report['vertices']<200000 and report['triangles']<400000
     assert size<=12*1024*1024
+    if name=='rapper-eminem-style.scene.json':
+        textile_materials=[m for m in document['materials'] if m.get('name') in ('hoodie','pants')]
+        assert len(textile_materials)==2
+        assert all('normalTexture' in m and 'baseColorTexture' in m['pbrMetallicRoughness'] for m in textile_materials)
+        assert not any('fitted-none' in mesh.get('name','') for mesh in document['meshes'])
     if name.startswith('oak'):
         assert len(document['images'])==2
         assert any(max(m.get('emissiveFactor',[0]))>0 for m in document['materials'])

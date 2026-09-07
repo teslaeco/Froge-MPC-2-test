@@ -19,7 +19,7 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
   const revision = useRef(0), serial = useRef(0), loaded = useRef(''), mounted = useRef(true)
   const retryPoll = useRef<() => void>(() => {})
   const busy = submitting || (!!active && !finished(active))
-  const currentWorker = (connection?.connectorVersion || 1) >= 9
+  const currentWorker = (connection?.connectorVersion || 1) >= 10
   const canGenerate = !!connection?.ready && currentWorker
 
   async function refreshConnection() {

@@ -1,6 +1,7 @@
 """Bounded garment finishing and footwear; all geometry is trusted local code."""
 import math
 import bpy
+import bmesh
 from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
@@ -69,12 +70,12 @@ def details(p, garment, width, top, pants, hair, accent, mesh_object, tube, loft
         parts.append(obj)
         for a,b in zip(corners,corners[1:]+corners[:1]):
             line(name+'-seam',[on_front(a[0]+(b[0]-a[0])*i/20,a[1]+(b[1]-a[1])*i/20,.005) for i in range(21)],.0011,material)
-    loose=1.06 if p['outfit']=='streetwear' else .94 if p['outfit']=='formal' else 1.
-    ring('ribbed-waistband',(0,0,.974),.186*width*loose,.117,.040,top,1)
-    ring('neck-ribbing',(0,-.010,1.485),.074,.066,.024,top,1)
+    loose=1.06 if p['outfit'] in ('streetwear','hoodie','tshirt') else .94 if p['outfit']=='formal' else 1.
+    if p['outfit']!='tshirt':ring('ribbed-waistband',(0,0,.974),.186*width*loose,.117,.018,top,1)
+    ring('neck-ribbing',(0,-.019,1.482),.065,.065,.009,top,0)
     for side in (-1,1):
         x=side*.105*width;dy=-.025 if side==-1 else .014
-        ring('trouser-cuff',(x,dy,.135),.061,.060,.037,pants,1 if p['outfit']=='streetwear' else 0)
+        if p['outfit']!='tshirt':ring('trouser-cuff',(x,dy,.135),.061,.060,.020,pants,1 if p['outfit']=='streetwear' else 0)
         # Pressed side seams and front pocket entries stay on the actual trousers.
         trouser=garment['pants'];tree=BVHTree.FromPolygons([v.co for v in trouser.data.vertices],[f.vertices[:] for f in trouser.data.polygons])
         points=[]
@@ -83,7 +84,7 @@ def details(p, garment, width, top, pants, hair, accent, mesh_object, tube, loft
             hit,normal,_,_=tree.ray_cast(Vector((xx,-1,z)),Vector((0,1,0)))
             if hit:points.append(tuple(hit+normal*.001))
         if len(points)>1:line('trouser-seam',points,.0008,pants)
-    if p['outfit']=='streetwear':
+    if p['outfit'] in ('streetwear','hoodie'):
         patch('kangaroo-pocket',[(-.105*width,1.030),(.105*width,1.030),(.072*width,1.148),(-.072*width,1.148)],top)
         # A folded hood is a thick draped collar around the back of the neck.
         vertices=[];faces=[];n=64;m=10
@@ -108,7 +109,7 @@ def details(p, garment, width, top, pants, hair, accent, mesh_object, tube, loft
             patch('jacket-lapel',[(side*.020,1.21),(side*.12,1.36),(side*.073,1.45),(side*.043,1.41)],top)
             patch('jacket-pocket',[(side*.040,1.075),(side*.130,1.075),(side*.130,1.099),(side*.040,1.099)],top)
         line('jacket-front',[on_front(.007,1.04+i/32*.22,.004) for i in range(33)],.0012,hair)
-    else:
+    elif p['outfit']=='casual':
         patch('chest-pocket',[(.055,1.29),(.113,1.29),(.113,1.36),(.055,1.36)],top)
     return parts
 
@@ -205,3 +206,27 @@ def sneaker(x,dy,angle,shoe,trim,cloth,mesh_object,tube):
         for v in obj.data.vertices:
             xx,y,z=v.co;v.co=(x+co*xx-si*y,dy+si*xx+co*y,z)
     return parts
+
+
+def fabric_uv(obj):
+    """Assign UVs before material joins; preserve a consistent weave scale in metres."""
+    layer=obj.data.uv_layers.active or obj.data.uv_layers.new(name='UVMap')
+    for face in obj.data.polygons:
+        normal=face.normal
+        axes=(0,2) if abs(normal.y)>=max(abs(normal.x),abs(normal.z)) else (1,2) if abs(normal.x)>abs(normal.z) else (0,1)
+        for loop in face.loop_indices:
+            v=obj.matrix_world@obj.data.vertices[obj.data.loops[loop].vertex_index].co
+            layer.data[loop].uv=(v[axes[0]]*2.5,v[axes[1]]*2.5)
+
+
+def open_sleeves(obj, ends, width):
+    """Trim the two sleeve ends locally; leave the torso and anatomy intact."""
+    bm=bmesh.new();bm.from_mesh(obj.data)
+    for side,origin,axis in ends:
+        origin=Vector(origin)-Vector(axis)*.018
+        vertices=[v for v in bm.verts if v.co.x*side>.205*width]
+        selected=set(vertices)
+        edges=[e for e in bm.edges if all(v in selected for v in e.verts)]
+        faces=[f for f in bm.faces if all(v in selected for v in f.verts)]
+        bmesh.ops.bisect_plane(bm,geom=vertices+edges+faces,dist=1e-6,plane_co=origin,plane_no=-Vector(axis),clear_inner=True)
+    bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(obj.data);bm.free();obj.data.update()

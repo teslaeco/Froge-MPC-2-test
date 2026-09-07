@@ -1,5 +1,7 @@
 {
-  "anatomy.json.gz": "a2aae5eaf2c6c762bb2599e0546a745c5494af0602a512715430fbd8879342c9",
+  "anatomy.json.gz": "cec12295f87c2a3b6a6ad4c30f4866178e461664fcf54f68d57d34a89f5b23f7",
   "male-skin.png": "862a26e335e958b70534cb5f0d7c47ef30ab148a56c42b3e9da969cf76f12963",
-  "female-skin.png": "b2a6ac8cd4f9febdb447368e29c76cd68410bb66e46d9dcfa2d5f75126eea8fc"
+  "female-skin.png": "b2a6ac8cd4f9febdb447368e29c76cd68410bb66e46d9dcfa2d5f75126eea8fc",
+  "cotton-jersey-albedo.png": "81b3ef738b7999af1d75928c8804c92d82d10dc91b96bff04655ca61f3ca3b7b",
+  "indigo-denim-albedo.png": "9772b184960695e23b7d9ff3bd323f13674d3e59c796f3f6d5d01a1f3a930fce"
 }

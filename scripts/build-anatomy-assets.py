@@ -37,9 +37,10 @@ def joint(name, shape):
     return [sum(shapes[shape][i][axis] for i in ids)/len(ids) for axis in range(3)]
 
 selected = {}
-for part in ('head', 'left', 'right'):
+for part in ('head', 'left', 'right', 'left-forearm', 'right-forearm'):
     def include(i):
         x,y,z = shapes['male'][i]
+        if part.endswith('-forearm'):return (x>.30 if part.startswith('left') else x<-.30) and z<1.40
         return z>1.47 if part=='head' else (x> .455 if part=='left' else x<-.455) and z<1.27
     faces = [f for f in groups['body'] if all(include(i) for i, _ in f)]
     ids = sorted({i for f in faces for i, _ in f}); mapping = {k:i for i,k in enumerate(ids)}

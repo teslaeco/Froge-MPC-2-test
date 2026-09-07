@@ -101,17 +101,19 @@ def trim(obj, origin, direction):
 def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
     presentation=p['presentation'];skin_atlas(material,presentation,eye_material)
     obj=base_part('head',presentation,material,mesh_object)
-    trim(obj,Vector((0,0,1.495)),Vector((0,0,1)))
-    # Hide the truncated shoulder flare inside the collar. Keep the jaw and
-    # upper neck unchanged; never stretch a cut through the chin downward.
+    trim(obj,Vector((0,0,1.465)),Vector((0,0,1)))
+    # Smooth the neck flare while masking the entire anterior chin/jaw.
+    def step(a,b,value):
+        t=max(0.,min(1.,(value-a)/(b-a)));return t*t*(3-2*t)
     for vertex in obj.data.vertices:
         v=vertex.co
-        if v.z<1.555:
-            radial=math.sqrt((v.x/.063)**2+((v.y+.012)/.060)**2)
-            weight=max(0,min(1,(1.555-v.z)/.018))
+        if v.z<1.615:
+            protect=step(1.535,1.555,v.z)*(1-step(-.105,-.065,v.y))
+            weight=(1-step(1.570,1.615,v.z))*(1-protect)
+            radial=math.sqrt((v.x/.055)**2+((v.y+.020)/.060)**2)
             if radial>1:
-                scale=1-weight+weight/radial
-                v.x*=scale;v.y=(v.y+.012)*scale-.012
+                scale=1-weight*(1-1/radial)
+                v.x*=scale;v.y=(v.y+.020)*scale-.020
     subdivide(obj,1)
     parts=[obj]
     hair_shader=hair_material.node_tree.nodes.get('Principled BSDF')
@@ -146,23 +148,47 @@ def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
                 point,normal,_,_=surface.ray_cast(Vector((x,-.5,zz)),Vector((0,1,0)))
                 vertices.append(tuple(point+normal*.0007) if point else (x,-.14,zz))
             if i:faces.append((i*2-2,i*2-1,i*2+1,i*2))
-        brow=mesh_object('eyebrow',vertices,faces,hair_material)
+        brow=mesh_object('eyebrow',vertices,faces,eye_material)
         for face in brow.data.polygons:face.use_smooth=True
         parts.append(brow)
+    if p['headwear']=='none' and p.get('hair_style')=='bald':return parts
+    buzz=p.get('hair_style')=='buzz' and p['headwear']=='none'
+    if buzz:
+        paint_buzz(obj,material,hair_material)
+        return parts
     # Hair and hats both follow the actual cranium, preserving the forehead.
     skull=obj.data;selected=[]
-    for face in skull.polygons:
-        center=face.center
-        threshold=1.733 if p['headwear']!='none' else 1.713 + .036*max(0,min(1,(-center.y-.015)/.11))
-        if center.z>threshold:selected.append(face)
-    ids=sorted({i for f in selected for i in f.vertices});mapping={i:n for n,i in enumerate(ids)}
-    verts=[]
-    for i in ids:
-        v=skull.vertices[i].co.copy();out=v-Vector((0,-.025,1.70))
-        v+=out.normalized()*(.004 if p['headwear']=='none' else .008)
-        if p['headwear']=='beanie':v.z+=max(0,v.z-1.735)*.12
-        verts.append(tuple(v))
-    hair=mesh_object('fitted-'+p['headwear'],verts,[[mapping[i] for i in f.vertices] for f in selected],hair_material)
+    def hairline(v):
+        return 1.713+.036*max(0,min(1,(-v.y-.015)/.11))
+    if p['headwear']=='none':
+        vertices=[];faces=[]
+        # Clip every intersected polygon at the hairline, avoiding a sawtooth rim.
+        for face in skull.polygons:
+            if abs(face.center.x)>.081 and face.center.z<1.752:continue
+            contour=[skull.vertices[i].co.copy() for i in face.vertices]
+            clipped=[]
+            for a,b in zip(contour,contour[1:]+contour[:1]):
+                fa=a.z-hairline(a);fb=b.z-hairline(b)
+                if fa>=0:clipped.append(a)
+                if (fa>=0)!=(fb>=0):clipped.append(a.lerp(b,fa/(fa-fb)))
+            if len(clipped)<3:continue
+            face_ids=[]
+            for v in clipped:
+                out=(v-Vector((0,-.025,1.70))).normalized()
+                vertices.append(tuple(v+out* .002));face_ids.append(len(vertices)-1)
+            faces.append(face_ids)
+        hair=mesh_object('fitted-none',vertices,faces,hair_material)
+        bm=bmesh.new();bm.from_mesh(hair.data);bmesh.ops.remove_doubles(bm,verts=list(bm.verts),dist=.000001);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(hair.data);bm.free()
+
+    else:
+        selected=[face for face in skull.polygons if face.center.z>1.733]
+        ids=sorted({i for f in selected for i in f.vertices});mapping={i:n for n,i in enumerate(ids)}
+        verts=[]
+        for i in ids:
+            v=skull.vertices[i].co.copy();out=v-Vector((0,-.025,1.70));v+=out.normalized()*.008
+            if p['headwear']=='beanie':v.z+=max(0,v.z-1.735)*.12
+            verts.append(tuple(v))
+        hair=mesh_object('fitted-'+p['headwear'],verts,[[mapping[i] for i in f.vertices] for f in selected],hair_material)
     for face in hair.data.polygons:face.use_smooth=True
     if p['headwear']!='none':
         bm=bmesh.new();bm.from_mesh(hair.data)
@@ -182,7 +208,7 @@ def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
             for face in cuff.data.polygons:face.use_smooth=True
             parts.append(cuff)
     bpy.context.view_layer.objects.active=hair
-    shell=hair.modifiers.new('headwear-thickness','SOLIDIFY');shell.thickness=.002 if p['headwear']=='none' else .006
+    shell=hair.modifiers.new('headwear-thickness','SOLIDIFY');shell.thickness=.001 if p['headwear']=='none' else .006
     bpy.ops.object.modifier_apply(modifier=shell.name)
     parts.append(hair)
     return parts
@@ -223,3 +249,55 @@ def hand(side, wrist, direction, presentation, material, mesh_object, raised=Fal
         obj['grip_axis']=list((rotation@across).normalized())
     subdivide(obj,1)
     return obj
+
+
+def forearm(side, elbow, wrist, presentation, material, mesh_object, include_hand=False):
+    """Repose a licensed forearm with its original skin UVs, bounded at both ends."""
+    prefix='l' if side==1 else 'r'
+    obj=base_part(('left' if side==1 else 'right')+'-forearm',presentation,material,mesh_object)
+    source=landmark(prefix+'-elbow',presentation);end=landmark(prefix+'-hand',presentation)
+    axis=(end-source).normalized()
+    trim(obj,source-axis*.020,axis)
+    if not include_hand:trim(obj,end+axis*.010,-axis)
+    target=Vector(wrist)-Vector(elbow);rotation=axis.rotation_difference(target.normalized())
+    length=target.length/(end-source).length
+    for vertex in obj.data.vertices:
+        d=vertex.co-source
+        along=d.dot(axis);radial=d-axis*along
+        slim=.78+.22*max(0,min(1,along/(end-source).length))
+        vertex.co=Vector(elbow)+rotation@(radial*slim+axis*along*length)
+    subdivide(obj,1)
+    return obj
+
+
+def paint_buzz(obj, material, hair_material):
+    """Bake clipped stubble into the existing scalp UVs: no raised helmet shell."""
+    image=next(n.image for n in material.node_tree.nodes if n.type=='TEX_IMAGE')
+    n=image.size[0];pixels=np.asarray(image.pixels[:],dtype=np.float32).reshape(n,n,4).copy()
+    uv=obj.data.uv_layers.active
+    color=np.array(hair_material.diffuse_color[:3])
+    for face in obj.data.polygons:
+        if max(obj.data.vertices[i].co.z for i in face.vertices)<1.70:continue
+        loops=list(face.loop_indices)
+        for j in range(1,len(loops)-1):
+            tri=[loops[0],loops[j],loops[j+1]]
+            coords=np.array([uv.data[i].uv[:] for i in tri])*(n-1)
+            a,b,c=coords
+            low=np.maximum(np.floor(coords.min(axis=0)).astype(int),0);high=np.minimum(np.ceil(coords.max(axis=0)).astype(int),n-1)
+            if np.any(low>high):continue
+            xx,yy=np.meshgrid(np.arange(low[0],high[0]+1),np.arange(low[1],high[1]+1))
+            denominator=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1])
+            if abs(denominator)<1e-7:continue
+            w0=((b[1]-c[1])*(xx-c[0])+(c[0]-b[0])*(yy-c[1]))/denominator
+            w1=((c[1]-a[1])*(xx-c[0])+(a[0]-c[0])*(yy-c[1]))/denominator
+            w2=1-w0-w1;inside=(w0>=-.001)&(w1>=-.001)&(w2>=-.001)
+            v=np.array([obj.data.vertices[obj.data.loops[i].vertex_index].co[:] for i in tri])
+            positions=w0[:,:,None]*v[0]+w1[:,:,None]*v[1]+w2[:,:,None]*v[2]
+            threshold=1.713+.036*np.clip((-positions[:,:,1]-.015)/.11,0,1)
+            fade=np.clip((positions[:,:,2]-threshold)/.009,0,1)
+            fade=fade*fade*(3-2*fade)*inside
+            fade=np.where((abs(positions[:,:,0])>.081)&(positions[:,:,2]<1.752),0,fade)
+            grain=.84+.32*np.mod(np.sin(xx*12.9898+yy*78.233)*43758.5453,1)
+            original=pixels[yy,xx,:3]
+            pixels[yy,xx,:3]=original*(1-fade[:,:,None])+color*grain[:,:,None]*fade[:,:,None]
+    image.pixels.foreach_set(pixels.reshape(-1));image.update();image.pack()

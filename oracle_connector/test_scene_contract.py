@@ -39,6 +39,17 @@ class SceneContractTests(unittest.TestCase):
             with self.subTest(profile=profile),self.assertRaises(ValueError):lathe_profile(profile)
         with self.assertRaises(ValueError):polygon_outline([[0,0],[2,2],[0,2],[2,0]])
 
+    def test_new_wardrobe_choices_and_legacy_hair_default(self):
+        legacy=parse_scene((EXAMPLES/'rapper.scene.json').read_text())
+        self.assertEqual(legacy['parts'][0]['hair_style'],'short')
+        sample=parse_scene((EXAMPLES/'rapper-eminem-style.scene.json').read_text())
+        self.assertEqual(sample['parts'][0]['outfit'],'tshirt')
+        self.assertFalse(sample['parts'][0]['necklace'])
+        for outfit in ('tshirt','sweatshirt','hoodie'):
+            scene=deepcopy(sample);scene['parts'][0]['outfit']=outfit;validate_scene(scene)
+        scene=deepcopy(sample);scene['parts'][0]['hair_style']='unknown'
+        with self.assertRaises(ValueError):validate_scene(scene)
+
     def test_person_materials_and_loft_and_extrusion_controls(self):
         person=parse_scene((EXAMPLES/'rapper.scene.json').read_text())
         for field,val in [('skin_material','missing'),('pose','unknown'),('necklace',1)]:

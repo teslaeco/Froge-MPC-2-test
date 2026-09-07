@@ -10,9 +10,9 @@ import time
 import urllib.request
 from runtime_check import RuntimeUnavailable, setup_runtime
 
-ASSETS = ('anatomy.json.gz', 'male-skin.png', 'female-skin.png', 'LICENSE.CC0.md', 'SOURCES.md', 'manifest.json')
-FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py', 'runtime/wardrobe.py') + tuple('runtime/assets/'+name for name in ASSETS)
-EXPECTED_VERSION = 9
+ASSETS = ('anatomy.json.gz', 'male-skin.png', 'female-skin.png','cotton-jersey-albedo.png','indigo-denim-albedo.png', 'LICENSE.CC0.md', 'SOURCES.md', 'manifest.json')
+FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py', 'runtime/wardrobe.py', 'runtime/textiles.py') + tuple('runtime/assets/'+name for name in ASSETS)
+EXPECTED_VERSION = 10
 
 
 def replace(path, data):
@@ -33,7 +33,7 @@ def update(source, target):
     for name, data in incoming.items():
         if name.endswith('.py'):compile(data, name, 'exec')
     manifest=json.loads(incoming['runtime/assets/manifest.json'])
-    if set(manifest) != {'anatomy.json.gz','male-skin.png','female-skin.png'} or any(hashlib.sha256(incoming['runtime/assets/'+name]).hexdigest()!=digest for name,digest in manifest.items()):
+    if set(manifest) != {'anatomy.json.gz','male-skin.png','female-skin.png','cotton-jersey-albedo.png','indigo-denim-albedo.png'} or any(hashlib.sha256(incoming['runtime/assets/'+name]).hexdigest()!=digest for name,digest in manifest.items()):
         raise RuntimeError('Niekompletne lub uszkodzone dane anatomii. Pobierz ZIP ponownie. Nie zmieniono instalacji.')
     original = {name: (target / name).read_bytes() if (target / name).exists() else None for name in FILES}
     command = ['systemctl', '--user']
@@ -66,7 +66,7 @@ def update(source, target):
                 with urllib.request.urlopen(request, timeout=2) as response:
                     if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
                         print('FROGE_UPDATE_OK')
-                        print('Odswiez Froge i wygeneruj NOWY model. Wersja 9 dodaje kroj ubran, faldy, kieszenie i szczegolowe sneakersy. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Odswiez Froge i wygeneruj NOWY model. Wersja 10 poprawia szyje i barki, dodaje krotkie wlosy, koszulki i tekstury bawelny oraz denimu. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass

@@ -23,3 +23,6 @@ patches are baked into the exported GLB. No network access is needed in Blender.
 
 Downloaded 2026-09-07. `manifest.json` records bundled content hashes. CC0 text is
 included in `LICENSE.CC0.md`. Keep provenance with source distributions.
+
+## Textile assets (v10)
+Cotton jersey and indigo denim albedos generated specifically for Froge using built-in imagegen on 2026-09-07. Fixed bundled original maps; runtime scales to 512px and bakes subtle normal maps for GLB export. No third-party garment photograph or trademark is incorporated.

@@ -60,7 +60,8 @@ PARTS = [
                     'eye_material': NAME,
                     'build': choice('slim', 'average', 'broad'),
                     'presentation': choice('masculine', 'feminine', 'androgynous'),
-                    'outfit': choice('streetwear', 'casual', 'formal'),
+                    'outfit': choice('streetwear', 'casual', 'formal', 'tshirt', 'sweatshirt', 'hoodie'),
+                    'hair_style': choice('short', 'buzz', 'bald'),
                     'headwear': choice('none', 'cap', 'beanie'),
                     'pose': choice('standing', 'performing'),
                     'necklace': {'type': 'boolean'}, 'microphone': {'type': 'boolean'}}),
@@ -80,7 +81,7 @@ PARTS = [
 SCHEMA = record({
     'version': {'type': 'integer', 'enum': [1]}, 'name': NAME,
     'materials': array(record({'name': NAME, 'rgb': COLOR,
-                              'pattern': {'type': 'string', 'enum': ['plain', 'bark', 'wood', 'leaf', 'stone', 'fabric', 'metal', 'windows', 'skin']},
+                              'pattern': {'type': 'string', 'enum': ['plain', 'bark', 'wood', 'leaf', 'stone', 'fabric', 'cotton', 'denim', 'metal', 'windows', 'skin']},
                               'roughness': number(0, 1), 'metallic': number(0, 1),
                               'emission': number(0, 5)}), 1, 8),
     'parts': array({'anyOf': PARTS}, 1, 80),
@@ -106,6 +107,12 @@ Use person for adult human figurines, rappers and singers: it uses a licensed an
 with connected nose/lips/eyelids/ears, UV skin texture, five-finger hands, fitted headwear,
 layered clothing with seams, pockets, compression folds, ribbed cuffs and detailed sneakers. Use a separate skin material with pattern skin, matte
 fabric for clothes and a separate eye material (dark iris color or neutral white).
+Use cotton for jersey/tees and denim for jeans: both export real packed albedo and normal maps.
+Select outfit tshirt for short sleeves and bare anatomical forearms, sweatshirt for a
+crewneck without hood, hoodie for an explicitly requested hood, formal for a jacket.
+Do not add a hood or necklace unless requested. A classic rapper may wear a loose
+white cotton tshirt, dark denim trousers and sneakers with hair_style buzz and headwear none.
+Use hair_style buzz for close cropped hair, short for short hair, bald for no hair.
 Choose the person's palette, build, presentation, clothing, pose, headwear and accessories
 to match the description. Add separate requested props using other operations. Person
 faces are generic anatomical adults, not guaranteed likenesses of named real people.
@@ -222,6 +229,10 @@ def polygon_outline(points):
 
 
 def validate_scene(value):
+    # Backward-compatible input normalization only; no unknown fields accepted.
+    if isinstance(value,dict) and isinstance(value.get('parts'),list):
+        for p in value['parts']:
+            if isinstance(p,dict) and p.get('kind')=='person':p.setdefault('hair_style','short')
     check(value, SCHEMA)
     mats = [m['name'] for m in value['materials']]
     if len(set(mats)) != len(mats):

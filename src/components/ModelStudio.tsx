@@ -39,6 +39,9 @@ export function ModelStudio() {
     return ++loadRevision.current
   }
   async function receiveRemote(bytes: ArrayBuffer, job: GenerationJob, revision: number): Promise<boolean> {
+    return loadGlb(bytes, job.prompt.slice(0,120), 'Wczytano model utworzony przez Blender na Twoim serwerze. Możesz go obracać, pobrać lub dodać do katalogu.', revision)
+  }
+  async function loadGlb(bytes: ArrayBuffer, label: string, message: string, revision: number): Promise<boolean> {
     if (revision !== loadRevision.current) return false
     setBusy(true)
     let loaded: Group | null = null
@@ -50,7 +53,7 @@ export function ModelStudio() {
       if (sourceRef.current) engine.current.disposeModel(sourceRef.current)
       sourceRef.current = loaded
       setSource(loaded); setSceneData(null); setAdjustments(defaults)
-      setName(job.prompt.slice(0, 120)); setNote('Wczytano model utworzony przez Blender na Twoim serwerze. Możesz go obracać, pobrać lub dodać do katalogu.')
+      setName(label); setNote(message)
       return true
     } catch (e) {
       if (loaded && loaded !== sourceRef.current) engine.current?.disposeModel(loaded)
@@ -76,6 +79,16 @@ export function ModelStudio() {
     invalidateAgentRequest()
     setBusy(true);setError('')
     try { const response = await fetch('/models/codex-dragon.froge.json'); if (!response.ok) throw new Error('Plik modelu niedostępny.'); await showScene(await response.json(), 'Gotowy projekt smoka przygotowany przez Codexa. To przykład, nie wynik wpisanego właśnie opisu.') } catch (e) { setError((e as Error).message); setBusy(false) }
+  }
+  async function rapperExample() {
+    const revision=++loadRevision.current
+    invalidateAgentRequest();setBusy(true);setError('')
+    try {
+      const response=await fetch('/models/rapper-v10.glb')
+      if(!response.ok)throw new Error('Przykład figurki jest chwilowo niedostępny.')
+      await loadGlb(await response.arrayBuffer(),'Raper · styl lat 2000','Przykład inspirowany stylem Eminema: krótka fryzura, luźna koszulka, denim i sneakersy. Twarz jest przykładowa, nie jest portretem artysty.',revision)
+    } catch(e) { if(revision===loadRevision.current)setError((e as Error).message) }
+    finally { if(revision===loadRevision.current)setBusy(false) }
   }
   async function importFile(file?: File) {
     if (!file) return
@@ -142,7 +155,7 @@ export function ModelStudio() {
       <section className="studio-canvas-panel" aria-label="Wynik generowania">
         <div className="studio-canvas-heading"><div><small>{model?'TWÓJ MODEL':'OBSZAR ROBOCZY'}</small><h2>{name||'Twój model 3D'}</h2></div></div>
         {model?<Suspense fallback={<p className="ai-empty">Ładuję podgląd…</p>}><Viewer model={model}/></Suspense>:<div className="ai-empty"><b>{busy?'Wczytuję geometrię…':'Tutaj pojawi się Twój model'}</b><p>Połącz serwer, opisz obiekt i kliknij „Generuj model 3D”. Gotowy wynik pojawi się tutaj automatycznie.</p><button disabled={busy} onClick={()=>void example()}>Obejrzyj przykład · smok</button></div>}
-        <div className="studio-export"><div className="studio-export-buttons"><button disabled={busy} onClick={()=>void example()}>Przykład · smok Codexa</button><label className="blender-import">Wczytaj GLB lub scenę JSON<input aria-label="Wczytaj model GLB lub JSON" type="file" accept=".glb,.json" disabled={busy} onChange={e=>{void importFile(e.target.files?.[0]);e.target.value=''}}/></label></div></div>
+        <div className="studio-export"><div className="studio-export-buttons"><button disabled={busy} onClick={()=>void rapperExample()}>Przykład · raper</button><button disabled={busy} onClick={()=>void example()}>Przykład · smok Codexa</button><label className="blender-import">Wczytaj GLB lub scenę JSON<input aria-label="Wczytaj model GLB lub JSON" type="file" accept=".glb,.json" disabled={busy} onChange={e=>{void importFile(e.target.files?.[0]);e.target.value=''}}/></label></div></div>
         {model && <><div className="studio-measures">{['SZEROKOŚĆ X','WYSOKOŚĆ Y','GŁĘBOKOŚĆ Z'].map((label,i)=><div key={label}><small>{label}</small><b>{size[i]?.toFixed(2)} <span>cm</span></b></div>)}</div><div className="studio-export"><p>GLB zachowuje materiały i tekstury. Eksport GLB/STL uwzględnia widoczną skalę i obrót.</p><div className="studio-export-buttons"><button disabled={exporting||busy||!!adjustmentError} onClick={()=>void saveProduct()}>Dodaj model do katalogu</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('glb')}>Pobierz GLB + tekstury</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('stl')}>Pobierz STL · mm</button>{sceneData && <button onClick={()=>saveJson('model-blender.froge.json',sceneData)}>Scena do dodatku Blender · JSON</button>}</div><p>JSON zachowuje części w źródłowej skali, przed zmianami wymiarów i obrotów. STL nie zawiera tekstur. Przed drukiem sprawdź siatkę i połącz przecinające się części.</p></div></>}
         <details className="ai-adjustments"><summary>Wymiary i kąty · opcjonalnie</summary><p>Zostaw puste, aby zachować proporcje. Domyślnie najdłuższy bok ma 10 cm. Jeden wymiar skaluje całość proporcjonalnie; kilka wymiarów może zmienić proporcje.</p><div className="ai-fields">{['Szerokość X', 'Wysokość Y', 'Głębokość Z'].map((label,i) => <label key={label}>{label} · cm<input type="number" min="0.1" max="1000" step="0.1" placeholder="Automatycznie" value={adjustments.dimensions[i]} onChange={e => field('dimensions', i, e.target.value)} /></label>)}</div><p>Kąty obrotu modelu (nie kąty konstrukcyjne). Wymiary powyżej dotyczą obiektu przed obrotem.</p><div className="ai-fields">{['X','Y','Z'].map((label,i) => <label key={label}>Obrót {label} · °<input type="number" min="-360" max="360" placeholder="0" value={adjustments.angles[i]} onChange={e => field('angles',i,e.target.value)} /></label>)}</div><button onClick={() => setAdjustments(defaults)}>Wyczyść ustawienia</button>{adjustmentError && <p role="alert" className="studio-error">{adjustmentError} Podgląd zachowuje ostatnią poprawną skalę.</p>}</details>
       </section>

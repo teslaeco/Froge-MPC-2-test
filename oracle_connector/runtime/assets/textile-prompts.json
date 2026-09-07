@@ -1,0 +1,21 @@
+{
+  "generator": "built-in imagegen",
+  "requestedDimensions": [
+    1024,
+    1024
+  ],
+  "actualDimensions": [
+    1254,
+    1254
+  ],
+  "assets": [
+    {
+      "filename": "cotton-jersey-albedo.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: physically based 3D garment material BASE COLOR / ALBEDO texture map, 1024x1024 square. Primary request: a seamless tileable off-white cotton jersey fine knit textile map, orthographic top-down extreme close-up, fabric fills the image edge to edge. Fine evenly scaled interlocking jersey knit stitches and very subtle natural cotton fiber variation. Color: neutral white/off-white, very restrained contrast. Lighting: perfectly flat unlit albedo with even values across the entire image, no directional illumination, no specular highlights, no ambient shadow gradients. Constraints: all four borders join seamlessly when tiled in any direction; uniform density; no folds, no wrinkles, no garment, no objects, no edges, no seams, no text, no labels, no border, no watermark, no large-scale pattern. This must be a usable 2D repeating texture map for rendering clothing, not a photo of clothing and not an illustration."
+    },
+    {
+      "filename": "indigo-denim-albedo.png",
+      "prompt": "Use case: photorealistic-natural. Asset type: physically based 3D garment material BASE COLOR / ALBEDO texture map, 1024x1024 square. Primary request: a seamless tileable dark indigo-blue denim textile map, orthographic top-down extreme close-up, fabric fills the image edge to edge. Fine diagonal twill weave and restrained natural woven variation, subtle lighter weft specks evenly distributed across dark indigo warp. Color: deep muted indigo blue with low-contrast fine woven detail. Lighting: perfectly flat unlit albedo with even values across the entire image, no directional illumination, no specular highlights, no ambient shadow gradients. Constraints: all four borders join seamlessly when tiled in any direction; uniform weave density; no folds, no wrinkles, no garment, no objects, no distressing, no edges, no seams, no text, no labels, no border, no watermark, no large-scale pattern. This must be a usable 2D repeating texture map for rendering clothing, not a photo of clothing and not an illustration."
+    }
+  ]
+}

@@ -5,13 +5,13 @@ export const oracleOpenAIUpdateCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ss
 ssh -T -o IdentitiesOnly=yes -o ConnectTimeout=20 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'python3 -m zipfile -e "$HOME/froge-oracle-openai.zip" "$HOME/froge-openai-update" && python3 "$HOME/froge-openai-update/apply_update.py"'`
 
 export const oracleRebuildUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-rebuild.zip').replaceAll('froge-openai-update', 'froge-rebuild-update')
-export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-wardrobe-v9.zip').replaceAll('froge-openai-update', 'froge-wardrobe-v9-update')
+export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-portrait-v10.zip').replaceAll('froge-openai-update', 'froge-portrait-v10-update')
 
 export function GeometryUpdate() {
   return <div className="blender-setup">
     <strong>Zaktualizuj generator na Oracle</strong>
-    <p>Wersja 9 dodaje wyraźniejszy krój ubrań, kieszenie, fałdy i sneakersy z podeszwami oraz sznurowaniem.</p>
-    <a href="/downloads/froge-oracle-wardrobe-v9.zip" download>Pobierz aktualizację generatora</a>
+    <p>Wersja 10 poprawia szyję i barki, dodaje krótkie włosy, koszulki z odkrytymi przedramionami oraz tekstury bawełny i denimu.</p>
+    <a href="/downloads/froge-oracle-portrait-v10.zip" download>Pobierz aktualizację generatora</a>
     <details><summary>Jak zainstalować aktualizację?</summary><p>Prześlij ZIP w Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{oracleGeometryUpdateCommand}</pre><p>Po FROGE_UPDATE_OK odśwież stronę i utwórz nowy model. Zapisany klucz OpenAI i połączenie zostają zachowane.</p></details>
   </div>
 }
