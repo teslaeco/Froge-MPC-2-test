@@ -3,7 +3,7 @@
 This is the text → selected AI → Blender → GLB worker for the private Froge test studio.
 It is separate from the desktop Blender add-on and the example dragon.
 
-## Checked scene plans (version 7)
+## Checked scene plans (version 8)
 
 New generation produces a compact JSON scene, not executable model-written Python.
 `runtime/scene_contract.py` is the single schema shared by OpenAI Structured Outputs,
@@ -28,7 +28,7 @@ function. Limited replay of a compatible material-only script remains available,
 an incompatible stored geometry script requires a fresh scene plan. Original job files
 and failures are retained.
 
-Install `froge-oracle-geometry-v7.zip`, refresh the studio and generate a
+Install `froge-oracle-characters-v8.zip`, refresh the studio and generate a
 new model. An already configured OpenAI key is preserved. The Site refuses new jobs on older workers rather than launching an obsolete
 code-generation attempt.
 
@@ -40,13 +40,25 @@ ordered XY outlines and stepped levels with separate facade and terrace material
 The `windows` pattern is a packed facade image. This fixes a class of profiles rejected
 by the v6 monotonic-height check, not every possible invalid AI plan.
 
-`person` constructs a generic adult with a dense sculpted face, separate fingers,
-rounded headwear, joined garment surfaces, sneakers and optional necklace/microphone.
-Its fixed remesh/subdivision resolution and material grouping stay within the existing
-scene and GLB budgets. These are procedural figurines, not photorealistic scans or
-identity-accurate reconstructions. General `loft`, `mesh`, `lathe` and `extrusion` parts
-remain available; prompts are not mapped to saved example files. Saved v6 models are
-not modified by the update and must be generated again to use the new geometry.
+Version 8 replaces the formula-based face and fingers with a MakeHuman CC0 adult
+anatomy base, preserved UV topology and 2048px skin atlas. Nose, lips, lids and ears
+belong to the head surface; hands retain individual fingers and nail geometry.
+Headwear follows the actual cranium. Skin/cloth avoid metallic shading, clothing
+texture contrast is reduced, and shoe soles meet their uppers. The two adult morphs
+and their blend support the existing presentation setting. Height is normalized to
+the completed figure, including headwear. `runtime/assets/SOURCES.md` documents data
+provenance and the bundled CC0 license; no MakeHuman executable code is shipped.
+
+The wardrobe remains procedural. These are generic textured figurines, not
+photorealistic scans, AAA game characters or identity-accurate reconstructions.
+Visual review, manufacturing checks and a test print remain necessary before selling
+a physical figure. Exported GLB preserves geometry, materials and embedded textures;
+STL cannot retain texture detail. Existing saved models are not altered: generate
+again to use the new anatomy. AI never receives file paths or executable data.
+
+The updater checks the bundled asset hashes before stopping the worker, backs up
+code and data together and restores both if startup fails. Pairing, stored OpenAI
+credentials, job history, tunnel and downloaded models remain untouched.
 
 Requirements: the existing Oracle Linux 9 ARM instance, user `opc`, the already-tested
 `localhost/froge-blender:local` Podman image, and about 10 GB additional free disk space.
@@ -156,7 +168,7 @@ Cloud Shell, copy it to the VM and extract it into a separate directory. Run its
 `apply_update.py` as `opc`. It checks that no job is active, backs up the replaced code,
 updates `server.py`, `ai_stream.py`, `openai_provider.py`, `runtime_check.py`, `code_policy.py` and the trusted runtime modules, restarts only `froge-worker.service`, and verifies
 its authenticated health response. It preserves pairing, the tunnel, downloaded AI weights
-and all jobs. Failed startup restores the old code. `froge-oracle-geometry-v7.zip` is the current named update; older download names are
+and all jobs. Failed startup restores the old code. `froge-oracle-characters-v8.zip` is the current named update; older download names are
 retained as aliases. After `FROGE_UPDATE_OK`, refresh the Site and use **Ponów ten opis**
 on a failed or cancelled job. OpenAI settings remain unchanged. The legacy
 `froge-oracle-texture-fix.zip` download is retained as an alias of the current update.

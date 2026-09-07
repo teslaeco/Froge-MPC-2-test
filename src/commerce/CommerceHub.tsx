@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { estimate, newProduct, productSchema, readiness, shopifyCsv, supplierBrief, tiktokBrief, type Product, type SavedProduct } from './domain'
 import './commerce.css'
 import { commerceRequest as api } from './client'
+import { PlannedMarketplaces } from '../components/PlannedMarketplaces'
 
 type Section='catalog'|'offers'|'channels'
 const kinds={figurine:'Figurka 3D',part:'Część użytkowa',digital:'Plik cyfrowy',other:'Inny produkt'}
@@ -47,7 +48,8 @@ export function CommerceHub(){
  return <div className="commerce">
   <header className="commerce-heading"><div><p className="commerce-kicker">FROGE / CENTRUM SPRZEDAŻY</p><h1>Od pomysłu do produktu.</h1><p>Twoje modele, oferty i przygotowanie produkcji w jednym miejscu.</p></div><Link className="commerce-outline" to="/">Otwórz studio 3D ↗</Link></header>
   <nav className="commerce-tabs" aria-label="Panel sprzedaży">{([['catalog','Katalog'],['offers','Oferty i produkcja'],['channels','Kanały sprzedaży']] as const).map(([key,title])=><button key={key} className={section===key?'active':''} onClick={()=>setSection(key)} aria-current={section===key?'page':undefined}>{title}</button>)}</nav>
-  <div className="commerce-strip"><span><strong>{count}</strong> {count===1?'produkt w katalogu':'produktów w katalogu'}</span><span>Shopify <b>Niepołączony</b></span><span>TikTok Shop <b>Niepołączony</b></span><span>Blender <b>Serwer niepołączony</b></span></div>
+  <div className="commerce-strip"><span><strong>{count}</strong> {count===1?'produkt w katalogu':'produktów w katalogu'}</span><span>TikTok Shop <b>Niepołączony</b></span><Link to="/">Studio i stan połączenia z Blenderem →</Link></div>
+  <PlannedMarketplaces />
   {error&&<div className="commerce-alert" role="alert">{error} <button onClick={()=>void load()} disabled={loading||busy}>Odśwież katalog</button><p>Odświeżenie listy nie nadpisuje formularza. Przy konflikcie wersji skopiuj swoje zmiany przed ponownym otwarciem produktu.</p></div>}
   {notice&&<p className="commerce-notice" role="status">{notice}</p>}
   {section==='catalog'&&<div className="commerce-workspace">
@@ -90,7 +92,7 @@ export function CommerceHub(){
   </div>}
   {section==='channels'&&<div className="commerce-offers"><section className="commerce-panel"><p className="commerce-kicker">SHOPIFY</p><h2>Centrum sklepu</h2><span className="commerce-tag">Brak połączenia</span><p>Dostęp agenta do konkretnego sklepu wymaga autoryzacji Shopify. Połączenie Shopify z rozmową nie uruchamia automatycznej synchronizacji tej platformy.</p><a className="commerce-outline" href="https://admin.shopify.com/" target="_blank" rel="noreferrer">Otwórz panel Shopify ↗</a><p>Na razie możesz przenosić szkice przez CSV. Zamówienia, płatności i dostawy obsługuje panel Twojego sklepu.</p></section>
    <section className="commerce-panel"><p className="commerce-kicker">TIKTOK SHOP</p><h2>Sprzedaż przez TikTok</h2><span className="commerce-tag">Brak połączenia</span><p>Oficjalny kanał TikTok w Shopify może synchronizować produkty, zapasy i zamówienia po podłączeniu kwalifikującego się sklepu.</p><p>Sprawdź kraj rejestracji firmy. W dokumentacji sprawdzonej 06.09.2026 Polska i Holandia nie są wymienione wśród krajów obsługiwanych przez kanał TikTok Shop w Shopify.</p><a href="https://help.shopify.com/en/manual/online-sales-channels/social-commerce/tiktok/setup" target="_blank" rel="noreferrer">Wymagania i konfiguracja kanału ↗</a></section>
-   <section className="commerce-panel"><p className="commerce-kicker">CODEX + BLENDER</p><h2>Warsztat modeli 3D</h2><span className="commerce-tag">Serwer niepołączony</span><p>Studio obsługuje podgląd i eksport modeli oraz polecenia dla agenta. Dodatek Blender jest gotowy do pobrania; wykonywanie zadań na Oracle wymaga jeszcze konfiguracji.</p><Link className="commerce-outline" to="/">Przejdź do studia ↗</Link><a href="/downloads/froge-blender-addon.zip" download>Pobierz dodatek Blender ↓</a></section>
+   <section className="commerce-panel"><p className="commerce-kicker">CODEX + BLENDER</p><h2>Warsztat modeli 3D</h2><p>Twórz modele z opisu, obracaj je i zapisuj do katalogu. Aktualny stan serwera i ustawienia AI znajdziesz w studiu.</p><Link className="commerce-outline" to="/">Przejdź do studia ↗</Link><a href="/downloads/froge-blender-addon.zip" download>Pobierz dodatek Blender ↓</a></section>
   </div>}
   <footer className="commerce-footer"><span>FROGE · Studio i sprzedaż</span><Link to="/shop-lab">Laboratorium prototypów</Link><Link to="/contest">Fundament konkursowy</Link></footer>
  </div>

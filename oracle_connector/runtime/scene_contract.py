@@ -102,11 +102,13 @@ different radius. Do not sort or cross the profile. Example closed spire:
 For round parts use lathe sides 64 or loft sides 48-64; reserve 6-10 sides for explicitly
 polygonal architecture. Loft sections specify a center and two elliptical radii, giving
 continuous sculpted bodies and limbs instead of disconnected balls and cylinders.
-Use person for adult human figurines, rappers and singers: it builds a sculpted face
-(nose, lips, eyelids, ears), fingers, continuous clothing with folds and detailed shoes.
+Use person for adult human figurines, rappers and singers: it uses a licensed anatomical adult base
+with connected nose/lips/eyelids/ears, UV skin texture, five-finger hands, fitted headwear,
+continuous clothing and shoes. Use a separate skin material with pattern skin, matte
+fabric for clothes and a separate eye material (dark iris color or neutral white).
 Choose the person's palette, build, presentation, clothing, pose, headwear and accessories
 to match the description. Add separate requested props using other operations. Person
-faces are generic procedural adults, not guaranteed likenesses of named real people.
+faces are generic anatomical adults, not guaranteed likenesses of named real people.
 For modern skyscrapers use tiers, wings, setbacks, a podium and spire as appropriate;
 use the windows material pattern for a repeating glazed facade. Preserve architectural
 edges. Do not call a simple cone a realistic skyscraper.
@@ -264,7 +266,7 @@ def validate_scene(value):
                 raise ValueError('Ekstruzja wymaga poziomow od dolu do gory; uskok moze powtorzyc Z przy innej skali.')
             v=len(outline)*len(levels);t=2*v
         elif kind == 'person':
-            v, t, count = 120000, 240000, 8
+            v, t, count = 180000, 360000, 8
         elif kind == 'ellipsoid':
             v, t = 2562, 5120
         elif kind == 'box':

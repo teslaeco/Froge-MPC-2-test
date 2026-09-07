@@ -1,5 +1,6 @@
 """Apply the worker-only update on the existing Oracle VM without resetting pairing."""
 import json
+import hashlib
 import os
 from pathlib import Path
 import pwd
@@ -9,8 +10,9 @@ import time
 import urllib.request
 from runtime_check import RuntimeUnavailable, setup_runtime
 
-FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py')
-EXPECTED_VERSION = 7
+ASSETS = ('anatomy.json.gz', 'male-skin.png', 'female-skin.png', 'LICENSE.CC0.md', 'SOURCES.md', 'manifest.json')
+FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py') + tuple('runtime/assets/'+name for name in ASSETS)
+EXPECTED_VERSION = 8
 
 
 def replace(path, data):
@@ -29,7 +31,10 @@ def update(source, target):
         raise RuntimeError('Nie znaleziono obecnej instalacji Froge. Nie zmieniono plikow.')
     incoming = {name: (source / name).read_bytes() for name in FILES}
     for name, data in incoming.items():
-        compile(data, name, 'exec')
+        if name.endswith('.py'):compile(data, name, 'exec')
+    manifest=json.loads(incoming['runtime/assets/manifest.json'])
+    if set(manifest) != {'anatomy.json.gz','male-skin.png','female-skin.png'} or any(hashlib.sha256(incoming['runtime/assets/'+name]).hexdigest()!=digest for name,digest in manifest.items()):
+        raise RuntimeError('Niekompletne lub uszkodzone dane anatomii. Pobierz ZIP ponownie. Nie zmieniono instalacji.')
     original = {name: (target / name).read_bytes() if (target / name).exists() else None for name in FILES}
     command = ['systemctl', '--user']
     # Hold the queue lock until the HTTP worker stops, preventing a new job from
@@ -61,7 +66,7 @@ def update(source, target):
                 with urllib.request.urlopen(request, timeout=2) as response:
                     if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
                         print('FROGE_UPDATE_OK')
-                        print('Odswiez Froge i wygeneruj NOWY model. Wersja 7 poprawia profile wiezowcow i szczegoly postaci. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Odswiez Froge i wygeneruj NOWY model. Wersja 8 dodaje baze anatomiczna twarzy i dloni oraz tekstury skory. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass

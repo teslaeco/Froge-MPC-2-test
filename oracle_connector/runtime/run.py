@@ -25,6 +25,9 @@ def make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0):
     shader.inputs['Base Color'].default_value = (*rgb, 1)
     shader.inputs['Roughness'].default_value = max(0, min(1, float(roughness)))
     shader.inputs['Metallic'].default_value = max(0, min(1, float(metallic)))
+    if pattern in ('skin', 'fabric'):
+        shader.inputs['Metallic'].default_value = 0
+        shader.inputs['Roughness'].default_value = max(.5 if pattern == 'skin' else .75, float(roughness))
     if pattern != 'plain':
         n = 512
         seed = int.from_bytes(hashlib.sha256(str(name).encode()).digest()[:4], 'little')
@@ -41,7 +44,7 @@ def make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0):
             texture = 0.82 + 0.14 * np.sin(y * 8) + 0.16 * veins + 0.08 * noise
             texture += 0.14 * np.exp(-((x - 0.5) * 110) ** 2)
         elif pattern == 'fabric':
-            texture = 0.9 + 0.12 * np.sin(x * 350) * np.cos(y * 350) + 0.1 * noise
+            texture = 0.98 + 0.008 * np.sin(x * 450) * np.cos(y * 450) + 0.012 * noise
         elif pattern == 'metal':
             texture = 0.94 + 0.06 * np.sin(x * 1100) + 0.08 * noise
         elif pattern == 'windows':
@@ -157,8 +160,9 @@ def finish():
             for loop in mesh.loops:
                 uv.data[loop.index].uv = tuple(((coords[loop.vertex_index] - minimum) / span)[axes])
     for image in bpy.data.images:
-        if image.size[0] > 1024 or image.size[1] > 1024:
-            image.scale(min(image.size[0], 1024), min(image.size[1], 1024))
+        limit = 2048 if image.get('anatomical_atlas') else 1024
+        if image.size[0] > limit or image.size[1] > limit:
+            image.scale(min(image.size[0], limit), min(image.size[1], limit))
         # Packing an unchanged generated image again can discard its packed PNG
         # in Blender 4.3 when it has no external filepath. Preserve those bytes.
         if image.has_data and (image.packed_file is None or image.is_dirty):

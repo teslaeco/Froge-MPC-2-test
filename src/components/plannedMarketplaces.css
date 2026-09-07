@@ -1,0 +1,13 @@
+.planned-marketplaces{margin:30px 0 20px;padding:24px;border:1px solid #2c3c4c;border-radius:16px;background:#0e1824;display:flex;align-items:center;gap:32px;color:#dce5ed}
+.planned-marketplaces .planned-marketplaces-label{font-size:10px;letter-spacing:.17em;color:#f7b085;margin:0 0 8px}
+.planned-marketplaces h2{font-size:18px;margin:0 0 8px;line-height:1.35}
+.planned-marketplaces p{font-size:13px;color:#a8b7c6;margin:0;line-height:1.6}
+.planned-marketplaces ul{display:flex;gap:14px;list-style:none;padding:0;margin:0 0 0 auto;flex-shrink:0}
+.planned-marketplaces li{width:145px;text-align:center}
+.marketplace-logo{height:82px;border-radius:10px;background:#000;display:flex;align-items:center;justify-content:center;padding:15px}
+.marketplace-logo img{width:100%;height:48px;object-fit:contain}
+.marketplace-logo-shopify img{width:145px;max-width:none;height:auto}
+.marketplace-logo-ebay{background:#fff}
+.planned-marketplaces li span{display:block;font-size:11px;color:#a8b7c6;margin-top:9px}
+@media(max-width:1000px){.planned-marketplaces{flex-direction:column;align-items:stretch;gap:20px}.planned-marketplaces ul{margin:0;justify-content:space-between}.planned-marketplaces li{flex:1;max-width:180px;min-width:0}.marketplace-logo-shopify img{width:100%;max-width:145px}}
+@media(max-width:480px){.planned-marketplaces{padding:18px}.planned-marketplaces ul{gap:8px}.marketplace-logo{height:66px;padding:8px}.marketplace-logo img{height:40px}.planned-marketplaces li span{font-size:10px}}

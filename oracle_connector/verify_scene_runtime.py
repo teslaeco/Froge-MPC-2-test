@@ -97,7 +97,13 @@ def verify(name, folder, render=False):
             assert all(f.calc_area()>1e-12 for f in mesh.faces), key
             mesh.free()
     if name.startswith('rapper'):
-        assert sum(len(o.data.vertices) for group in built.values() for o in group)>50000
+        objects=[o for group in built.values() for o in group]
+        points=[o.matrix_world@v.co for o in objects for v in o.data.vertices]
+        actual_height=max(v.z for v in points)-min(v.z for v in points)
+        assert abs(actual_height-scene['parts'][0]['height'])<.005, actual_height
+        assert abs(min(v.z for v in points)-scene['parts'][0]['center'][2])<.005
+        assert any(i.size[0]==2048 and i.packed_file for i in bpy.data.images)
+        assert all(o.data.uv_layers for o in objects if any(m.get('anatomical_atlas') for m in o.data.materials))
     if name.startswith('oak'):
         assert len(built)==2
         assert len(built['dab'][1].data.vertices)>40000
@@ -126,7 +132,7 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser();parser.add_argument('--output');parser.add_argument('--scene');args=parser.parse_args()
     with tempfile.TemporaryDirectory(prefix='froge-scene-') as temporary:
         base=Path(temporary)
-        for name in ([args.scene] if args.scene else ['rocket.scene.json','oak-lights.scene.json','rapper.scene.json','dubai-tower.scene.json']):
+        for name in ([args.scene] if args.scene else ['rocket.scene.json','oak-lights.scene.json','rapper.scene.json','rapper-performer.scene.json','dubai-tower.scene.json']):
             folder=(Path(args.output) if args.output else base)/name.replace('.scene.json','')
             folder.mkdir(parents=True,exist_ok=True)
             verify(name,folder,render=bool(args.output))

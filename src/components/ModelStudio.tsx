@@ -9,6 +9,7 @@ import type { Adjustments } from '../studio/aiModel'
 import { useDictation } from '../studio/useDictation'
 import { ParametricModelStudio } from './ParametricModelStudio'
 import { RemoteGenerator } from '../blender/RemoteGenerator'
+import { PlannedMarketplaces } from './PlannedMarketplaces'
 import type { GenerationJob } from '../blender/client'
 import '../studio/studio.css'
 import '../studio/aiStudio.css'
@@ -146,6 +147,7 @@ export function ModelStudio() {
         <details className="ai-adjustments"><summary>Wymiary i kąty · opcjonalnie</summary><p>Zostaw puste, aby zachować proporcje. Domyślnie najdłuższy bok ma 10 cm. Jeden wymiar skaluje całość proporcjonalnie; kilka wymiarów może zmienić proporcje.</p><div className="ai-fields">{['Szerokość X', 'Wysokość Y', 'Głębokość Z'].map((label,i) => <label key={label}>{label} · cm<input type="number" min="0.1" max="1000" step="0.1" placeholder="Automatycznie" value={adjustments.dimensions[i]} onChange={e => field('dimensions', i, e.target.value)} /></label>)}</div><p>Kąty obrotu modelu (nie kąty konstrukcyjne). Wymiary powyżej dotyczą obiektu przed obrotem.</p><div className="ai-fields">{['X','Y','Z'].map((label,i) => <label key={label}>Obrót {label} · °<input type="number" min="-360" max="360" placeholder="0" value={adjustments.angles[i]} onChange={e => field('angles',i,e.target.value)} /></label>)}</div><button onClick={() => setAdjustments(defaults)}>Wyczyść ustawienia</button>{adjustmentError && <p role="alert" className="studio-error">{adjustmentError} Podgląd zachowuje ostatnią poprawną skalę.</p>}</details>
       </section>
     </div>
-    <footer className="studio-footer"><span>FROGE MPC 2 · Studio 3D</span><Link to="/contest">Fundament konkursowy →</Link><Link to="/shop">Katalog · TikTok + Shopify →</Link></footer>
+    <PlannedMarketplaces />
+    <footer className="studio-footer"><span>FROGE MPC 2 · Studio 3D</span><Link to="/contest">Fundament konkursowy →</Link><Link to="/shop">Katalog i kanały sprzedaży →</Link></footer>
   </div>
 }

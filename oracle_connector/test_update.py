@@ -2,6 +2,7 @@ import io
 import json
 from pathlib import Path
 import sqlite3
+import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -29,6 +30,8 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'runtime/build_scene.py').write_text('data_only = True\n')
         (self.source / 'runtime/detailed_geometry.py').write_text('geometry_version = 7\n')
         (self.target / 'runtime/run.py').write_text('preserve_packed_images = False\n')
+        (self.source / 'runtime/anatomy.py').write_text('anatomy_version = 8\n')
+        shutil.copytree(Path(__file__).parent/'runtime/assets', self.source/'runtime/assets')
         self.config = self.target / 'state/config.json'
         self.config.write_text(json.dumps({'token': 'local-test-token', 'client': 'owner', 'code': 'unchanged'}))
         self.original_config = self.config.read_bytes()
@@ -79,6 +82,20 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual((self.target / 'code_policy.py').read_text(), 'policy = "strict"\n')
         self.assertEqual((self.target / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')
         self.assertEqual(self.config.read_bytes(), self.original_config)
+
+    def test_missing_anatomy_keeps_installed_worker_running(self):
+        (self.source / 'runtime/assets/anatomy.json.gz').unlink()
+        with patch.object(apply_update.subprocess, 'run') as service:
+            with self.assertRaises(FileNotFoundError):apply_update.update(self.source,self.target)
+            service.assert_not_called()
+        self.assertEqual(self.config.read_bytes(),self.original_config)
+
+    def test_damaged_skin_is_rejected_before_service_stop(self):
+        (self.source / 'runtime/assets/male-skin.png').write_bytes(b'truncated')
+        with patch.object(apply_update.subprocess, 'run') as service:
+            with self.assertRaisesRegex(RuntimeError,'uszkodzone'):apply_update.update(self.source,self.target)
+            service.assert_not_called()
+        self.assertEqual((self.target / 'server.py').read_text(),'version = 1\n')
 
     def test_runtime_failure_stops_update_before_replacing_code_or_stopping_worker(self):
         with patch.object(apply_update, 'setup_runtime', side_effect=apply_update.RuntimeUnavailable('controller `cpu` is not available')), patch.object(apply_update.subprocess, 'run') as service:
