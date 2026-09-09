@@ -126,7 +126,7 @@ class SceneContractTests(unittest.TestCase):
                     self.assertEqual(ai.call_count,2)
                     self.assertIn('complete corrected scene JSON',ai.call_args.args[0][-1]['content'])
                     blender.assert_called_once()
-                    self.assertEqual(blender.call_args.kwargs['timeout'],180)
+                    self.assertEqual(blender.call_args.kwargs['timeout'],900)
                 folder=server.JOBS/'scene-job'
                 self.assertTrue((folder/'scene.json').exists())
                 self.assertFalse((folder/'generate.py').exists())

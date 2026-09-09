@@ -36,8 +36,8 @@ async function boundedBody(body: ReadableStream<Uint8Array> | null, limit: numbe
 }
 async function jsonInput(request: Request): Promise<Record<string, unknown>> {
   if (!request.headers.get('content-type')?.startsWith('application/json')) throw new ApiError('Wymagany format JSON.', 415)
-  if (Number(request.headers.get('content-length')) > 12000) throw new ApiError('Opis jest za długi.', 413)
-  const value = JSON.parse(new TextDecoder().decode(await boundedBody(request.body, 12000)))
+  if (Number(request.headers.get('content-length')) > 24000) throw new ApiError('Opis jest za długi.', 413)
+  const value = JSON.parse(new TextDecoder().decode(await boundedBody(request.body, 24000)))
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new ApiError('Wymagany obiekt JSON.')
   return value
 }
@@ -134,7 +134,7 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       if (request.method !== 'POST') throw new ApiError('Niedozwolona metoda.', 405)
       if (!connection) throw new ApiError('Najpierw połącz serwer Blendera.', 409)
       const input = await jsonInput(request)
-      if (typeof input.id !== 'string' || !uuid.test(input.id) || typeof input.prompt !== 'string' || !input.prompt.trim() || input.prompt.length > 2000) throw new ApiError('Wpisz opis od 1 do 2000 znaków.')
+      if (typeof input.id !== 'string' || !uuid.test(input.id) || typeof input.prompt !== 'string' || !input.prompt.trim() || input.prompt.length > 5000) throw new ApiError('Wpisz opis od 1 do 5000 znaków.')
       if (input.sourceJobId !== undefined) {
         if (typeof input.sourceJobId !== 'string' || !uuid.test(input.sourceJobId) || input.sourceJobId === input.id) throw new ApiError('Nieprawidłowe zlecenie źródłowe.')
         const source = await db.prepare('SELECT * FROM blender_jobs WHERE id=? AND owner=?').bind(input.sourceJobId, owner).first<Job>()

@@ -51,7 +51,7 @@ export function ParametricModelStudio() {
         <div className="studio-panel-heading"><span>01</span><h2 id="command-heading">Polecenie dla agenta</h2></div>
         <div className="studio-agent-note"><strong>Asystent parametrów</strong><p>Rakieta, walec, stożek i kula. Zmieniaj wymiary, kolor, teksturę, okno i lotki.</p><small>Tryb lokalny · swobodne AI niepodłączone</small></div>
         <label className="studio-prompt-label" htmlFor="studio-prompt">Co mam stworzyć lub zmienić?</label>
-        <textarea id="studio-prompt" rows={6} maxLength={2000} value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Np. rakieta o średnicy 1 cm i wysokości 5 cm…" />
+        <textarea id="studio-prompt" rows={6} maxLength={5000} value={prompt} onChange={e => setPrompt(e.target.value)} placeholder="Np. rakieta o średnicy 1 cm i wysokości 5 cm…" />
         <button className="studio-primary" onClick={() => { lastApplied.current = prompt; applyStudioCommand(prompt) }}>Zastosuj polecenie <span>↗</span></button>
         <label className="studio-switch"><input type="checkbox" checked={live} onChange={e => setLive(e.target.checked)} />Wprowadzaj polecenia na żywo</label>
         <small className="studio-helper">Po krótkiej przerwie w pisaniu lub zakończonym zdaniu z mikrofonu. Wymiary w panelu aktualizują się od razu.</small>

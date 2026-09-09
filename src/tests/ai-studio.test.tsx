@@ -26,6 +26,13 @@ describe('optional dimensions and actual export', () => {
 })
 
 describe('Codex and Blender modeling',()=>{
+ it('uses the same 5000-character boundary in Studio and the agent request store',()=>{
+  render(<MemoryRouter><ModelStudio/></MemoryRouter>)
+  const prompt=screen.getByLabelText('Co mam stworzyć?')
+  expect(prompt).toHaveAttribute('maxlength','5000')
+  expect(requestAgentModel('x'.repeat(5000))!.prompt).toHaveLength(5000)
+  expect(()=>requestAgentModel('x'.repeat(5001))).toThrow('Wpisz opis od 1 do 5000 znaków.')
+ })
  it('accepts arbitrary geometry and rejects bad indices, UV and executable fields',()=>{
   expect(sceneModel(example).children).toHaveLength(1)
   expect(sceneSchema.safeParse({...example,code:'do something'}).success).toBe(false)

@@ -147,7 +147,8 @@ class ConfigurationTests(unittest.TestCase):
             self.assertNotIn(FAKE_KEY, json.dumps(state))
             with patch.object(openai_provider, 'generate', return_value='import math') as generate:
                 self.assertEqual(server.generate_code([], 'fixture', threading.Event()), 'import math')
-                self.assertLessEqual(generate.call_args.args[4], 180)
+                self.assertLessEqual(generate.call_args.args[4], 600)
+                self.assertGreater(generate.call_args.args[4], 599)
         server.RUNNING.add('inflight')
         self.assertFalse(server.configure_ai({'provider': 'ollama'}))
         self.assertEqual(server.ai_settings()['provider'], 'openai')

@@ -31,7 +31,7 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
     No prompts are placed in command-line arguments or diagnostic output.
     """
     is_openai = response_protocol == 'responses'
-    timeout_message = ('OpenAI przekroczylo limit 3 minut na instrukcje. Model nie zostal zapisany.'
+    timeout_message = ('OpenAI przekroczylo limit 10 minut na instrukcje. Model nie zostal zapisany.'
                        if is_openai else 'AI przekroczylo laczny limit 30 minut. Model nie zostal zapisany.')
     if cancelled.is_set():
         raise InterruptedError('Zlecenie anulowane.')
