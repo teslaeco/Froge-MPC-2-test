@@ -51,3 +51,19 @@ __pycache__/
 /public/downloads/froge-oracle-wardrobe-v9.zip
 
 /public/downloads/froge-oracle-portrait-v10.zip
+
+/public/downloads/froge-oracle-style-v11.zip
+
+/public/downloads/froge-oracle-figures-v12.zip
+/public/downloads/froge-oracle-figures-v13.zip
+
+# Deterministic v16 build outputs; source fixtures and generators are tracked.
+/public/downloads/froge-v16.py
+/public/downloads/froge-v16.zip
+/public/models/fashion-1-v16.glb
+/public/models/fashion-2-v16.glb
+/public/models/fashion-3-v16.glb
+/public/models/fashion-group-v16.glb
+
+/public/downloads/froge-v19.py
+/public/downloads/froge-v19.zip

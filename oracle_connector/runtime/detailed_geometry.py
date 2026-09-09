@@ -119,6 +119,11 @@ def extrusion(p, material, cap_material, mesh_object):
 
 
 def person(p, materials, mesh_object, tube, ellipsoid, join_meshes):
+    if p['outfit'] in ('crop_skirt','puffer_crop','black_crop'):
+        from fashion import fashion_person
+        return fashion_person(p,materials,mesh_object,tube,ellipsoid)
+    import portrait
+    from portrait_hands import build_hand
     parts=[]
     skin,hair,top,pants,shoe,accent,eyes=[materials[p[k+'_material']] for k in ('skin','hair','top','trouser','shoe','accent','eye')]
     if skin in (hair,top,pants,shoe,accent,eyes) and len(bpy.data.materials)<8:
@@ -126,7 +131,10 @@ def person(p, materials, mesh_object, tube, ellipsoid, join_meshes):
     tee=p['outfit']=='tshirt'
     sleeve_ends=[]
     width={'slim':.90,'average':1.,'broad':1.13}[p['build']]
-    shoulder=.95 if p['presentation']=='feminine' else 1.
+    feminine=p['presentation']=='feminine'
+    shoulder=.92 if feminine else 1.
+    hip=1.04 if feminine else 1.
+    waist=.90 if feminine else 1.
     def ball(name,center,radii,mat,detail=3):
         obj=ellipsoid(name,center,radii,mat,subdivisions=detail)
         obj['garment']='top' if name=='shoulder' else ''
@@ -141,38 +149,48 @@ def person(p, materials, mesh_object, tube, ellipsoid, join_meshes):
         obj=revolve(name,profile,center,64,mat,mesh_object);parts.append(obj);return obj
 
     # Relaxed weight distribution: wider ankle spacing and a small forward step.
-    shaped('pelvis',[(0,0,.87,.169*width,.093),(0,0,.98,.177*width,.10),(0,0,1.04,.164*width,.095)],pants,.012,64)
+    shaped('pelvis',[(0,0,.87,.169*width*hip,.093),(0,0,.98,.177*width*hip,.10),(0,0,1.04,.164*width,.095)],pants,.012,64)
     for side in (-1,1):
         x=side*.105*width;dy=-.025 if side==-1 else .014
         shaped('trouser-leg',[(x,dy,.14,.065 if tee else .054,.062 if tee else .051),(x,dy,.24,.069 if tee else .063,.066 if tee else .063),(x+side*.006,dy-.020,.45,.069,.073),(side*.096*width,-.016,.67,.079,.084),(side*.093*width,0,.89,.098,.090),(side*.093*width,0,.99,.103,.091)],pants,0,64)
         parts.extend(wardrobe.sneaker(x,dy,side*.08,shoe,accent,shoe,mesh_object,tube))
     loose=1.06 if p['outfit'] in ('streetwear','hoodie','tshirt') else .94 if p['outfit']=='formal' else 1.
-    shaped('top',[(0,0,.965,.18*width*loose,.112),(0,0,1.05,.18*width*loose,.107),(0,0,1.19,.175*width*loose,.105),(0,0,1.33,.205*width*loose,.11),(0,0,1.412,.198*width*shoulder,.093),(0,0,1.442,.140*width,.074),(0,-.015,1.470,.073,.062),(0,-.019,1.490,.065,.065)],top,.016,64)
+    fitted=p.get('clothing_fit')=='fitted'
+    if fitted:loose=.97
+    # Fitted tees overlap the waistband without an oversized hem over the seat.
+    hem=.985 if tee and fitted else .900 if tee else .965
+    second=1.025 if tee and fitted else .955 if tee else 1.00
+    shaped('top',[(0,0,hem,.193*width*loose,.113 if fitted else .127),(0,0,second,.190*width*loose,.112 if fitted else .125),(0,0,1.05,.18*width*loose*waist,.115),(0,0,1.19,.175*width*loose*waist,.109),(0,0,1.33,.205*width*loose,.11),(0,0,1.412,.198*width*shoulder,.093),(0,0,1.442,.140*width,.074),(0,-.015,1.470,.073,.062),(0,-.019,1.490,.065,.065)],top,.012,64)
     for side in (-1,1):
         raised=side==1 and (p['pose']=='performing' or p['microphone'])
         if raised:
             path=[(.155*width,0,1.385,.048,.050),(.205*width,0,1.365,.059,.058),(.27*width,-.012,1.30,.067,.069),(.332*width,-.051,1.205,.060,.061),(.344*width,-.113,1.200,.056,.056),(.31*width,-.202,1.267,.042,.044)]
         else:
             path=[(side*.155*width,0,1.385,.048,.050),(side*.205*width,0,1.365,.059,.058),(side*.245*width,0,1.305,.059,.062),(side*.281*width,-.008,1.16,.059,.062),(side*.297*width,-.020,1.04,.050,.053),(side*.29*width,-.055,.93,.039,.042)]
+        # Keep sleeves, arms and gripping hands on the same shoulder frame.
+        # Previously only the torso narrowed for feminine presentation.
+        path=[(x*shoulder,y,z,rx,ry) for x,y,z,rx,ry in path]
         sleeve_path=path
         if tee:
             sleeve_path=path[:3]+[tuple(path[3][:3])+(.064,.063)]
-            parts.append(anatomy.forearm(side,path[3][:3],path[-1][:3],p['presentation'],skin,mesh_object,include_hand=not raised,sleeve_axis=Vector(path[3][:3])-Vector(path[2][:3])))
+            parts.append(anatomy.forearm(side,path[3][:3],path[-1][:3],p['presentation'],skin,mesh_object,include_hand=False,sleeve_axis=Vector(path[3][:3])-Vector(path[2][:3])))
             sleeve_ends.append((side,path[3][:3],(Vector(path[3][:3])-Vector(path[2][:3])).normalized()))
         shaped('sleeve',sleeve_path,top,.014,48)
         x,y,z=path[-1][:3]
         direction=(Vector(path[-1][:3])-Vector(path[-2][:3])).normalized()
         a=Vector((x,y,z))-direction*.026;b=Vector((x,y,z))+direction*.008
         if not tee:shaped('sleeve-cuff',[(*a,.041,.042),(*b,.040,.041)],top,0,48)
-        if not tee or raised:
-            hand=anatomy.hand(side, (x,y,z), (.65,-.25,.72) if raised else (0,-.12,-1), p['presentation'], skin, mesh_object, raised)
-            parts.append(hand)
+        direction=Vector((.1,-.96,.27) if raised else (0,-.12,-1)).normalized()
+        built=build_hand({'side':'left' if side==1 else 'right','wrist':(x,y,z),'direction':direction,'palm_normal':(side,0,.1),'presentation':p['presentation'],'scale':1.,'curl':1.65 if raised else .18,'nail_length':.001},skin,materials[p['nail_material']],mesh_object)
+        parts.extend(built);hand=built[0]
+        hand['grip_center']=list(Vector((x,y,z))+direction*.095)
+        hand['grip_axis']=[0,0,1]
         if raised and p['microphone']:
             grip=Vector(hand['grip_center']);direction=Vector(hand['grip_axis'])
             shaped('microphone-handle',[(*tuple(grip-direction*.080),.014,.014),(*tuple(grip+direction*.080),.014,.014)],hair,0,32)
             grille=ball('microphone-grille',tuple(grip+direction*.105),(.026,.026,.035),hair)
             grille.rotation_euler=direction.to_track_quat('Z','Y').to_euler()
-    parts.extend(anatomy.head(p,skin,eyes,hair,mesh_object,ellipsoid))
+    parts.extend(portrait.head(p,skin,eyes,hair,mesh_object,ellipsoid))
     if p['headwear']=='cap':
         ball('cap-brim',(0,-.157,1.744),(.094,.074,.006),hair)
     if p['necklace']:
@@ -201,10 +219,12 @@ def person(p, materials, mesh_object, tube, ellipsoid, join_meshes):
         bpy.ops.object.modifier_apply(modifier=soften.name)
         subdiv=obj.modifiers.new('garment-detail','SUBSURF');subdiv.levels=1
         bpy.ops.object.modifier_apply(modifier=subdiv.name)
-        wardrobe.finish_cloth(obj,role,width)
+        wardrobe.fit_silhouette(obj,role,p,width)
+        wardrobe.finish_cloth(obj,role,width,tee)
         if tee and role=='top':wardrobe.open_sleeves(obj,sleeve_ends,width)
         finished[role]=obj
         parts.append(smooth(obj))
+    wardrobe.clear_trousers(finished['top'],finished['pants'])
     parts.extend(wardrobe.details(p,finished,width,top,pants,hair,accent,mesh_object,tube,loft))
     for obj in parts:
         if not obj.name.startswith(('anatomical','eyebrow','fitted','beanie')):wardrobe.fabric_uv(obj)
@@ -219,7 +239,9 @@ def person(p, materials, mesh_object, tube, ellipsoid, join_meshes):
     bounds=[obj.matrix_world @ Vector(corner) for obj in parts for corner in obj.bound_box]
     floor=min(v.z for v in bounds);factor=p['height']/(max(v.z for v in bounds)-floor)
     grouped={}
-    for obj in parts:grouped.setdefault(obj.data.materials[0].name,[]).append(obj)
+    for obj in parts:
+        preserve=any(obj.get(key) for key in ('anatomical_head','anatomical_hand','anatomical_eye','anatomical_nail'))
+        grouped.setdefault(obj.name if preserve else obj.data.materials[0].name,[]).append(obj)
     result=[]
     for material,group in grouped.items():
         obj=join_meshes(group,p['name']+'-'+material)

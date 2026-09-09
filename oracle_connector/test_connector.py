@@ -1,4 +1,5 @@
 """Contract tests use a real HTTP handler/SQLite; they do not simulate AI quality or a Blender render."""
+import base64
 import json
 from pathlib import Path
 import tempfile
@@ -162,6 +163,45 @@ class WorkerHTTPTests(unittest.TestCase):
         self.call('/v1/jobs', {'id': JOB, 'prompt': 'Dab'})
         self.assertEqual(self.call('/v1/ai', {'provider': 'ollama'})[0], 409)
 
+    def test_saved_scene_replay_preserves_photos_is_idempotent_and_never_calls_ai(self):
+        scene = (Path(__file__).parent / 'examples/textures-eight.scene.json').read_text()
+        folder = server.JOBS / JOB
+        folder.mkdir(); (folder / 'scene.json').write_text(scene)
+        image = bytes([255,216,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,2,0,255,217])
+        photos = server.photo_input.validate_photos([{'name': 'front.jpg', 'view': 'front', 'dataUrl': 'data:image/jpeg;base64,' + base64.b64encode(image).decode()}])
+        (folder / 'reference-0.jpg').write_bytes(image)
+        server.write_json(folder / 'reference-photos.json', server.photo_input.metadata(photos))
+        with server.database() as db:
+            db.execute('INSERT INTO jobs VALUES (?,?,?,?,0,0)', (JOB, 'Model ze zdjecia', 'failed', 'Use at most 8 materials and 8 images.'))
+        rebuilt = '12345678-1234-4234-8234-123456789abd'
+        request = {'id': rebuilt, 'prompt': 'Model ze zdjecia', 'sourceJobId': JOB}
+        server.health.return_value = {'ready': False, 'provider': 'ollama', 'photoInput': False}
+        self.assertEqual(self.call('/v1/jobs', {**request, 'photos': []})[0], 400)
+        self.assertEqual(self.call('/v1/jobs', {**request, 'prompt': 'Other model'})[0], 409)
+        self.assertEqual(self.call('/v1/jobs', request)[0], 202)
+        self.assertEqual(self.call('/v1/jobs', request)[0], 200)
+        self.assertEqual(self.call('/v1/jobs', {'id': rebuilt, 'prompt': request['prompt']})[0], 409)
+        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'ai_settings') as settings, patch.object(server, 'generate_code') as ai, patch.object(server, 'run_blender') as blender:
+            wake.wait.side_effect = [None, StopIteration]
+            with self.assertRaises(StopIteration):
+                server.worker()
+            settings.assert_not_called(); ai.assert_not_called(); blender.assert_called_once()
+        self.assertEqual(self.call('/v1/jobs/' + rebuilt)[1]['state'], 'succeeded')
+        self.assertEqual((folder / 'scene.json').read_text(), scene)
+        self.assertEqual((server.JOBS / rebuilt / 'reference-0.jpg').read_bytes(), image)
+        self.assertEqual(json.loads((server.JOBS / rebuilt / 'timing.json').read_text())['ai_seconds'], 0)
+
+    def test_renderer_limit_does_not_buy_a_second_ai_plan(self):
+        self.call('/v1/jobs', {'id': JOB, 'prompt': 'Eight fabrics'})
+        scene = (Path(__file__).parent / 'examples/textures-eight.scene.json').read_text()
+        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'generate_code', return_value=scene) as ai, patch.object(server, 'run_blender', side_effect=ValueError('Export limit: 8 used materials and 16 used texture images.')):
+            wake.wait.side_effect = [None, StopIteration]
+            with self.assertRaises(StopIteration):
+                server.worker()
+            ai.assert_called_once()
+        self.assertEqual(self.call('/v1/jobs/' + JOB)[1]['state'], 'failed')
+        self.assertTrue((server.JOBS / JOB / 'scene.json').is_file())
+
     def test_queue_idempotency_cancellation_and_no_phantom_artifact(self):
         data = {'id': JOB, 'prompt': 'Duży dąb z liśćmi'}
         self.assertEqual(self.call('/v1/jobs', data)[0], 202)
@@ -174,6 +214,47 @@ class WorkerHTTPTests(unittest.TestCase):
         server.status(JOB, 'succeeded', 'late completion')
         self.assertEqual(self.call('/v1/jobs/' + JOB)[1]['state'], 'cancelled')
         self.assertEqual(self.call('/v1/jobs', other)[0], 202)
+
+    def test_photo_queue_persists_bytes_and_forwards_them_to_the_scene_planner(self):
+        # Structural JPEG transport fixture; this does not claim visual fidelity.
+        image = bytes([255,216,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,2,0,255,217])
+        photo = {'name': 'front.jpg', 'view': 'front', 'dataUrl': 'data:image/jpeg;base64,' + base64.b64encode(image).decode()}
+        data = {'id': JOB, 'prompt': 'A rocket', 'photos': [photo]}
+        self.assertEqual(self.call('/v1/jobs', data)[0], 409)
+        server.health.return_value = {'ready': True, 'provider': 'openai', 'photoInput': True}
+        self.assertEqual(self.call('/v1/jobs', data, token='invalid')[0], 401)
+        self.assertEqual(self.call('/v1/jobs', data)[0], 202)
+        self.assertEqual(self.call('/v1/jobs', data)[0], 200)
+        self.assertEqual(self.call('/v1/jobs', {**data, 'photos': [{**photo, 'view': 'back'}]})[0], 409)
+        folder = server.JOBS / JOB
+        self.assertEqual((folder / 'reference-0.jpg').read_bytes(), image)
+        self.assertEqual((folder / 'reference-0.jpg').stat().st_mode & 0o777, 0o600)
+        self.assertNotIn('base64', (folder / 'reference-photos.json').read_text())
+        scene = (Path(__file__).parent / 'examples/rocket.scene.json').read_text()
+        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'ai_settings', return_value={'provider': 'openai'}), patch.object(server, 'generate_code', return_value=scene) as ai, patch.object(server, 'run_blender') as blender:
+            wake.wait.side_effect = [None, StopIteration]
+            with self.assertRaises(StopIteration):
+                server.worker()
+            blender.assert_called_once()
+            content = ai.call_args.args[0][1]['content']
+            self.assertEqual([item['image_url'] for item in content if item['type'] == 'input_image'], [photo['dataUrl']])
+        result = self.call('/v1/jobs/' + JOB)[1]
+        self.assertEqual(result['state'], 'succeeded')
+        self.assertIn('1 zdjec', result['detail'])
+
+    def test_rejects_invalid_photos_before_creating_a_queue_entry(self):
+        for value in [[{'name': 'a.jpg', 'view': 'front', 'dataUrl': 'https://example.test/a.jpg'}], [None] * 5, [{'name': 'x', 'view': 'front', 'dataUrl': 'data:image/jpeg;base64,YWJj'}]]:
+            self.assertEqual(self.call('/v1/jobs', {'id': JOB, 'prompt': 'Model', 'photos': value})[0], 400)
+        with server.database() as db:
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM jobs').fetchone()[0], 0)
+
+    def test_prompt_boundary_matches_editor_utf16_units(self):
+        accepted={'id':JOB,'prompt':'x'*5000}
+        self.assertEqual(self.call('/v1/jobs',accepted)[0],202)
+        self.assertEqual(self.call('/v1/jobs/'+JOB+'/cancel',{})[0],200)
+        for prompt in ('x'*5001,'😀'*2501):
+            status,_=self.call('/v1/jobs',{'id':JOB[:-1]+'d','prompt':prompt})
+            self.assertEqual(status,400)
 
 if __name__ == '__main__':
     unittest.main()

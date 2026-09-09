@@ -1,3 +1,19 @@
+# v19 Oracle worker source prepared — 2026-09-09
+
+See docs/GENERATOR_V19.md. The new worker imports the newer Site v16 portrait,
+photo/replay/group baseline and replaces v18's sweatshirt-based reference outfit
+with dedicated fitted couture, a pleated fan and linked solid rotors. Budgets
+from PR #6 are retained, with elapsed-clock and saved-scene timeout fixes.
+Full v19 installer is reproducible with python3 scripts/package-v19.py.
+82 Python tests passed on the canonical Site checkout; 74 targeted frontend/API
+checks and production build passed for the separately saved Site frontend.
+ZIP CRC and all 33 payload files match. No Blender, Oracle install or visual
+likeness verification was completed. No paid AI request was made. This is a
+draft worker update requiring actual Blender and visual review before release.
+Site38 remains published; do not claim a new deployment from this PR.
+
+---
+
 # Work checkpoint — 2026-09-09
 
 ## Verified application baseline
@@ -95,3 +111,23 @@ Still unverified and deliberately not claimed:
 - Neither `blender` nor `podman` is installed in this environment. The couture fixture was therefore not generated here; GLB bytes, actual vertices/triangles/objects, Blender runtime, export/re-import result and four review renders remain for an Oracle/Blender 4.3 run using `verify_scene_runtime.py --scene couture-fan-v18.scene.json --output <directory>`.
 - No image-comparison metric and no visual identity/similarity percentage was run. Unseen back, legs, feet and floor hem are explicitly reconstruction in fixture metadata.
 - Source preparation is not Oracle installation or a Sites deployment. Published Site version remains 16 until separately deployed, and Oracle v18 is confirmed only after its local health endpoint returns both `connectorVersion: 18` and `characterStandard: 18`.
+
+## v18.1 long quality jobs — 2026-09-09
+Branch: `hotfix/v18-1-long-jobs-prompts` (GitHub PR #6; local checkout branch name `work`).
+
+Implemented:
+- Astra has a single 600-second planning deadline; its cancellable stream continues reporting measured elapsed time and its timeout text now says 10 minutes.
+- The actual trusted Blender container call and default use 900 seconds. During the build the worker publishes measured stage elapsed time every 10 seconds, without percentages. Cancellation kills the named Podman container, with forced removal/process termination fallback.
+- Studio UI/counter, browser API, Oracle worker, agent scene request/store and WebMCP asset validation consistently accept at most 5000 characters. Request byte caps were raised only enough to carry a 5000-character Unicode JSON prompt.
+- The v18 trusted data-only scene contract, connector/character standard 18, API-key handling, pairing, history and models are unchanged. Polygon limits were not raised and model-generated Python was not enabled.
+- Boundary tests cover 5000 acceptance and 5001 rejection in the browser API, Oracle API and agent path; timeout tests assert the 600-second Astra and 900-second actual Blender budgets.
+- Deleted `.codex-v18-1-task`.
+
+Checks actually run:
+- `python3 -m py_compile oracle_connector/*.py oracle_connector/runtime/*.py` passed.
+- `(cd oracle_connector && python3 -m unittest discover)` passed: 50 tests.
+- `npm run typecheck` passed.
+- `npm test -- --run src/tests/blender-api.test.ts src/tests/blender-ui.test.tsx src/tests/ai-studio.test.tsx` could not execute in this environment: installed Node lacks `node:sqlite`, and jsdom/undici workers fail because `webidl.util.markAsUncloneable` is unavailable. No frontend test is claimed as passed.
+- `git diff --check` was run separately after the interrupted chained command and passed.
+
+No Blender generation, Oracle installation, Sites deployment or paid OpenAI request was performed. Published Site version remains 16, and the Oracle worker must be separately updated before these budgets apply there.

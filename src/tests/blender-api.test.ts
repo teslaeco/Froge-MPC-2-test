@@ -155,6 +155,14 @@ describe('private Blender request lifecycle with real SQLite', () => {
     expect(files.get('owner-a/' + id + '.glb')).toEqual(bytes)
     expect(await (await request('jobs/' + id + '/model')).arrayBuffer()).toEqual(bytes)
   })
+  it('accepts a 5000-character prompt and rejects 5001 characters', async () => {
+    await pair()
+    vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/health') ? { connectorVersion: 18 } : { state: 'queued' }, { status: 202 })))
+    expect((await request('jobs', 'POST', { id, prompt: 'x'.repeat(5000) })).status).toBe(202)
+    const response = await request('jobs', 'POST', { id: id.slice(0, -1) + 'd', prompt: 'x'.repeat(5001) })
+    expect(response.status).toBe(400)
+    expect((await response.json()).error).toContain('5000')
+  })
   it('preserves cancellation when a completion response was already in flight', async () => {
     await pair(); await submit()
     vi.stubGlobal('fetch', vi.fn(async url => {

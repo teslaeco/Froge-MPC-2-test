@@ -21,7 +21,6 @@ class SceneContractTests(unittest.TestCase):
         for name in ['oak-lights.scene.json','rocket.scene.json','rapper.scene.json','dubai-tower.scene.json']:
             value=parse_scene((EXAMPLES/name).read_text())
             self.assertEqual(value['version'],1)
-            self.assertEqual(value['characterStandard'],18)
         self.assertEqual(self.oak['parts'][1]['bulbs'],20)
 
     def test_closed_descending_and_stepped_profiles_keep_their_outline(self):
@@ -48,6 +47,11 @@ class SceneContractTests(unittest.TestCase):
         self.assertFalse(sample['parts'][0]['necklace'])
         for outfit in ('tshirt','sweatshirt','hoodie'):
             scene=deepcopy(sample);scene['parts'][0]['outfit']=outfit;validate_scene(scene)
+        for name in ('rapper-la.scene.json','rapper-female-la.scene.json'):
+            current=parse_scene((EXAMPLES/name).read_text());self.assertEqual(current['parts'][0]['shirt_graphic'],'LA')
+        self.assertEqual(legacy['parts'][0]['shirt_graphic'],'none')
+        scene=deepcopy(sample);scene['parts'][0]['shirt_graphic']='arbitrary code'
+        with self.assertRaises(ValueError):validate_scene(scene)
         scene=deepcopy(sample);scene['parts'][0]['hair_style']='unknown'
         with self.assertRaises(ValueError):validate_scene(scene)
 
@@ -56,28 +60,42 @@ class SceneContractTests(unittest.TestCase):
         for field,val in [('skin_material','missing'),('pose','unknown'),('necklace',1)]:
             scene=deepcopy(person);scene['parts'][0][field]=val
             with self.assertRaises(ValueError):validate_scene(scene)
-
-    def test_v18_reference_couture_contract_and_compact_radial_instances(self):
-        scene=parse_scene((EXAMPLES/'couture-fan-v18.scene.json').read_text())
-        character=scene['parts'][0]
-        self.assertEqual(scene['characterStandard'],18)
-        self.assertEqual(character['kind'],'reference_character')
-        self.assertIn('cropped legs',character['reconstructed_features'])
-        self.assertEqual(scene['parts'][4]['kind'],'radial_copies')
-        for field,value in [('garment_offset',.08),('garment_thickness',.03)]:
-            invalid=deepcopy(scene);invalid['parts'][0][field]=value
-            with self.assertRaises(ValueError):validate_scene(invalid)
-
-    def test_character_standard_is_explicit_and_cannot_drift(self):
-        scene=deepcopy(self.oak)
-        scene.pop('characterStandard')
-        with self.assertRaises(ValueError):validate_scene(scene)
-        scene=deepcopy(self.oak);scene['characterStandard']=17
-        with self.assertRaises(ValueError):validate_scene(scene)
         tower=parse_scene((EXAMPLES/'dubai-tower.scene.json').read_text())
         tower['parts'][0]['levels'][1]['z']=-1
         with self.assertRaises(ValueError):validate_scene(tower)
+
+    def test_feminine_missing_hair_defaults_without_overriding_explicit_styles(self):
+        sample=json.loads((EXAMPLES/'rapper-singer.scene.json').read_text())
+        sample['parts'][0].pop('hair_style')
+        self.assertEqual(validate_scene(sample)['parts'][0]['hair_style'],'shoulder_length')
+        for style in ('short','buzz','bald'):
+            sample['parts'][0]['hair_style']=style
+            self.assertEqual(validate_scene(sample)['parts'][0]['hair_style'],style)
         with self.assertRaises(ValueError):validate_scene({**self.oak,'parts':[{'kind':'loft','name':'bad','material':'kora','sides':32,'sections':[{'center':[0,0,0],'radii':[1,1]}]*2}]})
+
+    def test_subject_requirements_correct_a_contradictory_single_person_plan(self):
+        sample=json.loads((EXAMPLES/'rapper.scene.json').read_text())
+        original=json.dumps(sample)
+        p=parse_scene(original,'Figurka dorosłej CardiB. Dopasowana koszulka, krągła sylwetka.')['parts'][0]
+        self.assertEqual(p['presentation'],'feminine')
+        self.assertEqual(p['body_shape'],'curvy')
+        self.assertEqual(p['clothing_fit'],'fitted')
+        self.assertEqual(p['hair_style'],'shoulder_length')
+        p=parse_scene(original,'Dorosła wokalistka, krótkie włosy i luźna koszulka.')['parts'][0]
+        self.assertEqual(p['presentation'],'feminine')
+        self.assertEqual(p['hair_style'],'short')
+        self.assertEqual(p['clothing_fit'],'oversized')
+        p=parse_scene(original,'Męska wersja Cardi B.')['parts'][0]
+        self.assertEqual(p['presentation'],'masculine')
+        self.assertEqual(parse_scene(original)['parts'][0]['body_shape'],'natural')
+        self.assertEqual(parse_scene(original)['parts'][0]['clothing_fit'],'regular')
+
+    def test_body_choices_stay_bounded_and_nonhuman_scenes_stay_unchanged(self):
+        sample=json.loads((EXAMPLES/'rapper.scene.json').read_text())
+        for field in ('body_shape','clothing_fit'):
+            invalid=deepcopy(sample);invalid['parts'][0][field]='arbitrary expression'
+            with self.assertRaises(ValueError):parse_scene(json.dumps(invalid),'Cardi B')
+        self.assertEqual(parse_scene(json.dumps(self.oak),'Dąb dla Cardi B'),{**self.oak,'subject_type':'object'})
 
     def test_rejects_code_unknown_operations_extra_fields_and_nonfinite_values(self):
         for text in ['ellipsoid("x", [0,0,0], [1,1,1], None)', '{"version":1,"version":1}']:
@@ -126,7 +144,7 @@ class SceneContractTests(unittest.TestCase):
                     self.assertEqual(ai.call_count,2)
                     self.assertIn('complete corrected scene JSON',ai.call_args.args[0][-1]['content'])
                     blender.assert_called_once()
-                    self.assertEqual(blender.call_args.kwargs['timeout'],180)
+                    self.assertEqual(blender.call_args.kwargs['timeout'],900)
                 folder=server.JOBS/'scene-job'
                 self.assertTrue((folder/'scene.json').exists())
                 self.assertFalse((folder/'generate.py').exists())

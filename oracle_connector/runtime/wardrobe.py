@@ -6,7 +6,35 @@ from mathutils import Vector
 from mathutils.bvhtree import BVHTree
 
 
-def finish_cloth(obj, role, width):
+def fit_silhouette(obj, role, p, width):
+    """Continuous clothed adult anatomy; front -Y, back +Y. No added meshes.
+
+    Shared hip/seat changes keep trousers and top aligned. The shoulder/arm mask
+    avoids moving sleeve openings away from the anatomical arms and hands.
+    """
+    if p['presentation']!='feminine':return
+    strength=1.25 if p.get('body_shape')=='curvy' else .65 if p['build']=='slim' else .90
+    fit=p.get('clothing_fit','regular')
+    drape=.70 if fit=='oversized' else 1.
+    for vertex in obj.data.vertices:
+        v=vertex.co;x,y,z=v
+        # Deformations vanish at upper arms, neck, knees and lower legs.
+        center=max(0.,min(1.,(.225*width-abs(x))/(.040*width)))
+        hip=math.exp(-((z-.965)/.115)**2)
+        waist=math.exp(-((z-1.145)/.09)**2) if role=='top' else 0.
+        v.x*=1+.09*strength*hip-.045*strength*waist*center*drape
+        front=max(0.,min(1.,-y/.085))**2
+        back=max(0.,min(1.,y/.075))**2
+        if role=='top':
+            bust=math.exp(-((abs(x)-.078*width)/(.088*width))**2-((z-1.31)/.11)**2)
+            v.y-=.040*strength*drape*bust*front*center
+            if fit=='fitted':v.y*=1-.08*waist*center
+        seat=math.exp(-((abs(x)-.085*width)/(.10*width))**2-((z-.95)/.10)**2)
+        v.y+=.044*strength*seat*back
+    obj.data.update()
+
+
+def finish_cloth(obj, role, width, untucked=False):
     """Compression folds survive the garment union, instead of being erased by it."""
     for vertex in obj.data.vertices:
         v=vertex.co
@@ -26,6 +54,13 @@ def finish_cloth(obj, role, width):
                 wave+=.003*math.exp(-((v.z-1.15)/.08)**2)*math.sin(v.z*67+angle*4)
             else:
                 wave+=.0016*math.sin(angle*9+v.z*6)*math.exp(-((v.z-1.20)/.21)**2)
+            if untucked and abs(v.x)<.23*width:
+                front=max(0,-math.sin(angle))
+                envelope=math.exp(-((v.z-1.12)/.19)**2)
+                wave+=front*(.0045*math.sin(v.x*35+v.z*12)+.0025*math.sin(v.x*61-v.z*19))*envelope
+                wave+=.0035*math.exp(-((v.z-.958)/.075)**2)*math.sin(angle*5+v.z*21)
+                hem=max(0,1-(v.z-.90)/.065)
+                v.z+=hem*(.007*math.sin(angle*3+.5)+.004*math.sin(angle*7))
             normal=Vector((v.x,v.y*1.6,0)).normalized()
         vertex.co+=normal*wave
     obj.data.update()
@@ -70,8 +105,25 @@ def details(p, garment, width, top, pants, hair, accent, mesh_object, tube, loft
         parts.append(obj)
         for a,b in zip(corners,corners[1:]+corners[:1]):
             line(name+'-seam',[on_front(a[0]+(b[0]-a[0])*i/20,a[1]+(b[1]-a[1])*i/20,.005) for i in range(21)],.0011,material)
+    if p.get('shirt_graphic')=='LA':
+        # Custom slanted block lettering projected onto the draped fabric.
+        def ink_stroke(x1,z1,x2,z2,thickness):
+            length=math.hypot(x2-x1,z2-z1);nx=-(z2-z1)/length*thickness/2;nz=(x2-x1)/length*thickness/2
+            vertices=[];faces=[]
+            for i in range(25):
+                t=i/24;x=x1+(x2-x1)*t;z=z1+(z2-z1)*t
+                for side in (-1,1):
+                    zz=z+side*nz;xx=x+side*nx+.16*(zz-1.27)
+                    vertices.append(on_front(xx,zz,.0012))
+                if i:faces.append((i*2-2,i*2,i*2+1,i*2-1))
+            obj=mesh_object('LA-hip-hop-print',vertices,faces,accent)
+            for face in obj.data.polygons:face.use_smooth=True
+            parts.append(obj)
+        for stroke in [(-.093,1.365,-.093,1.267,.024),(-.093,1.267,-.023,1.267,.024),(.007,1.256,.045,1.365,.023),(.045,1.365,.086,1.256,.023),(.023,1.291,.071,1.291,.017),(-.115,1.235,.098,1.243,.006)]:ink_stroke(*stroke)
     loose=1.06 if p['outfit'] in ('streetwear','hoodie','tshirt') else .94 if p['outfit']=='formal' else 1.
-    if p['outfit']!='tshirt':ring('ribbed-waistband',(0,0,.974),.186*width*loose,.117,.018,top,1)
+    if p['outfit']!='tshirt':
+        ring('ribbed-waistband',(0,0,.974),.186*width*loose,.117,.018,top,1)
+        fit_silhouette(parts[-1],'top',p,width)
     ring('neck-ribbing',(0,-.019,1.482),.065,.065,.009,top,0)
     for side in (-1,1):
         x=side*.105*width;dy=-.025 if side==-1 else .014
@@ -86,6 +138,7 @@ def details(p, garment, width, top, pants, hair, accent, mesh_object, tube, loft
         if len(points)>1:line('trouser-seam',points,.0008,pants)
     if p['outfit'] in ('streetwear','hoodie'):
         patch('kangaroo-pocket',[(-.105*width,1.030),(.105*width,1.030),(.072*width,1.148),(-.072*width,1.148)],top)
+    if p['outfit']=='hoodie':
         # A folded hood is a thick draped collar around the back of the neck.
         vertices=[];faces=[];n=64;m=10
         for i in range(n+1):
@@ -224,9 +277,25 @@ def open_sleeves(obj, ends, width):
     bm=bmesh.new();bm.from_mesh(obj.data)
     for side,origin,axis in ends:
         origin=Vector(origin)-Vector(axis)*.018
-        vertices=[v for v in bm.verts if v.co.x*side>.205*width]
+        vertices=[v for v in bm.verts if v.co.x*side>.205*width and v.co.z>1.08]
         selected=set(vertices)
         edges=[e for e in bm.edges if all(v in selected for v in e.verts)]
         faces=[f for f in bm.faces if all(v in selected for v in f.verts)]
         bmesh.ops.bisect_plane(bm,geom=vertices+edges+faces,dist=1e-6,plane_co=origin,plane_no=-Vector(axis),clear_inner=True)
     bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(obj.data);bm.free();obj.data.update()
+
+
+def clear_trousers(top, trousers):
+    """Keep the untucked hem outside the real trouser surface, including folds."""
+    surface=BVHTree.FromPolygons([v.co for v in trousers.data.vertices],[f.vertices[:] for f in trousers.data.polygons])
+    for vertex in top.data.vertices:
+        v=vertex.co
+        radial=Vector((v.x,v.y,0));radius=radial.length
+        if v.z>=1.065 or radius<.08:continue
+        direction=radial.normalized()
+        hit,_,_,_=surface.ray_cast(direction+Vector((0,0,v.z)),-direction)
+        if hit is None:continue
+        required=Vector((hit.x,hit.y,0)).length+.013
+        if radius<required:
+            v.x=direction.x*required;v.y=direction.y*required
+    top.data.update()
