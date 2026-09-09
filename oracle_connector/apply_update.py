@@ -11,8 +11,8 @@ import urllib.request
 from runtime_check import RuntimeUnavailable, setup_runtime
 
 ASSETS = ('anatomy.json.gz', 'male-skin.png', 'female-skin.png','cotton-jersey-albedo.png','indigo-denim-albedo.png', 'LICENSE.CC0.md', 'SOURCES.md', 'manifest.json')
-FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py', 'runtime/wardrobe.py', 'runtime/textiles.py') + tuple('runtime/assets/'+name for name in ASSETS)
-EXPECTED_VERSION = 17
+FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py', 'runtime/wardrobe.py', 'runtime/textiles.py', 'runtime/couture.py') + tuple('runtime/assets/'+name for name in ASSETS)
+EXPECTED_VERSION = 18
 
 
 def replace(path, data):
@@ -63,7 +63,7 @@ def update(source, target):
                 with urllib.request.urlopen(request, timeout=2) as response:
                     if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
                         print('FROGE_UPDATE_OK')
-                        print('Wersja 17 uruchomiona. Zwiekszono budzet kompletnego planu Astra i dodano zasady zachowania dopasowanej odziezy, sukien oraz powtarzalnych detali referencji. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Wersja 18 uruchomiona. Dodano zaufana rekonstrukcje couture, jawna proweniencje, QA geometrii i zwarte radialne detale. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass

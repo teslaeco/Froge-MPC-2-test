@@ -5,6 +5,7 @@ import random
 import bpy
 from mathutils import Vector
 from detailed_geometry import loft, revolve, person, extrusion
+from couture import reference_character, rotor
 
 
 def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes):
@@ -91,6 +92,9 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
         if kind == 'person':
             objects[name] = person(p, materials, mesh_object, tube, ellipsoid, join_meshes)
             continue
+        if kind == 'reference_character':
+            objects[name] = reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes, loft)
+            continue
         if kind == 'garland':
             base = Vector(p['center'])
             def point(t):
@@ -124,6 +128,8 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
             obj = loft(name, p['sections'], p['sides'], material, mesh_object)
         elif kind == 'extrusion':
             obj = extrusion(p, material, materials[p['cap_material']], mesh_object)
+        elif kind == 'rotor':
+            obj = rotor(p, material, materials[p['accent_material']], mesh_object)
         elif kind == 'lathe':
             obj = revolve(name, p['profile'], p['center'], p['sides'], material, mesh_object)
         elif kind == 'copies':
@@ -135,6 +141,18 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
                 obj.location = source.location + Vector(offset)
                 bpy.context.collection.objects.link(obj)
                 copies.append(obj)
+            objects[name] = copies
+            continue
+        elif kind == 'radial_copies':
+            source = objects[p['source']][0]
+            copies = []
+            for i in range(p['count']):
+                angle = p['start_angle'] + (p['arc_angle'] * i / max(1, p['count'] - 1))
+                obj = source.copy(); obj.data = source.data
+                obj.name = name+'-%d'%i
+                obj.location = Vector(p['center']) + Vector((p['radius']*math.cos(angle), 0, p['radius']*math.sin(angle)))
+                obj.rotation_euler[1] = -angle
+                bpy.context.collection.objects.link(obj); copies.append(obj)
             objects[name] = copies
             continue
         else:

@@ -28,7 +28,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 17
+CONNECTOR_VERSION = 18
 AI_TIME_LIMIT = 180
 OLLAMA = 'http://127.0.0.1:11434'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
@@ -74,7 +74,7 @@ def health():
         ready = bool(selected.get('api_key'))
         return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
                 'detail': 'OpenAI Astra jest polaczone. Blender wykona sprawdzony plan sceny.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
-                'connectorVersion': CONNECTOR_VERSION}
+                'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
@@ -82,9 +82,9 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION}
+        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
     except Exception:
-        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION}
+        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
 
 def ai_settings():
     path = STATE / 'ai-provider.json'

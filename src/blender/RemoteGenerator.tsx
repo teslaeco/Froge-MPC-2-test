@@ -137,6 +137,7 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       <strong>{connection === null ? 'Sprawdzam serwer…' : connection.ready ? connection.provider === 'openai' ? 'OpenAI + Blender gotowe' : 'Lokalny Qwen + Blender' : connection.connected ? 'Serwer nie jest jeszcze gotowy' : 'Serwer niepołączony'}</strong>
       <p>{connection?.detail || 'Odczytuję zapisane połączenie.'}</p>
       {connection?.model && <small>Model AI: {connection.model}</small>}
+      {connection?.connected && <small>Oracle v{connection.connectorVersion || 1} · standard postaci {connection.characterStandard || 'starszy'}</small>}
       <button onClick={() => setSetup(value => !value)} aria-expanded={setup}>{setup ? 'Zamknij ustawienia' : connection?.connected ? 'Ustawienia serwera' : 'Połącz serwer Blendera'}</button>
       {connection?.connected && connection.provider !== 'openai' && !setup && <button onClick={() => setSetup(true)}>Podłącz Astrę</button>}
       {connectionError && <p className="studio-error" role="alert">{connectionError}</p>}
