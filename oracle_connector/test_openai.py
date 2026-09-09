@@ -116,7 +116,8 @@ class ResponsesTests(unittest.TestCase):
         self.assertEqual(args[0], 'https://api.openai.com/v1/responses')
         self.assertEqual(args[1]['model'], 'gpt-6-astra')
         self.assertEqual(args[1]['reasoning'], {'effort': 'low'})
-        self.assertEqual(args[1]['max_output_tokens'], 4500)
+        self.assertEqual(args[1]['max_output_tokens'], 9000)
+        self.assertEqual(openai_provider.MAX_OUTPUT_TOKENS, 9000)
         self.assertFalse(args[1]['store'])
         self.assertEqual(args[1]['text']['format'], {'type':'json_schema','name':'froge_scene','strict':True,'schema':SCHEMA})
         self.assertNotIn(FAKE_KEY, json.dumps(args[1]))
@@ -141,6 +142,7 @@ class ConfigurationTests(unittest.TestCase):
         with patch.object(server, 'ollama_json', side_effect=AssertionError('Local model must not be called')):
             state = server.health()
             self.assertEqual(state['provider'], 'openai')
+            self.assertEqual(state['connectorVersion'], 17)
             self.assertNotIn(FAKE_KEY, json.dumps(state))
             with patch.object(openai_provider, 'generate', return_value='import math') as generate:
                 self.assertEqual(server.generate_code([], 'fixture', threading.Event()), 'import math')
