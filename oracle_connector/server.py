@@ -28,7 +28,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 10
+CONNECTOR_VERSION = 17
 AI_TIME_LIMIT = 180
 OLLAMA = 'http://127.0.0.1:11434'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
@@ -103,7 +103,6 @@ def configure_ai(data):
             return False
         selected = ai_settings()
     if provider == 'openai':
-        # Model access is checked without sending a paid generation request.
         supplied = data.get('apiKey') or selected.get('api_key')
         selected['api_key'] = openai_provider.verify_key(supplied)
     selected['provider'] = provider
@@ -252,7 +251,7 @@ def worker():
 class Handler(BaseHTTPRequestHandler):
     server_version = 'Froge/1'
     def log_message(self, *_):
-        pass  # Tokens, prompts and pairing codes must not enter access logs.
+        pass
 
     def send_json(self, value, status_code=200):
         data = json.dumps(value, ensure_ascii=False).encode()
