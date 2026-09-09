@@ -36,7 +36,6 @@ def choice(*values):
 
 
 def round_sides(sides):
-    # Preserve explicitly polygonal columns; round surfaces get real geometry.
     return max(64, sides) if sides >= 12 else sides
 
 
@@ -103,44 +102,49 @@ different radius. Do not sort or cross the profile. Example closed spire:
 For round parts use lathe sides 64 or loft sides 48-64; reserve 6-10 sides for explicitly
 polygonal architecture. Loft sections specify a center and two elliptical radii, giving
 continuous sculpted bodies and limbs instead of disconnected balls and cylinders.
-Use person for adult human figurines, rappers and singers: it uses a licensed anatomical adult base
-with connected nose/lips/eyelids/ears, UV skin texture, five-finger hands, fitted headwear,
-layered clothing with seams, pockets, compression folds, ribbed cuffs and detailed sneakers. Use a separate skin material with pattern skin, matte
-fabric for clothes and a separate eye material (dark iris color or neutral white).
-Use cotton for jersey/tees and denim for jeans: both export real packed albedo and normal maps.
-Select outfit tshirt for short sleeves and bare anatomical forearms, sweatshirt for a
-crewneck without hood, hoodie for an explicitly requested hood, formal for a jacket.
-Do not add a hood or necklace unless requested. A classic rapper may wear a loose
-white cotton tshirt, dark denim trousers and sneakers with hair_style buzz and headwear none.
-Use hair_style buzz for close cropped hair, short for short hair, bald for no hair.
-Choose the person's palette, build, presentation, clothing, pose, headwear and accessories
-to match the description. Add separate requested props using other operations. Person
-faces are generic anatomical adults, not guaranteed likenesses of named real people.
+Use person for adult human figurines and fashion characters. It provides a licensed
+anatomical adult base with connected face, UV skin, five-finger hands and complete feet.
+Use separate skin, eye, hair, clothing and accent materials. Select tshirt for short
+sleeves, sweatshirt for a long-sleeve fitted base without a hood, hoodie only when asked,
+formal only for a real jacket, and casual for ordinary clothing.
+
+REFERENCE-DRIVEN PEOPLE: preserve the visible outfit instead of replacing it with generic
+armor or unrelated clothing. If the reference shows a fitted dress or couture gown, use a
+person with a slim/average feminine body and a sweatshirt base in the same dress material,
+then construct the dress continuation with only a few compact loft/mesh/extrusion parts.
+Keep the torso and waist close to the body silhouette. A dress panel should sit only a few
+millimetres to a few centimetres outside the base at human scale; never inflate it into a
+thick shell. Reconstruct a cropped lower body as a coherent floor-length skirt/gown while
+keeping complete legs and footwear in the person base. Preserve the original collar,
+shoulders, belt, jewelry and visible clothing identity. Sharp crystal decorations are thin
+separate panels/accessories, not replacements for the body or the entire garment.
+For a sculpted updo, keep hair_style short and add a few compact hair ellipsoids/lofts at
+the back/crown; do not create a helmet-sized hair shell.
+For a large fan or technological prop, preserve its thickness, handle and repeated devices.
+Build one compact turbine/rotor component and reuse copies for repeated units whenever
+possible. Prefer procedural geometry and copies over giant raw vertex/face lists.
+
+Use cotton for jersey/tees and denim for jeans: both export packed albedo and normal maps.
+Do not add a hood, necklace or microphone unless requested. Choose palette, build,
+presentation, clothing, pose, headwear and accessories to match the request. Person faces
+are generic anatomical adults, not guaranteed likenesses of named real people.
 For modern skyscrapers use tiers, wings, setbacks, a podium and spire as appropriate;
-use the windows material pattern for a repeating glazed facade. Preserve architectural
-edges. Do not call a simple cone a realistic skyscraper.
-Use extrusion for noncircular towers: outline is an ordered simple XY polygon; levels
-give ascending z, XY scale and XY offset. Repeat z with a smaller scale for a setback.
-cap_material covers roofs and terraces. A Y-shaped outline can make a Dubai-style tower.
-Use oak for oak trees: it builds a branching trunk, roots and thousands of lobed leaves.
-height includes the crown; center is the base. Set leaf_material and bark material.
-Garland wraps a wire around Z from bottom to top relative to center, with exact bulb
-count. Radius is the outer wire radius; use bulb_material with emission > 0 for lights.
-Use lathe, custom mesh, tubes, boxes and ellipsoids for other objects, including rockets,
-furniture and figurines. Copies may reference only previous primitive parts, not oak,
-garland, person or copies. Mesh faces must use existing, distinct vertex indices.
+use the windows material pattern for a repeating glazed facade. Preserve architectural edges.
+Use extrusion for noncircular towers: outline is an ordered simple XY polygon; levels give
+ascending z, XY scale and XY offset. Repeat z with a smaller scale for a setback.
+Use oak for oak trees and garland for wrapped lights. Use lathe, custom mesh, tubes, boxes
+and ellipsoids for other objects. Copies may reference only previous primitive parts, not
+oak, garland, person or copies. Mesh faces must use existing, distinct vertex indices.
 All names must be unique within their category; material references must exist.
-For simple assets aim for 4-20 parts. Use procedural parts and
-copies instead of listing repetitive geometry. Up to 40 parts / 3000 tokens are appropriate
-when a complex asset needs them; do not sacrifice the silhouette or requested details
-just to minimize part count. Match every requested feature; never
-substitute an oak or example for a different requested object. Do not request input files.
-Materials are exported as PBR and packed UV textures; emission makes visible luminous
-surfaces, not physical illumination of other meshes in every viewer.'''
+For simple assets aim for 4-20 parts. Complex references may use up to 40 compact parts.
+Use loops conceptually through copies/procedural parts rather than spelling out repetitive
+geometry. Do not emit giant mesh arrays when a loft, lathe, extrusion or copies can express
+the feature. Preserve silhouette, anatomy, outfit identity and requested details before
+adding decoration. Match every requested feature; never substitute an example object for
+the user's object. Do not request input files. Materials export as PBR packed textures.'''
 
 
 def check(value, schema, path='$'):
-    """Validate the deliberately small JSON Schema subset used above."""
     if 'anyOf' in schema:
         variant = next((s for s in schema['anyOf'] if isinstance(value, dict)
                         and value.get('kind') == s['properties']['kind']['enum'][0]), None)
@@ -173,12 +177,6 @@ def check(value, schema, path='$'):
 
 
 def lathe_profile(profile):
-    """Return an oriented, simple closed radial cross-section, never sorted.
-
-    A lathe can have descending walls, ledges, a closed outline or an open
-    outer wall. The old monotonic-height check incorrectly rejected these.
-    Self-crossing and zero-volume contours remain invalid.
-    """
     eps = 1e-10
     points = []
     for radius, z in profile:
@@ -196,7 +194,6 @@ def lathe_profile(profile):
         points += [(0, points[-1][1]), (0, points[0][1])]
     def cross(a,b,c):
         return (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])
-    # Drop duplicate or redundant straight-line vertices introduced by caps.
     while len(points) > 2:
         remove = next((i for i,b in enumerate(points)
                        if math.dist(points[i-1],b) <= eps
@@ -220,8 +217,6 @@ def lathe_profile(profile):
 
 
 def polygon_outline(points):
-    # Translate the XY outline into the nonnegative radial validation domain;
-    # validation concerns its planar simplicity, not its eventual interpretation.
     if math.dist(points[0],points[-1])<1e-10:points=points[:-1]
     shift=1-min(p[0] for p in points)
     contour=lathe_profile([[x+shift,y] for x,y in points]+[[points[0][0]+shift,points[0][1]]])
@@ -229,7 +224,6 @@ def polygon_outline(points):
 
 
 def validate_scene(value):
-    # Backward-compatible input normalization only; no unknown fields accepted.
     if isinstance(value,dict) and isinstance(value.get('parts'),list):
         for p in value['parts']:
             if isinstance(p,dict) and p.get('kind')=='person':p.setdefault('hair_style','short')
@@ -252,7 +246,6 @@ def validate_scene(value):
                 if max(face) >= len(p['vertices']) or len(set(face)) != len(face):
                     raise ValueError('Sciana siatki ma nieprawidlowe indeksy.')
                 origin = p['vertices'][face[0]]
-                # Reject collinear polygons before Blender can silently discard them.
                 vectors = [[p['vertices'][i][a] - origin[a] for a in range(3)] for i in face[1:]]
                 def area(a, b):
                     return sum((a[(k+1)%3]*b[(k+2)%3]-a[(k+2)%3]*b[(k+1)%3])**2 for k in range(3))
