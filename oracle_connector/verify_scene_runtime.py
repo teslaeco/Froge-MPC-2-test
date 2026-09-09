@@ -50,7 +50,7 @@ def inspect_glb(path):
 
 
 def render_review(folder, name='oak-lights.scene.json'):
-    person=name.startswith('rapper')
+    person=name.startswith('rapper') or name.startswith('couture')
     tower=name.startswith('dubai')
     target=Vector((0,0,.90 if person else 4.2 if tower else 3))
     bpy.ops.object.camera_add(location=(2.1, -6, 2.6) if person else (11,-17,10) if tower else (10,-13,9))
@@ -88,6 +88,14 @@ def render_review(folder, name='oak-lights.scene.json'):
             camera.data.ortho_scale=scale
             scene.render.filepath=str(folder/(label+'-review.png'))
             bpy.ops.render.render(write_still=True)
+        if name.startswith('couture'):
+            for label, location in [('front',(0,-4,1.25)),('three-quarter',(2.7,-2.7,1.35)),
+                                    ('side',(4,0,1.25)),('back',(0,4,1.25))]:
+                camera.location=location
+                camera.rotation_euler=(Vector((-.15,0,.95))-camera.location).to_track_quat('-Z','Y').to_euler()
+                camera.data.ortho_scale=2.15
+                scene.render.filepath=str(folder/(label+'-review.png'))
+                bpy.ops.render.render(write_still=True)
 
 
 def verify(name, folder, render=False):
@@ -98,7 +106,7 @@ def verify(name, folder, render=False):
     code=(ROOT/'runtime/run.py').read_text().replace('/work/', str(folder)+'/')
     scope={'__name__':'froge_runtime_fixture', '__file__': str(ROOT/'runtime/run.py')}
     exec(compile(code, 'runtime/run.py', 'exec'), scope)
-    if name.startswith('rapper'):
+    if name.startswith('rapper') or name.startswith('couture'):
         # Check flat sole solids independently, before final material grouping.
         import wardrobe
         material=scope['make_material']('footwear-check',[.4,.4,.4])
@@ -121,7 +129,7 @@ def verify(name, folder, render=False):
             assert mesh.calc_volume(signed=True)>0, key
             assert all(f.calc_area()>1e-12 for f in mesh.faces), key
             mesh.free()
-    if name.startswith('rapper'):
+    if name.startswith('rapper') or name.startswith('couture'):
         objects=[o for group in built.values() for o in group]
         points=[o.matrix_world@v.co for o in objects for v in o.data.vertices]
         actual_height=max(v.z for v in points)-min(v.z for v in points)
@@ -154,12 +162,19 @@ def verify(name, folder, render=False):
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(folder/'model.glb'))
     assert any(o.type=='MESH' for o in bpy.context.scene.objects)
-    if name.startswith('rapper'):
+    if name.startswith('rapper') or name.startswith('couture'):
         meshes=[o for o in bpy.context.scene.objects if o.type=='MESH']
         assert any(o.get('froge_kind')=='person' for o in meshes)
         assert all(all(__import__('math').isfinite(c) for c in v.co) for o in meshes for v in o.data.vertices)
         bounds=[o.matrix_world@v.co for o in meshes for v in o.data.vertices]
         assert abs(max(v.z for v in bounds)-min(v.z for v in bounds)-scene['parts'][0]['height'])<.005
+        if name.startswith('couture'):
+            roles={o.get('froge_role') for o in meshes}
+            assert 'reconstructed-floor-gown' in roles
+            assert 'attached-crystalline-panel' in roles
+            standards={o.get('characterStandard') for o in meshes if o.get('froge_kind')=='person'}
+            assert standards=={18}
+            assert all(.001 <= o.get('thickness_m',.004) <= .012 for o in meshes if o.get('froge_role')=='attached-crystalline-panel')
     if render:render_review(folder,name)
     return result
 

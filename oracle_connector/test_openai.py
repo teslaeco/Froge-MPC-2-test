@@ -142,7 +142,8 @@ class ConfigurationTests(unittest.TestCase):
         with patch.object(server, 'ollama_json', side_effect=AssertionError('Local model must not be called')):
             state = server.health()
             self.assertEqual(state['provider'], 'openai')
-            self.assertEqual(state['connectorVersion'], 17)
+            self.assertEqual(state['connectorVersion'], 18)
+            self.assertEqual(state['characterStandard'], 18)
             self.assertNotIn(FAKE_KEY, json.dumps(state))
             with patch.object(openai_provider, 'generate', return_value='import math') as generate:
                 self.assertEqual(server.generate_code([], 'fixture', threading.Event()), 'import math')

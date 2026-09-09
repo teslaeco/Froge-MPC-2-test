@@ -73,3 +73,25 @@ Changes:
 3. Generate a fresh model from the emerald-dress/fan reference and inspect full body, fitted dress,
    fan thickness, repeated devices, hands/fingers, eyes, materials and GLB output.
 4. Only after that visual/model QA call v17 generation verified.
+
+## v18 reference reconstruction implementation — 2026-09-09
+Branch: `codex/v18-astra-reference-quality`.
+
+Implemented production source (not a marker-only change):
+- The validated data-only scene schema now requires `characterStandard: 18` and provides a bounded `reference_character` operation with observed/reconstructed provenance, fitted-garment offset/thickness limits, a floor gown and updo controls.
+- Trusted Blender runtime code creates the complete existing anatomical person underneath body-following couture, a floor-length continuation, attached thin panels, collar/belt, multi-part updo and ornament. Existing five-finger anatomy, eyes, feet and skin atlas path remain the base.
+- Compact `rotor` and linked `radial_copies` operations provide reusable fan machinery without large generated vertex arrays.
+- A deterministic emerald couture/fan fixture and GLB re-import/geometry QA checks were added; its review path renders front, three-quarter, side and back from the re-imported GLB.
+- Oracle health and web connection metadata now expose connector version 18 and character standard 18 together. The rollback-safe full updater includes the couture runtime.
+
+Checks actually run in this environment:
+- `python3 -m py_compile oracle_connector/*.py oracle_connector/runtime/*.py` passed.
+- `(cd oracle_connector && python3 -m unittest discover)` passed: 49 tests.
+- `npm run typecheck` passed.
+- `git diff --check` passed.
+- `npm test -- --run` could not execute under the installed Node runtime: `node:sqlite` is unavailable and jsdom/undici workers fail on missing `webidl.util.markAsUncloneable`. This is an environment/runtime incompatibility, not a recorded passing test.
+
+Still unverified and deliberately not claimed:
+- Neither `blender` nor `podman` is installed in this environment. The couture fixture was therefore not generated here; GLB bytes, actual vertices/triangles/objects, Blender runtime, export/re-import result and four review renders remain for an Oracle/Blender 4.3 run using `verify_scene_runtime.py --scene couture-fan-v18.scene.json --output <directory>`.
+- No image-comparison metric and no visual identity/similarity percentage was run. Unseen back, legs, feet and floor hem are explicitly reconstruction in fixture metadata.
+- Source preparation is not Oracle installation or a Sites deployment. Published Site version remains 16 until separately deployed, and Oracle v18 is confirmed only after its local health endpoint returns both `connectorVersion: 18` and `characterStandard: 18`.

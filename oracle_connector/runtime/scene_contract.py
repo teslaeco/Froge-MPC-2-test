@@ -64,6 +64,22 @@ PARTS = [
                     'headwear': choice('none', 'cap', 'beanie'),
                     'pose': choice('standing', 'performing'),
                     'necklace': {'type': 'boolean'}, 'microphone': {'type': 'boolean'}}),
+    part('reference_character', {'center': VEC, 'height': number(1.2, 2.2),
+                    'skin_material': NAME, 'hair_material': NAME, 'dress_material': NAME,
+                    'shoe_material': NAME, 'accent_material': NAME, 'eye_material': NAME,
+                    'build': choice('slim', 'average'), 'pose': choice('standing', 'performing'),
+                    'garment_offset': number(.003, .035), 'garment_thickness': number(.001, .012),
+                    'hem_radius': number(.20, .65), 'updo': {'type': 'boolean'},
+                    'hair_ornament': {'type': 'boolean'}, 'necklace': {'type': 'boolean'},
+                    'observed_features': array(NAME, 1, 16),
+                    'reconstructed_features': array(NAME, 1, 16)}),
+    part('rotor', {'material': NAME, 'accent_material': NAME, 'center': VEC,
+                   'radius': number(.005, 2), 'depth': number(.001, .2),
+                   'blades': {'type': 'integer', 'minimum': 3, 'maximum': 16}}),
+    part('radial_copies', {'source': NAME, 'center': VEC,
+                           'count': {'type': 'integer', 'minimum': 2, 'maximum': 32},
+                           'radius': number(.001, 20), 'start_angle': number(-6.284, 6.284),
+                           'arc_angle': number(-6.284, 6.284)}),
     part('mesh', {'material': NAME, 'vertices': array(VEC, 3, 4096),
                   'faces': array(array(INDEX, 3, 16), 1, 4096)}),
     part('copies', {'source': NAME, 'offsets': array(VEC, 1, 64)}),
@@ -78,7 +94,7 @@ PARTS = [
                      'bulb_radius': number(0.001, 1)}),
 ]
 SCHEMA = record({
-    'version': {'type': 'integer', 'enum': [1]}, 'name': NAME,
+    'version': {'type': 'integer', 'enum': [1]}, 'characterStandard': {'type': 'integer', 'enum': [18]}, 'name': NAME,
     'materials': array(record({'name': NAME, 'rgb': COLOR,
                               'pattern': {'type': 'string', 'enum': ['plain', 'bark', 'wood', 'leaf', 'stone', 'fabric', 'cotton', 'denim', 'metal', 'windows', 'skin']},
                               'roughness': number(0, 1), 'metallic': number(0, 1),
@@ -90,7 +106,7 @@ PROMPT = '''Design the user's requested 3D asset as a compact Froge scene JSON, 
 Return only the JSON object matching the provided schema. No Python or explanations.
 All geometry is built by tested Blender tools. Choose the parts and parameters yourself.
 Use metres, Z up, finite dimensions, shared materials and recognizable silhouettes.
-Available parts: ellipsoid (radii are half dimensions), box (size is full dimensions,
+Every plan must set characterStandard to 18. Available parts: ellipsoid (radii are half dimensions), box (size is full dimensions,
 rotation in radians), tube (one radius per distinct point), lathe (ordered cross-section
 pairs [radius,z], radius >= 0, around Z; closed and descending profiles are supported),
 loft (smooth elliptical cross-sections along an ordered 3D path), mesh (vertices and
@@ -102,16 +118,16 @@ different radius. Do not sort or cross the profile. Example closed spire:
 For round parts use lathe sides 64 or loft sides 48-64; reserve 6-10 sides for explicitly
 polygonal architecture. Loft sections specify a center and two elliptical radii, giving
 continuous sculpted bodies and limbs instead of disconnected balls and cylinders.
-Use person for adult human figurines and fashion characters. It provides a licensed
+Use reference_character for a photo-driven couture person; use person for other adult figurines. Both provide a licensed
 anatomical adult base with connected face, UV skin, five-finger hands and complete feet.
 Use separate skin, eye, hair, clothing and accent materials. Select tshirt for short
 sleeves, sweatshirt for a long-sleeve fitted base without a hood, hoodie only when asked,
 formal only for a real jacket, and casual for ordinary clothing.
 
 REFERENCE-DRIVEN PEOPLE: preserve the visible outfit instead of replacing it with generic
-armor or unrelated clothing. If the reference shows a fitted dress or couture gown, use a
-person with a slim/average feminine body and a sweatshirt base in the same dress material,
-then construct the dress continuation with only a few compact loft/mesh/extrusion parts.
+armor or unrelated clothing. If the reference shows a fitted dress or couture gown, use one
+reference_character. Its trusted runtime builds anatomy, fitted bodice, floor-length skirt,
+thin attached panels, collar, belt and optional multi-part updo locally.
 Keep the torso and waist close to the body silhouette. A dress panel should sit only a few
 millimetres to a few centimetres outside the base at human scale; never inflate it into a
 thick shell. Reconstruct a cropped lower body as a coherent floor-length skirt/gown while
@@ -121,8 +137,11 @@ separate panels/accessories, not replacements for the body or the entire garment
 For a sculpted updo, keep hair_style short and add a few compact hair ellipsoids/lofts at
 the back/crown; do not create a helmet-sized hair shell.
 For a large fan or technological prop, preserve its thickness, handle and repeated devices.
-Build one compact turbine/rotor component and reuse copies for repeated units whenever
-possible. Prefer procedural geometry and copies over giant raw vertex/face lists.
+Build one compact rotor component and reuse radial_copies for repeated units whenever
+possible. Prefer procedural geometry and copies over giant raw vertex/face lists. For every
+reference_character list what is visible in observed_features and put inferred back, legs,
+feet or cropped hem details in reconstructed_features; these fields are provenance, not a
+similarity score.
 
 Use cotton for jersey/tees and denim for jeans: both export packed albedo and normal maps.
 Do not add a hood, necklace or microphone unless requested. Choose palette, build,
@@ -269,8 +288,10 @@ def validate_scene(value):
             if levels[-1]['z']<=levels[0]['z'] or any(b['z']<a['z'] or b==a for a,b in zip(levels,levels[1:])):
                 raise ValueError('Ekstruzja wymaga poziomow od dolu do gory; uskok moze powtorzyc Z przy innej skali.')
             v=len(outline)*len(levels);t=2*v
-        elif kind == 'person':
+        elif kind in ('person', 'reference_character'):
             v, t, count = 180000, 360000, 8
+        elif kind == 'rotor':
+            v, t = 16 + p['blades'] * 8, 28 + p['blades'] * 12
         elif kind == 'ellipsoid':
             v, t = 2562, 5120
         elif kind == 'box':
@@ -283,11 +304,11 @@ def validate_scene(value):
             if p['top'] <= p['bottom'] or p['bulb_radius'] >= p['radius'] / 2:
                 raise ValueError('Lampki wymagaja rosnacej wysokosci i mniejszych zarowek.')
             v, t, count = 1600 + p['bulbs'] * 642, 3200 + p['bulbs'] * 1280, 2
-        elif kind == 'copies':
+        elif kind in ('copies', 'radial_copies'):
             source = known.get(p['source'])
-            if not source or source[0] in ('oak', 'garland', 'copies', 'person'):
+            if not source or source[0] in ('oak', 'garland', 'copies', 'radial_copies', 'person', 'reference_character'):
                 raise ValueError('Kopie wymagaja wczesniejszej podstawowej czesci.')
-            count = len(p['offsets']); v, t = source[1] * count, source[2] * count
+            count = len(p['offsets']) if kind == 'copies' else p['count']; v, t = source[1] * count, source[2] * count
         known[name] = (kind, v, t)
         vertices += v; triangles += t; objects += count
     if vertices > 200000 or triangles > 400000 or objects > 256:

@@ -33,6 +33,7 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'runtime/anatomy.py').write_text('anatomy_version = 8\n')
         (self.source / 'runtime/wardrobe.py').write_text('wardrobe_version = 10\n')
         (self.source / 'runtime/textiles.py').write_text('textiles_version = 10\n')
+        (self.source / 'runtime/couture.py').write_text('character_standard = 18\n')
         shutil.copytree(Path(__file__).parent/'runtime/assets', self.source/'runtime/assets')
         self.config = self.target / 'state/config.json'
         self.config.write_text(json.dumps({'token': 'local-test-token', 'client': 'owner', 'code': 'unchanged'}))
@@ -56,6 +57,7 @@ class UpdateTests(unittest.TestCase):
         self.assertTrue((self.target / 'runtime/scene_contract.py').is_file())
         self.assertTrue((self.target / 'runtime/build_scene.py').is_file())
         self.assertTrue((self.target / 'runtime/detailed_geometry.py').is_file())
+        self.assertTrue((self.target / 'runtime/couture.py').is_file())
         backups = list((self.target / 'state/code-backups').glob('*/server.py'))
         self.assertEqual(backups[0].read_text(), 'version = 1\n')
         self.assertEqual((backups[0].parent / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')

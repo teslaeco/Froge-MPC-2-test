@@ -21,6 +21,7 @@ class SceneContractTests(unittest.TestCase):
         for name in ['oak-lights.scene.json','rocket.scene.json','rapper.scene.json','dubai-tower.scene.json']:
             value=parse_scene((EXAMPLES/name).read_text())
             self.assertEqual(value['version'],1)
+            self.assertEqual(value['characterStandard'],18)
         self.assertEqual(self.oak['parts'][1]['bulbs'],20)
 
     def test_closed_descending_and_stepped_profiles_keep_their_outline(self):
@@ -55,6 +56,24 @@ class SceneContractTests(unittest.TestCase):
         for field,val in [('skin_material','missing'),('pose','unknown'),('necklace',1)]:
             scene=deepcopy(person);scene['parts'][0][field]=val
             with self.assertRaises(ValueError):validate_scene(scene)
+
+    def test_v18_reference_couture_contract_and_compact_radial_instances(self):
+        scene=parse_scene((EXAMPLES/'couture-fan-v18.scene.json').read_text())
+        character=scene['parts'][0]
+        self.assertEqual(scene['characterStandard'],18)
+        self.assertEqual(character['kind'],'reference_character')
+        self.assertIn('cropped legs',character['reconstructed_features'])
+        self.assertEqual(scene['parts'][4]['kind'],'radial_copies')
+        for field,value in [('garment_offset',.08),('garment_thickness',.03)]:
+            invalid=deepcopy(scene);invalid['parts'][0][field]=value
+            with self.assertRaises(ValueError):validate_scene(invalid)
+
+    def test_character_standard_is_explicit_and_cannot_drift(self):
+        scene=deepcopy(self.oak)
+        scene.pop('characterStandard')
+        with self.assertRaises(ValueError):validate_scene(scene)
+        scene=deepcopy(self.oak);scene['characterStandard']=17
+        with self.assertRaises(ValueError):validate_scene(scene)
         tower=parse_scene((EXAMPLES/'dubai-tower.scene.json').read_text())
         tower['parts'][0]['levels'][1]['z']=-1
         with self.assertRaises(ValueError):validate_scene(tower)
