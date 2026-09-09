@@ -1,0 +1,1 @@
+Implement `docs/CODEX_V18_REFERENCE_RECONSTRUCTION.md` on this branch. This file exists only to open the implementation PR; replace the request with actual runtime, tests, Blender fixture evidence, and checkpoint updates before completion.
