@@ -175,5 +175,14 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual(self.call('/v1/jobs/' + JOB)[1]['state'], 'cancelled')
         self.assertEqual(self.call('/v1/jobs', other)[0], 202)
 
+    def test_prompt_accepts_5000_characters_and_rejects_5001(self):
+        accepted = {'id': JOB, 'prompt': 'x' * 5000}
+        self.assertEqual(self.call('/v1/jobs', accepted)[0], 202)
+        self.assertEqual(self.call('/v1/jobs/' + JOB + '/cancel', {})[0], 200)
+        rejected = {'id': JOB[:-1] + 'd', 'prompt': 'x' * 5001}
+        status, result = self.call('/v1/jobs', rejected)
+        self.assertEqual(status, 400)
+        self.assertIn('5000', result['error'])
+
 if __name__ == '__main__':
     unittest.main()

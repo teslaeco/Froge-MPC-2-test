@@ -29,7 +29,9 @@ JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
 CONNECTOR_VERSION = 18
-AI_TIME_LIMIT = 180
+AI_TIME_LIMIT = 600
+BLENDER_TIME_LIMIT = 900
+PROMPT_MAX_LENGTH = 5000
 OLLAMA = 'http://127.0.0.1:11434'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 LOCK = threading.RLock()
@@ -38,6 +40,9 @@ CANCEL = {}
 RUNNING = set()
 PAIR_ATTEMPTS = []
 SYSTEM = PROMPT
+
+class InputError(ValueError):
+    pass
 
 def write_json(path, value):
     temporary = path.with_suffix('.tmp')
@@ -139,18 +144,31 @@ def blender_command(job_id, folder):
             IMAGE, '--background', '--factory-startup', '--threads', '2', '--python-exit-code', '1',
             '--python', '/runner/run.py']
 
-def run_blender(job_id, folder, cancelled, timeout=600):
+def run_blender(job_id, folder, cancelled, timeout=BLENDER_TIME_LIMIT):
     log_path = folder / 'blender.log'
     with log_path.open('wb') as log:
         process = subprocess.Popen(blender_command(job_id, folder), stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)
         started = time.monotonic()
+        next_progress = started
         while process.poll() is None:
-            if cancelled.wait(1) or time.monotonic() - started > timeout:
-                subprocess.run(['podman', 'kill', 'froge-job-' + job_id], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
-                process.wait(timeout=20)
+            elapsed = time.monotonic() - started
+            if elapsed >= next_progress:
+                clock = '%d:%02d' % (int(elapsed) // 60, int(elapsed) % 60)
+                status(job_id, 'building', 'Blender buduje geometrie i materialy. Czas etapu: %s; limit: 15:00.' % clock)
+                next_progress = elapsed + 10
+            if cancelled.wait(1) or elapsed > timeout:
+                container = 'froge-job-' + job_id
+                try:
+                    subprocess.run(['podman', 'kill', container], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
+                    process.wait(timeout=20)
+                finally:
+                    if process.poll() is None:
+                        subprocess.run(['podman', 'rm', '--force', container], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
+                        process.kill()
+                        process.wait(timeout=5)
                 if cancelled.is_set():
                     raise InterruptedError('Zlecenie anulowane.')
-                raise TimeoutError('Blender przekroczyl limit %d minut. Uprosc opis.' % (timeout // 60))
+                raise TimeoutError('Blender przekroczyl limit %d minut. Model nie zostal zapisany.' % (timeout // 60))
         if process.returncode:
             tail = log_path.read_bytes()[-3500:].decode('utf-8', errors='replace')
             raise ValueError('Blender nie skonczyl modelu: ' + tail)
@@ -214,7 +232,7 @@ def worker():
                     status(job['id'], 'building', 'Plan sprawdzony. Blender buduje geometrie i zapisuje GLB…')
                     phase_started = time.monotonic()
                     try:
-                        run_blender(job['id'], folder, cancelled, timeout=180)
+                        run_blender(job['id'], folder, cancelled, timeout=BLENDER_TIME_LIMIT)
                     finally:
                         blender_seconds += time.monotonic() - phase_started
                     elapsed = time.monotonic() - started
@@ -267,7 +285,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.headers.get('Content-Type', '').startswith('application/json'):
             raise ValueError('Wymagany format JSON.')
         size = int(self.headers.get('Content-Length', '0'))
-        if size < 0 or size > 12000:
+        if size < 0 or size > 24000:
             raise ValueError('Zbyt duze zadanie.')
         self.connection.settimeout(15)
         data = json.loads(self.rfile.read(size))
@@ -322,8 +340,8 @@ class Handler(BaseHTTPRequestHandler):
                 source_id = data.get('sourceJobId')
                 if source_id is not None and (not isinstance(source_id, str) or not UUID.fullmatch(source_id) or source_id == job_id):
                     raise ValueError('Nieprawidlowe zlecenie zrodlowe.')
-                if not isinstance(job_id, str) or not UUID.fullmatch(job_id) or not isinstance(prompt, str) or not prompt.strip() or len(prompt) > 2000:
-                    raise ValueError('Nieprawidlowy opis lub identyfikator zlecenia.')
+                if not isinstance(job_id, str) or not UUID.fullmatch(job_id) or not isinstance(prompt, str) or not prompt.strip() or len(prompt) > PROMPT_MAX_LENGTH:
+                    raise InputError('Wpisz opis od 1 do 5000 znakow i prawidlowy identyfikator zlecenia.')
                 with LOCK, database() as db:
                     prior = db.execute('SELECT * FROM jobs WHERE id=?', (job_id,)).fetchone()
                     if prior:
@@ -396,6 +414,8 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(dict(row))
         except OpenAIServiceError as error:
             self.send_json({'error': str(error)}, 422)
+        except InputError as error:
+            self.send_json({'error': str(error)}, 400)
         except (ValueError, TypeError, KeyError):
             self.send_json({'error': 'Nieprawidlowe dane zadania.'}, 400)
         except (BrokenPipeError, ConnectionResetError):

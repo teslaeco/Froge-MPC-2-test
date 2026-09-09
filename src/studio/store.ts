@@ -16,7 +16,7 @@ export function updateStudio(value: unknown, note = 'Zmieniono parametry') {
   emit(); return true
 }
 export function applyStudioCommand(command: string) {
-  if (command.length > 2000) { state = { ...state, errors: ['Polecenie może mieć maksymalnie 2000 znaków.'] }; emit(); return false }
+  if (command.length > 5000) { state = { ...state, errors: ['Polecenie może mieć maksymalnie 5000 znaków.'] }; emit(); return false }
   const result = parseCommand(command, state.spec)
   if (result.errors.length) { state = { ...state, errors: result.errors }; emit(); return false }
   return updateStudio(result.spec, `Wykonano: ${result.applied.join(' · ')}. Obsługuję tylko parametry wymienione w panelu; inne szczegóły opisu wymagają podłączonego AI.`)

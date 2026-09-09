@@ -137,8 +137,8 @@ export function ModelStudio() {
     <div className="ai-layout">
       <section className="studio-panel studio-command" aria-label="Generowanie modelu z opisu">
         <label className="studio-prompt-label" htmlFor="ai-prompt">Co mam stworzyć?</label>
-        <textarea id="ai-prompt" value={prompt} maxLength={2000} rows={5} onChange={e=>setPrompt(e.target.value)} placeholder="Np. figurka zielonego smoka z rogami, wąsami i łuskami…" />
-        <div className="ai-prompt-meta"><span>Bez wymaganych wymiarów</span><span>{prompt.length}/2000</span></div>
+        <textarea id="ai-prompt" value={prompt} maxLength={5000} rows={5} onChange={e=>setPrompt(e.target.value)} placeholder="Np. figurka zielonego smoka z rogami, wąsami i łuskami…" />
+        <div className="ai-prompt-meta"><span>Bez wymaganych wymiarów</span><span>{prompt.length}/5000</span></div>
         <RemoteGenerator prompt={prompt} onStart={startRemote} onResult={receiveRemote}/>
         <details className="agent-manual"><summary>Praca z Codexem przez WebMCP</summary>
           <p className="studio-helper">Możesz też przekazać opis agentowi Codex, który dostarczy geometrię do tej strony. Ten tryb wymaga osobnego polecenia w rozmowie.</p>
