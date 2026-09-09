@@ -1,5 +1,5 @@
 {
-  "version": 1, "characterStandard": 18,
+  "version": 1,
   "name": "Dąb z 20 ciepłymi lampkami świątecznymi",
   "materials": [
     {"name":"kora","rgb":[0.27,0.14,0.06],"pattern":"bark","roughness":0.88,"metallic":0,"emission":0},

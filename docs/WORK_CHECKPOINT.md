@@ -1,3 +1,19 @@
+# v19 Oracle worker source prepared — 2026-09-09
+
+See docs/GENERATOR_V19.md. The new worker imports the newer Site v16 portrait,
+photo/replay/group baseline and replaces v18's sweatshirt-based reference outfit
+with dedicated fitted couture, a pleated fan and linked solid rotors. Budgets
+from PR #6 are retained, with elapsed-clock and saved-scene timeout fixes.
+Full v19 installer is reproducible with python3 scripts/package-v19.py.
+82 Python tests passed on the canonical Site checkout; 74 targeted frontend/API
+checks and production build passed for the separately saved Site frontend.
+ZIP CRC and all 33 payload files match. No Blender, Oracle install or visual
+likeness verification was completed. No paid AI request was made. This is a
+draft worker update requiring actual Blender and visual review before release.
+Site38 remains published; do not claim a new deployment from this PR.
+
+---
+
 # Work checkpoint — 2026-09-09
 
 ## Verified application baseline

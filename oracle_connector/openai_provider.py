@@ -10,9 +10,6 @@ MODEL = 'gpt-6-astra'
 API = 'https://api.openai.com/v1'
 KEY = re.compile(r'^sk-[A-Za-z0-9_-]{20,500}$')
 TIME_LIMIT = 180
-# Complex reference-driven characters can need more than 4.5k output tokens even
-# when the scene contract is compact. Keep this below the worker's 60 KB JSON cap.
-MAX_OUTPUT_TOKENS = 9000
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -41,7 +38,7 @@ def verify_key(value):
 
 def generate(messages, api_key, cancelled, progress, timeout, validate_chunk, usage_callback, schema=None):
     payload = {'model': MODEL, 'input': messages, 'stream': True, 'store': False,
-               'reasoning': {'effort': 'low'}, 'max_output_tokens': MAX_OUTPUT_TOKENS}
+               'reasoning': {'effort': 'low'}, 'max_output_tokens': 9000}
     if schema is not None:
         payload['text'] = {'format': {'type': 'json_schema', 'name': 'froge_scene',
                                       'strict': True, 'schema': schema}}

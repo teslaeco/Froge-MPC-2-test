@@ -24,7 +24,7 @@ def apply(material, kind, rgb):
     links.new(node.outputs['Color'],shader.inputs['Base Color'])
     # A shared normal map per fabric saves image slots when palettes are reused.
     normal_image=bpy.data.images.get('woven-'+kind+'-normal')
-    if normal_image is None and len(bpy.data.images)<7:
+    if normal_image is None and len(bpy.data.images)<16:
         height=luminance[::2,::2]
         dx=(np.roll(height,-1,axis=1)-np.roll(height,1,axis=1))*.45
         dy=(np.roll(height,-1,axis=0)-np.roll(height,1,axis=0))*.45

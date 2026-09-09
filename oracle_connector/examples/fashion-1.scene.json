@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "name": "Modelka-kucyk — studium z kadru",
+  "subject_type": "person",
+  "materials": [
+    {
+      "name": "skin",
+      "rgb": [
+        0.72,
+        0.53,
+        0.43
+      ],
+      "pattern": "skin",
+      "roughness": 0.55,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "black",
+      "rgb": [
+        0.012,
+        0.013,
+        0.019
+      ],
+      "pattern": "plain",
+      "roughness": 0.55,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "blonde",
+      "rgb": [
+        0.34,
+        0.19,
+        0.068
+      ],
+      "pattern": "plain",
+      "roughness": 0.55,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "curls",
+      "rgb": [
+        0.18,
+        0.087,
+        0.034
+      ],
+      "pattern": "plain",
+      "roughness": 0.55,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "pink",
+      "rgb": [
+        0.48,
+        0.21,
+        0.28
+      ],
+      "pattern": "fabric",
+      "roughness": 0.55,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "white",
+      "rgb": [
+        0.8,
+        0.78,
+        0.75
+      ],
+      "pattern": "fabric",
+      "roughness": 0.55,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "silver",
+      "rgb": [
+        0.55,
+        0.58,
+        0.62
+      ],
+      "pattern": "plain",
+      "roughness": 0.3,
+      "metallic": 0.75,
+      "emission": 0
+    },
+    {
+      "name": "nails",
+      "rgb": [
+        0.38,
+        0.014,
+        0.055
+      ],
+      "pattern": "plain",
+      "roughness": 0.25,
+      "metallic": 0,
+      "emission": 0
+    }
+  ],
+  "parts": [
+    {
+      "kind": "person",
+      "name": "Modelka-kucyk",
+      "center": [
+        0,
+        0,
+        0
+      ],
+      "height": 1.72,
+      "skin_material": "skin",
+      "hair_material": "black",
+      "top_material": "white",
+      "trouser_material": "black",
+      "shoe_material": "white",
+      "accent_material": "silver",
+      "eye_material": "black",
+      "nail_material": "nails",
+      "build": "slim",
+      "presentation": "feminine",
+      "outfit": "crop_skirt",
+      "pose": "sitting",
+      "headwear": "none",
+      "eyewear": "sunglasses",
+      "hair_style": "ponytail",
+      "makeup": "soft_glam",
+      "shirt_graphic": "none",
+      "microphone": false,
+      "necklace": true,
+      "face": {
+        "nose_width": -0.3,
+        "nose_projection": -0.1,
+        "mouth_width": 0.08,
+        "lip_fullness": 0.2,
+        "jaw_width": -0.18,
+        "chin_height": 0.08,
+        "cheek_fullness": 0.03
+      }
+    }
+  ]
+}

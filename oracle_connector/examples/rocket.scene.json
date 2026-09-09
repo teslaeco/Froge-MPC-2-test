@@ -1,5 +1,5 @@
 {
-  "version":1,"characterStandard":18,"name":"Rakieta kontrolna",
+  "version":1,"name":"Rakieta kontrolna",
   "materials":[
     {"name":"ceramic","rgb":[0.84,0.89,0.91],"pattern":"plain","roughness":0.4,"metallic":0.2,"emission":0},
     {"name":"orange","rgb":[0.94,0.18,0.035],"pattern":"metal","roughness":0.4,"metallic":0.3,"emission":0},

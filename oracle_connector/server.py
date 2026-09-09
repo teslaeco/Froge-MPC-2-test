@@ -19,16 +19,17 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, prepare_code, repair_instruction, validate_code
 from ai_stream import stream_chat
 import openai_provider
+import photo_input
 from ai_stream import OpenAIServiceError
 from runtime_check import IMAGE, sandbox_options, verify_runtime
-from runtime.scene_contract import SCHEMA, PROMPT, parse_scene
+from runtime.scene_contract import SCHEMA, PROMPT, parse_scene, human_prompt
 
 ROOT = Path(__file__).resolve().parent
 STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 18
+CONNECTOR_VERSION = 19
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
@@ -40,9 +41,6 @@ CANCEL = {}
 RUNNING = set()
 PAIR_ATTEMPTS = []
 SYSTEM = PROMPT
-
-class InputError(ValueError):
-    pass
 
 def write_json(path, value):
     temporary = path.with_suffix('.tmp')
@@ -79,7 +77,7 @@ def health():
         ready = bool(selected.get('api_key'))
         return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
                 'detail': 'OpenAI Astra jest polaczone. Blender wykona sprawdzony plan sceny.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
-                'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
+                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 1, 'scenePeople': 3, 'characterStandard': 19, 'coutureRevision': 1, 'promptMaxLength': PROMPT_MAX_LENGTH}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
@@ -87,9 +85,9 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
+        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 1, 'scenePeople': 3, 'characterStandard': 19, 'coutureRevision': 1, 'promptMaxLength': PROMPT_MAX_LENGTH}
     except Exception:
-        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
+        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 1, 'scenePeople': 3, 'characterStandard': 19, 'coutureRevision': 1, 'promptMaxLength': PROMPT_MAX_LENGTH}
 
 def ai_settings():
     path = STATE / 'ai-provider.json'
@@ -108,6 +106,7 @@ def configure_ai(data):
             return False
         selected = ai_settings()
     if provider == 'openai':
+        # Model access is checked without sending a paid generation request.
         supplied = data.get('apiKey') or selected.get('api_key')
         selected['api_key'] = openai_provider.verify_key(supplied)
     selected['provider'] = provider
@@ -149,23 +148,26 @@ def run_blender(job_id, folder, cancelled, timeout=BLENDER_TIME_LIMIT):
     with log_path.open('wb') as log:
         process = subprocess.Popen(blender_command(job_id, folder), stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)
         started = time.monotonic()
-        next_progress = started
+        next_progress = 0.
         while process.poll() is None:
             elapsed = time.monotonic() - started
             if elapsed >= next_progress:
-                clock = '%d:%02d' % (int(elapsed) // 60, int(elapsed) % 60)
-                status(job_id, 'building', 'Blender buduje geometrie i materialy. Czas etapu: %s; limit: 15:00.' % clock)
-                next_progress = elapsed + 10
-            if cancelled.wait(1) or elapsed > timeout:
-                container = 'froge-job-' + job_id
+                status(job_id, 'building', 'Blender: geometria, materialy i eksport. Czas etapu %d:%02d; limit %d min.' % (int(elapsed)//60,int(elapsed)%60,timeout//60))
+                next_progress=elapsed+10
+            if cancelled.wait(1) or time.monotonic() - started > timeout:
                 try:
-                    subprocess.run(['podman', 'kill', container], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
+                    subprocess.run(['podman', 'kill', 'froge-job-' + job_id], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
                     process.wait(timeout=20)
+                except (OSError, subprocess.TimeoutExpired):
+                    pass
                 finally:
                     if process.poll() is None:
-                        subprocess.run(['podman', 'rm', '--force', container], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=15)
-                        process.kill()
-                        process.wait(timeout=5)
+                        try:
+                            subprocess.run(['podman','rm','--force','froge-job-'+job_id],stdin=subprocess.DEVNULL,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=15)
+                        except (OSError,subprocess.TimeoutExpired):
+                            pass
+                        finally:
+                            process.kill();process.wait(timeout=5)
                 if cancelled.is_set():
                     raise InterruptedError('Zlecenie anulowane.')
                 raise TimeoutError('Blender przekroczyl limit %d minut. Model nie zostal zapisany.' % (timeout // 60))
@@ -173,8 +175,8 @@ def run_blender(job_id, folder, cancelled, timeout=BLENDER_TIME_LIMIT):
             tail = log_path.read_bytes()[-3500:].decode('utf-8', errors='replace')
             raise ValueError('Blender nie skonczyl modelu: ' + tail)
     model = folder / 'model.glb'
-    if not model.exists() or not 20 <= model.stat().st_size <= 12 * 1024 * 1024:
-        raise ValueError('Model jest pusty albo przekracza limit 12 MB.')
+    if not model.exists() or not 20 <= model.stat().st_size <= 48 * 1024 * 1024:
+        raise ValueError('Model jest pusty albo przekracza limit 48 MB. Wygeneruj osobne postacie w kolejnych zleceniach.')
     with model.open('rb') as file:
         magic, version, length = struct.unpack('<III', file.read(12))
     if magic != 0x46546C67 or version != 2 or length != model.stat().st_size:
@@ -191,7 +193,7 @@ def worker():
             job = dict(row)
             RUNNING.add(job['id'])
             cancelled = CANCEL.setdefault(job['id'], threading.Event())
-            db.execute("UPDATE jobs SET state='generating',detail='AI analizuje opis…' WHERE id=?", (job['id'],))
+            db.execute("UPDATE jobs SET state='generating',detail='Przygotowuje zlecenie…' WHERE id=?", (job['id'],))
         folder = JOBS / job['id']
         folder.mkdir(mode=0o700, exist_ok=True)
         messages = [{'role': 'system', 'content': SYSTEM}, {'role': 'user', 'content': job['prompt']}]
@@ -201,10 +203,29 @@ def worker():
         try:
             status(job['id'], 'generating', 'Sprawdzam, czy Blender moze uruchomic model…')
             verify_runtime()
+            saved_scene = folder / 'saved-scene.json'
+            if saved_scene.is_file():
+                # Rebuild a validated, saved plan without consulting either AI.
+                scene = parse_scene(saved_scene.read_text(encoding='utf-8'), job['prompt'])
+                write_json(folder / 'scene.json', scene)
+                write_json(folder / 'provider.json', {'provider': 'saved-scene', 'model': None})
+                status(job['id'], 'building', 'Blender wykonuje zapisany plan. Bez nowego zapytania do AI…')
+                phase_started = time.monotonic()
+                run_blender(job['id'], folder, cancelled, timeout=BLENDER_TIME_LIMIT)
+                elapsed = time.monotonic() - started
+                write_json(folder / 'timing.json', {'total_seconds': round(elapsed, 2), 'ai_seconds': 0, 'blender_seconds': round(time.monotonic() - phase_started, 2)})
+                status(job['id'], 'succeeded', 'Model gotowy w %.1f s. Wykorzystano zapisany plan, bez nowego zapytania do AI. Zapisano GLB z materialami.' % elapsed)
+                continue
             selected = ai_settings()
             is_openai = selected.get('provider') == 'openai'
+            photos = photo_input.read_photos(folder)
+            if photos and not is_openai:
+                raise ValueError('Zdjecia wymagaja OpenAI API. Nie wyslano zlecenia do tekstowego AI.')
+            messages[1]['content'] = photo_input.user_content(job['prompt'], photos)
             saved_script = folder / 'saved-script.py'
             reuse = saved_script.is_file()
+            if reuse and human_prompt(job['prompt']):
+                raise ValueError('Ten stary skrypt postaci nie zawiera kontroli anatomii. Uruchom nowe zlecenie z zachowanym opisem i zdjeciami w standardzie v15.')
             deadline = started + AI_TIME_LIMIT
             write_json(folder / 'provider.json', {'provider': 'saved-script' if reuse else selected.get('provider'), 'model': None if reuse else openai_provider.MODEL if is_openai else MODEL})
             for attempt in range(1 if reuse else 2):
@@ -225,7 +246,7 @@ def worker():
                         write_json(folder / ('attempt-%d-helpers.json' % (attempt + 1)), {'restored_helpers': replaced})
                         (folder / 'generate.py').write_text(code, encoding='utf-8')
                     else:
-                        scene = parse_scene(code)
+                        scene = parse_scene(code, job['prompt'])
                         write_json(folder / 'scene.json', scene)
                     if cancelled.is_set():
                         raise InterruptedError('Zlecenie anulowane.')
@@ -238,6 +259,8 @@ def worker():
                     elapsed = time.monotonic() - started
                     write_json(folder / 'timing.json', {'total_seconds': round(elapsed, 2), 'ai_seconds': round(ai_seconds, 2), 'blender_seconds': round(blender_seconds, 2)})
                     detail = ('Model gotowy w %.1f s. Wykorzystano zapisany skrypt, bez nowego zapytania do AI.' % elapsed if reuse else 'Model gotowy w %.1f s. Instrukcje AI: %.1f s; Blender: %.1f s. Zapisano GLB z materialami.' % (elapsed, ai_seconds, blender_seconds))
+                    if photos:
+                        detail += ' Uzyto %d zdjec referencyjnych. Geometria jest przyblizona, niewidoczne powierzchnie sa szacowane.' % len(photos)
                     status(job['id'], 'succeeded', detail)
                     break
                 except (ValueError, SyntaxError) as error:
@@ -246,7 +269,9 @@ def worker():
                         draft.write_text(error.partial_code, encoding='utf-8')
                         os.chmod(draft, 0o600)
                     write_json(folder / ('attempt-%d-error.json' % (attempt + 1)), {'error': str(error)[-2500:]})
-                    if attempt or reuse:
+                    # A renderer resource-limit bug cannot be fixed by buying
+                    # another AI plan. Keep the saved plan for a renderer update.
+                    if attempt or reuse or 'Use at most 8 materials and 8 images' in str(error) or 'Export limit:' in str(error):
                         raise
                     status(job['id'], 'retrying', 'Pierwsza proba nie przeszla kontroli. AI poprawia instrukcje…')
                     if code:
@@ -269,7 +294,7 @@ def worker():
 class Handler(BaseHTTPRequestHandler):
     server_version = 'Froge/1'
     def log_message(self, *_):
-        pass
+        pass  # Tokens, prompts and pairing codes must not enter access logs.
 
     def send_json(self, value, status_code=200):
         data = json.dumps(value, ensure_ascii=False).encode()
@@ -285,7 +310,7 @@ class Handler(BaseHTTPRequestHandler):
         if not self.headers.get('Content-Type', '').startswith('application/json'):
             raise ValueError('Wymagany format JSON.')
         size = int(self.headers.get('Content-Length', '0'))
-        if size < 0 or size > 24000:
+        if size < 0 or size > (photo_input.MAX_REQUEST_BYTES if self.path == '/v1/jobs' else 12000):
             raise ValueError('Zbyt duze zadanie.')
         self.connection.settimeout(15)
         data = json.loads(self.rfile.read(size))
@@ -338,20 +363,27 @@ class Handler(BaseHTTPRequestHandler):
                 data = self.input()
                 job_id, prompt = data.get('id'), data.get('prompt')
                 source_id = data.get('sourceJobId')
+                photos = photo_input.validate_photos(data.get('photos', []))
+                if source_id is not None and 'photos' in data:
+                    raise ValueError('Zapisany skrypt nie przyjmuje nowych zdjec.')
                 if source_id is not None and (not isinstance(source_id, str) or not UUID.fullmatch(source_id) or source_id == job_id):
                     raise ValueError('Nieprawidlowe zlecenie zrodlowe.')
-                if not isinstance(job_id, str) or not UUID.fullmatch(job_id) or not isinstance(prompt, str) or not prompt.strip() or len(prompt) > PROMPT_MAX_LENGTH:
-                    raise InputError('Wpisz opis od 1 do 5000 znakow i prawidlowy identyfikator zlecenia.')
+                if not isinstance(job_id, str) or not UUID.fullmatch(job_id) or not isinstance(prompt, str) or not prompt.strip() or len(prompt.encode('utf-16-le')) // 2 > PROMPT_MAX_LENGTH:
+                    raise ValueError('Nieprawidlowy opis lub identyfikator zlecenia.')
                 with LOCK, database() as db:
                     prior = db.execute('SELECT * FROM jobs WHERE id=?', (job_id,)).fetchone()
                     if prior:
-                        if prior['prompt'] != prompt.strip():
-                            return self.send_json({'error': 'Identyfikator dotyczy innego opisu.'}, 409)
+                        provenance = JOBS / job_id / 'source-job.json'
+                        prior_source = json.loads(provenance.read_text()).get('id') if provenance.is_file() else None
+                        if prior['prompt'] != prompt.strip() or prior_source != source_id or (source_id is None and photo_input.metadata(photo_input.read_photos(JOBS / job_id)) != photo_input.metadata(photos)):
+                            return self.send_json({'error': 'Identyfikator dotyczy innego opisu lub innych zdjec.'}, 409)
                         return self.send_json(dict(prior))
                     if db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]:
                         return self.send_json({'error': 'Serwer wykonuje poprzedni model. Poczekaj na wynik lub anuluj tamto zlecenie.'}, 409)
                     if source_id is None and not health()['ready']:
                         return self.send_json({'error': 'Wybrane AI nie jest jeszcze gotowe. Sprawdz ustawienia.'}, 409)
+                    if photos and not health().get('photoInput'):
+                        return self.send_json({'error': 'Wybrane AI nie obsluguje zdjec. Wybierz OpenAI w ustawieniach.'}, 409)
                     if shutil.disk_usage(STATE).free < 2 * 1024**3:
                         return self.send_json({'error': 'Na serwerze zostalo mniej niz 2 GB wolnego miejsca.'}, 409)
                     if db.execute('SELECT COUNT(*) FROM jobs').fetchone()[0] >= 300:
@@ -360,21 +392,38 @@ class Handler(BaseHTTPRequestHandler):
                         return self.send_json({'error': 'Identyfikator zlecenia jest juz zajety. Sprobuj ponownie.'}, 409)
                     if source_id is not None:
                         source = db.execute('SELECT * FROM jobs WHERE id=?', (source_id,)).fetchone()
-                        source_path = JOBS / source_id / 'generate.py'
+                        source_folder = JOBS / source_id
+                        source_path = source_folder / 'scene.json'
+                        scene_replay = source_path.is_file()
+                        if not scene_replay:
+                            source_path = source_folder / 'generate.py'
                         if not source or source['state'] != 'failed' or source['prompt'] != prompt.strip() or not source_path.is_file():
-                            return self.send_json({'error': 'Brak zapisanego skryptu dla tego nieudanego zlecenia.'}, 409)
+                            return self.send_json({'error': 'Brak zapisanego planu dla tego nieudanego zlecenia.'}, 409)
                         if source_path.stat().st_size > 60000:
                             return self.send_json({'error': 'Zapisany skrypt przekracza limit rozmiaru.'}, 409)
                         saved_code = source_path.read_text(encoding='utf-8')
                         try:
-                            prepare_code(saved_code)
+                            if scene_replay:
+                                parse_scene(saved_code, prompt.strip())
+                            else:
+                                prepare_code(saved_code)
                         except (ValueError, SyntaxError):
-                            return self.send_json({'error': 'Zapisany skrypt wymaga nowych instrukcji AI; nie zostal uruchomiony.'}, 409)
+                            return self.send_json({'error': 'Zapisany plan nie przeszedl sprawdzenia; nie zostal uruchomiony.'}, 409)
+                        photos = photo_input.read_photos(source_folder)
                         destination = JOBS / job_id
                         destination.mkdir(mode=0o700)
-                        (destination / 'saved-script.py').write_text(saved_code, encoding='utf-8')
-                        os.chmod(destination / 'saved-script.py', 0o600)
+                        saved_path = destination / ('saved-scene.json' if scene_replay else 'saved-script.py')
+                        saved_path.write_text(saved_code, encoding='utf-8')
+                        os.chmod(saved_path, 0o600)
                         write_json(destination / 'source-job.json', {'id': source_id})
+                    if photos:
+                        destination = JOBS / job_id
+                        destination.mkdir(mode=0o700, exist_ok=True)
+                        for index, photo in enumerate(photos):
+                            path = destination / ('reference-%d.jpg' % index)
+                            path.write_bytes(photo['bytes'])
+                            os.chmod(path, 0o600)
+                        write_json(destination / 'reference-photos.json', photo_input.metadata(photos))
                     now = time.time()
                     db.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?)', (job_id, prompt.strip(), 'queued', 'Opis przyjety.', now, now))
                 WAKE.set()
@@ -399,8 +448,8 @@ class Handler(BaseHTTPRequestHandler):
                 if row['state'] != 'succeeded' or not path.is_file() or path.is_symlink():
                     return self.send_json({'error': 'Model nie jest jeszcze gotowy.'}, 409)
                 size = path.stat().st_size
-                if not 20 <= size <= 12 * 1024**2:
-                    return self.send_json({'error': 'Plik modelu przekracza limit 12 MB.'}, 413)
+                if not 20 <= size <= 48 * 1024**2:
+                    return self.send_json({'error': 'Plik modelu przekracza limit 48 MB.'}, 413)
                 self.send_response(200)
                 self.send_header('Content-Type', 'model/gltf-binary')
                 self.send_header('Content-Length', str(size))
@@ -414,8 +463,6 @@ class Handler(BaseHTTPRequestHandler):
             return self.send_json(dict(row))
         except OpenAIServiceError as error:
             self.send_json({'error': str(error)}, 422)
-        except InputError as error:
-            self.send_json({'error': str(error)}, 400)
         except (ValueError, TypeError, KeyError):
             self.send_json({'error': 'Nieprawidlowe dane zadania.'}, 400)
         except (BrokenPipeError, ConnectionResetError):

@@ -5,6 +5,8 @@ The same schema sent to the model is checked again before and inside Blender.
 """
 import json
 import math
+import re
+import unicodedata
 
 
 def number(lo=-1000, hi=1000):
@@ -36,10 +38,42 @@ def choice(*values):
 
 
 def round_sides(sides):
+    # Preserve explicitly polygonal columns; round surfaces get real geometry.
     return max(64, sides) if sides >= 12 else sides
 
 
+FACE = record({key:number(-1,1) for key in ('nose_width','nose_projection','mouth_width','lip_fullness','jaw_width','chin_height','cheek_fullness')})
+PORTRAIT_FIELDS = {'presentation':choice('masculine','feminine','androgynous'),
+                   'hair_style':choice('short','buzz','bald','shoulder_length','long_wavy','straight_bob','curly','ponytail'),
+                   'headwear':choice('none','cap','beanie'), 'face':FACE,
+                   'eyewear':choice('none','sunglasses'),
+                   'makeup':choice('none','soft_glam')}
+
+
+COUTURE_FIELDS = {
+    'center':VEC, 'height':number(1.2,2.2), 'build':choice('slim','average'),
+    **{key+'_material':NAME for key in ('skin','hair','dress','crystal','accent','shoe','eye','nail')},
+    'face':FACE, 'head_rotation':array(number(-.35,.35),3,3), 'makeup':choice('none','soft_glam'),
+    'garment_offset':number(.001,.018), 'garment_thickness':number(.001,.006),
+    'hem_radius':number(.22,.45), 'updo':{'type':'boolean'}, 'hair_ornament':{'type':'boolean'},'cape':{'type':'boolean'},
+    'fan':record({'enabled':{'type':'boolean'},'radius':number(.20,.43),
+                  'panels':{'type':'integer','minimum':8,'maximum':18},
+                  'rotors':{'type':'integer','minimum':4,'maximum':18},'spread':number(1.5,2.6)}),
+    'observed_features':array(NAME,1,16),'reconstructed_features':array(NAME,1,16),
+}
+
 PARTS = [
+    part('reference_character',COUTURE_FIELDS),
+    part('rotor',{'material':NAME,'accent_material':NAME,'center':VEC,'radius':number(.005,2),
+                  'depth':number(.001,.2),'blades':{'type':'integer','minimum':3,'maximum':16}}),
+    part('radial_copies',{'source':NAME,'center':VEC,'count':{'type':'integer','minimum':2,'maximum':32},
+                         'radius':number(.001,20),'start_angle':number(-6.284,6.284),'arc_angle':number(-6.284,6.284)}),
+    part('portrait', {'center':VEC,'scale':number(.5,2),'rotation':VEC,
+                      'skin_material':NAME,'hair_material':NAME,'eye_material':NAME,**PORTRAIT_FIELDS}),
+    part('anatomical_hand', {'wrist':VEC,'direction':VEC,'palm_normal':VEC,
+                            'side':choice('left','right'),'presentation':PORTRAIT_FIELDS['presentation'],
+                            'scale':number(.5,2),'curl':number(0,1.8),'nail_length':number(0,.004),
+                            'skin_material':NAME,'nail_material':NAME}),
     part('ellipsoid', {'material': NAME, 'center': VEC, 'radii': SIZE}),
     part('box', {'material': NAME, 'center': VEC, 'size': SIZE, 'rotation': VEC}),
     part('tube', {'material': NAME, 'points': array(VEC, 2, 128),
@@ -58,28 +92,17 @@ PARTS = [
                     'trouser_material': NAME, 'shoe_material': NAME, 'accent_material': NAME,
                     'eye_material': NAME,
                     'build': choice('slim', 'average', 'broad'),
+                    'body_shape': choice('natural', 'curvy'),
+                    'clothing_fit': choice('fitted', 'regular', 'oversized'),
                     'presentation': choice('masculine', 'feminine', 'androgynous'),
-                    'outfit': choice('streetwear', 'casual', 'formal', 'tshirt', 'sweatshirt', 'hoodie'),
-                    'hair_style': choice('short', 'buzz', 'bald'),
+                    'outfit': choice('streetwear', 'casual', 'formal', 'tshirt', 'sweatshirt', 'hoodie','crop_skirt','puffer_crop','black_crop'),
+                    'hair_style': PORTRAIT_FIELDS['hair_style'],
+                    'face':FACE,'makeup':choice('none','soft_glam'),'nail_material':NAME,
+                    'eyewear':choice('none','sunglasses'),
+                    'shirt_graphic': choice('none', 'LA'),
                     'headwear': choice('none', 'cap', 'beanie'),
-                    'pose': choice('standing', 'performing'),
+                    'pose': choice('standing', 'performing','sitting'),
                     'necklace': {'type': 'boolean'}, 'microphone': {'type': 'boolean'}}),
-    part('reference_character', {'center': VEC, 'height': number(1.2, 2.2),
-                    'skin_material': NAME, 'hair_material': NAME, 'dress_material': NAME,
-                    'shoe_material': NAME, 'accent_material': NAME, 'eye_material': NAME,
-                    'build': choice('slim', 'average'), 'pose': choice('standing', 'performing'),
-                    'garment_offset': number(.003, .035), 'garment_thickness': number(.001, .012),
-                    'hem_radius': number(.20, .65), 'updo': {'type': 'boolean'},
-                    'hair_ornament': {'type': 'boolean'}, 'necklace': {'type': 'boolean'},
-                    'observed_features': array(NAME, 1, 16),
-                    'reconstructed_features': array(NAME, 1, 16)}),
-    part('rotor', {'material': NAME, 'accent_material': NAME, 'center': VEC,
-                   'radius': number(.005, 2), 'depth': number(.001, .2),
-                   'blades': {'type': 'integer', 'minimum': 3, 'maximum': 16}}),
-    part('radial_copies', {'source': NAME, 'center': VEC,
-                           'count': {'type': 'integer', 'minimum': 2, 'maximum': 32},
-                           'radius': number(.001, 20), 'start_angle': number(-6.284, 6.284),
-                           'arc_angle': number(-6.284, 6.284)}),
     part('mesh', {'material': NAME, 'vertices': array(VEC, 3, 4096),
                   'faces': array(array(INDEX, 3, 16), 1, 4096)}),
     part('copies', {'source': NAME, 'offsets': array(VEC, 1, 64)}),
@@ -94,19 +117,75 @@ PARTS = [
                      'bulb_radius': number(0.001, 1)}),
 ]
 SCHEMA = record({
-    'version': {'type': 'integer', 'enum': [1]}, 'characterStandard': {'type': 'integer', 'enum': [18]}, 'name': NAME,
+    'version': {'type': 'integer', 'enum': [1]}, 'name': NAME,
+    'subject_type': choice('object','animal','person','portrait'),
     'materials': array(record({'name': NAME, 'rgb': COLOR,
-                              'pattern': {'type': 'string', 'enum': ['plain', 'bark', 'wood', 'leaf', 'stone', 'fabric', 'cotton', 'denim', 'metal', 'windows', 'skin']},
+                              'pattern': {'type': 'string', 'enum': ['plain', 'bark', 'wood', 'leaf', 'stone', 'fabric', 'cotton', 'denim', 'metal', 'windows', 'skin','satin','crystal']},
                               'roughness': number(0, 1), 'metallic': number(0, 1),
                               'emission': number(0, 5)}), 1, 8),
     'parts': array({'anyOf': PARTS}, 1, 80),
 })
 
 PROMPT = '''Design the user's requested 3D asset as a compact Froge scene JSON, version 1.
+COUTURE REFERENCE: for a standing adult woman in a fitted floor-length crystalline
+gown, use reference_character: continuous bodice/skirt, conformal thin inlays,
+collar, sleeves, legs, anatomical portrait/hands, updo and optional mechanical
+pleated fan. Never put a sweatshirt, T-shirt, trousers or padded armor beneath it.
+Set cape true only for a visible/requested drape attached to the shoulders.
+garment_offset is actual radial clearance .001-.018 m (normally .004);
+garment_thickness .001-.006 m (normally .002, never more than the offset).
+Choose seven face proportions and head_rotation from the image, soft_glam makeup
+when visible. This is a parameterised anatomical face, not identity recovery.
+dress_material pattern satin; crystal_material pattern crystal; skin nonmetallic.
+The fan has actual panels and small rotors on the rim. Set enabled false unless
+requested/visible. observed_features describes visible evidence;
+reconstructed_features identifies the unseen back, legs, feet and lower hem.
+This operation only supports this gown and standing pose; use person or portrait
++ anatomical_hand and custom garments for other outfits and poses.
+rotor has its axis along Y; radial_copies creates linked copies around an XZ arc
+with angles measured from +Z towards +X. Use compact repeated operations.
+GROUP SCENES: up to THREE distinct people are supported, each with its own
+anatomical portrait, two anatomical hands, face parameters, hairstyle and clothes.
+Do not average different reference people into one face. A group photograph is
+a composition reference, not additional views of a single person. Keep named
+subjects consistent across photos. Use the label attached to each image.
+The geometry allowance scales per portrait; NEVER remove facial anatomy to fit
+a group. For requests for both a group and individual copies, build the group
+once; individual variants belong in separate jobs, not duplicates in this scene.
+Use straight_bob for chin/shoulder-length straight hair, curly for ringlets,
+ponytail for tied-back hair. Match the visible hairstyle instead of making all
+women long-haired. Preserve reference skin color and proportions. If makeup or
+manicure is requested, soft_glam and the nail material must visibly implement it.
+FASHION GARMENTS: person outfit crop_skirt builds a fitted sleeveless high-neck
+top, short pleated skirt and tall boots; puffer_crop builds a black crop top,
+open padded vest in top_material and fitted trousers; black_crop builds a crop
+top, shorts and an open jacket in top_material. Use pose sitting for a seated
+person with bent knees, or standing. These choices preserve photo clothing
+better than substituting an ordinary T-shirt and trousers. At most 3 people.
 Return only the JSON object matching the provided schema. No Python or explanations.
 All geometry is built by tested Blender tools. Choose the parts and parameters yourself.
+Set subject_type from the requested subject and photos: person for any full human
+figure (including seated), portrait for a human head/bust, animal or object otherwise.
+MANDATORY HUMAN DETAIL FLOOR: use person, or use portrait + two anatomical_hand parts
+for a custom pose. Never approximate a human face, nose, mouth, eye or fingers using
+balls, boxes, tubes or low-resolution custom meshes. Such plans are rejected.
+For a seated figure use lofts/custom parts for the posed body, clothing and boots,
+then portrait for the head and anatomical_hand for each exposed hand. Preserve the
+seated pose from the photo; do not substitute a standing person.
+Portrait center is the midpoint between eyes in world metres; scale 1 is adult size.
+Local face points -Y; rotation is XYZ radians around the eye midpoint. Face contains
+seven bounded [-1,1] proportions: nose_width, nose_projection, mouth_width,
+lip_fullness, jaw_width, chin_height, cheek_fullness. Zero is neutral adult anatomy.
+Choose them from visible reference proportions, never claim biometric reconstruction.
+Use long_wavy for long detailed wavy hair, soft_glam makeup only when requested.
+Anatomical_hand wrist attaches to the sleeve, direction points from wrist to middle
+knuckle, palm_normal points OUT OF THE BACK of the hand, transverse to direction.
+side is the person's anatomical left/right. Scale 1 is an adult hand; curl is radians
+0 to 1.8; nail_length 0 to .004 m. Every hand has five connected fingers and five
+surface-fitted nails. nail_material sets their color; use a separate nonmetallic
+rose/nude material for a requested manicure and a skin-like material otherwise.
 Use metres, Z up, finite dimensions, shared materials and recognizable silhouettes.
-Every plan must set characterStandard to 18. Available parts: ellipsoid (radii are half dimensions), box (size is full dimensions,
+Available parts: ellipsoid (radii are half dimensions), box (size is full dimensions,
 rotation in radians), tube (one radius per distinct point), lathe (ordered cross-section
 pairs [radius,z], radius >= 0, around Z; closed and descending profiles are supported),
 loft (smooth elliptical cross-sections along an ordered 3D path), mesh (vertices and
@@ -118,52 +197,55 @@ different radius. Do not sort or cross the profile. Example closed spire:
 For round parts use lathe sides 64 or loft sides 48-64; reserve 6-10 sides for explicitly
 polygonal architecture. Loft sections specify a center and two elliptical radii, giving
 continuous sculpted bodies and limbs instead of disconnected balls and cylinders.
-Use reference_character for a photo-driven couture person; use person for other adult figurines. Both provide a licensed
-anatomical adult base with connected face, UV skin, five-finger hands and complete feet.
-Use separate skin, eye, hair, clothing and accent materials. Select tshirt for short
-sleeves, sweatshirt for a long-sleeve fitted base without a hood, hoodie only when asked,
-formal only for a real jacket, and casual for ordinary clothing.
-
-REFERENCE-DRIVEN PEOPLE: preserve the visible outfit instead of replacing it with generic
-armor or unrelated clothing. If the reference shows a fitted dress or couture gown, use one
-reference_character. Its trusted runtime builds anatomy, fitted bodice, floor-length skirt,
-thin attached panels, collar, belt and optional multi-part updo locally.
-Keep the torso and waist close to the body silhouette. A dress panel should sit only a few
-millimetres to a few centimetres outside the base at human scale; never inflate it into a
-thick shell. Reconstruct a cropped lower body as a coherent floor-length skirt/gown while
-keeping complete legs and footwear in the person base. Preserve the original collar,
-shoulders, belt, jewelry and visible clothing identity. Sharp crystal decorations are thin
-separate panels/accessories, not replacements for the body or the entire garment.
-For a sculpted updo, keep hair_style short and add a few compact hair ellipsoids/lofts at
-the back/crown; do not create a helmet-sized hair shell.
-For a large fan or technological prop, preserve its thickness, handle and repeated devices.
-Build one compact rotor component and reuse radial_copies for repeated units whenever
-possible. Prefer procedural geometry and copies over giant raw vertex/face lists. For every
-reference_character list what is visible in observed_features and put inferred back, legs,
-feet or cropped hem details in reconstructed_features; these fields are provenance, not a
-similarity score.
-
-Use cotton for jersey/tees and denim for jeans: both export packed albedo and normal maps.
-Do not add a hood, necklace or microphone unless requested. Choose palette, build,
-presentation, clothing, pose, headwear and accessories to match the request. Person faces
-are generic anatomical adults, not guaranteed likenesses of named real people.
+Use person for adult human figurines, rappers and singers: it uses a licensed anatomical adult base
+with connected nose/lips/eyelids/ears, UV skin texture, five-finger hands, fitted headwear,
+layered clothing with seams, pockets, compression folds, ribbed cuffs and detailed sneakers. Use a separate skin material with pattern skin, matte
+fabric for clothes and a separate eye material (dark iris color or neutral white).
+Use cotton for jersey/tees and denim for jeans: both export real packed albedo and normal maps.
+Select outfit tshirt for short sleeves and bare anatomical forearms, sweatshirt for a
+crewneck without hood, hoodie for an explicitly requested hood, formal for a jacket.
+Do not add a hood, cap, beanie or necklace unless explicitly requested. Being a singer
+or rapper does not imply jewelry or headwear: default headwear none, necklace false.
+For an adult woman/singer use presentation feminine; if no hairstyle is specified,
+choose shoulder_length and build average. Never default every woman to slim.
+Use body_shape curvy for requested fuller bust/hips/glutes or an hourglass silhouette;
+natural otherwise. Build controls general body mass, not gender or bust size.
+Choose clothing_fit fitted for close-fitting clothes, oversized for loose/oversize,
+regular otherwise. Preserve explicitly requested short/bald hair
+or other body build. A microphone request sets microphone true and pose performing.
+Clothes must have pattern cotton (tees/sweatshirts) or denim (jeans), metallic 0,
+roughness .8-.95 and emission 0. Do not use glossy plain material for normal fabric.
+A classic rapper may wear a loose
+white cotton tshirt, dark denim trousers and sneakers with hair_style buzz and headwear none.
+Use hair_style buzz for close cropped hair, short for short hair, bald for no hair, shoulder_length for layered wavy shoulder-length hair. Use shirt_graphic LA only when the user requests LA lettering; otherwise none. T-shirts hang untucked over the trousers with draped fabric folds.
+Choose the person's palette, build, presentation, clothing, pose, headwear and accessories
+to match the description. Add separate requested props using other operations. Person
+faces are generic anatomical adults, not guaranteed likenesses of named real people.
 For modern skyscrapers use tiers, wings, setbacks, a podium and spire as appropriate;
-use the windows material pattern for a repeating glazed facade. Preserve architectural edges.
-Use extrusion for noncircular towers: outline is an ordered simple XY polygon; levels give
-ascending z, XY scale and XY offset. Repeat z with a smaller scale for a setback.
-Use oak for oak trees and garland for wrapped lights. Use lathe, custom mesh, tubes, boxes
-and ellipsoids for other objects. Copies may reference only previous primitive parts, not
-oak, garland, person or copies. Mesh faces must use existing, distinct vertex indices.
+use the windows material pattern for a repeating glazed facade. Preserve architectural
+edges. Do not call a simple cone a realistic skyscraper.
+Use extrusion for noncircular towers: outline is an ordered simple XY polygon; levels
+give ascending z, XY scale and XY offset. Repeat z with a smaller scale for a setback.
+cap_material covers roofs and terraces. A Y-shaped outline can make a Dubai-style tower.
+Use oak for oak trees: it builds a branching trunk, roots and thousands of lobed leaves.
+height includes the crown; center is the base. Set leaf_material and bark material.
+Garland wraps a wire around Z from bottom to top relative to center, with exact bulb
+count. Radius is the outer wire radius; use bulb_material with emission > 0 for lights.
+Use lathe, custom mesh, tubes, boxes and ellipsoids for other objects, including rockets,
+furniture and figurines. Copies may reference only previous primitive parts, not oak,
+garland, person or copies. Mesh faces must use existing, distinct vertex indices.
 All names must be unique within their category; material references must exist.
-For simple assets aim for 4-20 parts. Complex references may use up to 40 compact parts.
-Use loops conceptually through copies/procedural parts rather than spelling out repetitive
-geometry. Do not emit giant mesh arrays when a loft, lathe, extrusion or copies can express
-the feature. Preserve silhouette, anatomy, outfit identity and requested details before
-adding decoration. Match every requested feature; never substitute an example object for
-the user's object. Do not request input files. Materials export as PBR packed textures.'''
+For simple assets aim for 4-20 parts. Use procedural parts and
+copies instead of listing repetitive geometry. Up to 40 parts / 3000 tokens are appropriate
+when a complex asset needs them; do not sacrifice the silhouette or requested details
+just to minimize part count. Match every requested feature; never
+substitute an oak or example for a different requested object. Do not request input files.
+Materials are exported as PBR and packed UV textures; emission makes visible luminous
+surfaces, not physical illumination of other meshes in every viewer.'''
 
 
 def check(value, schema, path='$'):
+    """Validate the deliberately small JSON Schema subset used above."""
     if 'anyOf' in schema:
         variant = next((s for s in schema['anyOf'] if isinstance(value, dict)
                         and value.get('kind') == s['properties']['kind']['enum'][0]), None)
@@ -196,6 +278,12 @@ def check(value, schema, path='$'):
 
 
 def lathe_profile(profile):
+    """Return an oriented, simple closed radial cross-section, never sorted.
+
+    A lathe can have descending walls, ledges, a closed outline or an open
+    outer wall. The old monotonic-height check incorrectly rejected these.
+    Self-crossing and zero-volume contours remain invalid.
+    """
     eps = 1e-10
     points = []
     for radius, z in profile:
@@ -213,6 +301,7 @@ def lathe_profile(profile):
         points += [(0, points[-1][1]), (0, points[0][1])]
     def cross(a,b,c):
         return (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])
+    # Drop duplicate or redundant straight-line vertices introduced by caps.
     while len(points) > 2:
         remove = next((i for i,b in enumerate(points)
                        if math.dist(points[i-1],b) <= eps
@@ -236,6 +325,8 @@ def lathe_profile(profile):
 
 
 def polygon_outline(points):
+    # Translate the XY outline into the nonnegative radial validation domain;
+    # validation concerns its planar simplicity, not its eventual interpretation.
     if math.dist(points[0],points[-1])<1e-10:points=points[:-1]
     shift=1-min(p[0] for p in points)
     contour=lathe_profile([[x+shift,y] for x,y in points]+[[points[0][0]+shift,points[0][1]]])
@@ -243,9 +334,15 @@ def polygon_outline(points):
 
 
 def validate_scene(value):
+    # Backward-compatible input normalization only; no unknown fields accepted.
     if isinstance(value,dict) and isinstance(value.get('parts'),list):
+        value.setdefault('subject_type','person' if any(isinstance(p,dict) and p.get('kind') in ('person','reference_character') for p in value['parts']) else 'object')
         for p in value['parts']:
-            if isinstance(p,dict) and p.get('kind')=='person':p.setdefault('hair_style','short')
+            if isinstance(p,dict) and p.get('kind') in ('person','portrait'):p.setdefault('eyewear','none')
+            if isinstance(p,dict) and p.get('kind')=='person':
+                p.setdefault('hair_style','shoulder_length' if p.get('presentation')=='feminine' else 'short');p.setdefault('shirt_graphic','none')
+                p.setdefault('body_shape','natural');p.setdefault('clothing_fit','regular')
+                p.setdefault('face',{key:0. for key in FACE['properties']});p.setdefault('makeup','none');p.setdefault('nail_material',p.get('skin_material'))
     check(value, SCHEMA)
     mats = [m['name'] for m in value['materials']]
     if len(set(mats)) != len(mats):
@@ -256,7 +353,7 @@ def validate_scene(value):
         kind, name = p['kind'], p['name']
         if name in known:
             raise ValueError('Powtorzona nazwa czesci: ' + name)
-        for field in ('material', 'cap_material', 'leaf_material', 'bulb_material', 'skin_material', 'hair_material', 'top_material', 'trouser_material', 'shoe_material', 'accent_material', 'eye_material'):
+        for field in ('material', 'cap_material', 'leaf_material', 'bulb_material', 'skin_material', 'hair_material', 'top_material', 'trouser_material', 'shoe_material', 'accent_material', 'eye_material','nail_material','dress_material','crystal_material'):
             if field in p and p[field] not in mats:
                 raise ValueError('Nieznany material: ' + p[field])
         v, t, count = 0, 0, 1
@@ -265,6 +362,7 @@ def validate_scene(value):
                 if max(face) >= len(p['vertices']) or len(set(face)) != len(face):
                     raise ValueError('Sciana siatki ma nieprawidlowe indeksy.')
                 origin = p['vertices'][face[0]]
+                # Reject collinear polygons before Blender can silently discard them.
                 vectors = [[p['vertices'][i][a] - origin[a] for a in range(3)] for i in face[1:]]
                 def area(a, b):
                     return sum((a[(k+1)%3]*b[(k+2)%3]-a[(k+2)%3]*b[(k+1)%3])**2 for k in range(3))
@@ -288,10 +386,23 @@ def validate_scene(value):
             if levels[-1]['z']<=levels[0]['z'] or any(b['z']<a['z'] or b==a for a,b in zip(levels,levels[1:])):
                 raise ValueError('Ekstruzja wymaga poziomow od dolu do gory; uskok moze powtorzyc Z przy innej skali.')
             v=len(outline)*len(levels);t=2*v
-        elif kind in ('person', 'reference_character'):
-            v, t, count = 180000, 360000, 8
+        elif kind == 'reference_character':
+            if p['garment_thickness']>p['garment_offset']:
+                raise ValueError('Suknia: grubosc nie moze przekraczac odstepu od ciala.')
+            v,t,count=300000,600000,80
         elif kind == 'rotor':
-            v, t = 16 + p['blades'] * 8, 28 + p['blades'] * 12
+            v,t,count=48+p['blades']*12,92+p['blades']*20,1
+        elif kind == 'person':
+            if p['pose']=='sitting' and p['outfit'] not in ('crop_skirt','puffer_crop','black_crop'):
+                raise ValueError('Poza sitting wymaga stroju crop_skirt, puffer_crop lub black_crop. Dla innego stroju uzyj osobnego portrait, dwoch anatomical_hand i korpusu w zadanej pozie; nie zastepuj jej staniem.')
+            v, t, count = 300000, 600000, 80
+        elif kind == 'portrait':
+            v,t,count=110000,210000,12
+        elif kind == 'anatomical_hand':
+            a,b=p['direction'],p['palm_normal']
+            if sum(x*x for x in a)<1e-6 or sum(x*x for x in b)<1e-6 or sum((a[(k+1)%3]*b[(k+2)%3]-a[(k+2)%3]*b[(k+1)%3])**2 for k in range(3))<1e-6:
+                raise ValueError('Dlon wymaga kierunku i poprzecznej normalnej.')
+            v,t,count=12000,24000,6
         elif kind == 'ellipsoid':
             v, t = 2562, 5120
         elif kind == 'box':
@@ -304,19 +415,70 @@ def validate_scene(value):
             if p['top'] <= p['bottom'] or p['bulb_radius'] >= p['radius'] / 2:
                 raise ValueError('Lampki wymagaja rosnacej wysokosci i mniejszych zarowek.')
             v, t, count = 1600 + p['bulbs'] * 642, 3200 + p['bulbs'] * 1280, 2
-        elif kind in ('copies', 'radial_copies'):
+        elif kind in ('copies','radial_copies'):
             source = known.get(p['source'])
-            if not source or source[0] in ('oak', 'garland', 'copies', 'radial_copies', 'person', 'reference_character'):
+            if not source or source[0] in ('oak', 'garland', 'copies', 'person','portrait','anatomical_hand','reference_character','radial_copies'):
                 raise ValueError('Kopie wymagaja wczesniejszej podstawowej czesci.')
-            count = len(p['offsets']) if kind == 'copies' else p['count']; v, t = source[1] * count, source[2] * count
+            count = len(p['offsets']) if kind=='copies' else p['count']; v, t = source[1] * count, source[2] * count
         known[name] = (kind, v, t)
         vertices += v; triangles += t; objects += count
-    if vertices > 200000 or triangles > 400000 or objects > 256:
-        raise ValueError('Plan przekracza laczny limit geometrii. Zmniejsz liczbe czesci lub kopii.')
+    heads=sum(p['kind'] in ('person','portrait','reference_character') for p in value['parts'])
+    if heads > 3:
+        raise ValueError('Scena obsluguje maksymalnie 3 szczegolowe postacie. Zbuduj grupe raz; osobne warianty wymagaja kolejnych zlecen, bez duplikowania grupy.')
+    allowance=max(1,heads)
+    vertex_limit=(320000 if heads else 250000)*allowance
+    triangle_limit=(640000 if heads else 500000)*allowance
+    if vertices > vertex_limit or triangles > triangle_limit or objects > 256:
+        raise ValueError('Plan przekracza budzet sceny: do 320000 wierzcholkow i 640000 trojkatow na postac, maksymalnie 3 postacie. Zachowaj twarze i dlonie; uprosc tlo i usun zbedne kopie.')
+    enforce_portrait_floor(value)
     return value
 
 
-def parse_scene(text):
+def human_prompt(prompt):
+    text=''.join(c for c in unicodedata.normalize('NFKD',(prompt or '').lower()) if not unicodedata.combining(c)).replace('ł','l')
+    text=re.split(r'\b(?:dla|for)\b',text,maxsplit=1)[0]
+    return bool(re.search(r'\b(kobiet\w*|dziewczyn\w*|mezczyzn\w*|chlopak\w*|czlowiek\w*|wokalist\w*|raper\w*|modelk\w*|portret\w*|woman|girl|man|human|person|portrait|cardi)\b',text))
+
+
+def enforce_portrait_floor(scene, prompt=None):
+    parts=scene['parts'];people=[p for p in parts if p['kind'] in ('person','reference_character')];heads=[p for p in parts if p['kind']=='portrait'];hands=[p for p in parts if p['kind']=='anatomical_hand']
+    required=human_prompt(prompt) or scene['subject_type'] in ('person','portrait') or bool(people or heads or hands)
+    if not required:return
+    if not people and not heads:raise ValueError('Standard postaci: uzyj person albo portrait i anatomical_hand. Twarz z prostych bryl jest odrzucona.')
+    if not people and scene['subject_type']!='portrait' and (len(hands)!=2*len(heads) or sum(p['side']=='left' for p in hands)!=len(heads)):
+        raise ValueError('Standard postaci: pelna postac wymaga jednej lewej i jednej prawej anatomicznej dloni na kazda twarz.')
+    for p in parts:
+        if p['kind'] in ('person','portrait','anatomical_hand','reference_character'):continue
+        if re.search(r'\b(face|nose|lips?|eyes?|fingers?|twarz|nos|usta|palce)\b',p['name'].lower()):
+            raise ValueError('Standard postaci: rysy twarzy i palce musza byc czescia anatomii, nie dodatkowymi prostymi brylami.')
+
+
+def apply_person_intent(scene, prompt):
+    """Preserve explicit single-subject requirements after the AI plan is validated.
+
+    This does not reconstruct identity. Mixed-person scenes remain planner-owned.
+    A known subject resolves presentation only, never invents facial geometry.
+    """
+    people=[p for p in scene['parts'] if p['kind']=='person']
+    if len(people)!=1 or not prompt:return scene
+    text=''.join(c for c in unicodedata.normalize('NFKD',prompt.lower()) if not unicodedata.combining(c)).replace('ł','l')
+    p=people[0]
+    female=bool(re.search(r'\b(kobiet\w*|kobieca|kobiecej|wokalistk\w*|raperk\w*|dziewczyn\w*|woman|female|feminine)\b',text))
+    male=bool(re.search(r'\b(mezczyzn\w*|meska|meskiej|chlopak\w*|man|male|masculine)\b',text))
+    # Cardi B is an adult woman; the prior generic rapper default contradicted her.
+    known_woman=bool(re.search(r'\bcardi\s*b\b',text))
+    requested='feminine' if (female or known_woman) and not male else 'masculine' if male and not female else None
+    if requested:
+        previous=p['presentation'];p['presentation']=requested
+        if previous!=requested and requested=='feminine' and not re.search(r'\b(krotk\w*|short|buzz|bald|lys\w*)\b',text):
+            p['hair_style']='shoulder_length'
+    if re.search(r'\b(curvy|hourglass|klepsydr\w*|kragl\w*|pelniejsz\w*|szerokie biodra)\b',text):p['body_shape']='curvy'
+    if re.search(r'\b(dopasowan\w*|obcisl\w*|fitted|close-fitting)\b',text):p['clothing_fit']='fitted'
+    elif re.search(r'\b(oversiz\w*|luzn\w*|loose)\b',text):p['clothing_fit']='oversized'
+    return validate_scene(scene)
+
+
+def parse_scene(text, prompt=None):
     if not isinstance(text, str) or not text.strip() or len(text.encode()) > 60000:
         raise ValueError('Oczekiwano kompletnego planu JSON do 60 KB.')
     def unique(pairs):
@@ -326,4 +488,6 @@ def parse_scene(text):
                 raise ValueError('Powtorzone pole JSON: ' + k)
             result[k] = v
         return result
-    return validate_scene(json.loads(text, object_pairs_hook=unique))
+    scene=apply_person_intent(validate_scene(json.loads(text, object_pairs_hook=unique)),prompt)
+    enforce_portrait_floor(scene,prompt)
+    return scene

@@ -1,7 +1,36 @@
 # Froge Oracle connector
 
-This is the text → selected AI → Blender → GLB worker for the private Froge test studio.
+This is the text/photos → selected AI → Blender → GLB worker for the private Froge test studio.
 It is separate from the desktop Blender add-on and the example dragon.
+
+## Photo-guided generation (version 14)
+
+Install the current `froge-oracle-update.zip` using the update instructions in Studio,
+then select the already-configured OpenAI provider. Publishing the Site does not
+install the worker on Oracle. The updater preserves pairing, the API key and history.
+Text-only Qwen and workers older than v14 are explicitly blocked for photo jobs.
+
+The browser accepts 1–4 JPG/PNG/WebP files, each up to 12 MiB, with view labels.
+It normalizes them to JPEG, at most 1600 pixels on the long side and 768 KiB each,
+stripping source metadata through canvas encoding. Selecting files alone does not
+upload them or start an API request. After Generate, the authenticated Site saves
+the normalized bytes in owner-scoped R2 objects and metadata/hashes in D1. Private
+history thumbnails and retries remain available with the job, including after
+disconnecting the worker. Migration 0002 adds a default-empty metadata column.
+
+The worker validates and privately stores those same bytes, then sends them as
+Responses `input_image` data URLs alongside the prompt and view labels. It never
+fetches caller-supplied image URLs or silently routes photos to the local text model.
+AI produces the existing bounded scene JSON; Blender builds its actual geometry.
+This is approximate photo-guided construction, not photogrammetry, a textured scan
+or verified facial likeness. Hidden surfaces are inferred and the supported scene
+operations limit detail. Each generation uses the owner's selected OpenAI API account.
+
+Focused tests cover authenticated image storage/replay, limits, capability gates,
+UI selection and explicit submission, a real local HTTP/SQLite worker, and image
+content through the real Responses transport to a local SSE fixture. They make no
+paid API calls and do not establish the quality of a newly generated photo model.
+Image-input format: [official OpenAI guide](https://developers.openai.com/api/docs/guides/images-vision).
 
 ## Checked scene plans (version 8)
 
@@ -28,9 +57,10 @@ function. Limited replay of a compatible material-only script remains available,
 an incompatible stored geometry script requires a fresh scene plan. Original job files
 and failures are retained.
 
-Install `froge-oracle-wardrobe-v9.zip`, refresh the studio and generate a
-new model. An already configured OpenAI key is preserved. The Site refuses new jobs on older workers rather than launching an obsolete
-code-generation attempt.
+Install `froge-oracle-update.zip` for the latest worker and figure appearance. Existing
+OpenAI credentials are preserved. Validated-scene workers v7–v13 can still generate text jobs
+using their own bundled schema and geometry. The update is recommended, not a
+protocol requirement; v5/v6 remain blocked because of their known script/profile failures.
 
 
 Version 7 accepts valid closed, descending and stepped lathe cross-sections. Radius
