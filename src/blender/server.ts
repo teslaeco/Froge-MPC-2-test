@@ -89,7 +89,7 @@ async function remote(endpoint: string, credential: string, path: string, option
 }
 const photoMetadata = (j: Job): PhotoMetadata[] => JSON.parse(j.reference_photos || '[]')
 const publicJob = (j: Job) => ({ id: j.id, prompt: j.prompt, state: j.state, detail: j.detail, created: j.created, updated: j.updated, hasModel: !!j.artifact,
-  referencePhotos: photoMetadata(j).map((photo, index) => ({ name: photo.name, view: photo.view, ...(photo.subject ? { subject: photo.subject } : {}), url: `/api/blender/jobs/${j.id}/photos/${index}` })) })
+  referencePhotos: photoMetadata(j).map((photo, index) => ({ name: photo.name, view: photo.view, ...(photo.subject ? { subject: photo.subject } : {}), ...(photo.textureMaxSize ? { textureMaxSize: photo.textureMaxSize } : {}), url: `/api/blender/jobs/${j.id}/photos/${index}` })) })
 function photoDataUrl(bytes: ArrayBuffer) {
   const array = new Uint8Array(bytes), chunks: string[] = []
   for (let i = 0; i < array.length; i += 8192) chunks.push(String.fromCharCode(...array.subarray(i, i + 8192)))

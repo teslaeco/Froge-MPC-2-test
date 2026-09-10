@@ -74,6 +74,26 @@ describe('private Blender request lifecycle with real SQLite', () => {
   // Small JPEG framing fixture; these tests verify transport, not visual quality.
   const image = new Uint8Array([255,216,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,2,0,255,217])
   const photo = { name: 'front.jpg', view: 'front', dataUrl: 'data:image/jpeg;base64,' + Buffer.from(image).toString('base64') }
+  it('gates native material profiles and preserves their setting on replay', async () => {
+    await pair()
+    const capabilities = { connectorVersion:20, portraitRevision:2, provider:'openai', photoInput:true,
+      referenceQualityRevision:1, materialQualityRevision:0, sceneReplay:true }
+    const upstream=vi.fn(async (url, _init) => Response.json(String(url).endsWith('/health') ? capabilities : {state:'queued'}))
+    vi.stubGlobal('fetch',upstream)
+    const input={id,prompt:'Model z referencji',photos:[{...photo,textureMaxSize:8192}]}
+    expect((await request('jobs','POST',input)).status).toBe(409)
+    expect(upstream.mock.calls.some(([url])=>String(url).endsWith('/v1/jobs'))).toBe(false)
+    capabilities.materialQualityRevision=2
+    expect((await request('jobs','POST',input)).status).toBe(202)
+    const posted=JSON.parse(upstream.mock.calls.find(([url])=>String(url).endsWith('/v1/jobs'))![1].body)
+    expect(posted.photos[0].textureMaxSize).toBe(8192)
+    const health=await (await request('connection')).json()
+    expect(health.materialQualityRevision).toBe(2)
+    db.prepare("UPDATE blender_jobs SET state='failed' WHERE id=?").run(id)
+    const rebuilt=id.slice(0,-1)+'d'
+    expect((await request('jobs','POST',{id:rebuilt,prompt:input.prompt,sourceJobId:id})).status).toBe(202)
+    expect((await (await request(`jobs/${rebuilt}`)).json()).job.referencePhotos[0].textureMaxSize).toBe(8192)
+  })
   it('keeps measured landmarks on private retries and blocks an incapable worker', async () => {
     await pair()
     const digest = Buffer.from(await crypto.subtle.digest('SHA-256', image)).toString('hex')

@@ -8,7 +8,7 @@ export const PHOTO_VIEWS = { front: 'Przód', three_quarter: 'Trzy czwarte', sid
 export type PhotoView = keyof typeof PHOTO_VIEWS
 export type PhotoInput = { name: string; view: PhotoView; dataUrl: string; subject?: string; textureMaxSize?: TextureMaxSize; faceLandmarks?: FaceMeasurement; faceMeasurementStatus?: string }
 export type PhotoMetadata = { name: string; view: PhotoView; sha256: string; subject?: string; textureMaxSize?: TextureMaxSize; faceLandmarks?: FaceMeasurement }
-export type JobPhoto = { name: string; view: PhotoView; url: string; subject?: string }
+export type JobPhoto = { name: string; view: PhotoView; url: string; subject?: string; textureMaxSize?: TextureMaxSize }
 export const DEFAULT_PHOTO_PROMPT = 'Stwórz przybliżony model 3D głównego obiektu ze zdjęć. Dopasuj widoczne proporcje, kształt i kolory. Pomiń tło i napisy. Zbuduj rzeczywistą geometrię z materiałami i zapisz GLB.'
 
 // Browser-normalized JPEGs only: no remote URLs, SVGs or oversized decoded images.

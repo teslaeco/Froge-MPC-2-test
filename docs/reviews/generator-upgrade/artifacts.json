@@ -1,0 +1,22 @@
+{
+  "model.glb": {
+    "bytes": 39711312,
+    "sha256": "63d9924795454898e60f52fe8bce87c5906e60016f06211c19b0f2f88078b99b"
+  },
+  "model.blend": {
+    "bytes": 62696468,
+    "sha256": "d4bc3d22cc1dea1d4829790031bc2e30e204a363bcbf421596a25b2d1ad8be07"
+  },
+  "face-front.png": {
+    "bytes": 1214807,
+    "sha256": "b3b7fc22f17ad69ce16de28c98e1091b33e43704084142e621fbac7bf6d88bde"
+  },
+  "face-profile.png": {
+    "bytes": 1144072,
+    "sha256": "bd16990a73dd1b17fdce7c1c6b62b1ff4b43dd548fe59df476bd23ff8e64bf1a"
+  },
+  "full-three-quarter.png": {
+    "bytes": 1121839,
+    "sha256": "da10e866648ec89fc9280165979338e3aded13bf6277298b5c64e94d2e10aa92"
+  }
+}

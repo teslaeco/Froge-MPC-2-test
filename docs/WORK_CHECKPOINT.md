@@ -1,3 +1,27 @@
+# Generator upgrade verified — follow-up to 2dd0fb9
+
+Implementation tested: 123 Python tests, 70 focused Vitest tests, successful
+production build. Real 4K-profile generated GLB: 39711312 bytes, SHA256
+63d9924795454898e60f52fe8bce87c5906e60016f06211c19b0f2f88078b99b.
+304329 pre-export vertices, 592136 triangles, 100 meshes, 14 images.
+Actual GLB face/front/profile/full renders inspected; the first ear-cap
+regression was corrected and generation repeated. Native 8K + 3x4K
+PBR export/reimport passed exact color/normal bytes and ORM pixel checks.
+Details: docs/reviews/generator-upgrade/README.md. Capability is
+referenceQualityRevision=1 + materialQualityRevision=2. History now exposes
+textureMaxSize; replay test caught and fixed that omission.
+Rebuilt v20 installer with current source and rollback checks. It is still a
+package, not an installed Oracle worker. No paid AI calls or Site deployment;
+Site 38 remains live. Draft PR remains open because likeness is not accepted.
+Reproducible large download/face-fit assets are generated during build, not
+committed. Keep test fixtures and runtime source tracked. Standalone model
+and installer deliverables are saved separately; see handoff below/next commit.
+A reconstructed checkout had unrelated whitespace differences from PR;
+restored those files from the PR after keeping scratch backups. No unrelated
+commerce/game changes are part of this generator follow-up.
+
+---
+
 # Generator fidelity implementation in progress
 
 Current authorized PR: #8, codex/reference-fidelity-4k-8k. Base before this work:

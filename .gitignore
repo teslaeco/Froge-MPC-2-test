@@ -67,3 +67,11 @@ __pycache__/
 
 /public/downloads/froge-v19.py
 /public/downloads/froge-v19.zip
+
+# Reproducible v20 downloads and pinned browser face detector
+/public/downloads/froge-v20.py
+/public/downloads/froge-v20.zip
+/public/face-fit/*.js
+/public/face-fit/*.wasm
+/public/face-fit/*.task
+/.sites-runtime/

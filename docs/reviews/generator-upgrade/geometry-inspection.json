@@ -1,0 +1,21 @@
+{
+  "totals": {
+    "vertices": 351360,
+    "faces": 592136,
+    "triangles": 592136,
+    "boundary_edges": 76618,
+    "wire_edges": 0,
+    "edges_with_more_than_two_faces": 0,
+    "nonfinite_vertices": 0
+  },
+  "validation": {
+    "status": "passed",
+    "failures": [],
+    "require_textures": false,
+    "min_base_color_edge": null,
+    "likeness_verified": false
+  },
+  "glb_vertices_after_attribute_splits": 351360,
+  "rigid_eye_max_radius_error": 1.3113021850585938e-06,
+  "rigid_eye_verified_count": 2
+}

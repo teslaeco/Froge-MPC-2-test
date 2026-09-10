@@ -389,8 +389,8 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
                 # Find the actual lower scalp border instead of starting on
                 # a fixed latitude above it. Ends stay embedded at the roots.
                 roots[phase]=1.25
-                for k in range(81):
-                    polar=1.95-1.35*k/80
+                for k in range(101):
+                    polar=2.35-1.75*k/100
                     direction=Vector((math.sin(phase)*math.sin(polar),-math.cos(phase)*math.sin(polar),math.cos(polar)))
                     hit,_,_,_=surface.ray_cast(origin,direction)
                     if hit is not None:

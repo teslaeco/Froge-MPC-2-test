@@ -188,7 +188,13 @@ def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
             # here exposed an unintended undercut beneath the swept volume.
             nape=.035*(1-front)**3
             temple=.012*math.exp(-((abs(v.x)-.069)/.020)**2-((v.y+.049)/.024)**2)
-            return 1.690+.059*front-.033*min(1,(abs(v.x)/.082)**2)*front+side_part-opposite_sweep-centre_point+root_variation-nape-temple
+            boundary=1.690+.059*front-.033*min(1,(abs(v.x)/.082)**2)*front+side_part-opposite_sweep-centre_point+root_variation-nape-temple
+            # The scalp includes the ear topology: carve a smooth arch over
+            # the pinna instead of letting the longer cap paint its rim black.
+            ear=(v.y+.047)/.032
+            if abs(v.x)>.068 and abs(ear)<1:
+                boundary=max(boundary,1.652+.047*math.sqrt(1-ear*ear))
+            return boundary
         return 1.713+.036*max(0,min(1,(-v.y-.015)/.11))
     if p['headwear']=='none':
         vertices=[];faces=[]

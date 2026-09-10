@@ -65,7 +65,7 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(service.call_args.args[0][-2:], ['start', 'froge-worker.service'])
 
     def test_update_preserves_pairing_and_keeps_backup(self):
-        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'connectorVersion': apply_update.EXPECTED_VERSION, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1}).encode())):
+        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'connectorVersion': apply_update.EXPECTED_VERSION, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1, 'materialQualityRevision': 2}).encode())):
             apply_update.update(self.source, self.target)
         self.assertEqual(self.config.read_bytes(), self.original_config)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 2\n')

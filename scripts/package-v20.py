@@ -50,7 +50,13 @@ FROGE_V20_OK oznacza udaną instalację i test struktury, nie zgodność twarzy 
 Jakość referencji: limity 2048/4096/8192 px, proporcje bez rozciągania, brak
 sztucznego powiększania, raport rzeczywistych wymiarów. Ta sama kompozycja
 po ponownym zapisie zachowuje mapowanie kreacji; inne kadry go nie dziedziczą.
-Źródła 4K/8K wymagają aktualnej strony i pracownika referenceQualityRevision=1.
+Źródła 4K/8K wymagają aktualnej strony i pracownika referenceQualityRevision=1
+oraz materialQualityRevision=2. Mapy detali włosów, skóry i kryształów są
+liczone proceduralnie do 4K. Źródłowe zdjęcie pozostaje w swojej rozdzielczości.
+Profil 8K używa 8 GiB RAM dla Blendera i wymaga 10 GiB dostępnej pamięci
+przed AI; zwykłe zlecenia zachowują limit 4 GiB. Pełne materiały mają osobny
+budżet od zdjęć wejściowych. Nie obniżamy jakości po cichu. GLB 4K/8K nie
+kwantyzuje pozycji. Włosy pokrywają kark, a dopasowanie twarzy nie deformuje oczu.
 
 Zmiany: osobna dopasowana suknia (bez bluzy), rzeczywista grubość, cienkie
 zdobienia na powierzchni, wachlarz z powtarzanymi wirnikami, spięte włosy,

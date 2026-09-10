@@ -5,7 +5,8 @@ import unittest
 from pathlib import Path
 import numpy as np
 import photo_input
-from runtime.reference_quality import fit_dimensions, texture_limit
+from runtime.reference_quality import fit_dimensions, texture_limit, material_budget, export_textures, GIB
+from unittest.mock import patch, Mock
 from runtime.reference_match import compare, SIGNATURE
 
 
@@ -14,6 +15,25 @@ def jpeg(width, height):
 
 
 class ReferenceQualityTests(unittest.TestCase):
+    def test_complete_8k_pbr_set_uses_material_budget_not_photo_budget(self):
+        sizes=[((8192,8192),(8192,8192))]+[((4096,4096),(4096,4096))]*3
+        report=material_budget(sizes,8*GIB)
+        self.assertEqual(report['export_pixels'],117440512)
+        self.assertLess(report['estimated_peak_bytes'],8*GIB)
+        with self.assertRaisesRegex(ValueError,'budzecie'):material_budget(sizes,4*GIB)
+        with self.assertRaises(ValueError):material_budget(sizes*2,8*GIB)
+
+    def test_low_memory_rejection_does_not_mutate_any_image(self):
+        images=[]
+        for size in [(8192,8192)]+[(4096,4096)]*3:
+            image=Mock(size=size);image.get.return_value=False;images.append(image)
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp);(folder/'reference-photos.json').write_text('[{"textureMaxSize":8192}]')
+            with patch('runtime.reference_quality.export_memory_bytes',return_value=4*GIB),self.assertRaises(ValueError):
+                export_textures(images,folder)
+        for image in images:
+            image.scale.assert_not_called();image.pack.assert_not_called()
+
     def test_aspect_ratio_and_no_invented_pixels(self):
         self.assertEqual(fit_dimensions(8192,4096,4096),(4096,2048))
         self.assertEqual(fit_dimensions(1122,1402,8192),(1122,1402))

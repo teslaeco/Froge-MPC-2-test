@@ -11,7 +11,7 @@ import uuid
 import zipfile
 
 HOST = 'opc@141.148.242.30'
-PAYLOAD_HASH = '5f3168a03c7c760187107e503f8289facd1832861a63a93ab3a51318fea8a379'
+PAYLOAD_HASH = '4688a48948944ce652f7fd96069b61050987e0778987e14e8aad474cf877d269'
 MAX_BYTES = 32 * 1024 * 1024
 
 
@@ -114,3 +114,4 @@ if __name__ == '__main__':
     except (OSError, RuntimeError) as error:
         print('FROGE_REPAIR_ERROR: ' + str(error), file=sys.stderr)
         raise SystemExit(1)
+

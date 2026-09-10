@@ -1,3 +1,5 @@
+Aktualizacja wykonawcza: [zakres i polecenie](CODEX_GENERATOR_UPGRADE.md), [wyniki i pozostałe różnice](reviews/generator-upgrade/README.md). Opis budżetu 80 Mi poniżej dotyczy wcześniejszej wersji; obecny eksport materiałów ma osobny limit 192 Mi oraz kontrolę RAM. Limit zdjęć wejściowych pozostaje 80 Mi.
+
 # Polecenie dla Codexa — FORGE MCP: wierna rekonstrukcja i tekstury 4K/8K
 
 Kontynuuj istniejący Froge-MPC-2-test, przeczytaj AGENTS.md oraz docs/WORK_CHECKPOINT.md. Nie zastępuj nowszego generatora starszym PR. Wykonaj realne zmiany kodu i sprawdź je w Blenderze, następnie otwórz PR do main.
