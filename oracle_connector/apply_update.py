@@ -12,8 +12,11 @@ from runtime_check import RuntimeUnavailable, setup_runtime
 
 ASSETS = ('anatomy.json.gz', 'male-skin.png', 'female-skin.png','cotton-jersey-albedo.png','indigo-denim-albedo.png', 'LICENSE.CC0.md', 'SOURCES.md', 'manifest.json')
 FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'photo_input.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py', 'runtime/wardrobe.py', 'runtime/textiles.py') + tuple('runtime/assets/'+name for name in ASSETS)
-FILES += tuple('runtime/'+name for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py'))
-EXPECTED_VERSION = 19
+FILES += ('visual_review.py',)
+FILES += ('runtime/reference_surfaces.py','runtime/reference_quality.py','runtime/reference_match.py','runtime/assets/emerald-reference-signature.json')
+FILES += ('face_measurement.py','runtime/photo_face.py','runtime/photo_face_color.py','runtime/assets/face-template-feminine.json')
+FILES += tuple('runtime/'+name for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_orbits.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py','review_views.py'))
+EXPECTED_VERSION = 20
 EXPECTED_RENDERER_REVISION = 3
 
 
@@ -69,9 +72,9 @@ def update(source, target, verify=None):
             try:
                 with urllib.request.urlopen(request, timeout=2) as response:
                     health = json.loads(response.read(10000))
-                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 1 and health.get('characterStandard') == 19 and health.get('coutureRevision') == 1:
+                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1:
                         print('FROGE_UPDATE_OK')
-                        print('Odswiez Froge. v19: dopasowana suknia, wachlarz z wirnikami, portret i kontrola eksportu. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Odswiez Froge. v20: dopasowanie sukni, kolor i makijaz w eksporcie oraz ocena renderow przez Astre. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass

@@ -127,6 +127,8 @@ SCHEMA = record({
 })
 
 PROMPT = '''Design the user's requested 3D asset as a compact Froge scene JSON, version 1.
+Material rgb values are display/sRGB colors; keep the reference palette. Colored
+cloth and crystal panels must not be replaced by silver metal. Metals are trim.
 COUTURE REFERENCE: for a standing adult woman in a fitted floor-length crystalline
 gown, use reference_character: continuous bodice/skirt, conformal thin inlays,
 collar, sleeves, legs, anatomical portrait/hands, updo and optional mechanical
@@ -138,7 +140,9 @@ Choose seven face proportions and head_rotation from the image, soft_glam makeup
 when visible. This is a parameterised anatomical face, not identity recovery.
 dress_material pattern satin; crystal_material pattern crystal; skin nonmetallic.
 The fan has actual panels and small rotors on the rim. Set enabled false unless
-requested/visible. observed_features describes visible evidence;
+requested/visible. Count the visible panels and rotors; do not invent extras.
+Estimate its radius relative to the face and torso rather than oversizing it.
+observed_features describes visible evidence;
 reconstructed_features identifies the unseen back, legs, feet and lower hem.
 This operation only supports this gown and standing pose; use person or portrait
 + anatomical_hand and custom garments for other outfits and poses.

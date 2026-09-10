@@ -5,7 +5,7 @@ from unittest.mock import patch
 from runtime.scene_contract import parse_scene
 
 ROOT=Path(__file__).resolve().parents[1]
-installer=SimpleNamespace(**runpy.run_path(str(ROOT/'public/downloads/froge-v19.py')))
+installer=SimpleNamespace(**runpy.run_path(str(ROOT/'public/downloads/froge-v20.py')))
 
 
 class PortraitInstallerTests(unittest.TestCase):
@@ -16,7 +16,7 @@ class PortraitInstallerTests(unittest.TestCase):
         self.assertEqual(sum(p['kind']=='reference_character' for p in scene['parts']),1)
         self.assertEqual(set(data['files']),set(data['staged_files']))
         self.assertIn('runtime/assets/anatomy.json.gz',data['files'])
-        self.assertIn("health.get('connectorVersion') != 19",(ROOT/'public/downloads/froge-v19.py').read_text())
+        self.assertIn("health.get('connectorVersion') != 20",(ROOT/'public/downloads/froge-v20.py').read_text())
         self.assertIn('runtime/portrait_hands.py',data['staged_files'])
 
     def test_unknown_installation_is_untouched(self):

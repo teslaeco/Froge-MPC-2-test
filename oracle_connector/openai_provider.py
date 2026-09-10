@@ -37,8 +37,9 @@ def verify_key(value):
 
 
 def generate(messages, api_key, cancelled, progress, timeout, validate_chunk, usage_callback, schema=None):
+    has_images=any(isinstance(m.get('content'),list) and any(isinstance(item,dict) and item.get('type')=='input_image' for item in m['content']) for m in messages)
     payload = {'model': MODEL, 'input': messages, 'stream': True, 'store': False,
-               'reasoning': {'effort': 'low'}, 'max_output_tokens': 9000}
+               'reasoning': {'effort': 'high' if has_images else 'low'}, 'max_output_tokens': 9000}
     if schema is not None:
         payload['text'] = {'format': {'type': 'json_schema', 'name': 'froge_scene',
                                       'strict': True, 'schema': schema}}

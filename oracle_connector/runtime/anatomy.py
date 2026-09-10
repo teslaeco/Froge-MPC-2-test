@@ -143,14 +143,15 @@ def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
     # Thin eyebrow ribbons follow the actual brow surface; no floating tubes.
     surface=BVHTree.FromPolygons([v.co for v in obj.data.vertices],[p.vertices[:] for p in obj.data.polygons])
     rng=np.random.default_rng(1107)
+    from portrait_shape import brow_height
     for side in (-1,1):
         vertices=[];faces=[]
         eye_z=landmark(('l' if side==1 else 'r')+'-eye',presentation).z
         for i in range(150):
             t=(i+rng.random())/150
             x=side*(.012+.043*t)
-            z=eye_z+.020+.005*math.sin(t*math.pi)-.004*t
-            z+=rng.uniform(-1,1)*.0017*math.sin(math.pi*t)**.45
+            z=brow_height(t,eye_z,p.get('makeup')=='soft_glam')
+            z+=rng.uniform(-1,1)*(.0030 if p.get('makeup')=='soft_glam' else .0017)*math.sin(math.pi*t)**.32*(1-.5*t)
             length=rng.uniform(.0018,.0035)*(1-.35*t)
             dx=side*length*(.20+.7*t);dz=length*(.85-.7*t)
             width=rng.uniform(.00010,.00022)*(1-.45*t)
@@ -172,12 +173,24 @@ def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
     # Hair and hats both follow the actual cranium, preserving the forehead.
     skull=obj.data;selected=[]
     def hairline(v):
+        if p.get('hair_style')=='swept_updo':
+            front=max(0,min(1,(-v.y-.015)/.11))
+            # Couture reference has a side part and a soft central point, not a
+            # symmetric helmet rim. Keep the bounded scalp coverage while
+            # exposing one temple more strongly for the swept direction.
+            side_part=.004*math.exp(-((v.x+.034)/.018)**2)*front
+            opposite_sweep=.004*math.exp(-((v.x-.041)/.024)**2)*front
+            centre_point=.0015*math.exp(-((v.x-.006)/.020)**2)
+            # Sub-millimetre asymmetric root variation softens the perfect
+            # moulded edge without cutting teeth or isolated scalp islands.
+            root_variation=front*(.00045*math.sin(v.x*270+.4)+.00025*math.sin(v.x*470+1.7))
+            return 1.690+.059*front-.033*min(1,(abs(v.x)/.082)**2)*front+side_part-opposite_sweep-centre_point+root_variation
         return 1.713+.036*max(0,min(1,(-v.y-.015)/.11))
     if p['headwear']=='none':
         vertices=[];faces=[]
         # Clip every intersected polygon at the hairline, avoiding a sawtooth rim.
         for face in skull.polygons:
-            if abs(face.center.x)>.081 and face.center.z<1.752:continue
+            if abs(face.center.x)>.081 and face.center.z<(1.685 if p.get('hair_style')=='swept_updo' else 1.752):continue
             contour=[skull.vertices[i].co.copy() for i in face.vertices]
             clipped=[]
             for a,b in zip(contour,contour[1:]+contour[:1]):

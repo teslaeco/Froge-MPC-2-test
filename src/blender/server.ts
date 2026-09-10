@@ -1,12 +1,15 @@
 import type { CommerceEnv } from '../commerce/server'
+import { siteOwner, type SiteIdentityEnv } from '../auth/site-owner'
+import { supportsGeneration, supportsPhotoGeneration, supportsPortraitQuality, requiresPortraitQuality, PORTRAIT_UPDATE_REASON, supportsCoutureQuality, requiresCoutureQuality, COUTURE_UPDATE_REASON } from './compatibility'
+import { decodePhotoInputs, MAX_PHOTO_REQUEST_BYTES, MAX_REFERENCE_BYTES, type PhotoMetadata } from './photoReferences'
 
-export type BlenderEnv = CommerceEnv & { BLENDER_SETTINGS_KEY?: string }
+export type BlenderEnv = CommerceEnv & SiteIdentityEnv & { BLENDER_SETTINGS_KEY?: string }
 type Connection = { owner: string; endpoint: string; credential: string }
-type Job = { id: string; owner: string; endpoint: string; prompt: string; state: string; detail: string; artifact: string | null; created: string; updated: string }
+type Job = { id: string; owner: string; endpoint: string; prompt: string; state: string; detail: string; artifact: string | null; created: string; updated: string; reference_photos?: string }
 class ApiError extends Error { readonly status: number; constructor(message: string, status = 400) { super(message); this.status = status } }
 const reply = (data: unknown, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'private, no-store' } })
 const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
-const maxGlb = 12 * 1024 * 1024
+const maxGlb = 48 * 1024 * 1024
 
 export function validateEndpoint(value: unknown): string {
   if (typeof value !== 'string') throw new ApiError('Wklej adres HTTPS serwera z instalatora.')
@@ -18,26 +21,34 @@ export function validateEndpoint(value: unknown): string {
     throw new ApiError('Użyj adresu https://…trycloudflare.com wyświetlonego przez instalator.')
   return url.origin
 }
-async function boundedBody(body: ReadableStream<Uint8Array> | null, limit: number): Promise<ArrayBuffer> {
+async function boundedBody(body: ReadableStream<Uint8Array> | null, limit: number, expected?: number): Promise<ArrayBuffer> {
   if (!body) return new ArrayBuffer(0)
   const reader = body.getReader(), chunks: Uint8Array[] = []
+  const exact = expected && Number.isSafeInteger(expected) && expected <= limit ? new Uint8Array(expected) : null
   let size = 0
   for (;;) {
     const { value, done } = await reader.read()
     if (done) break
     size += value.byteLength
     if (size > limit) { await reader.cancel(); throw new ApiError('Przekroczony limit rozmiaru danych.', 413) }
-    chunks.push(value)
+    if (exact) {
+      if (size > exact.length) { await reader.cancel(); throw new ApiError('Rozmiar pobranego pliku nie zgadza się z nagłówkiem.', 422) }
+      exact.set(value, size - value.length)
+    } else chunks.push(value)
+  }
+  if (exact) {
+    if (size !== exact.length) throw new ApiError('Pobieranie modelu zostało przerwane. Spróbuj ponownie.', 502)
+    return exact.buffer
   }
   const bytes = new Uint8Array(size)
   let at = 0
   for (const chunk of chunks) { bytes.set(chunk, at); at += chunk.length }
   return bytes.buffer
 }
-async function jsonInput(request: Request): Promise<Record<string, unknown>> {
+async function jsonInput(request: Request, limit = 32000): Promise<Record<string, unknown>> {
   if (!request.headers.get('content-type')?.startsWith('application/json')) throw new ApiError('Wymagany format JSON.', 415)
-  if (Number(request.headers.get('content-length')) > 24000) throw new ApiError('Opis jest za długi.', 413)
-  const value = JSON.parse(new TextDecoder().decode(await boundedBody(request.body, 24000)))
+  if (Number(request.headers.get('content-length')) > limit) throw new ApiError('Przekroczony limit rozmiaru zlecenia.', 413)
+  const value = JSON.parse(new TextDecoder().decode(await boundedBody(request.body, limit)))
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new ApiError('Wymagany obiekt JSON.')
   return value
 }
@@ -76,24 +87,44 @@ async function remote(endpoint: string, credential: string, path: string, option
   }
   return response
 }
-const publicJob = (j: Job) => ({ id: j.id, prompt: j.prompt, state: j.state, detail: j.detail, created: j.created, updated: j.updated, hasModel: !!j.artifact })
+const photoMetadata = (j: Job): PhotoMetadata[] => JSON.parse(j.reference_photos || '[]')
+const publicJob = (j: Job) => ({ id: j.id, prompt: j.prompt, state: j.state, detail: j.detail, created: j.created, updated: j.updated, hasModel: !!j.artifact,
+  referencePhotos: photoMetadata(j).map((photo, index) => ({ name: photo.name, view: photo.view, ...(photo.subject ? { subject: photo.subject } : {}), url: `/api/blender/jobs/${j.id}/photos/${index}` })) })
+function photoDataUrl(bytes: ArrayBuffer) {
+  const array = new Uint8Array(bytes), chunks: string[] = []
+  for (let i = 0; i < array.length; i += 8192) chunks.push(String.fromCharCode(...array.subarray(i, i + 8192)))
+  return 'data:image/jpeg;base64,' + btoa(chunks.join(''))
+}
 
 export async function blenderApi(request: Request, env: BlenderEnv): Promise<Response> {
-  const url = new URL(request.url), owner = request.headers.get('oai-authenticated-user-id')
+  const url = new URL(request.url), owner = siteOwner(request, env)
   if (!owner) return reply({ error: 'Zaloguj się, aby korzystać ze swojego Blendera.' }, 401)
   if (request.method !== 'GET' && request.headers.get('origin') !== url.origin) return reply({ error: 'Niedozwolone źródło żądania.' }, 403)
   const db = env.DB
   if (!db) return reply({ error: 'Przechowywanie zleceń jest chwilowo niedostępne.' }, 503)
   try {
+    const photoMatch = url.pathname.match(/^\/api\/blender\/jobs\/([a-f0-9-]{36})\/photos\/([0-3])$/)
+    if (photoMatch && request.method === 'GET' && uuid.test(photoMatch[1])) {
+      const job = await db.prepare('SELECT * FROM blender_jobs WHERE id=? AND owner=?').bind(photoMatch[1], owner).first<Job>()
+      const index = Number(photoMatch[2])
+      if (!job || !photoMetadata(job)[index] || !env.BUCKET) throw new ApiError('Nie znaleziono zdjęcia.', 404)
+      const object = await env.BUCKET.get(`${owner}/${job.id}/reference-${index}.jpg`)
+      if (!object) throw new ApiError('Nie znaleziono zdjęcia.', 404)
+      return new Response(object.body, { headers: { 'Content-Type': 'image/jpeg', 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Disposition': `inline; filename="reference-${index + 1}.jpg"` } })
+    }
     const connection = await db.prepare('SELECT owner,endpoint,credential FROM blender_connections WHERE owner=?').bind(owner).first<Connection>()
     const token = connection ? await unseal(connection.credential, owner, env) : ''
     if (url.pathname === '/api/blender/connection') {
       if (request.method === 'GET') {
         if (!connection) return reply({ connected: false, ready: false, detail: 'Połącz swój serwer, aby generować modele z opisu.' })
         try {
-          const state = await (await remote(connection.endpoint, token, '/v1/health')).json() as { ready: boolean; model: string; detail: string; provider?: string; connectorVersion?: number }
+          const state = await (await remote(connection.endpoint, token, '/v1/health')).json() as { ready: boolean; model: string; detail: string; provider?: string; connectorVersion?: number; photoInput?: boolean; sceneReplay?: boolean; rendererRevision?: number; portraitRevision?: number; characterStandard?: number; coutureRevision?: number; promptMaxLength?: number; referenceQualityRevision?: number }
+          // Operational capability diagnostics only: no identity, address, prompt,
+          // model-supplied detail, photo, pairing token or API key enters logs.
+          console.info('FROGE_ORACLE_HEALTH', JSON.stringify({ connectorVersion: Number.isInteger(state.connectorVersion) ? state.connectorVersion : 1,
+            provider: state.provider === 'openai' ? 'openai' : 'ollama', ready: state.ready === true, photoInput: supportsPhotoGeneration(state), rendererRevision: Number.isInteger(state.rendererRevision) ? state.rendererRevision : 1, portraitRevision: Number.isInteger(state.portraitRevision) ? state.portraitRevision : 0, characterStandard: Number.isInteger(state.characterStandard) ? state.characterStandard : 0, coutureRevision: Number.isInteger(state.coutureRevision) ? state.coutureRevision : 0, promptMaxLength: state.promptMaxLength === 5000 ? 5000 : 2000, sceneReplay: state.sceneReplay === true }))
           return reply({ connected: true, ready: state.ready === true, model: state.model, endpoint: connection.endpoint, detail: state.detail,
-            provider: state.provider === 'openai' ? 'openai' : 'ollama', connectorVersion: state.connectorVersion || 1 })
+            provider: state.provider === 'openai' ? 'openai' : 'ollama', connectorVersion: state.connectorVersion || 1, photoInput: supportsPhotoGeneration(state), portraitRevision: Number.isInteger(state.portraitRevision) ? state.portraitRevision : 0, characterStandard: Number.isInteger(state.characterStandard) ? state.characterStandard : 0, coutureRevision: Number.isInteger(state.coutureRevision) ? state.coutureRevision : 0, promptMaxLength: state.promptMaxLength === 5000 ? 5000 : 2000, sceneReplay: state.sceneReplay === true, referenceQualityRevision: state.referenceQualityRevision === 1 ? 1 : 0, rendererRevision: Number.isInteger(state.rendererRevision) ? state.rendererRevision : 1 })
         } catch { return reply({ connected: true, ready: false, endpoint: connection.endpoint, detail: 'Brak łączności z serwerem. Jeśli tunel został uruchomiony ponownie, wpisz nowy adres i kod połączenia.' }) }
       }
       if (request.method === 'POST') {
@@ -133,28 +164,60 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       }
       if (request.method !== 'POST') throw new ApiError('Niedozwolona metoda.', 405)
       if (!connection) throw new ApiError('Najpierw połącz serwer Blendera.', 409)
-      const input = await jsonInput(request)
+      const input = await jsonInput(request, MAX_PHOTO_REQUEST_BYTES)
       if (typeof input.id !== 'string' || !uuid.test(input.id) || typeof input.prompt !== 'string' || !input.prompt.trim() || input.prompt.length > 5000) throw new ApiError('Wpisz opis od 1 do 5000 znaków.')
+      if (input.referenceJobId !== undefined && (typeof input.referenceJobId !== 'string' || !uuid.test(input.referenceJobId) || input.referenceJobId === input.id || input.photos !== undefined || input.sourceJobId !== undefined)) throw new ApiError('Nieprawidłowe źródło zdjęć.')
+      if (input.sourceJobId !== undefined && input.photos !== undefined) throw new ApiError('Do wykonania zapisanego skryptu nie można dodawać nowych zdjęć.')
+      let replaySource: Job | null = null
       if (input.sourceJobId !== undefined) {
         if (typeof input.sourceJobId !== 'string' || !uuid.test(input.sourceJobId) || input.sourceJobId === input.id) throw new ApiError('Nieprawidłowe zlecenie źródłowe.')
-        const source = await db.prepare('SELECT * FROM blender_jobs WHERE id=? AND owner=?').bind(input.sourceJobId, owner).first<Job>()
-        if (!source || source.state !== 'failed' || source.endpoint !== connection.endpoint || source.prompt !== input.prompt.trim()) throw new ApiError('Nie znaleziono pasującego nieudanego zlecenia.', 409)
-        const state = await (await remote(connection.endpoint, token, '/v1/health')).json() as { connectorVersion?: number }
+        replaySource = await db.prepare('SELECT * FROM blender_jobs WHERE id=? AND owner=?').bind(input.sourceJobId, owner).first<Job>()
+        if (!replaySource || replaySource.state !== 'failed' || replaySource.endpoint !== connection.endpoint || replaySource.prompt !== input.prompt.trim()) throw new ApiError('Nie znaleziono pasującego nieudanego zlecenia.', 409)
+        const state = await (await remote(connection.endpoint, token, '/v1/health')).json() as { connectorVersion?: number; sceneReplay?: boolean }
         if ((state.connectorVersion || 1) < 5) throw new ApiError('Najpierw zainstaluj aktualizację froge-oracle-rebuild.zip na Oracle.', 409)
+        if ((photoMetadata(replaySource).length || replaySource.detail.includes('Use at most 8 materials and 8 images')) && state.sceneReplay !== true) throw new ApiError('Najpierw uruchom poprawkę froge-napraw-tekstury.py na Oracle, potem sprawdź połączenie.', 409)
       }
+      let photoInput = input.photos
+      if (input.referenceJobId || (replaySource && photoMetadata(replaySource).length)) {
+        const source = replaySource || await db.prepare('SELECT * FROM blender_jobs WHERE id=? AND owner=?').bind(input.referenceJobId, owner).first<Job>()
+        if (!source || !photoMetadata(source).length || !env.BUCKET) throw new ApiError('Nie znaleziono zdjęć źródłowego zlecenia. Dodaj je ponownie.', 409)
+        const entries = []
+        for (const [index, photo] of photoMetadata(source).entries()) {
+          const object = await env.BUCKET.get(`${owner}/${source.id}/reference-${index}.jpg`)
+          if (!object) throw new ApiError('Brakuje zdjęcia źródłowego. Dodaj je ponownie.', 409)
+          entries.push({ ...(photo.textureMaxSize ? { textureMaxSize: photo.textureMaxSize } : {}), name: photo.name, view: photo.view, ...(photo.subject ? { subject: photo.subject } : {}), ...(photo.faceLandmarks ? { faceLandmarks: photo.faceLandmarks } : {}), dataUrl: photoDataUrl(await boundedBody(object.body, MAX_REFERENCE_BYTES)) })
+        }
+        photoInput = entries
+      }
+      let photos: Awaited<ReturnType<typeof decodePhotoInputs>>
+      try { photos = await decodePhotoInputs(photoInput) } catch (error) { throw new ApiError((error as Error).message, 422) }
+      const references = JSON.stringify(photos.map(photo => photo.metadata))
       const existing = await db.prepare('SELECT * FROM blender_jobs WHERE id=? AND owner=?').bind(input.id, owner).first<Job>()
       if (existing) {
-        if (existing.prompt !== input.prompt.trim()) throw new ApiError('Identyfikator dotyczy innego opisu.', 409)
+        if (existing.prompt !== input.prompt.trim() || (existing.reference_photos || '[]') !== references) throw new ApiError('Identyfikator dotyczy innego opisu lub innych zdjęć.', 409)
         return reply({ job: publicJob(existing) })
       }
-      const capabilities = await (await remote(connection.endpoint, token, '/v1/health')).json() as { connectorVersion?: number }
-      if ((capabilities.connectorVersion || 1) < 10) throw new ApiError('Zainstaluj aktualizację froge-oracle-portrait-v10.zip na Oracle. Nowe modele wymagają poprawionej geometrii.', 409)
+      const capabilities = await (await remote(connection.endpoint, token, '/v1/health')).json() as { connectorVersion?: number; photoInput?: boolean; provider?: string; portraitRevision?: number; characterStandard?: number; coutureRevision?: number; promptMaxLength?: number; faceFitRevision?: number; referenceQualityRevision?: number }
+      if (photos.some(p => p.input.textureMaxSize) && capabilities.referenceQualityRevision !== 1) throw new ApiError('Referencje 4K/8K wymagają aktualizacji generatora z obsługą jakości referencji. Zlecenie nie zostało wysłane do AI.', 409)
+      if (photos.some(p => p.input.faceLandmarks) && capabilities.faceFitRevision !== 1) throw new ApiError('Dopasowanie twarzy ze zdjęcia wymaga aktualizacji Oracle z modułem pomiarów twarzy.', 409)
+      if (!supportsGeneration(capabilities.connectorVersion)) throw new ApiError('Zainstaluj aktualizację froge-oracle-update.zip (v14) na Oracle. Ta wersja serwera nie obsługuje obecnego generatora.', 409)
+      if (photos.length && !input.sourceJobId && !supportsPhotoGeneration(capabilities)) throw new ApiError('Zdjęcia wymagają aktualizacji generatora na Oracle do wersji 14 i wybranego OpenAI API. Zdjęcia nie zostały wysłane do AI.', 409)
+      if (requiresPortraitQuality(input.prompt, photos.length) && !supportsPortraitQuality(capabilities)) throw new ApiError(PORTRAIT_UPDATE_REASON, 409)
+      if (requiresCoutureQuality(input.prompt) && !supportsCoutureQuality(capabilities)) throw new ApiError(COUTURE_UPDATE_REASON, 409)
+      if (input.prompt.length > 2000 && capabilities.promptMaxLength !== 5000) throw new ApiError('Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v19.', 409)
+      if (photos.length && !env.BUCKET) throw new ApiError('Przechowywanie zdjęć jest chwilowo niedostępne.', 503)
       const now = new Date().toISOString()
-      const created = await db.prepare('INSERT INTO blender_jobs (id,owner,endpoint,prompt,state,detail,created,updated) VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(input.id, owner, connection.endpoint, input.prompt.trim(), 'submitting', 'Wysyłanie opisu do serwera…', now, now).run()
+      const created = await db.prepare('INSERT INTO blender_jobs (id,owner,endpoint,prompt,state,detail,created,updated,reference_photos) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO NOTHING').bind(input.id, owner, connection.endpoint, input.prompt.trim(), 'submitting', photos.length ? 'Zapisuję zdjęcia i opis…' : 'Wysyłanie opisu do serwera…', now, now, references).run()
       if (created.meta.changes !== 1) throw new ApiError('Identyfikator zlecenia jest już zajęty.', 409)
       try {
-        await remote(connection.endpoint, token, '/v1/jobs', { method: 'POST', body: JSON.stringify({ id: input.id, prompt: input.prompt.trim(), ...(input.sourceJobId ? { sourceJobId: input.sourceJobId } : {}) }) })
-        await db.prepare('UPDATE blender_jobs SET state=?,detail=? WHERE id=? AND owner=? AND state=?').bind('queued', input.sourceJobId ? 'Wykonuję zapisany skrypt bez nowego zapytania do AI…' : 'Opis przyjęty. Oczekiwanie na AI…', input.id, owner, 'submitting').run()
+        for (const [index, photo] of photos.entries()) await env.BUCKET!.put(`${owner}/${input.id}/reference-${index}.jpg`, photo.bytes, { httpMetadata: { contentType: 'image/jpeg' } })
+      } catch {
+        await db.prepare('UPDATE blender_jobs SET state=?,detail=? WHERE id=? AND owner=?').bind('failed', 'Nie udało się zapisać wszystkich zdjęć. Dodaj je ponownie.', input.id, owner).run()
+        throw new ApiError('Nie udało się zapisać zdjęć. Zlecenie nie zostało wysłane do AI; zachowaj formularz i spróbuj ponownie.', 503)
+      }
+      try {
+        await remote(connection.endpoint, token, '/v1/jobs', { method: 'POST', body: JSON.stringify({ id: input.id, prompt: input.prompt.trim(), ...(input.sourceJobId ? { sourceJobId: input.sourceJobId } : {}), ...(photos.length && !input.sourceJobId ? { photos: photos.map(photo => photo.input) } : {}) }) })
+        await db.prepare('UPDATE blender_jobs SET state=?,detail=? WHERE id=? AND owner=? AND state=?').bind('queued', input.sourceJobId ? 'Wykonuję zapisany plan bez nowego zapytania do AI…' : photos.length ? 'Zdjęcia i opis przyjęte. Oczekiwanie na analizę AI…' : 'Opis przyjęty. Oczekiwanie na AI…', input.id, owner, 'submitting').run()
       } catch (error) {
         // The remote may have accepted a request before its HTTP response was lost.
         // Polling the same ID resolves that ambiguity and never starts a duplicate job.
@@ -189,7 +252,11 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
     try { response = await remote(connection.endpoint, token, `/v1/jobs/${job.id}`) }
     catch (error) {
       if (error instanceof ApiError && error.status === 404) {
-        job.state = 'failed'; job.detail = 'Serwer nie ma tego zlecenia. Możesz wysłać opis ponownie.'; job.updated = new Date().toISOString()
+        // A concurrent status request can overtake submission/storage. Give the
+        // same identifier time to be accepted before calling it missing.
+        if (job.state === 'submitting' && Date.now() - Date.parse(job.created) < 90000)
+          return reply({ job: publicJob({ ...job, detail: 'Czekam na potwierdzenie przyjęcia tego zlecenia…' }) })
+        job.state = 'failed'; job.detail = 'Serwer nie przyjął tego zlecenia. Opis i zdjęcia są zachowane; możesz ponowić generowanie.'; job.updated = new Date().toISOString()
         await db.prepare('UPDATE blender_jobs SET state=?,detail=?,updated=? WHERE id=? AND owner=?').bind(job.state, job.detail, job.updated, job.id, owner).run()
         return reply({ job: publicJob(job) })
       }
@@ -202,8 +269,8 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       if (!env.BUCKET) throw new ApiError('Zapis modelu jest chwilowo niedostępny.', 503)
       const model = await remote(connection.endpoint, token, `/v1/jobs/${job.id}/model`)
       try {
-        if (Number(model.headers.get('content-length')) > maxGlb) throw new ApiError('Wygenerowany model przekracza limit 12 MB.', 413)
-        const bytes = await boundedBody(model.body, maxGlb)
+        if (Number(model.headers.get('content-length')) > maxGlb) throw new ApiError('Wygenerowany model przekracza limit 48 MB. Wygeneruj postacie osobno.', 413)
+        const bytes = await boundedBody(model.body, maxGlb, Number(model.headers.get('content-length')))
         const h = new DataView(bytes)
         if (bytes.byteLength < 20 || h.getUint32(0, true) !== 0x46546c67 || h.getUint32(4, true) !== 2 || h.getUint32(8, true) !== bytes.byteLength) throw new ApiError('Serwer zwrócił nieprawidłowy plik GLB.', 422)
         artifact = `${job.id}.glb`
@@ -219,6 +286,11 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
   } catch (error) {
     if (error instanceof ApiError) return reply({ error: error.message }, error.status)
     if (error instanceof SyntaxError) return reply({ error: 'Nieprawidłowy format danych.' }, 400)
-    return reply({ error: 'Nie udało się połączyć z Blenderem lub zapisać danych. Opis pozostaje w formularzu; spróbuj ponownie.' }, 503)
+    const message = error instanceof Error ? error.message : ''
+    const storage = /D1|SQLITE|database|R2|bucket|storage/i.test(message)
+    // Classify the failure without logging prompts, photos, credentials or the
+    // raw exception (upstream errors can contain private request data).
+    console.error('FROGE_REQUEST_FAILED', JSON.stringify({ route: url.pathname.replace(/[a-f0-9-]{36}/g, ':job'), method: request.method, category: storage ? 'storage' : 'unexpected', errorType: error instanceof Error ? error.name : 'unknown' }))
+    return reply({ error: storage ? 'Zapis lub odczyt danych jest chwilowo niedostępny. Zachowaj formularz i spróbuj ponownie; sprawdzimy to samo zlecenie.' : 'Nie udało się potwierdzić zlecenia. Opis i zdjęcia pozostają w formularzu. Spróbuj ponownie — sprawdzimy ten sam model.' }, 503)
   }
 }

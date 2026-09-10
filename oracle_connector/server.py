@@ -29,7 +29,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 19
+CONNECTOR_VERSION = 20
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
@@ -77,7 +77,7 @@ def health():
         ready = bool(selected.get('api_key'))
         return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
                 'detail': 'OpenAI Astra jest polaczone. Blender wykona sprawdzony plan sceny.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
-                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 1, 'scenePeople': 3, 'characterStandard': 19, 'coutureRevision': 1, 'promptMaxLength': PROMPT_MAX_LENGTH}
+                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
@@ -85,9 +85,9 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 1, 'scenePeople': 3, 'characterStandard': 19, 'coutureRevision': 1, 'promptMaxLength': PROMPT_MAX_LENGTH}
+        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
     except Exception:
-        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 1, 'scenePeople': 3, 'characterStandard': 19, 'coutureRevision': 1, 'promptMaxLength': PROMPT_MAX_LENGTH}
+        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
 
 def ai_settings():
     path = STATE / 'ai-provider.json'
@@ -221,6 +221,8 @@ def worker():
             photos = photo_input.read_photos(folder)
             if photos and not is_openai:
                 raise ValueError('Zdjecia wymagaja OpenAI API. Nie wyslano zlecenia do tekstowego AI.')
+            if photos:
+                write_json(folder/'review-request.json',{'enabled':True})
             messages[1]['content'] = photo_input.user_content(job['prompt'], photos)
             saved_script = folder / 'saved-script.py'
             reuse = saved_script.is_file()
@@ -253,14 +255,35 @@ def worker():
                     status(job['id'], 'building', 'Plan sprawdzony. Blender buduje geometrie i zapisuje GLB…')
                     phase_started = time.monotonic()
                     try:
-                        run_blender(job['id'], folder, cancelled, timeout=BLENDER_TIME_LIMIT)
+                        remaining_blender=BLENDER_TIME_LIMIT-blender_seconds
+                        if remaining_blender<=0:raise TimeoutError('Wykorzystano budzet Blendera.')
+                        run_blender(job['id'], folder, cancelled, timeout=remaining_blender)
                     finally:
                         blender_seconds += time.monotonic() - phase_started
+                    review_report=None
+                    if photos and is_openai and not reuse:
+                        from visual_review import refine
+                        status(job['id'],'building','Astra porownuje rzeczywiste rendery ze zdjeciem referencyjnym…')
+                        def visual_generate(review_messages,schema,remaining):
+                            def progress(characters,elapsed,silent):
+                                status(job['id'],'building','Astra ocenia wyglad modelu. Czas oceny %d:%02d.' % (int(elapsed)//60,int(elapsed)%60))
+                            def usage(record):write_json(folder/'visual-review-usage.json',{'model':openai_provider.MODEL,**record})
+                            return openai_provider.generate(review_messages,selected['api_key'],cancelled,progress,remaining,None,usage,schema=schema)
+                        ai_seconds,blender_seconds,review_report=refine(scene,job['prompt'],photos,folder,cancelled,
+                            visual_generate,lambda remaining:run_blender(job['id'],folder,cancelled,timeout=remaining),
+                            ai_seconds,blender_seconds,AI_TIME_LIMIT,BLENDER_TIME_LIMIT)
                     elapsed = time.monotonic() - started
                     write_json(folder / 'timing.json', {'total_seconds': round(elapsed, 2), 'ai_seconds': round(ai_seconds, 2), 'blender_seconds': round(blender_seconds, 2)})
                     detail = ('Model gotowy w %.1f s. Wykorzystano zapisany skrypt, bez nowego zapytania do AI.' % elapsed if reuse else 'Model gotowy w %.1f s. Instrukcje AI: %.1f s; Blender: %.1f s. Zapisano GLB z materialami.' % (elapsed, ai_seconds, blender_seconds))
                     if photos:
                         detail += ' Uzyto %d zdjec referencyjnych. Geometria jest przyblizona, niewidoczne powierzchnie sa szacowane.' % len(photos)
+                    if photos:
+                        fit_report=json.loads((folder/'result.json').read_text()).get('photo_face_fit',{})
+                        detail += (' Dopasowano siatke twarzy do 478 punktow zdjecia; podobienstwo wymaga oceny.' if fit_report.get('applied') else ' Nie zastosowano pomiarow twarzy: wymagane czytelne zdjecie jednej postaci kobiecej.')
+                    if review_report:
+                        if review_report['status']=='refined_requires_visual_acceptance':detail+=' Astra porownala rendery i przebudowala plan. Poprzedni model zachowany; ocen wyglad w podgladzie.'
+                        elif review_report['status']=='reviewed':detail+=' Astra ocenila rendery; podobienstwo wymaga Twojej oceny.'
+                        else:detail+=' Zachowano model; dodatkowa ocena wizualna nie zostala ukonczona.'
                     status(job['id'], 'succeeded', detail)
                     break
                 except (ValueError, SyntaxError) as error:

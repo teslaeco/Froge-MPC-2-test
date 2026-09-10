@@ -20,6 +20,8 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'ai_stream.py').write_text('updated = True\n')
         (self.source / 'openai_provider.py').write_text('model = "gpt-6-astra"\n')
         (self.source / 'photo_input.py').write_text('max_photos = 4\n')
+        (self.source / 'face_measurement.py').write_text('measurement_revision = 1\n')
+        (self.source / 'visual_review.py').write_text('max_refinements = 1\n')
         (self.source / 'runtime_check.py').write_text('cpu_limit = 2\n')
         (self.source / 'code_policy.py').write_text('policy = "strict-with-early-check"\n')
         (self.target / 'code_policy.py').write_text('policy = "strict"\n')
@@ -34,9 +36,11 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'runtime/anatomy.py').write_text('anatomy_version = 8\n')
         (self.source / 'runtime/wardrobe.py').write_text('wardrobe_version = 10\n')
         (self.source / 'runtime/textiles.py').write_text('textiles_version = 10\n')
-        for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py'):
+        for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_orbits.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py','review_views.py'):
             (self.source/'runtime'/name).write_text('quality_revision = 1\n')
         shutil.copytree(Path(__file__).parent/'runtime/assets', self.source/'runtime/assets')
+        for name in ('photo_face.py','photo_face_color.py','reference_surfaces.py','reference_quality.py','reference_match.py'):
+            (self.source/'runtime'/name).write_text('face_fit_revision = 1\n')
         self.config = self.target / 'state/config.json'
         self.config.write_text(json.dumps({'token': 'local-test-token', 'client': 'owner', 'code': 'unchanged'}))
         self.original_config = self.config.read_bytes()
@@ -61,7 +65,7 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(service.call_args.args[0][-2:], ['start', 'froge-worker.service'])
 
     def test_update_preserves_pairing_and_keeps_backup(self):
-        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'connectorVersion': apply_update.EXPECTED_VERSION, 'rendererRevision': 3, 'portraitRevision': 1, 'characterStandard': 19, 'coutureRevision': 1}).encode())):
+        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'connectorVersion': apply_update.EXPECTED_VERSION, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1}).encode())):
             apply_update.update(self.source, self.target)
         self.assertEqual(self.config.read_bytes(), self.original_config)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 2\n')

@@ -1,7 +1,12 @@
 """Dedicated globe-local eye UVs, with one frontal iris per anatomical globe."""
 import bpy,numpy as np
+from mathutils import Vector
 
-def apply_eye_albedo(objects, iris_color=(.075,.031,.014)):
+def apply_eye_albedo(objects, iris_color=(.075,.031,.014), gaze=(0.,0.)):
+ # Rotate the texture frame, preserving the fitted globe and eyelid contact.
+ direction=Vector((gaze[0],-1.,gaze[1])).normalized()
+ horizontal=Vector((1.,gaze[0],0.)).normalized()
+ vertical=horizontal.cross(direction).normalized()*-1
  n=512
  yy,xx=np.mgrid[-1:1:complex(n),-1:1:complex(n)]
  r=np.sqrt(xx*xx+yy*yy);angle=np.arctan2(yy,xx)
@@ -26,14 +31,15 @@ def apply_eye_albedo(objects, iris_color=(.075,.031,.014)):
   if obj.type!='MESH' or not obj.name.startswith('anatomical-eye-'):continue
   layer=obj.data.uv_layers.get('EyeLocal') or obj.data.uv_layers.new(name='EyeLocal')
   for polygon in obj.data.polygons:
-   front=sum(obj.data.vertices[i].co.y for i in polygon.vertices)<0
+   front=sum(obj.data.vertices[i].co.dot(direction) for i in polygon.vertices)>0
    for li in polygon.loop_indices:
     v=obj.data.vertices[obj.data.loops[li].vertex_index].co
-    layer.data[li].uv=(v.x*.49+.5,v.z*.49+.5) if front else (.02,.02)
+    layer.data[li].uv=(v.dot(horizontal)*.49+.5,v.dot(vertical)*.49+.5) if front else (.02,.02)
   obj.data.uv_layers.active=layer
   for candidate in obj.data.uv_layers:candidate.active_render=candidate==layer
   obj.data.materials.clear();obj.data.materials.append(mat)
-  obj['iris_count']=1;obj['gaze_direction']=[0,-1,0]
+  obj['iris_count']=1;obj['gaze_direction']=list(direction)
+  obj['gaze_method']='calibrated-photo-iris' if any(gaze) else 'neutral'
   count+=1
  return count
 

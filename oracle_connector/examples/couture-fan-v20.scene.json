@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "name": "Emerald couture v20 - full reference study",
+  "subject_type": "person",
+  "materials": [
+    {
+      "name": "skin",
+      "rgb": [
+        0.68,
+        0.45,
+        0.33
+      ],
+      "pattern": "skin",
+      "roughness": 0.55,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "hair",
+      "rgb": [
+        0.033,
+        0.018,
+        0.014
+      ],
+      "pattern": "plain",
+      "roughness": 0.36,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "dress",
+      "rgb": [
+        0.01,
+        0.06,
+        0.1
+      ],
+      "pattern": "satin",
+      "roughness": 0.34,
+      "metallic": 0.15,
+      "emission": 0
+    },
+    {
+      "name": "crystal",
+      "rgb": [
+        0.022,
+        0.39,
+        0.32
+      ],
+      "pattern": "crystal",
+      "roughness": 0.15,
+      "metallic": 0.25,
+      "emission": 0
+    },
+    {
+      "name": "silver",
+      "rgb": [
+        0.38,
+        0.44,
+        0.45
+      ],
+      "pattern": "metal",
+      "roughness": 0.22,
+      "metallic": 0.85,
+      "emission": 0
+    },
+    {
+      "name": "shoe",
+      "rgb": [
+        0.011,
+        0.016,
+        0.02
+      ],
+      "pattern": "plain",
+      "roughness": 0.3,
+      "metallic": 0.1,
+      "emission": 0
+    },
+    {
+      "name": "eyes",
+      "rgb": [
+        0.12,
+        0.24,
+        0.17
+      ],
+      "pattern": "plain",
+      "roughness": 0.18,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "nails",
+      "rgb": [
+        0.18,
+        0.13,
+        0.11
+      ],
+      "pattern": "plain",
+      "roughness": 0.24,
+      "metallic": 0,
+      "emission": 0
+    }
+  ],
+  "parts": [
+    {
+      "kind": "reference_character",
+      "name": "emerald-muse",
+      "center": [
+        0,
+        0,
+        0
+      ],
+      "height": 1.88,
+      "build": "average",
+      "skin_material": "skin",
+      "hair_material": "hair",
+      "dress_material": "dress",
+      "crystal_material": "crystal",
+      "accent_material": "silver",
+      "shoe_material": "shoe",
+      "eye_material": "eyes",
+      "nail_material": "nails",
+      "face": {
+        "nose_width": -0.32,
+        "nose_projection": 0.58,
+        "mouth_width": -0.08,
+        "lip_fullness": 0.8,
+        "jaw_width": -0.32,
+        "chin_height": 0.17,
+        "cheek_fullness": 0.52
+      },
+      "head_rotation": [
+        -0.18,
+        -0.24,
+        -0.12
+      ],
+      "makeup": "soft_glam",
+      "garment_offset": 0.004,
+      "garment_thickness": 0.002,
+      "hem_radius": 0.3,
+      "updo": true,
+      "hair_ornament": true,
+      "fan": {
+        "enabled": true,
+        "radius": 0.28,
+        "panels": 10,
+        "rotors": 10,
+        "spread": 2.35
+      },
+      "observed_features": [
+        "fitted emerald and midnight-blue dress",
+        "angular shoulder trim and standing collar",
+        "ten rim turbines with six blades; faceted emerald/cyan/blue fan",
+        "asymmetric swept updo with thin triangular crystal ornaments",
+        "green eye shadow, lipstick and manicured hand",
+        "dark drape attached to the shoulders"
+      ],
+      "reconstructed_features": [
+        "lower dress and floor hem outside reference crop",
+        "legs and shoes outside reference crop",
+        "unseen back of garment",
+        "unseen second hand pose",
+        "face is approximate parametric anatomy"
+      ],
+      "cape": true
+    }
+  ]
+}

@@ -15,7 +15,7 @@ class TextureBudgetTests(unittest.TestCase):
         materials = [SimpleNamespace(users=1) for _ in range(material_count)]
         images = [SimpleNamespace(users=1) for _ in range(image_count)]
         images.extend(SimpleNamespace(users=0) for _ in range(unused))
-        self.data = SimpleNamespace(materials=materials, images=images)
+        self.data = SimpleNamespace(materials=materials, images=images, meshes=[])
         scope = {'Path':Path,'bpy': SimpleNamespace(data=self.data, context=SimpleNamespace(scene=SimpleNamespace(objects=[],get=lambda key,default:default)))}
         exec(compile(ast.Module(body=[function], type_ignores=[]), str(source), 'exec'), scope)
         scope['finish']()
@@ -27,7 +27,7 @@ class TextureBudgetTests(unittest.TestCase):
         self.assertEqual(len(self.data.images), 10)
 
     def test_resource_limits_still_apply_to_used_data(self):
-        for materials, images in [(13, 10), (8, 17)]:
+        for materials, images in [(17, 10), (8, 17)]:
             with self.subTest(materials=materials, images=images), self.assertRaisesRegex(ValueError, 'Export limit:'):
                 self.run_guard(materials, images)
 

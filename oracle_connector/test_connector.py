@@ -230,6 +230,8 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual((folder / 'reference-0.jpg').read_bytes(), image)
         self.assertEqual((folder / 'reference-0.jpg').stat().st_mode & 0o777, 0o600)
         self.assertNotIn('base64', (folder / 'reference-photos.json').read_text())
+        # The mocked Blender finish normally writes the structural report.
+        (folder / 'result.json').write_text('{}')
         scene = (Path(__file__).parent / 'examples/rocket.scene.json').read_text()
         with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'ai_settings', return_value={'provider': 'openai'}), patch.object(server, 'generate_code', return_value=scene) as ai, patch.object(server, 'run_blender') as blender:
             wake.wait.side_effect = [None, StopIteration]

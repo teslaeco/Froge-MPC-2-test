@@ -22,21 +22,35 @@ def make_material(name, rgb, pattern='plain', roughness=0.7, metallic=0.0):
     material.diffuse_color = (*rgb, 1)
     material.use_nodes = True
     shader = material.node_tree.nodes.get('Principled BSDF')
-    shader.inputs['Base Color'].default_value = (*rgb, 1)
+    # Scene RGB is display/sRGB, just like the packed PNG texture values.
+    # Principled constants are linear; without this conversion plain gems/hair
+    # become much paler than adjacent textured surfaces using the same color.
+    linear = np.where(rgb <= .04045, rgb / 12.92, ((rgb + .055) / 1.055) ** 2.4)
+    shader.inputs['Base Color'].default_value = (*linear, 1)
     shader.inputs['Roughness'].default_value = max(0, min(1, float(roughness)))
     shader.inputs['Metallic'].default_value = max(0, min(1, float(metallic)))
     if pattern == 'crystal':
-        shader.inputs['Coat Weight'].default_value=.65
-        shader.inputs['Coat Roughness'].default_value=.10
+        # Faceted gemstones keep their colour through dielectric coat and a
+        # little transmission.  Metallic crystal produced chrome-white panels.
+        shader.inputs['Metallic'].default_value=min(.08,float(metallic))
+        shader.inputs['Coat Weight'].default_value=.58
+        shader.inputs['Coat Roughness'].default_value=.12
         shader.inputs['IOR'].default_value=1.48
-        shader.inputs['Transmission Weight'].default_value=.12
-        shader.inputs['Roughness'].default_value=min(.22,float(roughness))
+        shader.inputs['Transmission Weight'].default_value=.10
+        shader.inputs['Roughness'].default_value=max(.16,min(.24,float(roughness)))
     if pattern == 'satin':
-        shader.inputs['Coat Weight'].default_value=.28
-        shader.inputs['Coat Roughness'].default_value=.25
-        shader.inputs['Sheen Weight'].default_value=.35
-        shader.inputs['Roughness'].default_value=.34
-        shader.inputs['Metallic'].default_value=min(.25,float(metallic))
+        # Satin is reflective cloth, not metal.  A larger metallic factor made
+        # broad studio highlights turn the emerald gown into silver armour.
+        shader.inputs['Coat Weight'].default_value=.06
+        shader.inputs['Coat Roughness'].default_value=.45
+        shader.inputs['Specular IOR Level'].default_value=.26
+        shader.inputs['Sheen Weight'].default_value=.27
+        # Blender 4.3 glTF exports the sheen tint independently of its weight.
+        # Leaving the default white tint exported sheenColorFactor=[1,1,1],
+        # which overwhelmed emerald albedo and made the whole gown silver.
+        shader.inputs['Sheen Tint'].default_value=(*np.minimum(linear*.35,.08),1)
+        shader.inputs['Roughness'].default_value=max(.48,min(.58,float(roughness)))
+        shader.inputs['Metallic'].default_value=min(.06,float(metallic))
     if pattern in ('skin', 'fabric'):
         shader.inputs['Metallic'].default_value = 0
         shader.inputs['Roughness'].default_value = max(.5 if pattern == 'skin' else .75, float(roughness))
@@ -149,6 +163,11 @@ def finish(output=None):
     output=Path('/work') if output is None else Path(output)
     # A material may have both an albedo and a normal map. Eight legitimate
     # textured materials therefore need more than eight image datablocks.
+    # Replaced eyebrow meshes and temporary Boolean cutters can retain unused
+    # material/image users after their objects are deleted. Release those data
+    # blocks before applying the budget to the actual export.
+    for mesh in list(bpy.data.meshes):
+        if mesh.users==0:bpy.data.meshes.remove(mesh)
     for material in list(bpy.data.materials):
         if material.users == 0:
             bpy.data.materials.remove(material)
@@ -156,8 +175,8 @@ def finish(output=None):
         if image.users == 0:
             bpy.data.images.remove(image)
     extra=max(0,bpy.context.scene.get('expected_heads',0)-1)
-    if len(bpy.data.materials) > 12+4*extra or len(bpy.data.images) > 16+4*extra:
-        raise ValueError('Export limit: 12 used materials and 16 used texture images. Plans still allow 8 shared materials.')
+    if len(bpy.data.materials) > 16+4*extra or len(bpy.data.images) > 16+4*extra:
+        raise ValueError('Export limit: 16 used materials and 16 used texture images. Plans still allow 8 shared materials. Actual: %d materials, %d images.' % (len(bpy.data.materials),len(bpy.data.images)))
     objects = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     if not objects or len(objects) > 256:
         raise ValueError('Scene needs 1-256 mesh objects; join repeated small details.')
@@ -183,6 +202,8 @@ def finish(output=None):
         raise ValueError('Geometry limit exceeded; keep portrait anatomy and simplify clothing or background.')
     for obj in objects:
         mesh = obj.data
+        if obj.get('anatomical_head'):
+            obj['makeup_tint_required']=mesh.color_attributes.get('CosmeticTint') is not None
         if not mesh.uv_layers:
             uv = mesh.uv_layers.new(name='UVMap')
             coords = np.array([tuple(v.co) for v in mesh.vertices])
@@ -192,23 +213,29 @@ def finish(output=None):
             minimum, span = coords.min(axis=0), np.maximum(np.ptp(coords, axis=0), 1e-6)
             for loop in mesh.loops:
                 uv.data[loop.index].uv = tuple(((coords[loop.vertex_index] - minimum) / span)[axes])
-    for image in bpy.data.images:
-        limit = 2048 if image.get('anatomical_atlas') else 1024
-        if image.size[0] > limit or image.size[1] > limit:
-            image.scale(min(image.size[0], limit), min(image.size[1], limit))
-        # Packing an unchanged generated image again can discard its packed PNG
-        # in Blender 4.3 when it has no external filepath. Preserve those bytes.
-        if image.has_data and (image.packed_file is None or image.is_dirty):
-            image.pack()
+    from reference_quality import export_textures, geometry_digest
+    geometry_before = geometry_digest(objects)
+    texture_report = export_textures(list(bpy.data.images), output)
+    if geometry_before != geometry_digest(objects):
+        raise ValueError('Texture export changed mesh, pose, UVs or material assignments.')
+    texture_report['geometry_preserved_during_texture_export'] = True
+    texture_report['geometry_sha256_before_export'] = geometry_before
     bpy.ops.wm.save_as_mainfile(filepath=str(output/'model.blend'))
     bpy.ops.export_scene.gltf(filepath=str(output/'model.glb'), export_format='GLB', export_image_format='AUTO', export_cameras=False, export_lights=False, export_extras=True,
+                             export_vertex_color='ACTIVE',
                              export_draco_mesh_compression_enable=heads>1,export_draco_position_quantization=16)
     report={'vertices':vertices,'triangles':triangles,'objects':len(objects),'images':len(bpy.data.images),'portrait_quality':quality,
-            'characterStandard':19,'reference_likeness_verified':False}
-    if bpy.context.scene.get('reference_couture'):
+            'characterStandard':20,'reference_likeness_verified':False}
+    report['texture_quality']=texture_report
+    report['photo_face_fit']=json.loads(bpy.context.scene.get('photo_face_fit','{}'))
+    if heads:
         from couture_qa import verify_export
         report['export_validation']=verify_export(output/'model.glb',objects)
     (output/'result.json').write_text(json.dumps(report))
+    review_request=output/'review-request.json'
+    if review_request.is_file() and json.loads(review_request.read_text()).get('enabled') is True:
+        from review_views import render_review
+        render_review(output/'model.glb',output/'review')
 
 if __name__ == '__main__':
     bpy.ops.wm.read_factory_settings(use_empty=True)
@@ -216,7 +243,7 @@ if __name__ == '__main__':
         from scene_contract import parse_scene
         from build_scene import build_scene
         scene = parse_scene(Path('/work/scene.json').read_text(encoding='utf-8'))
-        build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
+        build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes, reference_folder=Path('/work'))
         finish()
         print('FROGE_MODEL_READY')
         raise SystemExit(0)

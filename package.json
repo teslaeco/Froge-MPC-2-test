@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "python3 scripts/package-blender.py && tsc -b && vite build && vite build --ssr src/studio/server.ts && node scripts/prepare-worker.mjs",
+    "build": "node scripts/prepare-face-fit.mjs && python3 scripts/package-blender.py && tsc -b && vite build && vite build --ssr src/studio/server.ts && node scripts/prepare-worker.mjs",
     "lint": "oxlint",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "0.10.21",
     "drizzle-orm": "^0.45.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",

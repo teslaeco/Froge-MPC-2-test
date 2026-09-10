@@ -6,6 +6,7 @@ The data planner supplies each subject's palette and seven facial proportions.
 import math
 import bpy
 from mathutils import Vector, Matrix
+from mathutils.bvhtree import BVHTree
 from detailed_geometry import loft
 from portrait import build_portrait
 from portrait_hands import build_hand
@@ -38,9 +39,10 @@ def fashion_person(p, materials, mesh_object, tube, ellipsoid):
         (0,-.007,pelvis+.23,.136*width,.087),(0,-.009,pelvis+.33,.167*width,.104),
         (0,0,pelvis+.40,.164*width,.079),(0,0,pelvis+.45,.115*width,.066)]
     shape('body',torso_stations,body)
-    shape('neck',[(0,.004,pelvis+.40,.065,.058),(0,.004,pelvis+.59,.062,.056)],body,sides=32)
+    shape('neck',[(0,.004,pelvis+.40,.053,.048),(0,-.005,pelvis+.47,.046,.042)],body,sides=32)
+    fitted_top=None
     if outfit=='crop_skirt':
-        shape('high-neck-top',[(x,y,z,rx+.012,ry+.012) for x,y,z,rx,ry in torso_stations],top,.002)
+        fitted_top=shape('high-neck-top',[(x,y,z,rx+.007,ry+.007) for x,y,z,rx,ry in torso_stations],top,.001)
         shape('top-collar',[(0,.004,pelvis+.44,.056,.052),(0,.004,pelvis+.52,.050,.051)],top,sides=32)
         # Ring pleats, continuous waist and opaque hem.
         vv=[];ff=[];rings=15;n=96
@@ -76,29 +78,39 @@ def fashion_person(p, materials, mesh_object, tube, ellipsoid):
         if outfit=='black_crop':
             shape('shorts',[(hip.x,hip.y,pelvis+.02,.111,.112),(*hip.lerp(knee,.35),.093,.089)],bottom,.003)
         boot_top=knee.lerp(ankle,.20)
-        shape('boot-shaft',[(*boot_top,.064,.069),(*knee.lerp(ankle,.63),.058,.058),(*ankle,.041,.047)],shoe,.003)
+        boot=shape('boot-shaft',[(*boot_top,.064,.069),(*knee.lerp(ankle,.63),.058,.058),(*ankle,.041,.047)],shoe,.003)
+        boot_surface=BVHTree.FromPolygons([v.co for v in boot.data.vertices],[f.vertices[:] for f in boot.data.polygons])
         foot=Vector((ankle.x,ankle.y-.064,.058))
         ball('rounded-boot',foot,(.046,.112,.048),shoe)
         shape('sole',[(foot.x,foot.y,.019,.049,.113),(foot.x,foot.y,.032,.049,.113)],shoe,sides=48)
         for j in range(7):
-            t=.18+j*.09;c=knee.lerp(ankle,t)
-            line('boot-lace',[(c.x-.025,c.y-.062,c.z),(c.x+.025,c.y-.060,c.z-.017)],[.0012,.0012],accent,8)
-        shoulder=Vector((side*.175*width,0,pelvis+.42))
+            t=.24+j*.09;c=knee.lerp(ankle,t)
+            points=[]
+            for k in range(13):
+                u=k/12;x=c.x-.023+.046*u;z=c.z-.017*u
+                hit,normal,_,_=boot_surface.ray_cast(Vector((x,-1,z)),Vector((0,1,0)))
+                if hit is not None:points.append(tuple(hit+normal*.002))
+            if len(points)>1:line('boot-lace',points,[.0012]*len(points),accent,8)
+        shoulder=Vector((side*.171*width,0,pelvis+.405))
         elbow=Vector((side*.245,-.052,pelvis+.23))
         wrist=Vector((side*(.18 if sitting else .235),-.21 if sitting else -.025,pelvis+.075 if sitting else pelvis-.02))
         sleeve=top if outfit=='black_crop' else body
-        ball('rounded-shoulder',shoulder,(.060,.061,.061),sleeve)
-        shape('upper-arm',[(*shoulder,.055,.057),(*shoulder.lerp(elbow,.55),.047,.048),(*elbow,.037,.037)],sleeve)
-        ball('elbow',elbow,(.039,.039,.038),sleeve)
-        shape('forearm',[(*elbow,.037,.037),(*elbow.lerp(wrist,.45),.043,.037),(*wrist,.029,.023)],sleeve)
+        ball('rounded-shoulder',shoulder,(.048,.050,.048),sleeve)
+        shape('upper-arm',[(*shoulder,.047,.049),(*shoulder.lerp(elbow,.55),.039,.040),(*elbow,.031,.031)],sleeve)
+        ball('elbow',elbow,(.032,.032,.032),sleeve)
+        shape('forearm',[(*elbow,.031,.031),(*elbow.lerp(wrist,.45),.034,.030),(*wrist,.026,.022)],sleeve)
         direction=(wrist-elbow).normalized()
         parts+=build_hand({'side':'left' if side==1 else 'right','wrist':list(wrist),'direction':list(direction),'palm_normal':[0,-1,.35],'presentation':p['presentation'],'scale':.94,'curl':.22,'nail_length':.002},skin,materials[p['nail_material']],mesh_object)
     eye_mid=(anatomy.landmark('l-eye',p['presentation'])+anatomy.landmark('r-eye',p['presentation']))*.5
     parts+=build_portrait({**p,'center':[0,eye_mid.y,eye_z],'scale':1.,'rotation':[0,0,0]},materials,mesh_object,ellipsoid)
     if p.get('necklace'):
+        support=fitted_top if fitted_top is not None else next(o for o in parts if o.name==p['name']+'-body')
+        surface=BVHTree.FromPolygons([v.co for v in support.data.vertices],[f.vertices[:] for f in support.data.polygons])
         points=[]
         for i in range(41):
-            t=i/40;a=math.pi*t;points.append((.077*math.cos(a),-.091-.018*math.sin(a),pelvis+.39-.065*math.sin(a)))
+            t=i/40;a=math.pi*t;x=.077*math.cos(a);z=pelvis+.39-.065*math.sin(a)
+            hit,normal,_,_=surface.ray_cast(Vector((x,-1,z)),Vector((0,1,0)))
+            points.append(tuple(hit+normal*.0025) if hit is not None else (x,-.12,z))
         line('fine-necklace',points,[.0016]*len(points),accent,10)
     factor=p['height']/1.68
     garment_names=('thigh','knee','upper-shin','waistband','connected-hip-garment','shorts')
@@ -123,6 +135,16 @@ def fashion_person(p, materials, mesh_object, tube, ellipsoid):
         remesh=merged.modifiers.new('Continuous dressed body','REMESH');remesh.mode='VOXEL';remesh.voxel_size=.0035;remesh.use_smooth_shade=True
         bpy.ops.object.modifier_apply(modifier=remesh.name)
         smooth=merged.modifiers.new('Soft joints','SMOOTH');smooth.factor=.7;smooth.iterations=10;bpy.ops.object.modifier_apply(modifier=smooth.name)
+        if fitted_top is not None:
+            cloth=BVHTree.FromPolygons([v.co for v in fitted_top.data.vertices],[f.vertices[:] for f in fitted_top.data.polygons])
+            for vertex in merged.data.vertices:
+                v=vertex.co
+                if pelvis+.005<v.z<pelvis+.425 and abs(v.x)<.148*width:
+                    origin=Vector((0,0,v.z));direction=(v-origin).normalized()
+                    hit,_,_,_=cloth.ray_cast(origin,direction)
+                    if hit is not None and (v-origin).length>(hit-origin).length-.003:
+                        vertex.co=origin+direction*max(0,(hit-origin).length-.003)
+            merged.data.update()
         # Joining invalidates removed object handles; retain by stable names.
         parts=retained+[merged]
     transform=Matrix.Translation(p['center'])@Matrix.Scale(factor,4)

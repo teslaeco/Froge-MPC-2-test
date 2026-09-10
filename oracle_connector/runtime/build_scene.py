@@ -7,9 +7,13 @@ from mathutils import Vector
 from detailed_geometry import loft, revolve, person, extrusion
 
 
-def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes):
+def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes, reference_folder=None):
     from portrait import build_portrait
     from portrait_hands import build_hand
+    from photo_face import load_fit
+    import json
+    face_fit, fit_report = load_fit(reference_folder, scene['parts'])
+    bpy.context.scene['photo_face_fit'] = json.dumps(fit_report)
     bpy.context.scene['expected_heads']=sum(p['kind'] in ('person','portrait','reference_character') for p in scene['parts'])
     bpy.context.scene['expected_hands']=sum(2 if p['kind'] in ('person','reference_character') else 1 if p['kind']=='anatomical_hand' else 0 for p in scene['parts'])
     bpy.context.scene['reference_couture']=any(p['kind']=='reference_character' for p in scene['parts'])
@@ -88,6 +92,8 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
         return [trunk_obj, crown]
 
     for p in scene['parts']:
+        if face_fit is not None and p['name'] == face_fit.part_name:
+            p = {**p, '_photo_fit': face_fit}
         kind, name = p['kind'], p['name']
         material = materials.get(p.get('material'))
         if kind=='reference_character':
@@ -167,4 +173,7 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
         else:
             raise ValueError('Unsupported scene part')
         objects[name] = [obj]
+    if face_fit is not None:
+        fit_report.update(face_fit.report)
+        bpy.context.scene['photo_face_fit']=json.dumps(fit_report)
     return objects
