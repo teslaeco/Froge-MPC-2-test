@@ -1,0 +1,49 @@
+{
+  "zip_file": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture_fbx.zip",
+  "zip_sha256": "10b7e8892cda8a8447ab749dab465967135a28a41eed9472a4595f2189536ab8",
+  "zip_bytes": 290480457,
+  "crc_checked_on_read": true,
+  "files": [
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture.fbx",
+      "bytes": 180813484,
+      "sha256": "d93be3dfe35275b598111692311e555de3848576cafd37f763dda0beffd90217"
+    },
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture.png",
+      "bytes": 80628980,
+      "sha256": "c2b8f7c8c1ab225066713ec62b08ec28a1d250507048ae1cc42e278ca971d354",
+      "width": 8192,
+      "height": 8192,
+      "mode": "RGB",
+      "info": {}
+    },
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture_metallic.png",
+      "bytes": 5531479,
+      "sha256": "7e5d732f8aacb4ba1911ac5b1898e5eb6b0c9757d6b1fafc4ca3e5d597fac1f4",
+      "width": 4096,
+      "height": 4096,
+      "mode": "RGB",
+      "info": {}
+    },
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture_normal.png",
+      "bytes": 16664152,
+      "sha256": "f8d3dcf71e82d3c012c3cbf3d96e0e4860845922d38f1ecd9f829025dc2ed6d2",
+      "width": 4096,
+      "height": 4096,
+      "mode": "RGB",
+      "info": {}
+    },
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture_roughness.png",
+      "bytes": 6840838,
+      "sha256": "76051d0b1dabff1efefcc4e7f67234107e55f087aa1a10b260981f2f5938deda",
+      "width": 4096,
+      "height": 4096,
+      "mode": "RGB",
+      "info": {}
+    }
+  ]
+}

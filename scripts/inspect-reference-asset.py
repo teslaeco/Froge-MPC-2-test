@@ -120,6 +120,8 @@ def inspect(source):
         'mesh_objects': len(meshes), 'unique_meshes': len({obj.data.as_pointer() for obj in objects}),
         'meshes': meshes, 'materials': materials, 'images': images,
         'texture_evidence': {
+            'loaded_image_pixels': sum(im['size'][0] * im['size'][1] for im in images if im['has_pixels']),
+            'rgba32f_image_bytes_estimate': sum(im['size'][0] * im['size'][1] * 16 for im in images if im['has_pixels']),
             'all_meshes_have_uv_layers': bool(meshes) and all(mesh['uv_layers'] for mesh in meshes),
             'all_faces_have_materials': assigned,
             'all_used_materials_have_loaded_base_color_images': assigned and bool(base_color_edges)
@@ -137,7 +139,7 @@ def inspect(source):
     }
 
 
-def render_clay(report, output, front, size, lower_crop):
+def render_clay(report, output, front, size, lower_crop, use_materials=False):
     scene = bpy.context.scene
     low = Vector(tuple(min(m['world_bounds']['min'][i] for m in report['meshes']) for i in range(3)))
     high = Vector(tuple(max(m['world_bounds']['max'][i] for m in report['meshes']) for i in range(3)))
@@ -149,7 +151,7 @@ def render_clay(report, output, front, size, lower_crop):
     shader = clay.node_tree.nodes.get('Principled BSDF')
     shader.inputs['Base Color'].default_value = (.48, .48, .48, 1)
     shader.inputs['Roughness'].default_value = .78
-    scene.view_layers[0].material_override = clay
+    scene.view_layers[0].material_override = None if use_materials else clay
     scene.world = bpy.data.worlds.new('Inspection studio')
     scene.world.use_nodes = True
     scene.world.node_tree.nodes['Background'].inputs[0].default_value = (.065, .065, .065, 1)
@@ -182,11 +184,11 @@ def render_clay(report, output, front, size, lower_crop):
     for name, direction in views:
         camera.location = center + direction.normalized() * extent * 3
         camera.rotation_euler = (center - camera.location).to_track_quat('-Z', 'Y').to_euler()
-        path = output / (name + '-clay.png')
+        path = output / (name + ('-textured.png' if use_materials else '-clay.png'))
         scene.render.filepath = str(path)
         bpy.ops.render.render(write_still=True)
         renders.append({'file': path.name, 'sha256': file_sha(path), 'size': [size, size]})
-    return {'mode': 'neutral clay material override', 'front': front,
+    return {'mode': 'imported materials' if use_materials else 'neutral clay material override', 'front': front,
             'lower_crop_fraction': lower_crop, 'renders': renders}
 
 
@@ -213,7 +215,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--render-clay', action='store_true')
+    render_group = parser.add_mutually_exclusive_group()
+    render_group.add_argument('--render-clay', action='store_true')
+    render_group.add_argument('--render-textured', action='store_true')
     parser.add_argument('--front', choices=('negative-y', 'positive-y'), default='negative-y')
     parser.add_argument('--render-size', type=int, choices=(512, 768, 1024), default=768)
     parser.add_argument('--lower-crop', type=float, default=0,
@@ -237,8 +241,10 @@ def main():
     failures = report['validation']['failures']
     report_path = args.output / 'asset-inspection.json'
     report_path.write_text(json.dumps(report, indent=2) + '\n')
-    if args.render_clay and report['totals']['triangles'] and not report['totals']['nonfinite_vertices']:
-        report['clay_review'] = render_clay(report, args.output, args.front, args.render_size, args.lower_crop)
+    if (args.render_clay or args.render_textured) and report['totals']['triangles'] and not report['totals']['nonfinite_vertices']:
+        key = 'material_review' if args.render_textured else 'clay_review'
+        report[key] = render_clay(report, args.output, args.front, args.render_size, args.lower_crop,
+                                 use_materials=args.render_textured)
         report_path.write_text(json.dumps(report, indent=2) + '\n')
     if file_sha(source) != report['source_sha256']:
         raise RuntimeError('Source changed during inspection.')
