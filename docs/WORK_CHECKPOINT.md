@@ -1,3 +1,23 @@
+# PR #8 prepared and checked — 2026-09-10
+
+https://github.com/teslaeco/Froge-MPC-2-test/pull/8 is OPEN/DRAFT, targeting main,
+branch codex/reference-fidelity-4k-8k. Remote implementation commit:
+7f407cbf774e88623930450d6b7d6199c4b8ade6. GitHub mergeable=true, state=clean.
+Full Codex command: docs/CODEX_REFERENCE_FIDELITY_4K_8K.md.
+The PR retains #6/#7 work and imports the current v20/v25 worker plus photo
+UI/API dependencies, not unrelated Site gallery/commerce source. Exact assembled
+PR passed production build, 88 focused Vitest and 119 Python tests. Native
+Blender textures and production couture export/reimport/four renders passed
+technical checks. Latest four final renders inspected; face/hair/outfit likeness
+is NOT accepted. See the final model SHA and limitations in
+ docs/reviews/reference-fidelity-4k-8k/model-verification.json.
+The PR provides a verified reference/texture foundation. Further geometry
+reconstruction, visual acceptance and Oracle deployment remain separate work.
+No additional paid AI request, weights training, merge, Site deployment or
+Oracle install. Published Site38 remains the live version.
+
+---
+
 # Reference fidelity / 4K–8K verified source — 2026-09-10
 
 Implemented browser/API/worker textureMaxSize (2048/4096/8192), bounded 2 MiB
@@ -20,8 +40,10 @@ No likeness acceptance. Actual photo/skin textures remain below 4K because
 source pixels are below 4K. PR will remain draft for visual reconstruction.
 GitHub PR staging is based on #7 (72f4689), importing current worker and only
 required frontend/asset preparation dependencies. Exact assembled PR production build, 88 focused Vitest tests and 119 Python
-tests passed. No unrelated gallery/commerce changes were imported. Remote
-commit/link still pending. High quality also retains normal/roughness maps
+tests passed. No unrelated gallery/commerce changes were imported. Draft PR: https://github.com/teslaeco/Froge-MPC-2-test/pull/8
+Implementation commit: 7f407cbf774e88623930450d6b7d6199c4b8ade6.
+GitHub confirmed an open draft with clean mergeability. Final review evidence
+was refreshed after all PBR maps were preserved at the selected limit. High quality also retains normal/roughness maps
 up to the selected edge; legacy exports keep the old category limits. No paid AI, Site deployment or Oracle
 installation. Installed worker must expose referenceQualityRevision=1.
 

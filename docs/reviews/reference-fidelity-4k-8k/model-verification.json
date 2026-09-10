@@ -130,10 +130,10 @@
           1024
         ],
         "export_size": [
-          1024,
-          512
+          2048,
+          1024
         ],
-        "resampled": true,
+        "resampled": false,
         "upscaled": false,
         "source_sha256": null,
         "contains_photographed_lighting": false
@@ -175,10 +175,10 @@
           1024
         ],
         "export_size": [
-          1024,
-          512
+          2048,
+          1024
         ],
-        "resampled": true,
+        "resampled": false,
         "upscaled": false,
         "source_sha256": null,
         "contains_photographed_lighting": false
@@ -233,7 +233,7 @@
     "likeness_verified": false,
     "note": "4K/8K is a maximum texture edge, not recovered detail or render resolution.",
     "geometry_preserved_during_texture_export": true,
-    "geometry_sha256_before_export": "d0596fb9885516893599c62ba6a94c327ee2143e29feb7841dc97ebb80c7eee8"
+    "geometry_sha256_before_export": "bb0c4356605a0efbd19454717e5a533786776a26e09782d23892b378b6461bb3"
   },
   "photo_face_fit": {
     "revision": 1,
@@ -434,7 +434,7 @@
     "print_readiness_assessed": false
   },
   "blender": "4.3.0",
-  "build_seconds": 23.85,
+  "build_seconds": 25.16,
   "source": "authored scene using production runtime; no paid AI",
   "visual_reviewed": true,
   "rendered_views": [
@@ -447,8 +447,8 @@
   "render_device": "CPU",
   "render_threads": 4,
   "render_samples": 12,
-  "total_seconds": 73.37,
-  "glb_sha256": "6cf53366905414fdfb8b9acf68169dad08384fd9cc11e8d600986ac9257702ee",
+  "total_seconds": 74.67,
+  "glb_sha256": "f1d5383bf1ab8cf112e59028d7e41294dba6cac1e374833f1d718548e6757cd8",
   "visual_findings": [
     "Face, eye shape/gaze and swept updo differ from reference.",
     "Glove, collar and shoulder construction remain approximate.",
@@ -456,9 +456,9 @@
     "Four actual reimported-GLB renders inspected; likeness not accepted."
   ],
   "render_sha256": {
-    "face-front.png": "0a3493cca6c51cf62dd6a202d400111b122dd163d0f3078afc5bf23fe2096d1f",
-    "full-three-quarter.png": "ba91e42f4002f348fa7b4d8ae61e5d64235eb0c5603015bc719ed50b44ff98f3",
-    "hand-detail.png": "6cb63831f08e3d58071a39090976943d29b0036c59dff1172d3fc0b3bef36f68",
-    "face-profile.png": "4dbf78d640d62cba48800cde53949c8a9582a4e91d6ae30ad764275566c3310c"
+    "face-front.png": "3f6da876970191e8b424787a126bfe97ba85d54d3fcc817b43b5f0d534ce8873",
+    "full-three-quarter.png": "94b77eaaf33aaeb68714830ef3d6cae195ece128d2932965056ba70e03c6d146",
+    "hand-detail.png": "83210a737eddec6dd74cf491ec0f7577e040d16a16a7e255d947292054d626c5",
+    "face-profile.png": "caf71385e90fe7d10fd7262ae1ae104823ea5246fefdf34d2d7e86e45d9fb9c7"
   }
 }
