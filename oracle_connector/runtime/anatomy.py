@@ -184,7 +184,11 @@ def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
             # Sub-millimetre asymmetric root variation softens the perfect
             # moulded edge without cutting teeth or isolated scalp islands.
             root_variation=front*(.00045*math.sin(v.x*270+.4)+.00025*math.sin(v.x*470+1.7))
-            return 1.690+.059*front-.033*min(1,(abs(v.x)/.082)**2)*front+side_part-opposite_sweep-centre_point+root_variation
+            # Continue behind the ears and into the nape. A horizontal cut
+            # here exposed an unintended undercut beneath the swept volume.
+            nape=.035*(1-front)**3
+            temple=.012*math.exp(-((abs(v.x)-.069)/.020)**2-((v.y+.049)/.024)**2)
+            return 1.690+.059*front-.033*min(1,(abs(v.x)/.082)**2)*front+side_part-opposite_sweep-centre_point+root_variation-nape-temple
         return 1.713+.036*max(0,min(1,(-v.y-.015)/.11))
     if p['headwear']=='none':
         vertices=[];faces=[]
@@ -205,6 +209,7 @@ def head(p, material, eye_material, hair_material, mesh_object, ellipsoid):
                 vertices.append(tuple(v+out*(.002+groove)));face_ids.append(len(vertices)-1)
             faces.append(face_ids)
         hair=mesh_object('fitted-none',vertices,faces,hair_material)
+        if p.get('hair_style')=='swept_updo':hair['hairline_revision']=3
         bm=bmesh.new();bm.from_mesh(hair.data);bmesh.ops.remove_doubles(bm,verts=list(bm.verts),dist=.000001);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));bm.to_mesh(hair.data);bm.free()
 
     else:

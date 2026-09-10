@@ -21,7 +21,7 @@ from ai_stream import stream_chat
 import openai_provider
 import photo_input
 from ai_stream import OpenAIServiceError
-from runtime_check import IMAGE, sandbox_options, verify_runtime
+from runtime_check import IMAGE, sandbox_options, verify_runtime, job_memory_gib
 from runtime.scene_contract import SCHEMA, PROMPT, parse_scene, human_prompt
 
 ROOT = Path(__file__).resolve().parent
@@ -77,7 +77,7 @@ def health():
         ready = bool(selected.get('api_key'))
         return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
                 'detail': 'OpenAI Astra jest polaczone. Blender wykona sprawdzony plan sceny.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
-                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
@@ -85,9 +85,9 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
     except Exception:
-        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
 
 def ai_settings():
     path = STATE / 'ai-provider.json'
@@ -138,7 +138,7 @@ def generate_code(messages, job_id, cancelled, deadline=None, attempt=1, selecte
     return stream_chat(OLLAMA + '/api/chat', payload, cancelled, progress, timeout=remaining)
 
 def blender_command(job_id, folder):
-    return ['podman', 'run', '--rm', '--pull=never', '--name', 'froge-job-' + job_id] + sandbox_options() + [
+    return ['podman', 'run', '--rm', '--pull=never', '--name', 'froge-job-' + job_id] + sandbox_options(job_memory_gib(folder)) + [
             '-v', str(ROOT / 'runtime') + ':/runner:ro,Z', '-v', str(folder) + ':/work:rw,Z',
             IMAGE, '--background', '--factory-startup', '--threads', '2', '--python-exit-code', '1',
             '--python', '/runner/run.py']
@@ -202,7 +202,7 @@ def worker():
         ai_seconds = blender_seconds = 0
         try:
             status(job['id'], 'generating', 'Sprawdzam, czy Blender moze uruchomic model…')
-            verify_runtime()
+            verify_runtime(job_memory_gib(folder))
             saved_scene = folder / 'saved-scene.json'
             if saved_scene.is_file():
                 # Rebuild a validated, saved plan without consulting either AI.

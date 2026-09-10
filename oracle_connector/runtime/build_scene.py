@@ -12,6 +12,8 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes,
     from portrait_hands import build_hand
     from photo_face import load_fit
     import json
+    from reference_quality import requested_edge
+    bpy.context.scene['material_max_edge'] = requested_edge(reference_folder) if reference_folder else 2048
     face_fit, fit_report = load_fit(reference_folder, scene['parts'])
     bpy.context.scene['photo_face_fit'] = json.dumps(fit_report)
     bpy.context.scene['expected_heads']=sum(p['kind'] in ('person','portrait','reference_character') for p in scene['parts'])

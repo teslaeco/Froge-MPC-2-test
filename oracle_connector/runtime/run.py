@@ -221,11 +221,14 @@ def finish(output=None):
     texture_report['geometry_preserved_during_texture_export'] = True
     texture_report['geometry_sha256_before_export'] = geometry_before
     bpy.ops.wm.save_as_mainfile(filepath=str(output/'model.blend'))
+    high_quality=bpy.context.scene.get('material_max_edge',2048)>2048
     bpy.ops.export_scene.gltf(filepath=str(output/'model.glb'), export_format='GLB', export_image_format='AUTO', export_cameras=False, export_lights=False, export_extras=True,
                              export_vertex_color='ACTIVE',
-                             export_draco_mesh_compression_enable=heads>1,export_draco_position_quantization=16)
+                             export_draco_mesh_compression_enable=heads>1 and not high_quality,export_draco_position_quantization=16)
     report={'vertices':vertices,'triangles':triangles,'objects':len(objects),'images':len(bpy.data.images),'portrait_quality':quality,
-            'characterStandard':20,'reference_likeness_verified':False}
+            'characterStandard':20,'reference_likeness_verified':False,
+            'master_export':{'formats':['blend','glb'],'decimation_applied':False,
+                             'position_quantization_applied':heads>1 and not high_quality}}
     report['texture_quality']=texture_report
     report['photo_face_fit']=json.loads(bpy.context.scene.get('photo_face_fit','{}'))
     if heads:

@@ -1,3 +1,21 @@
+# Generator fidelity implementation in progress
+
+Current authorized PR: #8, codex/reference-fidelity-4k-8k. Base before this work:
+fb1733171d79fb6897296388bf695e5281f58b7d. Site 38 remains live.
+Actual runtime changes: continuous updo nape/temple coverage, rigid eyeball
+photo fitting, native procedural detail up to 4K, separate material memory
+policy (8K+3x4K admitted under 8 GiB, rejected under 4 GiB), per-job isolated
+4/8 GiB container and RAM preflight before AI, worker capability + UI gating,
+no position quantization for 4K/8K master GLB.
+Task: docs/CODEX_GENERATOR_UPGRADE.md. Validation and renders are pending.
+No likeness acceptance, paid generation, Site deployment or Oracle install.
+Continue until real export/renders and build pass, then rebuild update payloads.
+Working checkout: /workspace/scratch/485945b1aaf2/pr-review (API reconstructed).
+Blender: /tmp/blender-4.3.0-linux-x64/blender. Original reference fixtures:
+/workspace/scratch/485945b1aaf2/model-check-final-reference.
+
+---
+
 # Meshy texture ZIP verified — PR #8 follow-up
 
 Reupload received: 290,480,457 bytes; ZIP CRCs passed. SHA256:

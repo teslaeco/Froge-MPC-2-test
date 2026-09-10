@@ -35,7 +35,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
   const photoBlockedReason = (connection?.connectorVersion ?? 0) < 14 ? 'Zdjęcie jest wybrane. Generowanie odblokuje aktualizacja Oracle do v20 — pobierz ją poniżej. Samo odświeżenie strony nie aktualizuje serwera.' : 'Wybrane AI nie obsługuje zdjęć. W ustawieniach serwera wybierz OpenAI; lokalny Qwen obsługuje tylko opis.'
   const coutureBlocked=requiresCoutureQuality(prompt) && !supportsCoutureQuality(connection)
   const longPromptBlocked=prompt.length>2000 && connection?.promptMaxLength!==5000
-  const referenceQualityBlocked = photos.some(p => p.textureMaxSize) && connection?.referenceQualityRevision !== 1
+  const referenceQualityBlocked = photos.some(p => p.textureMaxSize) && (connection?.referenceQualityRevision !== 1 || connection?.materialQualityRevision !== 2)
   const portraitBlocked=referenceQualityBlocked || (requiresPortraitQuality(prompt,photos.length) && !supportsPortraitQuality(connection)) || coutureBlocked || longPromptBlocked
   const updateAvailable = !!connection?.connected && connection.connectorVersion !== undefined && connection.connectorVersion < RECOMMENDED_CONNECTOR_VERSION
   const oldWorkerReason = `Oracle zgłasza generator v${connection?.connectorVersion}. Zainstaluj aktualizację v20 na serwerze. Samo przesłanie ZIP-a nie uruchamia aktualizacji.`
@@ -156,7 +156,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
     const withPhotos = !!referenceJobId || attached.length > 0
     const description = requestedPrompt.trim() || (withPhotos ? DEFAULT_PHOTO_PROMPT : '')
     if (submissionLock.current || busy || preparingPhotos || !currentWorker || !(sourceJobId ? connection?.connected : canGenerate) || !description) return
-    if (attached.some(p => p.textureMaxSize) && connection?.referenceQualityRevision !== 1) { setError('Zaktualizuj generator, aby zachować jakość referencji 4K/8K.'); return }
+    if (attached.some(p => p.textureMaxSize) && (connection?.referenceQualityRevision !== 1 || connection?.materialQualityRevision !== 2)) { setError('Zaktualizuj generator, aby zachować jakość referencji 4K/8K.'); return }
     if (withPhotos && !photosSupported) { setError(photoBlockedReason); return }
     if (requiresPortraitQuality(description, withPhotos ? 1 : 0) && !supportsPortraitQuality(connection)) { setError(PORTRAIT_UPDATE_REASON); return }
     if (requiresCoutureQuality(description) && !supportsCoutureQuality(connection)) { setError(COUTURE_UPDATE_REASON); return }

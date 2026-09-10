@@ -4,6 +4,7 @@ Created procedurally from numeric waves; no source photograph is modified.
 import math
 import numpy as np
 import bpy
+from reference_quality import procedural_edge
 
 
 def surface_lock(name, samples, width, depth, material, mesh_object):
@@ -59,7 +60,7 @@ def add_strand_normal(obj, palettes):
             normal=nodes.new('ShaderNodeNormalMap');normal.inputs['Strength'].default_value=.40
             links.new(tex.outputs['Color'],normal.inputs['Color']);links.new(normal.outputs['Normal'],nodes.get('Principled BSDF').inputs['Normal'])
         return
-    w,h=2048,1024
+    w=procedural_edge(2048);h=w//2
     u=np.arange(w,dtype=np.float32)[None,:]/w
     v=np.arange(h,dtype=np.float32)[:,None]/h
     phase=2*np.pi*(.055*np.sin(v*4.8)+.018*np.sin(v*13.6))
@@ -71,6 +72,7 @@ def add_strand_normal(obj, palettes):
     rgba=np.stack(((nx+1)*.5,(ny+1)*.5,(nz+1)*.5,np.ones((h,w),dtype=np.float32)),axis=-1)
     image=bpy.data.images.new('procedural-fine-hair-strands-normal',width=w,height=h,alpha=False)
     image['strand_detail']=True
+    image['detail_origin']='authored_procedural_native'
     image.colorspace_settings.name='Non-Color'
     image.pixels.foreach_set(rgba.astype(np.float32).ravel())
     image.update();image.pack()
@@ -90,7 +92,7 @@ def add_strand_colour(palettes):
     The same UV flow drives albedo and the existing normal map, keeping fine
     strands readable in ordinary GLB viewers without hair-specific shaders.
     """
-    w,h=2048,1024
+    w=procedural_edge(2048);h=w//2
     u=np.arange(w,dtype=np.float32)[None,:]/w
     v=np.arange(h,dtype=np.float32)[:,None]/h
     phase=2*np.pi*(.055*np.sin(v*4.8)+.018*np.sin(v*13.6))
@@ -108,6 +110,7 @@ def add_strand_colour(palettes):
             rgba[:,:,:3]=np.clip(shade[:,:,None]*rgb[None,None,:],0,1)
             image=bpy.data.images.new(name,width=w,height=h,alpha=False)
             image['strand_detail']=True
+            image['detail_origin']='authored_procedural_native'
             image.pixels.foreach_set(rgba.ravel());image.update();image.pack()
         nodes=mat.node_tree.nodes;links=mat.node_tree.links
         tex=nodes.new('ShaderNodeTexImage');tex.name='Portable strand albedo';tex.image=image
@@ -116,6 +119,8 @@ def add_strand_colour(palettes):
         rough=bpy.data.images.get(rough_name)
         if rough is None:
             rough=bpy.data.images.new(rough_name,width=w,height=h,alpha=False)
+            rough['strand_detail']=True
+            rough['detail_origin']='authored_procedural_native'
             rough.colorspace_settings.name='Non-Color'
             rgba=np.ones((h,w,4),dtype=np.float32)
             # Coherent but unequal fibre bands interrupt the broad crown

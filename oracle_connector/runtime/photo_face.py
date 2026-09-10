@@ -146,12 +146,15 @@ class FaceFit:
         for obj in parts:
             if obj.type != 'MESH':
                 continue
+            if obj.get('anatomical_eye'):
+                # Move the eye rigidly. The facial tissue warp must not
+                # deform its globe or the circular iris texture.
+                obj.location = Vector(self.warp(np.asarray([tuple(obj.location)]))[0])
+                obj['photo_fit_rigid_eye'] = True
+                continue
             matrix = obj.matrix_world.copy()
             points = np.asarray([tuple(matrix @ v.co) for v in obj.data.vertices])
             moved = self.warp(points)
-            if obj.get('anatomical_eye'):
-                obj.location = Vector(self.warp(np.asarray([tuple(obj.location)]))[0])
-                bpy.context.view_layer.update()
             inverse = obj.matrix_world.inverted()
             for v, co in zip(obj.data.vertices, moved):
                 v.co = inverse @ Vector(co)

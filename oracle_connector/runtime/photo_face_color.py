@@ -52,7 +52,8 @@ def add_skin_microstructure(material, atlas_size):
     import bpy
     nodes=material.node_tree.nodes;links=material.node_tree.links
     shader=nodes.get('Principled BSDF')
-    size=1024
+    from reference_quality import procedural_edge
+    size=procedural_edge(1024)
     rng=np.random.default_rng(47021)
     noise=rng.normal(0,1,(size,size)).astype(np.float32)
     soft=(noise+np.roll(noise,1,0)+np.roll(noise,-1,0)+np.roll(noise,1,1)+np.roll(noise,-1,1))/5
@@ -64,6 +65,7 @@ def add_skin_microstructure(material, atlas_size):
     # reused elsewhere; eye material and measured fit are otherwise untouched.
     rgba[:size//8,:size//8,:3]=(.5,.5,1.)
     image=bpy.data.images.new('couture-inferred-skin-pore-normal',width=size,height=size,alpha=False)
+    image['detail_origin']='authored_procedural_native'
     image.colorspace_settings.name='Non-Color';image.pixels.foreach_set(rgba.ravel());image.update();image.pack()
     tex=nodes.new('ShaderNodeTexImage');tex.name='Portable skin pore normal';tex.image=image
     # The first exported comparison made the pores read as coarse orange
@@ -73,6 +75,7 @@ def add_skin_microstructure(material, atlas_size):
     rgba[:,:,:3]=np.clip(.52+soft[:,:,None]*.018,.47,.57)
     rgba[:size//8,:size//8,:3]=.22
     image=bpy.data.images.new('couture-inferred-skin-roughness',width=size,height=size,alpha=False)
+    image['detail_origin']='authored_procedural_native'
     image.colorspace_settings.name='Non-Color';image.pixels.foreach_set(rgba.ravel());image.update();image.pack()
     tex=nodes.new('ShaderNodeTexImage');tex.name='Portable skin roughness';tex.image=image
     links.new(tex.outputs['Color'],shader.inputs['Roughness'])

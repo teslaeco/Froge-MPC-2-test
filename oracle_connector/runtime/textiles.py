@@ -48,7 +48,8 @@ def crystal_facets(material):
     pixels. Large silhouettes and seams remain actual separate mesh geometry.
     """
     if material.get('crystal_facets_revision')==1:return
-    size=1024;cols=14;rows=18;rng=np.random.default_rng(20260910)
+    from reference_quality import procedural_edge
+    size=procedural_edge(1024);cols=14;rows=18;rng=np.random.default_rng(20260910)
     grid=np.zeros((rows+1,cols+1,2),dtype=np.float32)
     for j in range(rows+1):
         for i in range(cols+1):
@@ -81,6 +82,7 @@ def crystal_facets(material):
     nodes=material.node_tree.nodes;links=material.node_tree.links;shader=nodes.get('Principled BSDF')
     for label,pixels,is_normal in (('microfacet-albedo',albedo,False),('microfacet-normal',normal,True)):
         image=bpy.data.images.new(material.name+'-'+label,width=size,height=size,alpha=False)
+        image['detail_origin']='authored_procedural_native'
         if is_normal:image.colorspace_settings.name='Non-Color'
         image.pixels.foreach_set(pixels.ravel());image.update();image.pack()
         tex=nodes.new('ShaderNodeTexImage');tex.name=label;tex.image=image
