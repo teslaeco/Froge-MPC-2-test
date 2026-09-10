@@ -1,0 +1,10 @@
+{
+  "blender": "4.3.0",
+  "passed": 4,
+  "checks": [
+    "Vertex/face reordering passes.",
+    "A moved vertex fails.",
+    "Reversed face winding fails.",
+    "Duplicate face replacing another face fails."
+  ]
+}

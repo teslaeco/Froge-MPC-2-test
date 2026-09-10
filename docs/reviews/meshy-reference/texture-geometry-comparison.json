@@ -1,0 +1,25 @@
+{
+  "blender": "4.3.0",
+  "before_file": "Meshy_AI_Emerald_Prism_Empress_0910195448_generate.fbx",
+  "after_file": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture.fbx",
+  "before_sha256": "8c517ff85e83284a06e16b3db705c17fa60372b1b7501ff061e433a71224c086",
+  "after_sha256": "d93be3dfe35275b598111692311e555de3848576cafd37f763dda0beffd90217",
+  "before_mesh_count": 1,
+  "after_mesh_count": 1,
+  "parts": [
+    {
+      "before_object": "mesh_node",
+      "after_object": "Mesh_0",
+      "same_vertex_count": true,
+      "same_indexed_connectivity": false,
+      "max_abs_coordinate_difference_at_same_index": 1.9008721713090346,
+      "within_tolerance": true,
+      "correspondence": "nearest source vertices; triangle multiset and winding checked",
+      "max_nearest_vertex_distance": 8.775253377280023e-07,
+      "triangles_and_winding_match_after_reindex": true
+    }
+  ],
+  "coordinate_tolerance_scene_units": 1e-06,
+  "same_surface_within_tolerance": true,
+  "note": "Reindexed triangular surfaces are matched by nearest source vertices and triangle multisets with winding. UVs/materials are intentionally excluded. Not a likeness score or proof of byte-identical coordinates."
+}

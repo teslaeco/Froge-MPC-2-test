@@ -1,3 +1,28 @@
+# Meshy texture ZIP verified — PR #8 follow-up
+
+Reupload received: 290,480,457 bytes; ZIP CRCs passed. SHA256:
+10b7e8892cda8a8447ab749dab465967135a28a41eed9472a4595f2189536ab8.
+External PNG maps: base color 8192x8192; normal/metallic/roughness 4096x4096.
+Textured FBX: one UV mesh, one connected material, 1,539,459 vertices and
+3,079,530 triangles. Embedded color/normal are JPEG; external PNGs were
+bound without modifying geometry/UVs/material assignments for a native GLB test.
+GLB 195,389,204 bytes; SHA ed3cd1eebe0f2db141d20b43c5d4ac6228862660253e3b5476f92b645ed61aa7.
+Reimport preserved base-color/normal PNG bytes and triangle count; 1,596,454
+vertices after attribute splitting. Three actual textured renders inspected.
+Untextured/textured FBX indices differ. Spatial matching plus triangle/winding
+comparison passed at 1e-6 scene units (max distance 8.775253377280023e-07).
+Five existing inspector tests and four geometry regression tests passed.
+The complete 112 Mi-pixel source set exceeds the current FORGE 80 Mi-pixel
+export budget. Native Blender test success is NOT worker admission success.
+Do not claim full PBR benchmark support until memory policy/worker are updated.
+Source checkpoint on draft PR #8: 9f090751db489f23650df47f75d198ef5351ba95;
+final reports/renders follow on the same branch. Fetch its head before resuming.
+See docs/reviews/meshy-reference/TEXTURES.md and updated Polish Codex task.
+No new model training, paid AI, geometry reconstruction, Site deploy or Oracle
+install. Site38 remains live. The missing texture ZIP status below is historical.
+
+---
+
 # Meshy geometry benchmark for PR #8 — 2026-09-10
 
 Inspected the supplied Meshy_AI_Emerald_Prism_Empress_0910195448_generate.fbx

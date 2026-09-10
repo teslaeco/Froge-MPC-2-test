@@ -16,7 +16,7 @@ Sebastian supplied a Meshy bust as the target for better reference fidelity. We 
 
 Counts are not a likeness score. The bust and full figure have different scope. FORGE reports 304,459 vertices before GLB export; its reimport has 351,497 because exported attributes split vertices at seams. Triangle counts agree. Imported boundary edges can similarly reflect split indices, not holes. The Meshy mesh has two edges incident to more than two faces; this audit alone does not establish printable topology.
 
-The uploaded FBX has no UVs, material slots or images. The texture ZIP failed to become available. The screenshots show a colored version and an 8K selection, but they cannot verify the files, UVs, PBR channels or exported texture dimensions. Do not mark texture comparison as passed until the ZIP is supplied and inspected.
+The first, untextured FBX has no UVs, material slots or images. The initial texture ZIP upload failed, but the subsequent upload is now verified: an 8192 × 8192 base-color PNG and three 4096 × 4096 PBR maps, with a UV-mapped textured FBX. See the [texture follow-up, native material audit and actual GLB renders](TEXTURES.md). The earlier missing-file status is resolved.
 
 Source hashes and full measured reports: [Meshy](meshy-asset-inspection.json), [FORGE](forge-asset-inspection.json). The 99,865,372-byte FBX remains the user's input and is not committed as a generator asset. The reports bind all renders to the source files by SHA-256.
 
