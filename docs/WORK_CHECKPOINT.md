@@ -1,3 +1,29 @@
+# Meshy geometry benchmark for PR #8 — 2026-09-10
+
+Inspected the supplied Meshy_AI_Emerald_Prism_Empress_0910195448_generate.fbx
+(SHA256 8c517ff85e83284a06e16b3db705c17fa60372b1b7501ff061e433a71224c086).
+Actual Blender import: 1,539,459 vertices, 3,079,530 triangles, one object,
+no UVs/materials/images. Texture ZIP upload failed and has NOT been read.
+The last FORGE GLB f1d5383bf1ab8cf112e59028d7e41294dba6cac1e374833f1d718548e6757cd8
+reimports as 351,497 vertices (UV/attribute splits), 592,396 triangles, 100
+objects, 14 images, maximum 2048x2048. The older 304,459 vertex figure is
+pre-export, not the raw GLB reimport count.
+Added scripts/inspect-reference-asset.py and five passing native Blender
+regression cases. Saved six actual clay renders with source/render hashes;
+front, three-quarter and back of both inputs inspected. FORGE upper-half
+framing is approximate, not pixel registration. Meshy better retains visible
+face, ear/hair flow, collar and folds. Current generator quality is NOT accepted.
+Docs/reviews/meshy-reference contains the comparison; the Polish Codex task now
+requires geometry acceptance, preserved master/separate LOD and verified PBR
+maps after the missing ZIP arrives. Strict optional all-material texture gates
+must not replace production checks for valid constant-color materials.
+Source is being added to the existing authorized draft PR #8; verify its
+remote head before reporting completion. This stage adds benchmark tooling,
+not a newly trained model or Meshy-quality reconstruction. No source FBX asset
+is embedded into the generator. Site38 and installed Oracle are unchanged.
+
+---
+
 # PR #8 prepared and checked — 2026-09-10
 
 https://github.com/teslaeco/Froge-MPC-2-test/pull/8 is OPEN/DRAFT, targeting main,

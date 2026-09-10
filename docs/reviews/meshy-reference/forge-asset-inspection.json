@@ -1,0 +1,6608 @@
+{
+  "schema_version": 1,
+  "source_file": "model.glb",
+  "source_sha256": "f1d5383bf1ab8cf112e59028d7e41294dba6cac1e374833f1d718548e6757cd8",
+  "source_bytes": 26965396,
+  "blender": "4.3.0",
+  "totals": {
+    "vertices": 351497,
+    "faces": 592396,
+    "triangles": 592396,
+    "boundary_edges": 76632,
+    "wire_edges": 0,
+    "edges_with_more_than_two_faces": 0,
+    "nonfinite_vertices": 0
+  },
+  "mesh_objects": 100,
+  "unique_meshes": 91,
+  "meshes": [
+    {
+      "name": "anatomical-eye-l",
+      "vertices": 1562,
+      "faces": 2976,
+      "triangles": 2976,
+      "edges": 4536,
+      "boundary_edges": 144,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "anatomical-coherent-eye"
+      ],
+      "used_materials": [
+        "anatomical-coherent-eye"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.011335396207869053,
+          -0.1480787843465805,
+          1.62810480594635
+        ],
+        "max": [
+          0.04990585520863533,
+          -0.10966960340738297,
+          1.6658415794372559
+        ]
+      },
+      "matrix_world": [
+        [
+          0.014166618697345257,
+          0.0024394679348915815,
+          -0.0030501217115670443,
+          0.03083083964884281
+        ],
+        [
+          -0.0017082014819607139,
+          0.014768596738576889,
+          0.0029464487452059984,
+          -0.12883979082107544
+        ],
+        [
+          0.0035325572825968266,
+          -0.002641506725922227,
+          0.01365669071674347,
+          1.6473596096038818
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-eye-r",
+      "vertices": 1562,
+      "faces": 2976,
+      "triangles": 2976,
+      "edges": 4536,
+      "boundary_edges": 144,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "anatomical-coherent-eye"
+      ],
+      "used_materials": [
+        "anatomical-coherent-eye"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.04954313486814499,
+          -0.1407039314508438,
+          1.6129306554794312
+        ],
+        "max": [
+          -0.011043773032724857,
+          -0.1023123562335968,
+          1.650604486465454
+        ]
+      },
+      "matrix_world": [
+        [
+          0.014166618697345257,
+          0.0024394679348915815,
+          -0.0030501217115670443,
+          -0.03069644793868065
+        ],
+        [
+          -0.0017082014819607139,
+          0.014768596738576889,
+          0.0029464487452059984,
+          -0.12140300869941711
+        ],
+        [
+          0.0035325572825968266,
+          -0.002641506725922227,
+          0.01365669071674347,
+          1.6319831609725952
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-hand-left",
+      "vertices": 7048,
+      "faces": 13152,
+      "triangles": 13152,
+      "edges": 20198,
+      "boundary_edges": 940,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "skin.001"
+      ],
+      "used_materials": [
+        "skin.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.18760991096496582,
+          -0.14010758697986603,
+          0.8522840142250061
+        ],
+        "max": [
+          0.31015947461128235,
+          -0.06629018485546112,
+          1.0454227924346924
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-hand-right",
+      "vertices": 7048,
+      "faces": 13152,
+      "triangles": 13152,
+      "edges": 20198,
+      "boundary_edges": 940,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "skin.001"
+      ],
+      "used_materials": [
+        "skin.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.28178656101226807,
+          -0.3106950521469116,
+          1.205509066581726
+        ],
+        "max": [
+          -0.14558987319469452,
+          -0.23741509020328522,
+          1.3301814794540405
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-head",
+      "vertices": 72966,
+      "faces": 144112,
+      "triangles": 144112,
+      "edges": 217076,
+      "boundary_edges": 1816,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "skin"
+      ],
+      "used_materials": [
+        "skin"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.14275312423706055,
+          -0.22687435150146484,
+          1.3939669132232666
+        ],
+        "max": [
+          0.15787801146507263,
+          0.09230834990739822,
+          1.7837274074554443
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.3784179985523224
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.3497242033481598
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.013760929927229881
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-lash-fibres",
+      "vertices": 4400,
+      "faces": 8448,
+      "triangles": 8448,
+      "edges": 12672,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "anatomical-lashes"
+      ],
+      "used_materials": [
+        "anatomical-lashes"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.050203606486320496,
+          -0.15570823848247528,
+          1.6297000646591187
+        ],
+        "max": [
+          0.0428214892745018,
+          -0.1301756054162979,
+          1.6629173755645752
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.3784179985523224
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.3497242033481598
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.013760929927229881
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-1",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.18831726908683777,
+          -0.10933908820152283,
+          0.9300877451896667
+        ],
+        "max": [
+          0.20161429047584534,
+          -0.09101225435733795,
+          0.9461725354194641
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-2",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.22555746138095856,
+          -0.1240721270442009,
+          0.854202926158905
+        ],
+        "max": [
+          0.23787672817707062,
+          -0.10908577591180801,
+          0.8738421201705933
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-3",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.258365660905838,
+          -0.10362769663333893,
+          0.8481941819190979
+        ],
+        "max": [
+          0.26937198638916016,
+          -0.08512528985738754,
+          0.8659791946411133
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-4",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.28444328904151917,
+          -0.09335501492023468,
+          0.8639959692955017
+        ],
+        "max": [
+          0.2934681475162506,
+          -0.07249699532985687,
+          0.8796914219856262
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-5",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.2993502616882324,
+          -0.0836145281791687,
+          0.8971543312072754
+        ],
+        "max": [
+          0.30640608072280884,
+          -0.06712055206298828,
+          0.9074676036834717
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-1",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.1962226927280426,
+          -0.2543416917324066,
+          1.2742730379104614
+        ],
+        "max": [
+          -0.1720048487186432,
+          -0.24102137982845306,
+          1.2841113805770874
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-2",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.16080453991889954,
+          -0.2684745490550995,
+          1.3033578395843506
+        ],
+        "max": [
+          -0.1421051025390625,
+          -0.24754728376865387,
+          1.318023920059204
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-3",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.15271076560020447,
+          -0.2628081440925598,
+          1.2809324264526367
+        ],
+        "max": [
+          -0.1434844434261322,
+          -0.2440452128648758,
+          1.293563961982727
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-4",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.15534454584121704,
+          -0.2634255290031433,
+          1.2548950910568237
+        ],
+        "max": [
+          -0.15217828750610352,
+          -0.2453623116016388,
+          1.2694817781448364
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-5",
+      "vertices": 546,
+      "faces": 1088,
+      "triangles": 1088,
+      "edges": 1632,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "nails"
+      ],
+      "used_materials": [
+        "nails"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.15682025253772736,
+          -0.2641695439815521,
+          1.23127281665802
+        ],
+        "max": [
+          -0.1551598459482193,
+          -0.24790632724761963,
+          1.2465293407440186
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "anatomical-upper-eyeliner",
+      "vertices": 464,
+      "faces": 232,
+      "triangles": 232,
+      "edges": 580,
+      "boundary_edges": 464,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "anatomical-lashes"
+      ],
+      "used_materials": [
+        "anatomical-lashes"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.050819575786590576,
+          -0.14959868788719177,
+          1.6291041374206543
+        ],
+        "max": [
+          0.04539535194635391,
+          -0.1300445944070816,
+          1.6587109565734863
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.3784179985523224
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.3497242033481598
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.013760929927229881
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-body-under-gown",
+      "vertices": 2203,
+      "faces": 4124,
+      "triangles": 4124,
+      "edges": 6324,
+      "boundary_edges": 276,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-body-skin"
+      ],
+      "used_materials": [
+        "emerald-muse-body-skin"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.16656678915023804,
+          -0.11473610997200012,
+          0.8361576199531555
+        ],
+        "max": [
+          0.16656678915023804,
+          0.11942590773105621,
+          1.4555721282958984
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-diagonal-inlay",
+      "vertices": 78,
+      "faces": 152,
+      "triangles": 152,
+      "edges": 228,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.06524405628442764,
+          -0.08917511999607086,
+          1.4180470705032349
+        ],
+        "max": [
+          -0.012134872376918793,
+          -0.02188519574701786,
+          1.5257140398025513
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-diagonal-inlay.001",
+      "vertices": 78,
+      "faces": 152,
+      "triangles": 152,
+      "edges": 228,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.03267090767621994,
+          -0.0890832170844078,
+          1.4180470705032349
+        ],
+        "max": [
+          0.07358567416667938,
+          -0.02188519574701786,
+          1.5258737802505493
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-front-edge",
+      "vertices": 78,
+      "faces": 152,
+      "triangles": 152,
+      "edges": 228,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.020752761512994766,
+          -0.10079294443130493,
+          1.4183745384216309
+        ],
+        "max": [
+          0.056079547852277756,
+          -0.04402049258351326,
+          1.5237597227096558
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-front-edge.001",
+      "vertices": 78,
+      "faces": 152,
+      "triangles": 152,
+      "edges": 228,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.02596711367368698,
+          -0.10074196755886078,
+          1.4183745384216309
+        ],
+        "max": [
+          0.004073331132531166,
+          -0.04402049258351326,
+          1.5237597227096558
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-rim",
+      "vertices": 294,
+      "faces": 584,
+      "triangles": 584,
+      "edges": 876,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.04267646372318268,
+          -0.055136311799287796,
+          1.5228723287582397
+        ],
+        "max": [
+          0.04898248612880707,
+          0.023434637114405632,
+          1.5297361612319946
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-conformal-facets",
+      "vertices": 33541,
+      "faces": 57600,
+      "triangles": 57600,
+      "edges": 90966,
+      "boundary_edges": 9132,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "crystal",
+        "dress",
+        "reference-surface-638bee023187.001-restrained-cloth.001"
+      ],
+      "used_materials": [
+        "crystal",
+        "dress",
+        "reference-surface-638bee023187.001-restrained-cloth.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.3135896921157837,
+          -0.2359359711408615,
+          0.06499999761581421
+        ],
+        "max": [
+          0.3135896921157837,
+          0.2359359711408615,
+          1.4299999475479126
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-couture-seams",
+      "vertices": 35640,
+      "faces": 70560,
+      "triangles": 70560,
+      "edges": 105840,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.31523287296295166,
+          -0.22935576736927032,
+          0.06469239294528961
+        ],
+        "max": [
+          0.3152146339416504,
+          0.2293563336133957,
+          1.430484652519226
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-earring",
+      "vertices": 30,
+      "faces": 12,
+      "triangles": 12,
+      "edges": 33,
+      "boundary_edges": 30,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "crystal.001"
+      ],
+      "used_materials": [
+        "crystal.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.06756942719221115,
+          -0.04484417662024498,
+          1.5041227340698242
+        ],
+        "max": [
+          -0.030665086582303047,
+          -0.023273568600416183,
+          1.558678388595581
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          -0.04789261892437935
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.03338290750980377
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          1.5268162488937378
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-earring-chain",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.05939941480755806,
+          -0.02899291180074215,
+          1.5469006299972534
+        ],
+        "max": [
+          -0.04274935647845268,
+          -0.01609431579709053,
+          1.576025128364563
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-earring-chain.001",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.09479507058858871,
+          -0.04758558049798012,
+          1.5853502750396729
+        ],
+        "max": [
+          0.1114451214671135,
+          -0.03468698263168335,
+          1.6144747734069824
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-earring-rim",
+      "vertices": 36,
+      "faces": 60,
+      "triangles": 60,
+      "edges": 90,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.06716448068618774,
+          -0.039700500667095184,
+          1.5039308071136475
+        ],
+        "max": [
+          -0.030464837327599525,
+          -0.025283873081207275,
+          1.557958722114563
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-earring-rim.001",
+      "vertices": 36,
+      "faces": 60,
+      "triangles": 60,
+      "edges": 90,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.09473973512649536,
+          -0.05922280624508858,
+          1.5443029403686523
+        ],
+        "max": [
+          0.13143937289714813,
+          -0.04480617493391037,
+          1.5983307361602783
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-earring.001",
+      "vertices": 30,
+      "faces": 12,
+      "triangles": 12,
+      "edges": 33,
+      "boundary_edges": 30,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "crystal.001"
+      ],
+      "used_materials": [
+        "crystal.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.09433478116989136,
+          -0.06436648219823837,
+          1.544494867324829
+        ],
+        "max": [
+          0.1312391310930252,
+          -0.04279587045311928,
+          1.599050521850586
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.11401159316301346
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.052905209362506866
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          1.5671883821487427
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-exposed-upper-arm",
+      "vertices": 613,
+      "faces": 1036,
+      "triangles": 1036,
+      "edges": 1646,
+      "boundary_edges": 184,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-body-skin"
+      ],
+      "used_materials": [
+        "emerald-muse-body-skin"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.1261957585811615,
+          -0.048891473561525345,
+          1.2693647146224976
+        ],
+        "max": [
+          0.24323788285255432,
+          0.048891473561525345,
+          1.4071118831634521
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-dark-continuous-outline",
+      "vertices": 126,
+      "faces": 248,
+      "triangles": 248,
+      "edges": 372,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "shoe"
+      ],
+      "used_materials": [
+        "shoe"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.4169582426548004,
+          -0.2556999921798706,
+          1.3798630237579346
+        ],
+        "max": [
+          0.08695822954177856,
+          -0.25429999828338623,
+          1.551446795463562
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-grip-handle",
+      "vertices": 48,
+      "faces": 92,
+      "triangles": 92,
+      "edges": 138,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "shoe"
+      ],
+      "used_materials": [
+        "shoe"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.17400000989437103,
+          -0.25200000405311584,
+          1.222000002861023
+        ],
+        "max": [
+          -0.15600000321865082,
+          -0.23399999737739563,
+          1.3049999475479126
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-outer-rim",
+      "vertices": 180,
+      "faces": 320,
+      "triangles": 320,
+      "edges": 480,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.36814531683921814,
+          -0.24921627342700958,
+          1.3596223592758179
+        ],
+        "max": [
+          0.038145288825035095,
+          -0.24282805621623993,
+          1.505985975265503
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-pendant",
+      "vertices": 40,
+      "faces": 16,
+      "triangles": 16,
+      "edges": 44,
+      "boundary_edges": 40,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "crystal.001"
+      ],
+      "used_materials": [
+        "crystal.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.156000018119812,
+          -0.2629999816417694,
+          1.065999984741211
+        ],
+        "max": [
+          -0.13600000739097595,
+          -0.2513999938964844,
+          1.1160000562667847
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.14600001275539398
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.090000033378601
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-pendant-chain",
+      "vertices": 36,
+      "faces": 68,
+      "triangles": 68,
+      "edges": 102,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.15551891922950745,
+          -0.2556000053882599,
+          1.1079730987548828
+        ],
+        "max": [
+          -0.14548109471797943,
+          -0.25439998507499695,
+          1.2810269594192505
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.415814608335495,
+          -0.24424999952316284,
+          1.274077296257019
+        ],
+        "max": [
+          -0.1646144688129425,
+          -0.24199999868869781,
+          1.3802210092544556
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.001",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.3846571445465088,
+          -0.24424999952316284,
+          1.274192452430725
+        ],
+        "max": [
+          -0.16441021859645844,
+          -0.24199999868869781,
+          1.4356305599212646
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.002",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.3414248526096344,
+          -0.24424999952316284,
+          1.274351954460144
+        ],
+        "max": [
+          -0.16423840820789337,
+          -0.242000013589859,
+          1.4822101593017578
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.003",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.2884942889213562,
+          -0.24424998462200165,
+          1.2745471000671387
+        ],
+        "max": [
+          -0.16410845518112183,
+          -0.242000013589859,
+          1.5173990726470947
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.004",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.2287750393152237,
+          -0.24424999952316284,
+          1.2747671604156494
+        ],
+        "max": [
+          -0.16402749717235565,
+          -0.24199999868869781,
+          1.5392628908157349
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.005",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.16600000858306885,
+          -0.24424999952316284,
+          1.274997353553772
+        ],
+        "max": [
+          -0.164000004529953,
+          -0.24199999868869781,
+          1.546601414680481
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.006",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.1659725159406662,
+          -0.24424999952316284,
+          1.2747671604156494
+        ],
+        "max": [
+          -0.10122496634721756,
+          -0.24199999868869781,
+          1.5392628908157349
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.007",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.16589155793190002,
+          -0.24424998462200165,
+          1.2745471000671387
+        ],
+        "max": [
+          -0.04150573909282684,
+          -0.242000013589859,
+          1.5173990726470947
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.008",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.16576160490512848,
+          -0.24424999952316284,
+          1.274351954460144
+        ],
+        "max": [
+          0.011424864642322063,
+          -0.242000013589859,
+          1.4822101593017578
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.009",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.16558979451656342,
+          -0.24424999952316284,
+          1.274192452430725
+        ],
+        "max": [
+          0.05465715751051903,
+          -0.24199999868869781,
+          1.4356305599212646
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.010",
+      "vertices": 16,
+      "faces": 28,
+      "triangles": 28,
+      "edges": 42,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.16538554430007935,
+          -0.24424999952316284,
+          1.274077296257019
+        ],
+        "max": [
+          0.08581461012363434,
+          -0.24199999868869781,
+          1.3802210092544556
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.4061233103275299,
+          -0.2590000033378601,
+          1.3781697750091553
+        ],
+        "max": [
+          -0.3678048551082611,
+          -0.24399998784065247,
+          1.422070026397705
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.3869640827178955
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.4001199007034302
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-01",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.37088918685913086,
+          -0.2590000033378601,
+          1.4264135360717773
+        ],
+        "max": [
+          -0.33257073163986206,
+          -0.24399998784065247,
+          1.4703137874603271
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.35172995924949646
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.4483636617660522
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-02",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.3253902792930603,
+          -0.2590000033378601,
+          1.4651272296905518
+        ],
+        "max": [
+          -0.2870718240737915,
+          -0.24399998784065247,
+          1.5090274810791016
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.3062310516834259
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.4870773553848267
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-03",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.2721276879310608,
+          -0.2590000033378601,
+          1.4921828508377075
+        ],
+        "max": [
+          -0.233809232711792,
+          -0.24399998784065247,
+          1.5360831022262573
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.2529684603214264
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.5141329765319824
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-04",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.21402938663959503,
+          -0.2590000033378601,
+          1.50609290599823
+        ],
+        "max": [
+          -0.17571093142032623,
+          -0.24399998784065247,
+          1.5499931573867798
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.19487015902996063
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.5280430316925049
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-05",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.15428908169269562,
+          -0.2590000033378601,
+          1.50609290599823
+        ],
+        "max": [
+          -0.11597062647342682,
+          -0.24399998784065247,
+          1.5499931573867798
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.13512985408306122
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.5280430316925049
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-06",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.09619076550006866,
+          -0.2590000033378601,
+          1.4921828508377075
+        ],
+        "max": [
+          -0.057872310280799866,
+          -0.24399998784065247,
+          1.5360831022262573
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.07703153789043427
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.5141329765319824
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-07",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.042928196489810944,
+          -0.2590000033378601,
+          1.4651272296905518
+        ],
+        "max": [
+          -0.004609741270542145,
+          -0.24399998784065247,
+          1.5090274810791016
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.023768968880176544
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.4870773553848267
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-08",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.0025707148015499115,
+          -0.2590000033378601,
+          1.4264135360717773
+        ],
+        "max": [
+          0.04088917002081871,
+          -0.24399998784065247,
+          1.4703137874603271
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.02172994241118431
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.4483636617660522
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-09",
+      "vertices": 708,
+      "faces": 508,
+      "triangles": 508,
+      "edges": 1086,
+      "boundary_edges": 648,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "crystal.003",
+        "shoe"
+      ],
+      "used_materials": [
+        "crystal.003",
+        "shoe",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.03780483826994896,
+          -0.2590000033378601,
+          1.3781697750091553
+        ],
+        "max": [
+          0.07612329721450806,
+          -0.24399998784065247,
+          1.422070026397705
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.05696406587958336
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.2549999952316284
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.4001199007034302
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fine-updo-filaments",
+      "vertices": 31008,
+      "faces": 61200,
+      "triangles": 61200,
+      "edges": 91800,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-warm-hair-locks"
+      ],
+      "used_materials": [
+        "emerald-muse-warm-hair-locks"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.10966765880584717,
+          -0.15406277775764465,
+          1.5995315313339233
+        ],
+        "max": [
+          0.10301478207111359,
+          0.08463846147060394,
+          1.7944422960281372
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fitted-gown",
+      "vertices": 46310,
+      "faces": 36864,
+      "triangles": 36864,
+      "edges": 74076,
+      "boundary_edges": 37560,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "dress",
+        "reference-surface-638bee023187.001-restrained-cloth"
+      ],
+      "used_materials": [
+        "dress",
+        "reference-surface-638bee023187.001-restrained-cloth"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.3139980137348175,
+          -0.23628772795200348,
+          0.02500000037252903
+        ],
+        "max": [
+          0.3139980137348175,
+          0.23628772795200348,
+          1.4500000476837158
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fitted-palm-glove",
+      "vertices": 2000,
+      "faces": 4000,
+      "triangles": 4000,
+      "edges": 6000,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-midnight-fingerless-glove"
+      ],
+      "used_materials": [
+        "emerald-muse-midnight-fingerless-glove"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.28291648626327515,
+          -0.31208616495132446,
+          1.1986428499221802
+        ],
+        "max": [
+          -0.2010316401720047,
+          -0.2589418292045593,
+          1.2904462814331055
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fitted-sleeve",
+      "vertices": 1321,
+      "faces": 2396,
+      "triangles": 2396,
+      "edges": 3714,
+      "boundary_edges": 240,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "dress.001"
+      ],
+      "used_materials": [
+        "dress.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.2954253852367401,
+          -0.3100382685661316,
+          1.0288150310516357
+        ],
+        "max": [
+          -0.11975738406181335,
+          0.05246211215853691,
+          1.4081658124923706
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-fitted-sleeve.001",
+      "vertices": 1321,
+      "faces": 2396,
+      "triangles": 2396,
+      "edges": 3714,
+      "boundary_edges": 240,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "dress.001"
+      ],
+      "used_materials": [
+        "dress.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.15672580897808075,
+          -0.1379048079252243,
+          1.0060081481933594
+        ],
+        "max": [
+          0.29468095302581787,
+          0.052055902779102325,
+          1.329673409461975
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-glove-facet-edges",
+      "vertices": 320,
+      "faces": 576,
+      "triangles": 576,
+      "edges": 864,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-pewter-glove-facets"
+      ],
+      "used_materials": [
+        "emerald-muse-pewter-glove-facets"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.27294856309890747,
+          -0.3134782910346985,
+          1.2168861627578735
+        ],
+        "max": [
+          -0.19225560128688812,
+          -0.30162954330444336,
+          1.3026763200759888
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-glove-facets",
+      "vertices": 6292,
+      "faces": 2688,
+      "triangles": 2688,
+      "edges": 7178,
+      "boundary_edges": 6292,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-pewter-glove-facets"
+      ],
+      "used_materials": [
+        "emerald-muse-pewter-glove-facets"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.2727771997451782,
+          -0.31475216150283813,
+          1.217095136642456
+        ],
+        "max": [
+          -0.1924089789390564,
+          -0.3008991479873657,
+          1.3024675846099854
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-glove-wrist-seam",
+      "vertices": 493,
+      "faces": 828,
+      "triangles": 828,
+      "edges": 1318,
+      "boundary_edges": 152,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-midnight-fingerless-glove"
+      ],
+      "used_materials": [
+        "emerald-muse-midnight-fingerless-glove"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.28858548402786255,
+          -0.3116902709007263,
+          1.191467046737671
+        ],
+        "max": [
+          -0.22656798362731934,
+          -0.2545613646507263,
+          1.2522896528244019
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-hair-jewel",
+      "vertices": 40,
+      "faces": 16,
+      "triangles": 16,
+      "edges": 44,
+      "boundary_edges": 40,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "crystal.001"
+      ],
+      "used_materials": [
+        "crystal.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.027274444699287415,
+          -0.06803051382303238,
+          1.7285972833633423
+        ],
+        "max": [
+          0.061480533331632614,
+          -0.034741323441267014,
+          1.80999755859375
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.026540609076619148
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.05395028740167618
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          1.75101637840271
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-hair-jewel-rims",
+      "vertices": 300,
+      "faces": 480,
+      "triangles": 480,
+      "edges": 720,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.027699574828147888,
+          -0.07999496906995773,
+          1.682110071182251
+        ],
+        "max": [
+          0.09282934665679932,
+          -0.016340812668204308,
+          1.815108299255371
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-hair-jewel.001",
+      "vertices": 30,
+      "faces": 12,
+      "triangles": 12,
+      "edges": 33,
+      "boundary_edges": 30,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "crystal.001"
+      ],
+      "used_materials": [
+        "crystal.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.013538604602217674,
+          -0.0734160840511322,
+          1.6981728076934814
+        ],
+        "max": [
+          0.08891209959983826,
+          -0.04246173053979874,
+          1.7726290225982666
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.04682289436459541
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.05324433743953705
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          1.7449229955673218
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-hair-jewel.002",
+      "vertices": 30,
+      "faces": 12,
+      "triangles": 12,
+      "edges": 33,
+      "boundary_edges": 30,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "crystal.001"
+      ],
+      "used_materials": [
+        "crystal.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.04099973663687706,
+          -0.058134835213422775,
+          1.6954960823059082
+        ],
+        "max": [
+          0.0929202288389206,
+          -0.029467446729540825,
+          1.7668095827102661
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.06539729237556458
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.03899817168712616
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          1.7439035177230835
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-hairline-wisps",
+      "vertices": 3984,
+      "faces": 7636,
+      "triangles": 7636,
+      "edges": 11454,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "hair"
+      ],
+      "used_materials": [
+        "hair"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.09829951822757721,
+          -0.1533191055059433,
+          1.6203831434249878
+        ],
+        "max": [
+          0.08895573019981384,
+          -0.0072767166420817375,
+          1.7425340414047241
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-leg",
+      "vertices": 1027,
+      "faces": 1820,
+      "triangles": 1820,
+      "edges": 2844,
+      "boundary_edges": 228,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-body-skin"
+      ],
+      "used_materials": [
+        "emerald-muse-body-skin"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.1429940164089203,
+          -0.0729868933558464,
+          0.097115159034729
+        ],
+        "max": [
+          -0.013005979359149933,
+          0.0729868933558464,
+          0.9416385889053345
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-leg.001",
+      "vertices": 1027,
+      "faces": 1820,
+      "triangles": 1820,
+      "edges": 2844,
+      "boundary_edges": 228,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-body-skin"
+      ],
+      "used_materials": [
+        "emerald-muse-body-skin"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.013005979359149933,
+          -0.0729868933558464,
+          0.097115159034729
+        ],
+        "max": [
+          0.1429940164089203,
+          0.0729868933558464,
+          0.9416385889053345
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-neck",
+      "vertices": 439,
+      "faces": 668,
+      "triangles": 668,
+      "edges": 1104,
+      "boundary_edges": 204,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-body-skin"
+      ],
+      "used_materials": [
+        "emerald-muse-body-skin"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.05400000140070915,
+          -0.046411193907260895,
+          1.3818238973617554
+        ],
+        "max": [
+          0.05400000140070915,
+          0.054313063621520996,
+          1.4620081186294556
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-pleated-fan",
+      "vertices": 4344,
+      "faces": 1760,
+      "triangles": 1760,
+      "edges": 4812,
+      "boundary_edges": 4344,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "crystal.002",
+        "reference-surface-638bee023187.003"
+      ],
+      "used_materials": [
+        "crystal.002",
+        "reference-surface-638bee023187.003"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.41637760400772095,
+          -0.25885578989982605,
+          1.2806763648986816
+        ],
+        "max": [
+          0.08637760579586029,
+          -0.2409999966621399,
+          1.5508447885513306
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          -0.16500000655651093
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.24300000071525574
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.274999976158142
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoe",
+      "vertices": 205,
+      "faces": 320,
+      "triangles": 320,
+      "edges": 524,
+      "boundary_edges": 88,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "shoe"
+      ],
+      "used_materials": [
+        "shoe"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.13999998569488525,
+          -0.1639999896287918,
+          0.017000000923871994
+        ],
+        "max": [
+          -0.06999999284744263,
+          0.04199999198317528,
+          0.07899999618530273
+        ]
+      },
+      "matrix_world": [
+        [
+          0.03500000014901161,
+          0.0,
+          0.0,
+          -0.10499999672174454
+        ],
+        [
+          0.0,
+          0.10300000011920929,
+          0.0,
+          -0.061000000685453415
+        ],
+        [
+          0.0,
+          0.0,
+          0.03099999949336052,
+          0.04800000041723251
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoe-heel",
+      "vertices": 223,
+      "faces": 332,
+      "triangles": 332,
+      "edges": 552,
+      "boundary_edges": 108,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "shoe"
+      ],
+      "used_materials": [
+        "shoe"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.11899999529123306,
+          -0.006000000052154064,
+          0.006000000052154064
+        ],
+        "max": [
+          -0.09099999815225601,
+          0.02199999988079071,
+          0.052000001072883606
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoe-heel.001",
+      "vertices": 223,
+      "faces": 332,
+      "triangles": 332,
+      "edges": 552,
+      "boundary_edges": 108,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "shoe"
+      ],
+      "used_materials": [
+        "shoe"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.09099999815225601,
+          -0.006000000052154064,
+          0.006000000052154064
+        ],
+        "max": [
+          0.11899999529123306,
+          0.02199999988079071,
+          0.052000001072883606
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoe.001",
+      "vertices": 205,
+      "faces": 320,
+      "triangles": 320,
+      "edges": 524,
+      "boundary_edges": 88,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "shoe"
+      ],
+      "used_materials": [
+        "shoe"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.07000000029802322,
+          -0.1639999896287918,
+          0.017000000923871994
+        ],
+        "max": [
+          0.14000000059604645,
+          0.04199999198317528,
+          0.07899999618530273
+        ]
+      },
+      "matrix_world": [
+        [
+          0.03500000014901161,
+          0.0,
+          0.0,
+          0.10499999672174454
+        ],
+        [
+          0.0,
+          0.10300000011920929,
+          0.0,
+          -0.061000000685453415
+        ],
+        [
+          0.0,
+          0.0,
+          0.03099999949336052,
+          0.04800000041723251
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-drape",
+      "vertices": 6656,
+      "faces": 13308,
+      "triangles": 13308,
+      "edges": 19962,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "dress.001"
+      ],
+      "used_materials": [
+        "dress.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.3799999952316284,
+          0.0480753630399704,
+          0.04959012567996979
+        ],
+        "max": [
+          0.3812319040298462,
+          0.3241693079471588,
+          1.4249999523162842
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-fold",
+      "vertices": 12,
+      "faces": 20,
+      "triangles": 20,
+      "edges": 30,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.2082211971282959,
+          -0.09251952916383743,
+          1.3955442905426025
+        ],
+        "max": [
+          -0.08977880328893661,
+          -0.05048046633601189,
+          1.4344557523727417
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-fold.001",
+      "vertices": 12,
+      "faces": 20,
+      "triangles": 20,
+      "edges": 30,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.08977880328893661,
+          -0.09251952916383743,
+          1.3955442905426025
+        ],
+        "max": [
+          0.2082211971282959,
+          -0.05048046633601189,
+          1.4344557523727417
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-inlay",
+      "vertices": 28,
+      "faces": 12,
+      "triangles": 12,
+      "edges": 32,
+      "boundary_edges": 28,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "reference-surface-638bee023187.001"
+      ],
+      "used_materials": [
+        "reference-surface-638bee023187.001",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.27000001072883606,
+          -0.0949999988079071,
+          1.3960000276565552
+        ],
+        "max": [
+          -0.09000000357627869,
+          -0.017000000923871994,
+          1.4950000047683716
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-inlay.001",
+      "vertices": 28,
+      "faces": 12,
+      "triangles": 12,
+      "edges": 32,
+      "boundary_edges": 28,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "silver",
+        "reference-surface-638bee023187.001"
+      ],
+      "used_materials": [
+        "reference-surface-638bee023187.001",
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.09000000357627869,
+          -0.0949999988079071,
+          1.3960000276565552
+        ],
+        "max": [
+          0.27000001072883606,
+          -0.017000000923871994,
+          1.4950000047683716
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-silver-edge",
+      "vertices": 30,
+      "faces": 56,
+      "triangles": 56,
+      "edges": 84,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.2703418731689453,
+          -0.09680291265249252,
+          1.3953748941421509
+        ],
+        "max": [
+          -0.08944986015558243,
+          -0.01919708587229252,
+          1.4957042932510376
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-silver-edge.001",
+      "vertices": 30,
+      "faces": 56,
+      "triangles": 56,
+      "edges": 84,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.08944986015558243,
+          -0.09680291265249252,
+          1.3953748941421509
+        ],
+        "max": [
+          0.2703418731689453,
+          -0.01919708587229252,
+          1.4957042932510376
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-standing-collar",
+      "vertices": 1317,
+      "faces": 2544,
+      "triangles": 2544,
+      "edges": 3859,
+      "boundary_edges": 86,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap",
+        "UVMap.001"
+      ],
+      "material_slots": [
+        "reference-surface-638bee023187.002"
+      ],
+      "used_materials": [
+        "reference-surface-638bee023187.002"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.06794524937868118,
+          -0.09986372292041779,
+          1.417080044746399
+        ],
+        "max": [
+          0.086918905377388,
+          0.04500000178813934,
+          1.5294122695922852
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-swept-updo-locks",
+      "vertices": 28106,
+      "faces": 51700,
+      "triangles": 51700,
+      "edges": 79759,
+      "boundary_edges": 4418,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-warm-hair-locks"
+      ],
+      "used_materials": [
+        "emerald-muse-warm-hair-locks"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.10921841114759445,
+          -0.15409386157989502,
+          1.5998574495315552
+        ],
+        "max": [
+          0.10234535485506058,
+          0.08384889364242554,
+          1.7940263748168945
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-updo-back",
+      "vertices": 729,
+      "faces": 1280,
+      "triangles": 1280,
+      "edges": 2008,
+      "boundary_edges": 176,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "hair"
+      ],
+      "used_materials": [
+        "hair"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.046395909041166306,
+          0.014296840876340866,
+          1.5714125633239746
+        ],
+        "max": [
+          0.09536264836788177,
+          0.12530012428760529,
+          1.7338972091674805
+        ]
+      },
+      "matrix_world": [
+        [
+          0.05107691511511803,
+          0.005938178859651089,
+          -0.013864188455045223,
+          0.024483369663357735
+        ],
+        [
+          -0.006158820819109678,
+          0.03594987839460373,
+          0.013392948545515537,
+          0.06979848444461823
+        ],
+        [
+          0.012736428529024124,
+          -0.006429984234273434,
+          0.062075864523649216,
+          1.6526548862457275
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-updo-folds",
+      "vertices": 7410,
+      "faces": 13620,
+      "triangles": 13620,
+      "edges": 21015,
+      "boundary_edges": 1170,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "emerald-muse-warm-hair-locks"
+      ],
+      "used_materials": [
+        "emerald-muse-warm-hair-locks"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.049005404114723206,
+          0.011907419189810753,
+          1.5706825256347656
+        ],
+        "max": [
+          0.09818083047866821,
+          0.12809118628501892,
+          1.734302043914795
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.36986514925956726
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.34146204590797424
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.052055723965168
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-visible-pleated-cape",
+      "vertices": 2970,
+      "faces": 5936,
+      "triangles": 5936,
+      "edges": 8904,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "reference-surface-638bee023187"
+      ],
+      "used_materials": [
+        "reference-surface-638bee023187"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.17399999499320984,
+          -0.05699242651462555,
+          0.08699999749660492
+        ],
+        "max": [
+          0.42585980892181396,
+          0.004913731478154659,
+          1.4249999523162842
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-gem",
+      "vertices": 60,
+      "faces": 24,
+      "triangles": 24,
+      "edges": 66,
+      "boundary_edges": 60,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "crystal.001"
+      ],
+      "used_materials": [
+        "crystal.001"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.020999999716877937,
+          -0.10199999809265137,
+          1.0750000476837158
+        ],
+        "max": [
+          0.020999999716877937,
+          -0.08749999850988388,
+          1.1340000629425049
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          -0.09200000017881393
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          1.1030000448226929
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-gem-rim",
+      "vertices": 42,
+      "faces": 80,
+      "triangles": 80,
+      "edges": 120,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.021652458235621452,
+          -0.09279999881982803,
+          1.074554443359375
+        ],
+        "max": [
+          0.021652458235621452,
+          -0.09120000153779984,
+          1.1346927881240845
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-metal-ribbon",
+      "vertices": 776,
+      "faces": 1548,
+      "triangles": 1548,
+      "edges": 2322,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.13097956776618958,
+          -0.08646702021360397,
+          1.0732001066207886
+        ],
+        "max": [
+          0.13097749650478363,
+          0.08987588435411453,
+          1.0931698083877563
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-metal-ribbon.001",
+      "vertices": 776,
+      "faces": 1548,
+      "triangles": 1548,
+      "edges": 2322,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.1255096197128296,
+          -0.08582887053489685,
+          1.0897750854492188
+        ],
+        "max": [
+          0.12550756335258484,
+          0.08626805245876312,
+          1.1016662120819092
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-metal-ribbon.002",
+      "vertices": 776,
+      "faces": 1548,
+      "triangles": 1548,
+      "edges": 2322,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.1252480000257492,
+          -0.08606503158807755,
+          1.101580023765564
+        ],
+        "max": [
+          0.12524594366550446,
+          0.08599600195884705,
+          1.1121996641159058
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-metal-ribbon.003",
+      "vertices": 776,
+      "faces": 1548,
+      "triangles": 1548,
+      "edges": 2322,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "silver"
+      ],
+      "used_materials": [
+        "silver"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.12803441286087036,
+          -0.08716784417629242,
+          1.1104247570037842
+        ],
+        "max": [
+          0.128032386302948,
+          0.08721505850553513,
+          1.1277999877929688
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "eyebrow-fibres",
+      "vertices": 8400,
+      "faces": 15120,
+      "triangles": 15120,
+      "edges": 22680,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "anatomical-matte-brows-hair"
+      ],
+      "used_materials": [
+        "anatomical-matte-brows-hair"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.065740667283535,
+          -0.15323595702648163,
+          1.6389200687408447
+        ],
+        "max": [
+          -0.01476522907614708,
+          -0.1114962175488472,
+          1.6669789552688599
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.3784179985523224
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.3497242033481598
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.013760929927229881
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "eyebrow-fibres.001",
+      "vertices": 8400,
+      "faces": 15120,
+      "triangles": 15120,
+      "edges": 22680,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "anatomical-matte-brows-hair"
+      ],
+      "used_materials": [
+        "anatomical-matte-brows-hair"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          0.002113187685608864,
+          -0.16121640801429749,
+          1.655993938446045
+        ],
+        "max": [
+          0.05386130511760712,
+          -0.11638575792312622,
+          1.684988021850586
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.3784179985523224
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.3497242033481598
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.013760929927229881
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    {
+      "name": "fitted-none",
+      "vertices": 2058,
+      "faces": 4048,
+      "triangles": 4048,
+      "edges": 6105,
+      "boundary_edges": 66,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 0,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [
+        "UVMap"
+      ],
+      "material_slots": [
+        "hair"
+      ],
+      "used_materials": [
+        "hair"
+      ],
+      "unassigned_material_faces": 0,
+      "world_bounds": {
+        "min": [
+          -0.10861934721469879,
+          -0.15466822683811188,
+          1.597933292388916
+        ],
+        "max": [
+          0.10315193235874176,
+          0.08350958675146103,
+          1.7905844449996948
+        ]
+      },
+      "matrix_world": [
+        [
+          0.9637155532836914,
+          0.16049130260944366,
+          -0.21329522132873535,
+          0.3784179985523224
+        ],
+        [
+          -0.11620417982339859,
+          0.9716181755065918,
+          0.20604537427425385,
+          -0.3497242033481598
+        ],
+        [
+          0.24031001329421997,
+          -0.1737833321094513,
+          0.9550133347511292,
+          0.013760929927229881
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "materials": [
+    {
+      "name": "anatomical-coherent-eye",
+      "image_channels": {
+        "Base Color": [
+          "anatomical-dedicated-iris"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "anatomical-lashes",
+      "image_channels": {
+        "Base Color": [],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "anatomical-matte-brows-hair",
+      "image_channels": {
+        "Base Color": [],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "crystal",
+      "image_channels": {
+        "Base Color": [
+          "crystal-microfacet-albedo"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": [
+          "crystal-microfacet-normal"
+        ]
+      }
+    },
+    {
+      "name": "crystal.001",
+      "image_channels": {
+        "Base Color": [
+          "crystal-microfacet-albedo"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": [
+          "crystal-microfacet-normal"
+        ]
+      }
+    },
+    {
+      "name": "crystal.002",
+      "image_channels": {
+        "Base Color": [
+          "crystal-microfacet-albedo"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": [
+          "crystal-microfacet-normal"
+        ]
+      }
+    },
+    {
+      "name": "crystal.003",
+      "image_channels": {
+        "Base Color": [
+          "crystal-microfacet-albedo"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": [
+          "crystal-microfacet-normal"
+        ]
+      }
+    },
+    {
+      "name": "dress",
+      "image_channels": {
+        "Base Color": [
+          "dress-UV"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "dress.001",
+      "image_channels": {
+        "Base Color": [
+          "dress-UV"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "emerald-muse-body-skin",
+      "image_channels": {
+        "Base Color": [],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "emerald-muse-midnight-fingerless-glove",
+      "image_channels": {
+        "Base Color": [],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "emerald-muse-pewter-glove-facets",
+      "image_channels": {
+        "Base Color": [
+          "silver-UV"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "emerald-muse-warm-hair-locks",
+      "image_channels": {
+        "Base Color": [
+          "emerald-muse-warm-hair-locks-strand-albedo"
+        ],
+        "Metallic": [
+          "emerald-muse-warm-hair-locks-strand-roughness"
+        ],
+        "Roughness": [
+          "emerald-muse-warm-hair-locks-strand-roughness"
+        ],
+        "Normal": [
+          "procedural-fine-hair-strands-normal"
+        ]
+      }
+    },
+    {
+      "name": "hair",
+      "image_channels": {
+        "Base Color": [
+          "hair-strand-albedo"
+        ],
+        "Metallic": [
+          "hair-strand-roughness"
+        ],
+        "Roughness": [
+          "hair-strand-roughness"
+        ],
+        "Normal": [
+          "procedural-fine-hair-strands-normal"
+        ]
+      }
+    },
+    {
+      "name": "nails",
+      "image_channels": {
+        "Base Color": [],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "reference-surface-638bee023187",
+      "image_channels": {
+        "Base Color": [
+          "reference-0"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "reference-surface-638bee023187.001",
+      "image_channels": {
+        "Base Color": [
+          "reference-0"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "reference-surface-638bee023187.001-restrained-cloth",
+      "image_channels": {
+        "Base Color": [
+          "reference-0"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "reference-surface-638bee023187.001-restrained-cloth.001",
+      "image_channels": {
+        "Base Color": [
+          "reference-0"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "reference-surface-638bee023187.002",
+      "image_channels": {
+        "Base Color": [
+          "reference-0"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "reference-surface-638bee023187.003",
+      "image_channels": {
+        "Base Color": [
+          "reference-0"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "shoe",
+      "image_channels": {
+        "Base Color": [],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "silver",
+      "image_channels": {
+        "Base Color": [
+          "silver-UV"
+        ],
+        "Metallic": [],
+        "Roughness": [],
+        "Normal": []
+      }
+    },
+    {
+      "name": "skin",
+      "image_channels": {
+        "Base Color": [
+          "female-skin"
+        ],
+        "Metallic": [
+          "couture-inferred-skin-roughness"
+        ],
+        "Roughness": [
+          "couture-inferred-skin-roughness"
+        ],
+        "Normal": [
+          "couture-inferred-skin-pore-normal"
+        ]
+      }
+    },
+    {
+      "name": "skin.001",
+      "image_channels": {
+        "Base Color": [
+          "female-skin"
+        ],
+        "Metallic": [
+          "couture-inferred-skin-roughness"
+        ],
+        "Roughness": [
+          "couture-inferred-skin-roughness"
+        ],
+        "Normal": [
+          "couture-inferred-skin-pore-normal"
+        ]
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "anatomical-dedicated-iris",
+      "size": [
+        512,
+        512
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "sRGB"
+    },
+    {
+      "name": "couture-inferred-skin-pore-normal",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "Non-Color"
+    },
+    {
+      "name": "couture-inferred-skin-roughness",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "Non-Color"
+    },
+    {
+      "name": "crystal-microfacet-albedo",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "sRGB"
+    },
+    {
+      "name": "crystal-microfacet-normal",
+      "size": [
+        1024,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "Non-Color"
+    },
+    {
+      "name": "dress-UV",
+      "size": [
+        512,
+        512
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "sRGB"
+    },
+    {
+      "name": "emerald-muse-warm-hair-locks-strand-albedo",
+      "size": [
+        2048,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "sRGB"
+    },
+    {
+      "name": "emerald-muse-warm-hair-locks-strand-roughness",
+      "size": [
+        2048,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "Non-Color"
+    },
+    {
+      "name": "female-skin",
+      "size": [
+        2048,
+        2048
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "sRGB"
+    },
+    {
+      "name": "hair-strand-albedo",
+      "size": [
+        2048,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "sRGB"
+    },
+    {
+      "name": "hair-strand-roughness",
+      "size": [
+        2048,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "Non-Color"
+    },
+    {
+      "name": "procedural-fine-hair-strands-normal",
+      "size": [
+        2048,
+        1024
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "Non-Color"
+    },
+    {
+      "name": "reference-0",
+      "size": [
+        1229,
+        1536
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "sRGB"
+    },
+    {
+      "name": "silver-UV",
+      "size": [
+        512,
+        512
+      ],
+      "has_pixels": true,
+      "source": "FILE",
+      "packed": true,
+      "file_name": "",
+      "color_space": "sRGB"
+    }
+  ],
+  "texture_evidence": {
+    "all_meshes_have_uv_layers": true,
+    "all_faces_have_materials": true,
+    "all_used_materials_have_loaded_base_color_images": false,
+    "minimum_loaded_base_color_long_edge": 0
+  },
+  "limitations": [
+    "Counts include each scene mesh instance. They do not measure identity or reconstruction fidelity.",
+    "Boundary counts use imported indices without welding; UV seams can split GLB vertices.",
+    "Two faces per edge alone does not establish watertightness, correct normals or print readiness.",
+    "Image dimensions and UV presence do not establish native detail, UV quality or physical PBR albedo.",
+    "Channel traversal supports ordinary imported Principled shaders; arbitrary node groups need manual review.",
+    "Bounds are in imported scene units. Physical scale is not independently calibrated."
+  ],
+  "validation": {
+    "status": "passed",
+    "failures": [],
+    "require_textures": false,
+    "min_base_color_edge": null,
+    "likeness_verified": false
+  },
+  "clay_review": {
+    "mode": "neutral clay material override",
+    "front": "negative-y",
+    "lower_crop_fraction": 0.5,
+    "renders": [
+      {
+        "file": "forge-front-clay.png",
+        "sha256": "c18b896f8a8ff893bf2bc49106094ac2a3831a2d87fe5bb67a708e4cf42eb4fa",
+        "size": [
+          768,
+          768
+        ]
+      },
+      {
+        "file": "forge-three-quarter-clay.png",
+        "sha256": "61fb3dceed5913c5812dda566096e6dad7400effdf6618e148adecbc7ea68188",
+        "size": [
+          768,
+          768
+        ]
+      },
+      {
+        "file": "forge-back-clay.png",
+        "sha256": "41e13e629587e53df857f644f918b257c4153307a88fb5bc3777807b8cf9214f",
+        "size": [
+          768,
+          768
+        ]
+      }
+    ]
+  }
+}
