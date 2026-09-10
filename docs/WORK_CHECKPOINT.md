@@ -17,8 +17,9 @@ Docs/reviews/meshy-reference contains the comparison; the Polish Codex task now
 requires geometry acceptance, preserved master/separate LOD and verified PBR
 maps after the missing ZIP arrives. Strict optional all-material texture gates
 must not replace production checks for valid constant-color materials.
-Source is being added to the existing authorized draft PR #8; verify its
-remote head before reporting completion. This stage adds benchmark tooling,
+Benchmark source checkpoint on authorized draft PR #8:
+e0d44bd4356412107d005cfef50aa82ab0735bf1. Six clay render files are versioned
+with this review. Fetch the current remote head when resuming. This stage adds benchmark tooling,
 not a newly trained model or Meshy-quality reconstruction. No source FBX asset
 is embedded into the generator. Site38 and installed Oracle are unchanged.
 
