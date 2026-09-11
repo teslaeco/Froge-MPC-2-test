@@ -1,3 +1,46 @@
+## 2026-09-11 — actual Astra v22 reference test completed; visual acceptance failed
+
+- Native FBX review found colour loss from vertex-colour/photo shader mixes.
+  Local emission bake to a new 4096px atlas and explicit UV ordering restored
+  main colours. The atlas adds no source detail; fine texture/shader differences
+  remain. Final local FBX is 31,402,300 bytes; actual-model reimport retains all
+  594,064 triangles and 103 UV objects, bounds error 8.94e-8 m.
+- Fixed invalid RNA references when removing UV layers in scene_exports.py;
+  native actual-model export/reimport and 11 export/material tests pass.
+  This small code fix is not installed on Oracle or in the prior v22 ZIP.
+  Original installer verification applies to its packaged source snapshot.
+
+- Live job 1dc26a4a-f8f4-480b-ba51-524d558ff355 succeeded in 824.4 seconds:
+  AI 600.0 s, Blender 224.1 s. Additional Astra visual review did not finish
+  within the shared budget; the original generated model was retained.
+- Downloaded actual Oracle GLB, 26,650,972 bytes, SHA-256
+  2cc3c67497a55e9c1d967ceba84d21b6cd5172cb4529759392134c4aaca63fb2.
+  594,064 instantiated triangles (589,492 in unique meshes), 103 mesh objects,
+  94 unique meshes, 102 unique UV primitives, 12 embedded image assets;
+  maximum edge 2048 px. The supplied reference remains 1229x1536 in the GLB.
+  This result has no 4K or 8K texture maps.
+- Independently rendered actual GLB front/profile/back/full in Blender 4.3,
+  640x800, Cycles 24 samples. Visual quality is NOT accepted: generic face,
+  helmet-like updo, skin-colour contamination on the collar, simplified rear
+  cape and material response/proportions differing from the reference.
+- GLB metadata confirms registered_reviewed_reference, 478 saved measurements,
+  live_face_detection=false. This successful known-image fit is not evidence
+  of arbitrary-photo reconstruction. Unseen back/lower body are inferred.
+- PR #9 remains open: user asked to merge when green, but visual acceptance
+  failed and GitHub has no CI workflows/check-runs. Functional local tests
+  passed, including 11 additional export/material tests in this review.
+- Site source clone with a renewed repo-scoped credential again failed with
+  HTTP 500 / expected packfile. No Site deployment or audience change. Site
+  remains v38; its /exports route returns not found although the GLB exists.
+- Download acknowledgement failed in Browser, but the original job-named GLB
+  was transferred to the shared downloads directory and its complete GLB
+  length/header were validated. API identity-less access returned 401; no
+  authentication rules were changed. No duplicate paid generation occurred.
+- Saved MCP2-test-Astra-v22.zip (71,859,937 bytes, 40 files) and three actual
+  GLB render images. The package contains original GLB, local FBX, original
+  and FBX texture images, verification data and the review. Follow
+  docs/reviews/astra-v22-live-2026-09-11.md for findings and next changes.
+
 ## 2026-09-11 — v22 installation confirmed; live reference generation and PR review
 
 - User screenshot shows FROGE_V22_OK. Live Studio independently confirms Oracle

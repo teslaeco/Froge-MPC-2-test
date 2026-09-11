@@ -48,7 +48,9 @@ def _portable_uvs(bpy, report):
             for uv in mesh.uv_layers:
                 data=array('f',[0.])* (2*len(mesh.loops));uv.data.foreach_get('uv',data)
                 layers.append((uv.name,data))
-            for uv in list(mesh.uv_layers):mesh.uv_layers.remove(uv)
+            # Removing a layer can invalidate the remaining RNA references.
+            # Resolve each layer from the live collection before removing it.
+            while mesh.uv_layers:mesh.uv_layers.remove(mesh.uv_layers[0])
             for name,data in sorted(layers,key=lambda entry:entry[0]!=primary):
                 uv=mesh.uv_layers.new(name=name);uv.data.foreach_set('uv',data)
             mesh.uv_layers.active_index=0;mesh.uv_layers[0].active_render=True

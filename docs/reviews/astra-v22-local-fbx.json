@@ -1,0 +1,288 @@
+{
+  "source": "actual Oracle GLB, job 1dc26a4a-f8f4-480b-ba51-524d558ff355",
+  "conversion_location": "local Blender 4.3; Site v38 does not expose worker FBX downloads",
+  "new_ai_generation": false,
+  "textures": [
+    {
+      "path": "textures/00-00-FBX-baked-colour-atlas-747634977717-png-747634977717.png",
+      "bytes": 2109791,
+      "sha256": "7476349777179a8fa9a3b78fbe58555e386cfe0e984ed66542f2bd1b40237817",
+      "image": "00-FBX-baked-colour-atlas-747634977717.png",
+      "size": [
+        4096,
+        4096
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/01-01-anatomical-dedicated-iris-b4934b702be4-png-b4934b702be4.png",
+      "bytes": 50424,
+      "sha256": "b4934b702be402b379b23501088645409d011ab191da4e1658838d71e5a1049f",
+      "image": "01-anatomical-dedicated-iris-b4934b702be4.png",
+      "size": [
+        512,
+        512
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/02-02-baked-base-color-anatomical-head-c7926d226a4d-c7926d226a4d.png",
+      "bytes": 1604033,
+      "sha256": "c7926d226a4dad0cce988bd29f1917c9add3a95ce3b1b1c75f11ee0bef4e98d9",
+      "image": "02-baked-base-color-anatomical-head-c7926d226a4d.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/03-03-ciemny_braz_wlosow-strand-albedo-c68985c1b085-c68985c1b085.png",
+      "bytes": 106151,
+      "sha256": "c68985c1b0853e44da74bb5b61f455a3ccae28be0395b68b7919b12ed79d05cb",
+      "image": "03-ciemny_braz_wlosow-strand-albedo-c68985c1b085.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/04-05-couture-inferred-skin-pore-normal-bccdb5e2d4f-bccdb5e2d4f4.png",
+      "bytes": 2140294,
+      "sha256": "bccdb5e2d4f434667faf10cc8088f4536e0e99f69d35e9cc304b55a56ec46ed0",
+      "image": "05-couture-inferred-skin-pore-normal-bccdb5e2d4f4.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/05-07-female-skin-4b4458419593-png-4b4458419593.png",
+      "bytes": 4264400,
+      "sha256": "4b44584195935805749544be0c93be71f5aa597da0c3384673e44ceb24920ce2",
+      "image": "07-female-skin-4b4458419593.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/06-08-glowna_postac-warm-hair-locks-strand-albedo-0-0e193999582e.png",
+      "bytes": 116061,
+      "sha256": "0e193999582e232cfa5fb25a51a8ebfbc8859cf769b5c9b884d647c749f16881",
+      "image": "08-glowna_postac-warm-hair-locks-strand-albedo-0e193999582e.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/07-10-procedural-fine-hair-strands-normal-a15679ad7-a15679ad7164.png",
+      "bytes": 222258,
+      "sha256": "a15679ad7164d0569027729dbbc6efe3e233033614152a8e2f48d4ac42710ce3",
+      "image": "10-procedural-fine-hair-strands-normal-a15679ad7164.png",
+      "size": [
+        2048,
+        1024
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/08-11-reference-0-9a5a79b8b505-jpg-9a5a79b8b505.jpg",
+      "bytes": 363921,
+      "sha256": "9a5a79b8b505017d3f8ec410ac970ede006c078bef5543241654c6de02ce2628",
+      "image": "11-reference-0-9a5a79b8b505.jpg",
+      "size": [
+        1229,
+        1536
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/09-12-turkusowo_szmaragdowy_krysztal-microfacet-alb-ab8576e14f4f.png",
+      "bytes": 1082308,
+      "sha256": "ab8576e14f4f9b5798068c9b864fc8db6fbecd439078dfbbba13bccb344f0506",
+      "image": "12-turkusowo_szmaragdowy_krysztal-microfacet-albedo-ab8576e14f4",
+      "size": [
+        1024,
+        1024
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/10-13-turkusowo_szmaragdowy_krysztal-microfacet-nor-b6315419592b.png",
+      "bytes": 89431,
+      "sha256": "b6315419592b0a176a82843859486ee87c07017cfbc7a0efb762fcafe74a94a8",
+      "image": "13-turkusowo_szmaragdowy_krysztal-microfacet-normal-b6315419592",
+      "size": [
+        1024,
+        1024
+      ],
+      "pixels_resampled": false
+    }
+  ],
+  "baked_base_colors": [
+    {
+      "object": "anatomical-head",
+      "material": "naturalna_skora",
+      "size": [
+        2048,
+        2048
+      ],
+      "pass": "EMIT",
+      "scene_lighting_baked": false,
+      "reference_lighting_removed": false,
+      "other_shader_channels_baked": false
+    }
+  ],
+  "uv_order_changes": [
+    {
+      "object": "anatomical-eye-l",
+      "primary": "UVMap.001",
+      "other_uv_channels_preserved": true,
+      "all_shader_uv_bindings_verified": false
+    },
+    {
+      "object": "anatomical-eye-r",
+      "primary": "UVMap.001",
+      "other_uv_channels_preserved": true,
+      "all_shader_uv_bindings_verified": false
+    },
+    {
+      "object": "glowna_postac-standing-collar",
+      "primary": "FBXColourAtlas",
+      "other_uv_channels_preserved": true,
+      "all_shader_uv_bindings_verified": false
+    }
+  ],
+  "uv_binding_limitations": [
+    {
+      "object": "glowna_postac-fitted-gown",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-conformal-facets",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-shoulder-inlay",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-shoulder-inlay.001",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-pleated-fan",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-01",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-02",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-03",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-04",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-05",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-06",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-07",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-08",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    },
+    {
+      "object": "glowna_postac-fan-rotor-09",
+      "reason": "Multiple materials may require different UV sets; original order retained"
+    }
+  ],
+  "shader_equivalence_guaranteed": false,
+  "likeness_accepted": false,
+  "glb_vertex_colour_bake": {
+    "objects": 4,
+    "atlas_size": [
+      4096,
+      4096
+    ],
+    "new_nonoverlapping_uv_atlas": true,
+    "original_uvs_retained": true,
+    "source_detail_increased": false,
+    "scene_lighting_baked": false
+  },
+  "source_geometry": {
+    "triangles": 594064,
+    "bounds": [
+      [
+        -0.40330737829208374,
+        0.32486239075660706
+      ],
+      [
+        -0.29466167092323303,
+        0.24746914207935333
+      ],
+      [
+        0.005617021583020687,
+        1.7047700881958008
+      ]
+    ],
+    "uv_objects": 103,
+    "objects": 103
+  },
+  "imported_geometry": {
+    "triangles": 594064,
+    "bounds": [
+      [
+        -0.40330737829208374,
+        0.32486239075660706
+      ],
+      [
+        -0.2946617603302002,
+        0.24746914207935333
+      ],
+      [
+        0.0056170211173594,
+        1.7047700881958008
+      ]
+    ],
+    "objects": 103,
+    "uv_objects": 103
+  },
+  "bounds_error_metres": 8.940696716308594e-08,
+  "reimport_verified": true,
+  "file_bytes": 31402300,
+  "file_sha256": "de26d3f68f1940419ecb6dc50a6f5b4e90a5bcd5ad8dbade492a060937d069ff",
+  "local_atlas_uv_order_repairs": [
+    "glowna_postac-conformal-facets",
+    "glowna_postac-fitted-gown",
+    "glowna_postac-pleated-fan"
+  ],
+  "visual_colour_transfer_reviewed": true,
+  "visual_colour_transfer": "Main garment and fan colours restored after explicit atlas UV reordering; fine texture detail and shader response still differ from GLB.",
+  "full_shader_equivalence_verified": false,
+  "verification_render": "fbx-final-render/full.png"
+}

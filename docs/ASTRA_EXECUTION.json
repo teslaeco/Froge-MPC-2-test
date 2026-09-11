@@ -1,7 +1,7 @@
 {
   "date": "2026-09-11",
   "version": 22,
-  "status": "oracle_v22_confirmed_live_generation_running",
+  "status": "live_model_generated_visual_acceptance_failed",
   "user_requirement": "Astra only for photo generation; Meshy was a quality comparison, not requested integration",
   "source_parent_commit": "14701654a8de83fb8b90605f2175d5ddde6a2902",
   "photo_ai": "gpt-6-astra",
@@ -10,8 +10,26 @@
   "mesh_provider_removed": true,
   "submitted_live_photo_jobs": 1,
   "live_job_id": "1dc26a4a-f8f4-480b-ba51-524d558ff355",
-  "live_generation_state": "generating",
-  "new_character_generated": false,
+  "live_generation_state": "succeeded",
+  "live_timing_seconds": {
+    "total": 824.4,
+    "ai": 600.0,
+    "blender": 224.1
+  },
+  "additional_visual_review_completed": false,
+  "new_character_generated": true,
+  "visual_quality_accepted": false,
+  "actual_glb": {
+    "bytes": 26650972,
+    "sha256": "2cc3c67497a55e9c1d967ceba84d21b6cd5172cb4529759392134c4aaca63fb2",
+    "triangles": 594064,
+    "meshes": 94,
+    "embedded_images": 12,
+    "max_texture_edge": 2048,
+    "unique_mesh_triangles": 589492,
+    "instantiated_meshes": 103
+  },
+  "pr_merge": "not_performed_visual_acceptance_failed_and_no_github_ci",
   "likeness_verified": false,
   "oracle_v21_installation": "confirmed by user screenshot showing FROGE_V21_OK",
   "oracle_v22_installed": true,
@@ -60,8 +78,11 @@
       }
     },
     "payload_files": 48,
-    "payload_matches_source": true,
-    "zip_integrity": "passed"
+    "zip_integrity": "passed",
+    "packaged_source_commit": "da985b79a4fd080bf25b019473584ee5bc9571ad",
+    "payload_matches_source_at_packaging": true,
+    "payload_matches_current_pr": false,
+    "review_export_material_tests": 11
   },
   "installer": {
     "file": "froge-v22.zip",
@@ -70,7 +91,38 @@
     "payload_sha256": "3fcd5317c0b4bee3138d26a9a077d32a2ffe84b892b27a37e86c91a83ef89f29"
   },
   "remaining": [
-    "Finish live Astra job 1dc26a4a-f8f4-480b-ba51-524d558ff355 and assess its actual model",
+    "Improve reference-conditioned face/hair/garment geometry and UVs",
+    "Reserve a usable budget for visual assessment and expose its completion state",
+    "Add Oracle job/export/quality tools to MCP and real CI",
     "Site UI source deployment previously blocked by canonical Git HTTP 500"
-  ]
+  ],
+  "local_fbx": {
+    "file_bytes": 31402300,
+    "file_sha256": "de26d3f68f1940419ecb6dc50a6f5b4e90a5bcd5ad8dbade492a060937d069ff",
+    "bounds_error_metres": 8.940696716308594e-08,
+    "reimport_verified": true,
+    "glb_vertex_colour_bake": {
+      "objects": 4,
+      "atlas_size": [
+        4096,
+        4096
+      ],
+      "new_nonoverlapping_uv_atlas": true,
+      "original_uvs_retained": true,
+      "source_detail_increased": false,
+      "scene_lighting_baked": false
+    },
+    "visual_colour_transfer_reviewed": true,
+    "visual_colour_transfer": "Main garment and fan colours restored after explicit atlas UV reordering; fine texture detail and shader response still differ from GLB.",
+    "worker_export_downloaded": false
+  },
+  "uninstalled_pr_fix": "Safe removal of UV layers in runtime/scene_exports.py; validated by native export and reimport of the actual generated model",
+  "review_report": "docs/reviews/astra-v22-live-2026-09-11.md",
+  "review_artifact": {
+    "file": "MCP2-test-Astra-v22.zip",
+    "bytes": 71859937,
+    "sha256": "88cfa8825bbf435e017915289f0fbd7669f0bc3be737adde9feee622da66ae23",
+    "saved": true,
+    "files": 40
+  }
 }
