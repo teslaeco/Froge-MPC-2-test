@@ -45,8 +45,8 @@ it('explains the live legacy-worker blocker and confirms an actual upgrade witho
   expect(screen.getByText(/^Generowanie nie zostało uruchomione\./)).toHaveTextContent('Samo przesłanie ZIP-a nie uruchamia aktualizacji.')
   fireEvent.click(screen.getByRole('button', { name: 'Sprawdź serwer po aktualizacji' }))
   expect(screen.getByRole('button', { name: 'Sprawdzam połączenie…' })).toBeDisabled()
-  finishCheck(Response.json({ connected: true, ready: true, connectorVersion: 21, image3dRevision: 1, image3dReady: true, provider: 'openai', photoInput: true }))
-  await screen.findByText('Generator na Oracle: v21 · zdjęcia: obsługiwane')
+  finishCheck(Response.json({ connected: true, ready: true, connectorVersion: 22, image3dRevision: 1, image3dReady: true, provider: 'openai', photoInput: true }))
+  await screen.findByText('Generator na Oracle: v22 · zdjęcia: obsługiwane')
   expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeEnabled()
   expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false)
 })
@@ -156,7 +156,7 @@ it.each([5, 6])('requires the geometry update on worker v%i', async version => {
   const job = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb', state: 'failed', detail: '/work/generate.py cannot unpack non-iterable Object object', hasModel: false }
   vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: true, ready: true, connectorVersion: version } : String(url).endsWith('/jobs') ? { jobs: [job] } : { job })))
   render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)
-  await screen.findByText('Włącz generator zdjęć → 3D · v21')
+  await screen.findByText('Przywróć Astrę do zdjęć · v22')
   await screen.findByText('Nie udało się wygenerować modelu')
   expect(screen.queryByRole('button', { name: 'Wykonaj zapisany skrypt' })).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeDisabled()
@@ -196,7 +196,7 @@ it('does not mistake an unreachable worker for an outdated worker', async () => 
   vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: true, ready: false, detail: 'Brak łączności z serwerem.' } : { jobs: [] })))
   render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)
   await screen.findByText('Brak łączności z serwerem.')
-  expect(screen.queryByText('Włącz generator zdjęć → 3D · v21')).not.toBeInTheDocument()
+  expect(screen.queryByText('Przywróć Astrę do zdjęć · v22')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeDisabled()
 })
 
@@ -215,7 +215,7 @@ it.each([7, 8, 9, 10, 11].flatMap(version => ['succeeded', 'failed'].map(state =
   render(<RemoteGenerator prompt={prompt} onStart={() => 7} onResult={onResult}/>)
   await screen.findByText('Opis → scena · lokalne AI')
   expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeEnabled()
-  if (version < 14) expect(screen.getByText('Pełna aktualizacja generatora · v21')).toBeInTheDocument()
+  if (version < 14) expect(screen.getByText('Pełna aktualizacja generatora · v22')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Generuj model 3D' }))
   await screen.findByText(state === 'succeeded' ? 'Nowy model w podglądzie' : 'Nie udało się wygenerować modelu')
   const submitted = fetcher.mock.calls.find(([, init]) => init?.method === 'POST')!

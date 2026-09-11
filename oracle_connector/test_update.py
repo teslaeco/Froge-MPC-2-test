@@ -20,7 +20,6 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'ai_stream.py').write_text('updated = True\n')
         (self.source / 'openai_provider.py').write_text('model = "gpt-6-astra"\n')
         (self.source / 'photo_input.py').write_text('max_photos = 4\n')
-        (self.source / 'image3d_provider.py').write_text('image3d_revision = 1\n')
         (self.source / 'image3d_fixture.py').write_text('offline_only = True\n')
         (self.source / 'face_measurement.py').write_text('measurement_revision = 1\n')
         (self.source / 'visual_review.py').write_text('max_refinements = 1\n')
@@ -67,7 +66,7 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(service.call_args.args[0][-2:], ['start', 'froge-worker.service'])
 
     def test_update_preserves_pairing_and_keeps_backup(self):
-        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'connectorVersion': apply_update.EXPECTED_VERSION, 'image3dRevision': 1, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'portraitGeometryRevision': 2, 'registeredReferenceRevision': 1}).encode())):
+        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'connectorVersion': apply_update.EXPECTED_VERSION, 'astraPhotoRevision': 1, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'portraitGeometryRevision': 2, 'registeredReferenceRevision': 1}).encode())):
             apply_update.update(self.source, self.target)
         self.assertEqual(self.config.read_bytes(), self.original_config)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 2\n')

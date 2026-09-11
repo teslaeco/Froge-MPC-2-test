@@ -1,0 +1,74 @@
+{
+  "date": "2026-09-11",
+  "version": 22,
+  "status": "source_and_installer_verified_not_installed",
+  "user_requirement": "Astra only for photo generation; Meshy was a quality comparison, not requested integration",
+  "source_parent_commit": "14701654a8de83fb8b90605f2175d5ddde6a2902",
+  "photo_ai": "gpt-6-astra",
+  "photo_reasoning_effort": "max",
+  "photo_max_output_tokens": 24000,
+  "mesh_provider_removed": true,
+  "paid_ai_calls_this_turn": 0,
+  "new_character_generated": false,
+  "likeness_verified": false,
+  "oracle_v21_installation": "confirmed by user screenshot showing FROGE_V21_OK",
+  "oracle_v22_installed": false,
+  "site_deployed": false,
+  "validation": {
+    "python_tests_run": 58,
+    "ui_api_tests": 63,
+    "typecheck": "passed for materialized generator modules",
+    "native_blender": "4.3.0; offline textured cube, not a character likeness test",
+    "native_review_views": {
+      "front": {
+        "dimensions": [
+          640,
+          800
+        ],
+        "bytes": 478998
+      },
+      "three-quarter": {
+        "dimensions": [
+          640,
+          800
+        ],
+        "bytes": 499387
+      },
+      "face": {
+        "dimensions": [
+          640,
+          800
+        ],
+        "bytes": 491594
+      },
+      "side": {
+        "dimensions": [
+          640,
+          800
+        ],
+        "bytes": 492713
+      },
+      "back": {
+        "dimensions": [
+          640,
+          800
+        ],
+        "bytes": 480295
+      }
+    },
+    "payload_files": 48,
+    "payload_matches_source": true,
+    "zip_integrity": "passed"
+  },
+  "installer": {
+    "file": "froge-v22.zip",
+    "bytes": 15494123,
+    "sha256": "cba12d90301ab97c2d593cd165d37d396b364feb8e66791ad396c3a6386dab91",
+    "payload_sha256": "3fcd5317c0b4bee3138d26a9a077d32a2ffe84b892b27a37e86c91a83ef89f29"
+  },
+  "remaining": [
+    "Install v22 on Oracle",
+    "Live Astra generation and visual likeness assessment",
+    "Site UI source deployment previously blocked by canonical Git HTTP 500"
+  ]
+}

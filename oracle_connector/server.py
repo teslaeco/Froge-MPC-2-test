@@ -21,7 +21,6 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, prepare_code, repair_instruction, validate_code
 from ai_stream import stream_chat
 import openai_provider
-import image3d_provider
 import photo_input
 from ai_stream import OpenAIServiceError
 from runtime_check import IMAGE, sandbox_options, verify_runtime, job_memory_gib
@@ -33,7 +32,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 21
+CONNECTOR_VERSION = 22
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
@@ -159,45 +158,10 @@ def ai_settings():
     return json.loads(path.read_text()) if path.exists() else {'provider': 'ollama'}
 
 def health():
-    text = _text_health()
-    images = image3d_provider.capability(STATE)
-    return {**text, **images, 'textReady': text['ready'],
-            'ready': text['ready'] or images['image3dReady'],
-            'photoInput': images['image3dReady']}
-
-def configure_image3d(data):
-    if data.get('provider') != 'meshy' or data.get('textureResolution', '8k') not in ('4k', '8k'):
-        raise image3d_provider.Image3DError('Wybierz Meshy i tekstury 4K lub 8K.')
-    with LOCK:
-        if ai_busy():
-            return False
-        selected = image3d_provider.settings(STATE)
-    supplied = data.get('apiKey') or selected.get('api_key')
-    api_key = image3d_provider.verify_key(supplied)
-    with LOCK:
-        if ai_busy():
-            return False
-        write_json(STATE / 'image-provider.json', {'provider': 'meshy', 'api_key': api_key,
-                   'texture_resolution': data.get('textureResolution', '8k')})
-    return True
-
-def generate_image_asset(job, folder, photos, cancelled):
-    selected = image3d_provider.settings(STATE)
-    snapshot = folder / 'image3d-settings.json'
-    if snapshot.is_file():
-        selected = {**selected, **json.loads(snapshot.read_text())}
-    started = time.monotonic()
-    report = image3d_provider.generate(photos, selected, folder, cancelled,
-        lambda detail: status(job['id'], 'generating', detail))
-    write_json(folder / 'provider.json', {'provider': 'meshy', 'model': image3d_provider.MODEL,
-               'task_id': report['task_id'], 'anatomy_template_used': False})
-    if cancelled.is_set():
-        raise InterruptedError()
-    phase = time.monotonic()
-    run_blender(job['id'], folder, cancelled)
-    write_json(folder / 'timing.json', {'total_seconds': round(time.monotonic() - started, 2),
-               'image3d_seconds': round(phase - started, 2), 'blender_seconds': round(time.monotonic() - phase, 2)})
-    status(job['id'], 'succeeded', 'Meshy Ultra wygenerowalo geometrie i tekstury z Twoich zdjec. Zapisano oryginalny GLB, FBX i podglad. Ocen podobienstwo z kazdej strony; niewidoczne powierzchnie sa rekonstruowane.')
+    state = _text_health()
+    return {**state, 'textReady': state['ready'], 'astraPhotoRevision': 1,
+            'photoEngine': 'astra-blender', 'photoReasoningEffort': 'max',
+            'reviewViews': ['front', 'three-quarter', 'face', 'side', 'back']}
 
 def ai_busy():
     with database() as db:
@@ -311,10 +275,6 @@ def worker():
             status(job['id'], 'generating', 'Sprawdzam, czy Blender moze uruchomic model…')
             verify_runtime(job_memory_gib(folder))
             saved_scene = folder / 'saved-scene.json'
-            photos = photo_input.read_photos(folder)
-            if photos and not saved_scene.is_file() and not (folder / 'saved-script.py').is_file():
-                generate_image_asset(job, folder, photos, cancelled)
-                continue
             if saved_scene.is_file():
                 # Rebuild a validated, saved plan without consulting either AI.
                 scene = parse_scene(saved_scene.read_text(encoding='utf-8'), job['prompt'])
@@ -536,11 +496,11 @@ class Handler(BaseHTTPRequestHandler):
                     return self.send_json({'error': 'Anuluj aktywne zlecenie i poczekaj na zatrzymanie, zanim zmienisz AI.'}, 409)
                 return self.send_json({'saved': True})
             if write and self.path == '/v1/image3d':
-                if not configure_image3d(self.input()):
-                    return self.send_json({'error': 'Poczekaj na zakonczenie aktywnego zlecenia przed zmiana silnika.'}, 409)
-                return self.send_json({'saved': True})
+                return self.send_json({'error': 'Generator zdjec korzysta z Astry i Blendera. Dodatkowy dostawca jest wylaczony.'}, 410)
             if write and self.path == '/v1/jobs':
                 data = self.input()
+                if data.get('resumeImage3d'):
+                    return self.send_json({'error': 'Zewnetrzny silnik jest wylaczony. Nie wznowiono jego zadania.'}, 409)
                 job_id, prompt = data.get('id'), data.get('prompt')
                 source_id = data.get('sourceJobId')
                 photos = photo_input.validate_photos(data.get('photos', []))
@@ -560,16 +520,11 @@ class Handler(BaseHTTPRequestHandler):
                         return self.send_json(dict(prior))
                     if db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]:
                         return self.send_json({'error': 'Serwer wykonuje poprzedni model. Poczekaj na wynik lub anuluj tamto zlecenie.'}, 409)
-                    # New photo requests always use neural image-to-3D. An old
-                    # OIDN/scene recovery must not silently restore a template.
-                    recovery=recoverable_review_scene(db,prompt.strip(),photos) if source_id is None and not photos else None
-                    if photos:
-                        image_settings = image3d_provider.settings(STATE)
-                        if not image3d_provider.capability(STATE)['image3dReady']:
-                            return self.send_json({'error': image3d_provider.MISSING_CONNECTION}, 409)
-                        image3d_provider.make_payload(photos, image_settings)
-                    if source_id is None and not photos and not recovery and not health().get('textReady'):
+                    recovery=recoverable_review_scene(db,prompt.strip(),photos) if source_id is None else None
+                    if source_id is None and not recovery and not health()['ready']:
                         return self.send_json({'error': 'Wybrane AI nie jest jeszcze gotowe. Sprawdz ustawienia.'}, 409)
+                    if photos and not recovery and not health().get('photoInput'):
+                        return self.send_json({'error': 'Wybrane AI nie obsluguje zdjec. Wybierz OpenAI w ustawieniach.'}, 409)
                     if shutil.disk_usage(STATE).free < 2 * 1024**3:
                         return self.send_json({'error': 'Na serwerze zostalo mniej niz 2 GB wolnego miejsca.'}, 409)
                     if db.execute('SELECT COUNT(*) FROM jobs').fetchone()[0] >= 300:
@@ -586,13 +541,8 @@ class Handler(BaseHTTPRequestHandler):
                         source = db.execute('SELECT * FROM jobs WHERE id=?', (source_id,)).fetchone()
                         source_folder = JOBS / source_id
                         source_path = source_folder / 'scene.json'
-                        neural_replay = (source_folder / 'image3d-task.json').is_file()
-                        if data.get('resumeImage3d') and not neural_replay:
-                            return self.send_json({'error': 'To zlecenie nie ma zapisanego zadania Meshy. Nie uruchomiono starego szablonu ani nowej platnej generacji.'}, 409)
                         scene_replay = source_path.is_file()
-                        if neural_replay:
-                            source_path = source_folder / 'image3d-task.json'
-                        elif not scene_replay:
+                        if not scene_replay:
                             source_path = source_folder / 'generate.py'
                         if not source or source['state'] != 'failed' or source['prompt'] != prompt.strip() or not source_path.is_file():
                             return self.send_json({'error': 'Brak zapisanego planu dla tego nieudanego zlecenia.'}, 409)
@@ -600,11 +550,7 @@ class Handler(BaseHTTPRequestHandler):
                             return self.send_json({'error': 'Zapisany skrypt przekracza limit rozmiaru.'}, 409)
                         saved_code = source_path.read_text(encoding='utf-8')
                         try:
-                            if neural_replay:
-                                saved_task = json.loads(saved_code)
-                                if not saved_task.get('id'):
-                                    raise ValueError('Ambiguous paid submission cannot be retried.')
-                            elif scene_replay:
+                            if scene_replay:
                                 parse_scene(saved_code, prompt.strip())
                             else:
                                 prepare_code(saved_code)
@@ -613,12 +559,10 @@ class Handler(BaseHTTPRequestHandler):
                         photos = photo_input.read_photos(source_folder)
                         destination = JOBS / job_id
                         destination.mkdir(mode=0o700)
-                        saved_path = destination / ('image3d-task.json' if neural_replay else 'saved-scene.json' if scene_replay else 'saved-script.py')
+                        saved_path = destination / ('saved-scene.json' if scene_replay else 'saved-script.py')
                         saved_path.write_text(saved_code, encoding='utf-8')
                         os.chmod(saved_path, 0o600)
                         write_json(destination / 'source-job.json', {'id': source_id})
-                        if neural_replay:
-                            write_json(destination / 'image3d-settings.json', {'texture_resolution': saved_task['texture_resolution']})
                     if photos:
                         destination = JOBS / job_id
                         destination.mkdir(mode=0o700, exist_ok=True)
@@ -627,8 +571,6 @@ class Handler(BaseHTTPRequestHandler):
                             path.write_bytes(photo['bytes'])
                             os.chmod(path, 0o600)
                         write_json(destination / 'reference-photos.json', photo_input.metadata(photos))
-                        if source_id is None:
-                            write_json(destination / 'image3d-settings.json', {'texture_resolution': image_settings.get('texture_resolution', '8k')})
                     now = time.time()
                     db.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?)', (job_id, prompt.strip(), 'queued', 'Opis przyjety.', now, now))
                 WAKE.set()
@@ -700,14 +642,7 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if action:
                 return self.send_json({'error': 'Nie znaleziono funkcji.'}, 404)
-            job_data = dict(row)
-            task_file = JOBS / job_id / 'image3d-task.json'
-            if task_file.is_file():
-                task = json.loads(task_file.read_text())
-                job_data.update(engine='meshy', canResumeImage3d=bool(task.get('id')) and row['state'] == 'failed')
-            return self.send_json(job_data)
-        except image3d_provider.Image3DError as error:
-            self.send_json({'error': str(error)}, 422)
+            return self.send_json(dict(row))
         except OpenAIServiceError as error:
             self.send_json({'error': str(error)}, 422)
         except (ValueError, TypeError, KeyError):
@@ -741,21 +676,9 @@ def pair_info():
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--pair-info', action='store_true')
-    parser.add_argument('--configure-image3d', action='store_true')
-    parser.add_argument('--texture-resolution', choices=['4k', '8k'], default='8k')
     args = parser.parse_args()
     initialize()
-    if args.configure_image3d:
-        import getpass
-        try:
-            value = getpass.getpass('Klucz API Meshy (wpis jest ukryty): ')
-            if not configure_image3d({'provider': 'meshy', 'apiKey': value, 'textureResolution': args.texture_resolution}):
-                raise ValueError('Poczekaj na zakonczenie aktywnego modelu.')
-            print('MESHY_CONNECTION_OK. Polaczenie zapisane; nie uruchomiono platnej generacji.')
-        except (ValueError, OSError) as error:
-            print(str(error))
-            raise SystemExit(1)
-    elif args.pair_info:
+    if args.pair_info:
         pair_info()
     else:
         with database() as db:

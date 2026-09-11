@@ -19,7 +19,7 @@ class VisualReviewTests(unittest.TestCase):
         self.folder=Path(self.temp.name);(self.folder/'review').mkdir()
         self.scene=parse_scene((Path(__file__).parent/'examples/couture-fan-v20.scene.json').read_text())
         self.cancel=threading.Event()
-        for label in ('front','three-quarter','face'):
+        for label in ('front','three-quarter','face','side','back'):
             (self.folder/'review'/(label+'.png')).write_bytes(b'\x89PNG\r\n\x1a\n'+b'0'*24)
         for name in ('scene.json','model.glb','model.blend','result.json'):(self.folder/name).write_bytes(b'original-'+name.encode())
 
@@ -27,10 +27,10 @@ class VisualReviewTests(unittest.TestCase):
         value=deepcopy(scene or self.scene);value['parts'][0]['fan']['radius']=.34
         return json.dumps({'action':'refine','issues':['Fan too large'],'scene':value})
 
-    def test_reference_and_three_actual_views_are_sent_without_external_urls(self):
+    def test_reference_and_five_actual_views_are_sent_without_external_urls(self):
         content=review_content('Original request',[],self.folder,self.scene)
         images=[c['image_url'] for c in content if c.get('type')=='input_image']
-        self.assertEqual(len(images),3)
+        self.assertEqual(len(images),5)
         self.assertTrue(all(x.startswith('data:image/png;base64,') for x in images))
 
     def test_refinement_uses_remaining_cumulative_budgets_and_retains_original(self):

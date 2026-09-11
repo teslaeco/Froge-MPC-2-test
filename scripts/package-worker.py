@@ -29,4 +29,4 @@ for filename,names in (
         temporary.replace(folder/filename)
     finally:temporary.unlink(missing_ok=True)
     print(filename,(folder/filename).stat().st_size,'bytes')
-runpy.run_path(str(root/'scripts/package-v21.py'),run_name='__main__')
+runpy.run_path(str(root/'scripts/package-v22.py'),run_name='__main__')

@@ -13,7 +13,7 @@ from runtime.scene_contract import SCHEMA,record,choice,array,parse_scene
 
 TEXT={'type':'string','maxLength':500}
 REVIEW_SCHEMA=record({'action':choice('keep','refine'),'issues':array(TEXT,0,8),'scene':SCHEMA})
-LABELS=('front','three-quarter','face')
+LABELS=('front','three-quarter','face','side','back')
 ASSETS=('scene.json','model.glb','model.blend','result.json','model.fbx','model.obj',
         'model.mtl','model-mm.stl','model.froge-scene.json','textures','review')
 
@@ -58,7 +58,10 @@ def refine(scene,prompt,photos,folder,cancelled,generate,build,ai_seconds=0.,ble
             report['status']='budget_exhausted';return ai_seconds,blender_seconds,report
         messages=[{'role':'system','content':
             'Review the actual exported 3D renders against the ORIGINAL reference images and request. '
-            'Look for silhouette, clothing fit, hairstyle, face proportions, makeup, colors, attachments and intersections. '
+            'Inspect EVERY provided view: front, side, back, three-quarter and face. '
+            'Check neck-to-shoulder alignment, cape depth and back silhouette, face proportions, '
+            'clothing fit, hairstyle, makeup, colors, attachments and intersections. '
+            'Check texture stretching, seams, photographed shadows and material response separately from geometry. '
             'List specific visible issues. Return keep when no useful change can be made with the available bounded scene controls; '
             'otherwise return refine and a COMPLETE corrected scene JSON. Preserve people, requested outfit, accessories, '
             'observed/reconstructed provenance and composition. Never substitute primitives for anatomical heads/hands. '

@@ -7,15 +7,15 @@ ssh -T -o IdentitiesOnly=yes -o ConnectTimeout=20 -i "$HOME/ssh-key-2026-09-06.k
 export const oracleRebuildUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-rebuild.zip').replaceAll('froge-openai-update', 'froge-rebuild-update')
 export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-update.zip').replaceAll('froge-openai-update', 'froge-photos-v14-update')
 export const oracleRepairCommand = 'python3 "$HOME/froge-napraw-oracle.py"'
-export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v21.zip" "$HOME/froge-v21"\npython3 "$HOME/froge-v21/froge-v21.py"'
+export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v22.zip" "$HOME/froge-v22"\npython3 "$HOME/froge-v22/froge-v22.py"'
 
 export function GeometryUpdate({ required = true }: { required?: boolean }) {
   const [copyNote, setCopyNote] = useState('')
   return <div className="blender-setup">
-    <strong>{required ? 'Włącz generator zdjęć → 3D · v21' : 'Pełna aktualizacja generatora · v21'}</strong>
-    <p>Zdjęcia prowadzą generowanie geometrii i tekstur w Meshy Ultra. Pełny GLB, FBX, OBJ i Blender zachowują model źródłowy; strona może korzystać z lżejszego podglądu. Po instalacji podłącz osobny klucz Meshy. Dotychczasowe modele pozostają zapisane.</p>
-    <a href="/downloads/froge-v21.zip" download>Pobierz pełną paczkę · v21</a>
-    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza import oraz eksport GLB i FBX na pliku testowym bez zapytania do AI. Po FROGE_V21_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
+    <strong>{required ? 'Przywróć Astrę do zdjęć · v22' : 'Pełna aktualizacja generatora · v22'}</strong>
+    <p>Astra Max analizuje zdjęcia i steruje budową modelu w Blenderze. Ocena obejmuje również profil i plecy. Aktualizacja korzysta z zapisanego klucza OpenAI i zachowuje wcześniejsze modele oraz eksport FBX.</p>
+    <a href="/downloads/froge-v22.zip" download>Pobierz pełną paczkę · v22</a>
+    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza import oraz eksport GLB i FBX na pliku testowym bez zapytania do AI. Po FROGE_V22_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
   </div>
 }
 
@@ -37,7 +37,7 @@ export function OpenAISettings({ connection, busy, onSaved }: { connection: Blen
       await blenderRequest('ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider, ...(value && provider === 'openai' ? { apiKey: value } : {}) }) })
       setApiKey('')
       await onSaved()
-      setNote(provider === 'openai' ? 'OpenAI podłączone do tworzenia scen z opisu.' : 'Wybrano lokalne AI do opisu.')
+      setNote(provider === 'openai' ? 'OpenAI podłączone do tworzenia scen z opisu i zdjęć.' : 'Wybrano lokalne AI do opisu.')
     } catch (error) { setNote((error as Error).message) }
     finally { setSaving(false) }
   }

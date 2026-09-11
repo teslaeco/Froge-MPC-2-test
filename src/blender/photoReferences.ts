@@ -110,7 +110,7 @@ export async function prepareReferencePhoto(file: File, trimBorders = false, tex
     for (const quality of [0.95, 0.90, 0.86]) {
       const dataUrl = canvas.toDataURL('image/jpeg', quality)
       if (dataUrl.startsWith('data:image/jpeg;base64,') && dataUrl.length - 23 <= Math.floor(MAX_REFERENCE_BYTES / 3) * 4) {
-        return { name: file.name.slice(0, 120) || 'Zdjęcie', view: 'other', dataUrl, textureMaxSize }
+        return { name: file.name.slice(0, 120) || 'Zdjęcie', view: 'other', dataUrl, textureMaxSize, ...await import('./faceLandmarks').then(module => module.measureFace(dataUrl)).catch(() => ({ faceMeasurementStatus: 'Nie udało się odczytać punktów twarzy. Zdjęcie pozostaje referencją dla Astry.' })) }
       }
     }
     throw new Error('Zdjęcie przekracza 2 MB po przygotowaniu. Wybierz 4K lub 2K; nie obniżamy automatycznie jakości poniżej 86%.')

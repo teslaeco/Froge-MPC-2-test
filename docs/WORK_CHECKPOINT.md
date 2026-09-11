@@ -1,3 +1,28 @@
+## 2026-09-11 — user correction: Astra only; Meshy integration retired in v22
+
+- User explicitly clarified: Meshy was a quality comparison, not permission to
+  replace Astra. Current requirement is Astra + Blender using existing OpenAI.
+- User screenshot confirms FROGE_V21_OK on Oracle; Meshy was not connected.
+- Removed the external provider implementation/UI and photo-readiness requirement.
+  Retired configuration/resume endpoints reject without forwarding credentials,
+  uploading images or calling another provider. Existing assets remain.
+- Restored Astra photo planning, identical-input offline render recovery,
+  per-image facial measurements and original texture/portrait compatibility gates.
+- Official gpt-6-astra docs confirm max effort; image calls now use max and a
+  24000-token ceiling, retaining the cumulative 600-second AI budget. This is
+  not a newly trained 3D model or proof of photographic output quality.
+- Actual review set now includes front, three-quarter, face, side and back.
+  Original/candidate backup and bounded single refinement remain in place.
+- 58 Python test executions and 63 UI/API tests passed; generator typecheck
+  passed. Native Blender rendered five real 640x800 test-cube views. No paid
+  AI generation, new character, likeness acceptance or Site deployment here.
+- Complete froge-v22.zip contains 48 byte-verified payload files and passes ZIP
+  integrity. Installer uses saved OpenAI, no third command or additional key;
+  progress appears every 15 seconds. See docs/ASTRA_EXECUTION.json.
+- V22 is not installed on Oracle yet. Previous Site source Git HTTP 500 was not
+  claimed fixed. Source changes build on PR #9 head 14701654a8de83fb8b90605f2175d5ddde6a2902.
+- Prior Meshy notes below are historical and superseded by this explicit request.
+
 ## 2026-09-11 — v21 image-to-3D integration and installer completed; live execution blocked
 
 - General photo path now uses Meshy 7 Ultra (single/multi view, actual JPEG

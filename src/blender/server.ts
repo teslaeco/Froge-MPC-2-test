@@ -92,11 +92,9 @@ const photoMetadata = (j: Job): PhotoMetadata[] => JSON.parse(j.reference_photos
 const publicJob = (j: Job) => ({ id: j.id, prompt: j.prompt, state: j.state, detail: j.detail, created: j.created, updated: j.updated, hasModel: !!j.artifact,
   referencePhotos: photoMetadata(j).map((photo, index) => ({ name: photo.name, view: photo.view, ...(photo.subject ? { subject: photo.subject } : {}), ...(photo.textureMaxSize ? { textureMaxSize: photo.textureMaxSize } : {}), url: `/api/blender/jobs/${j.id}/photos/${index}` })) })
 function imageCapabilities(state: Image3DCapabilities) {
-  return { textReady: state.textReady, image3dRevision: state.image3dRevision === 1 ? 1 : 0,
-    image3dReady: state.image3dReady === true, image3dProvider: state.image3dProvider === 'meshy' ? 'meshy' : undefined,
-    image3dModel: state.image3dModel === 'meshy-7' ? 'meshy-7' : undefined,
-    image3dTextureResolution: state.image3dTextureResolution === '4k' ? '4k' : '8k',
-    image3dDetail: typeof state.image3dDetail === 'string' ? state.image3dDetail.slice(0, 500) : undefined }
+  return { textReady: state.textReady, astraPhotoRevision: state.astraPhotoRevision,
+    photoEngine: state.photoEngine === 'astra-blender' ? state.photoEngine : undefined,
+    photoReasoningEffort: state.photoReasoningEffort === 'max' ? 'max' : undefined }
 }
 function photoDataUrl(bytes: ArrayBuffer) {
   const array = new Uint8Array(bytes), chunks: string[] = []
@@ -148,16 +146,7 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       }
       throw new ApiError('Niedozwolona metoda.', 405)
     }
-    if (url.pathname === '/api/blender/image3d') {
-      if (request.method !== 'POST') throw new ApiError('Niedozwolona metoda.', 405)
-      if (!connection) throw new ApiError('Najpierw połącz serwer Oracle.', 409)
-      const input = await jsonInput(request, 3000)
-      if (input.provider !== 'meshy' || !['4k', '8k'].includes(String(input.textureResolution))) throw new ApiError('Wybierz Meshy i tekstury 4K lub 8K.')
-      if (input.apiKey !== undefined && (typeof input.apiKey !== 'string' || !/^[A-Za-z0-9_-]{20,512}$/.test(input.apiKey))) throw new ApiError('Wpisz pełny klucz API Meshy.')
-      const response = await remote(connection.endpoint, token, '/v1/image3d', { method: 'POST', body: JSON.stringify({ provider: 'meshy', textureResolution: input.textureResolution, ...(input.apiKey ? { apiKey: input.apiKey } : {}) }) })
-      await response.body?.cancel()
-      return reply({ saved: true })
-    }
+    if (url.pathname === '/api/blender/image3d') throw new ApiError('Generator korzysta z Astry i Blendera. Dodatkowy dostawca jest wyłączony.', 410)
     if (url.pathname === '/api/blender/ai') {
       if (request.method !== 'POST') throw new ApiError('Niedozwolona metoda.', 405)
       if (!connection) throw new ApiError('Najpierw połącz serwer Blendera.', 409)
@@ -183,6 +172,7 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       if (request.method !== 'POST') throw new ApiError('Niedozwolona metoda.', 405)
       if (!connection) throw new ApiError('Najpierw połącz serwer Blendera.', 409)
       const input = await jsonInput(request, MAX_PHOTO_REQUEST_BYTES)
+      if (input.resumeImage3d) throw new ApiError('Zewnętrzny silnik jest wyłączony. Nie wznowiono jego zadania.', 409)
       if (typeof input.id !== 'string' || !uuid.test(input.id) || typeof input.prompt !== 'string' || !input.prompt.trim() || input.prompt.length > 5000) throw new ApiError('Wpisz opis od 1 do 5000 znaków.')
       if (input.referenceJobId !== undefined && (typeof input.referenceJobId !== 'string' || !uuid.test(input.referenceJobId) || input.referenceJobId === input.id || input.photos !== undefined || input.sourceJobId !== undefined)) throw new ApiError('Nieprawidłowe źródło zdjęć.')
       if (input.sourceJobId !== undefined && input.photos !== undefined) throw new ApiError('Do wykonania zapisanego skryptu nie można dodawać nowych zdjęć.')
@@ -217,9 +207,11 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
       }
       const capabilities = await (await remote(connection.endpoint, token, '/v1/health')).json() as Image3DCapabilities & { connectorVersion?: number; photoInput?: boolean; provider?: string; portraitRevision?: number; characterStandard?: number; coutureRevision?: number; promptMaxLength?: number; faceFitRevision?: number; referenceQualityRevision?: number; materialQualityRevision?: number }
       if (!supportsGeneration(capabilities.connectorVersion)) throw new ApiError('Zainstaluj aktualizację froge-oracle-update.zip (v14) na Oracle. Ta wersja serwera nie obsługuje obecnego generatora.', 409)
-      if (photos.length && !input.sourceJobId && !supportsPhotoGeneration(capabilities)) throw new ApiError('Zdjęcia wymagają generatora v21 i połączenia Meshy w ustawieniach Zdjęcia → 3D. Nie uruchomiono generowania.', 409)
-      if (!photos.length && requiresPortraitQuality(input.prompt) && !supportsPortraitQuality(capabilities)) throw new ApiError(PORTRAIT_UPDATE_REASON, 409)
-      if (!photos.length && requiresCoutureQuality(input.prompt) && !supportsCoutureQuality(capabilities)) throw new ApiError(COUTURE_UPDATE_REASON, 409)
+      if (photos.length && !input.sourceJobId && !supportsPhotoGeneration(capabilities)) throw new ApiError('Zdjęcia wymagają Astry. Zainstaluj v22 na Oracle i sprawdź połączenie OpenAI. Nie uruchomiono generowania.', 409)
+      if (requiresPortraitQuality(input.prompt, photos.length) && !supportsPortraitQuality(capabilities)) throw new ApiError(PORTRAIT_UPDATE_REASON, 409)
+      if (requiresCoutureQuality(input.prompt) && !supportsCoutureQuality(capabilities)) throw new ApiError(COUTURE_UPDATE_REASON, 409)
+      if (photos.some(photo => (photo.input.textureMaxSize ?? 2048) > 2048) && (capabilities.referenceQualityRevision !== 1 || capabilities.materialQualityRevision !== 2)) throw new ApiError('Referencje 4K/8K wymagają aktualnego eksportu tekstur na Oracle.', 409)
+      if (photos.some(photo => photo.input.faceLandmarks) && capabilities.faceFitRevision !== 1) throw new ApiError('Zaktualizuj Oracle, aby użyć pomiarów twarzy.', 409)
       if (input.prompt.length > 2000 && capabilities.promptMaxLength !== 5000) throw new ApiError('Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v19.', 409)
       if (photos.length && !env.BUCKET) throw new ApiError('Przechowywanie zdjęć jest chwilowo niedostępne.', 503)
       const now = new Date().toISOString()
@@ -232,8 +224,8 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
         throw new ApiError('Nie udało się zapisać zdjęć. Zlecenie nie zostało wysłane do AI; zachowaj formularz i spróbuj ponownie.', 503)
       }
       try {
-        await remote(connection.endpoint, token, '/v1/jobs', { method: 'POST', body: JSON.stringify({ id: input.id, prompt: input.prompt.trim(), ...(input.sourceJobId ? { sourceJobId: input.sourceJobId, ...(input.resumeImage3d === true ? { resumeImage3d: true } : {}) } : {}), ...(photos.length && !input.sourceJobId ? { photos: photos.map(photo => photo.input) } : {}) }) })
-        await db.prepare('UPDATE blender_jobs SET state=?,detail=? WHERE id=? AND owner=? AND state=?').bind('queued', input.resumeImage3d ? 'Wznawiam odbiór lub eksport zapisanego zadania Meshy…' : input.sourceJobId ? 'Wykonuję zapisany plan bez nowego zapytania do AI…' : photos.length ? 'Zdjęcia przyjęte. Meshy wygeneruje geometrię i tekstury…' : 'Opis przyjęty. Oczekiwanie na AI…', input.id, owner, 'submitting').run()
+        await remote(connection.endpoint, token, '/v1/jobs', { method: 'POST', body: JSON.stringify({ id: input.id, prompt: input.prompt.trim(), ...(input.sourceJobId ? { sourceJobId: input.sourceJobId } : {}), ...(photos.length && !input.sourceJobId ? { photos: photos.map(photo => photo.input) } : {}) }) })
+        await db.prepare('UPDATE blender_jobs SET state=?,detail=? WHERE id=? AND owner=? AND state=?').bind('queued', input.sourceJobId ? 'Wykonuję zapisany plan bez nowego zapytania do AI…' : photos.length ? 'Zdjęcia przyjęte. Astra przygotuje geometrię i materiały dla Blendera…' : 'Opis przyjęty. Oczekiwanie na AI…', input.id, owner, 'submitting').run()
       } catch (error) {
         // The remote may have accepted a request before its HTTP response was lost.
         // Polling the same ID resolves that ambiguity and never starts a duplicate job.

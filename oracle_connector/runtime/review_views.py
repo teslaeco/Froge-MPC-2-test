@@ -4,7 +4,7 @@ import json
 import bpy
 from mathutils import Vector
 
-LABELS=('front','three-quarter','face')
+LABELS=('front','three-quarter','face','side','back')
 
 
 def configure_review(scene, allow_denoising=True):
@@ -93,6 +93,8 @@ def render_review(model,folder,asset_views=False):
     views = (
         ('front',(0,-4,.12),target,scale),
         ('three-quarter',(2,-4,.5),target,scale),
+        ('side',(4,0,.12),target,max(span.z,span.y/0.8)*1.12),
+        ('back',(0,4,.12),target,scale),
         ('face',(.6,-3,.1),face+Vector((0,0,-.025)),max(.40,span.x*1.15) if len(eyes)>2 else .40))
     if asset_views:
         frame=max(span)*1.6

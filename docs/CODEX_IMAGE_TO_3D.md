@@ -1,56 +1,41 @@
-# FORGE: image-conditioned geometry and textures
+# FORGE — Astra + Blender
 
-Polecenie: przebuduj generator, aby każde przesłane zdjęcie prowadziło
-rzeczywiste generowanie geometrii i tekstur. Zastosuj silnik image-to-3D,
-zachowaj wygląd konkretnej postaci, udostępnij pełny GLB, FBX i mapy PBR.
-Nie podstawiaj gotowej twarzy ani sylwetki. Sprawdź pliki i pokaż rzeczywisty
-wynik; nie deklaruj zgodności 1:1 bez oceny wygenerowanego modelu.
+## Aktualne polecenie Sebastiana
 
-Wykonanie: kod v21, panel Meshy, pobieranie eksportów oraz instalator są
-przygotowane. Testy protokołu/HTTP/UI i natywnego eksportu przeprowadzono.
-Generowanie postaci w Meshy nie zostało uruchomione: brak połączenia Meshy,
-konsola Oracle jest niedostępna, a pobranie źródeł strony zwraca HTTP 500.
-Szczegóły i rozdzielenie tych etapów: `IMAGE3D_EXECUTION.json`.
+Porownanie do Meshy oznacza oczekiwana jakosc, NIE integracje z Meshy.
+Jedynym modelem AI dla zdjec ma pozostac Astra przez istniejace OpenAI API.
+Nie dodawaj kolejnego platnego dostawcy, klucza ani przekazywania mu zdjec.
 
-## Command to Codex
+Astra ma analizowac konkretne przeslane obrazy, ich proporcje, twarz, fryzure,
+stroj, dodatki, kolory i materialy. Blender wykonuje sprawdzony plan geometrii,
+UV, materialow i tekstur. Zachowuj oryginalna referencje; wyniki pomiarow musza
+byc zwiazane z dokladnymi bajtami aktualnego zdjecia. Czesci niewidoczne sa
+rekonstrukcja, nie pomiarem. Nie uzywaj punktow innej modelki ani deklaracji
+4K/8K jako dowodu zgodnosci. Zachowaj pelne modele, FBX, GLB, OBJ i BLEND.
 
-Replace the photo-generation pipeline with a real image-to-3D model. For every
-uploaded subject, send the actual supplied image bytes to the generation engine.
-Preserve visible face shape, pose, hair, clothing, accessories and colours as
-closely as that engine supports. Support one image or up to four views of the
-same subject. Do not use a prebuilt body, generic face, composition signature,
-registered landmarks from another job, projected photograph or flat billboard
-as an automatic substitute for image-to-3D. Keep procedural modelling available
-only for text/parametric requests.
+Uzywaj gpt-6-astra z reasoning.effort=max dla analizy zdjec i renderow.
+Oceniaj rzeczywiste widoki przodu, boku, tylu, twarzy i trzy-czwarte. Poprawiaj
+plan na podstawie konkretnych wad; zachowuj poprzedni wynik i wspolny limit
+czasu. Samo przejscie testow kodu nie potwierdza realistycznego podobienstwa.
+Nie oznaczaj pracy jako zakonczonej wizualnie bez faktycznej generacji i oceny.
 
-Implement Meshy 7 Ultra, native geometry without remeshing, image enhancement
-disabled, preserved pose, PBR texture generation, selectable 4K/8K base colour.
-Use a separate securely stored Meshy API key. Show missing configuration before
-accepting a photo job. Never imply that Astra's API key also authenticates Meshy.
-Never automatically repeat an ambiguous paid task submission. Persist remote
-task identifiers so polling and local export retries cannot buy another model.
+## Wykonane w v22
 
-Import the generated geometry into Blender without replacing or sculpting the
-subject. Preserve the original GLB and texture files. Export actual FBX,
-OBJ+MTL+textures, STL and BLEND. Keep a separate browser preview when the original
-is too large; never silently downgrade the downloadable master. Report actual
-texture sizes, provenance and which exports succeeded. Missing exports and
-unavailable providers must not trigger a template fallback.
+- Usunieto integracje zewnetrznego silnika i blokade nowych zdjec bez jego klucza.
+- Przywrocono sciezke Astra -> zweryfikowany plan -> Blender -> ocena Astry.
+- Przywrocono pomiary 478 punktow zdjecia w przegladarce i wymagania zgodnosci.
+- Wysilek dla wejsc obrazowych zmieniono high -> max, limit odpowiedzi 9000 ->
+  24000 tokenow, przy zachowaniu lacznego limitu czasu. To nie obietnica jakosci.
+- Dodano profil i tyl do rzeczywistych renderow dla oceny. Zachowano eksport FBX.
+- Instalator v22 korzysta z istniejacego OpenAI, bez trzeciego polecenia;
+  pokazuje postep co 15 s. Stan polaczen i modeli pozostaje zachowany.
 
-Verify the protocol with varied inputs, cancellation, timeouts and corrupt
-downloads. Verify native Blender import/export separately. Only claim visual
-likeness after generating with a real configured engine and inspecting real
-front, side and back renders. One input does not establish the hidden surfaces
-or physical scale. No claim of exact 1:1 identity, superior quality to Meshy,
-successful production deployment or completed generation without evidence.
+W tej sesji nie wykonano platnej generacji postaci ani publikacji strony.
+Screenshot uzytkownika potwierdza instalacje v21 na Oracle. V22 wymaga
+zainstalowania nowej paczki. Wczesniejszy blad pobierania kodu strony HTTP 500
+pozostaje odnotowany; nie deklarowano jego naprawienia.
 
-## Implementation / execution record
-
-- Architecture confirmed: previous photo path made a constrained Astra scene
-  plan and built a generic anatomical template. It was not neural image-to-3D.
-- Implemented a new provider path and authenticated configuration, leaving
-  existing text modelling and explicitly replayed historical jobs available.
-- Runtime account checked: no Meshy credential or local GPU was available.
-  Paid neural generation and likeness review require that connection.
-- API reference: https://docs.meshy.ai/en/api/image-to-3d and
-  https://docs.meshy.ai/en/api/multi-image-to-3d (checked 2026-09-11).
+Oficjalne mozliwosci Astry, sprawdzone 2026-09-11:
+https://developers.openai.com/api/docs/models/gpt-6-astra
+Model przyjmuje obrazy, zwraca tekst/kod i moze sterowac narzedziami. Nie
+traktuj go jako gotowego, wytrenowanego silnika rekonstrukcji siatki 3D.

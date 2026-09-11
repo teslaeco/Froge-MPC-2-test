@@ -29,7 +29,7 @@ export function PhotoReferences({ photos, onChange, disabled, onPreparing }: { p
     <label className="photo-picker">Dodaj zdjęcia · JPG, PNG, WebP
       <input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={disabled || preparing || photos.length >= MAX_REFERENCE_PHOTOS} onChange={event => { void add(event.target.files); event.target.value = '' }}/>
     </label>
-    <p className="studio-helper">Do 12 MB na plik źródłowy, 2 MB po przygotowaniu i 6 MB na zlecenie. Zdjęcia zachowują proporcje i nie są powiększane. Rozdzielczość generowanych tekstur wybierasz osobno w ustawieniach Meshy. Zapis i wysłanie zdjęć następują po kliknięciu „Generuj”.</p>
+    <p className="studio-helper">Do 12 MB na plik źródłowy, 2 MB po przygotowaniu i 6 MB na zlecenie. Zdjęcia zachowują proporcje i nie są powiększane. Wybrany limit dotyczy także eksportu tekstur. 4K/8K nie oznacza odzyskania szczegółów nieobecnych w zdjęciu. Zapis i wysłanie zdjęć następują po kliknięciu „Generuj”.</p>
     {preparing && <p role="status">Przygotowuję zdjęcia…</p>}
     <div className="photo-reference-grid">{photos.map((photo, index) => <div className="photo-reference" key={index}>
       <img src={photo.dataUrl} alt={`Zdjęcie referencyjne ${index + 1}: ${photo.name}`}/>

@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""FORGE v21: install image-to-3D support or connect Meshy securely on Oracle."""
+"""FORGE v22: restore Astra photo generation on Oracle."""
 import base64
-import getpass
 import gzip
 import hashlib
 import json
@@ -61,7 +60,7 @@ def install_on_oracle(data):
     if pwd.getpwuid(os.getuid()).pw_name != 'opc':
         raise RuntimeError('Instalacja wymaga konta opc na Twojej maszynie Oracle.')
     target = Path.home() / 'froge-connector'
-    with tempfile.TemporaryDirectory(prefix='froge-v21-update-') as temporary:
+    with tempfile.TemporaryDirectory(prefix='froge-v22-update-') as temporary:
         staging = Path(temporary)
         for name, encoded in data['files'].items():
             path = staging / name
@@ -70,40 +69,35 @@ def install_on_oracle(data):
         sys.path.insert(0, str(staging))
         import apply_update
         apply_update.update(staging, target, verify=verify_export)
-    print('FROGE_V21_OK: program zainstalowany. Test byl plikiem kontrolnym, nie generacja Meshy.', flush=True)
-    print('W Cloud Shell uruchom teraz ten sam plik z --connect-meshy, aby zapisac klucz Meshy. Klucz OpenAI nie jest zmieniany.', flush=True)
+    print('FROGE_V22_OK: Astra + Blender zainstalowane. Test eksportow zakonczony; nie generowano postaci przez API.', flush=True)
+    print('Astra Max obsluguje zdjecia. Zapisany klucz OpenAI pozostaje. Odswiez strone i sprawdz polaczenie.', flush=True)
 
 
 def main():
     arguments = sys.argv[1:]
     if arguments == ['--on-oracle']:
         return install_on_oracle(payload())
-    if arguments not in ([], ['--connect-meshy']):
-        raise RuntimeError('Uruchom bez argumentow, aby zainstalowac, lub z --connect-meshy, aby podlaczyc konto.')
+    if arguments:
+        raise RuntimeError('Uruchom bez dodatkowych argumentow. Aktualizacja korzysta z zapisanego OpenAI.')
     key = Path.home() / 'ssh-key-2026-09-06.key'
     if not key.is_file():
         raise RuntimeError('Brakuje klucza SSH w Oracle Cloud Shell. Uzyj swojego Cloud Shell z obecnym kluczem; nie przesylaj go do czatu.')
     options = ['-o','BatchMode=yes','-o','IdentitiesOnly=yes','-o','ConnectTimeout=20',
                '-o','ServerAliveInterval=15','-o','ServerAliveCountMax=3','-i',str(key)]
-    if arguments == ['--connect-meshy']:
-        if not sys.stdin.isatty():
-            raise RuntimeError('Uruchom --connect-meshy bezposrednio w terminalu Cloud Shell, aby klucz pozostal ukryty.')
-        print('Meshy to osobne platne API. Sam zapis polaczenia nie generuje modelu.')
-        api_key = getpass.getpass('Klucz API Meshy (wpis jest ukryty): ').strip()
-        if not api_key:
-            raise RuntimeError('Nie wpisano klucza. Niczego nie zmieniono.')
-        # Secret is passed over encrypted SSH stdin, never in command arguments,
-        # shell history, generated code, a browser URL or the update archive.
-        code = "import json,sys;from pathlib import Path;sys.path.insert(0,str(Path.home()/'froge-connector'));import server;data=json.load(sys.stdin);ok=server.configure_image3d(data);print('MESHY_CONNECTION_OK. Mozesz generowac ze zdjec.' if ok else 'Zlecenie aktywne. Poczekaj na jego zakonczenie.');sys.exit(0 if ok else 1)"
-        command = 'python3 -c ' + "'" + code.replace("'", "'\\''") + "'"
-        subprocess.run(['ssh','-T',*options,HOST,command],
-            input=json.dumps({'provider':'meshy','apiKey':api_key,'textureResolution':'8k'}),
-            text=True,check=True,timeout=90)
-        return
     payload()
     print('Lacze z obecna maszyna Oracle. Aktualizacja zachowa polaczenie, klucze i modele.', flush=True)
-    subprocess.run(['ssh','-T',*options,HOST,'python3 - --on-oracle'],
-        input=Path(__file__).read_text(encoding='utf-8'),text=True,check=True,timeout=900)
+    stopped = threading.Event()
+    def progress():
+        seconds = 0
+        while not stopped.wait(15):
+            seconds += 15
+            print('Aktualizacja Oracle trwa: %d s. Czekam na wynik instalacji i testu eksportow.' % seconds, flush=True)
+    ticker = threading.Thread(target=progress, daemon=True); ticker.start()
+    try:
+        subprocess.run(['ssh','-T',*options,HOST,'python3 -u - --on-oracle'],
+            input=Path(__file__).read_text(encoding='utf-8'),text=True,check=True,timeout=900)
+    finally:
+        stopped.set(); ticker.join(timeout=1)
 
 
 if __name__ == '__main__':
@@ -111,9 +105,9 @@ if __name__ == '__main__':
         main()
     except (Exception, KeyboardInterrupt) as error:
         if isinstance(error, subprocess.CalledProcessError):
-            print('FROGE_V21_ERROR: operacja nie powiodla sie. Przyczyna jest powyzej.', file=sys.stderr)
+            print('FROGE_V22_ERROR: operacja nie powiodla sie. Przyczyna jest powyzej.', file=sys.stderr)
         elif isinstance(error, subprocess.TimeoutExpired):
-            print('FROGE_V21_ERROR: limit czasu polaczenia. Sprawdz status Oracle przed ponowieniem.', file=sys.stderr)
+            print('FROGE_V22_ERROR: limit czasu polaczenia. Sprawdz status Oracle przed ponowieniem.', file=sys.stderr)
         else:
-            print('FROGE_V21_ERROR: ' + str(error), file=sys.stderr)
+            print('FROGE_V22_ERROR: ' + str(error), file=sys.stderr)
         raise SystemExit(1)

@@ -17,8 +17,8 @@ FILES += ('runtime/reference_surfaces.py','runtime/reference_quality.py','runtim
 FILES += ('face_measurement.py','runtime/photo_face.py','runtime/photo_face_color.py','runtime/assets/face-template-feminine.json')
 FILES += ('runtime/assets/emerald-reference-landmarks.json',)
 FILES += tuple('runtime/'+name for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_orbits.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py','review_views.py','scene_exports.py'))
-FILES += ('image3d_provider.py', 'image3d_fixture.py', 'runtime/imported_asset.py')
-EXPECTED_VERSION = 21
+FILES += ('image3d_fixture.py', 'runtime/imported_asset.py')
+EXPECTED_VERSION = 22
 EXPECTED_RENDERER_REVISION = 3
 
 
@@ -74,9 +74,9 @@ def update(source, target, verify=None):
             try:
                 with urllib.request.urlopen(request, timeout=2) as response:
                     health = json.loads(response.read(10000))
-                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('image3dRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
+                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
                         print('FROGE_UPDATE_OK')
-                        print('Froge v21: sciezka image-to-3D z eksportem FBX gotowa. Do generowania ze zdjec wymagane polaczenie Meshy. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Froge v22: zdjecia obsluguje Astra Max i Blender. Ocena obejmuje przod, profil i tyl. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass
