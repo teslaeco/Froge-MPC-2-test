@@ -1,5 +1,26 @@
 # Generator upgrade verified — follow-up to 2dd0fb9
 
+## 2026-09-11 — interchange export source checkpoint; deployment still blocked
+
+- Added one-master-scene worker export paths for FBX, OBJ+MTL and millimetre-valued
+  STL alongside the existing GLB/BLEND and validated Froge scene JSON. The export
+  report states axis, rig, texture and shader boundaries and does not call STL
+  textured or print-ready. `scene_exports.py` is included in the worker manifest.
+- Two isolated unit tests pass and production typecheck passes. Native Blender is
+  absent from this restored workspace, so FBX/OBJ/STL reopen tests and an updated
+  worker ZIP were **not** completed here; this source checkpoint is not an Oracle
+  installation or a verified multi-format artifact delivery.
+- The checkout has no Git remote or GitHub credentials. The available toolset has
+  no Sites or Oracle operation. Current Sites v38 source therefore could not be
+  recovered, renamed, made public or redeployed, and Oracle health/capabilities
+  could not be queried. Preserve v38 rather than publishing this older UI.
+- The requested GPT-6 Astra runtime/reasoning setting is not exposed to this
+  session and was not claimed. No AI API call and no new cost were incurred.
+- Next required stage: recover Sites v38 source and native Blender, run every
+  export/reimport comparison (FBX importer identified), generate a second prompt,
+  then install with rollback, verify Oracle health/generation, and only afterward
+  publish the same Site publicly as MCP 2 and test anonymous desktop/mobile access.
+
 ## 2026-09-11 — requested model preview; website update blocked
 
 Sebastian confirmed the Oracle v20 installation with FROGE_V20_OK and a passing GLB test. His next studio screenshot reports Oracle v20 connected, but still displays a previous chess king. He requested the model from FORGE-modelka-4K.zip to be added to the website preview.

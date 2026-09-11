@@ -1,6 +1,12 @@
 # Froge Oracle connector
 
-This is the text/photos → selected AI → Blender → GLB worker for the private Froge test studio.
+This is the text/photos → selected AI → Blender worker for the Froge test studio.
+Each completed scene keeps the editable BLEND master and exports GLB, FBX,
+OBJ+MTL, STL (unitless format with numeric coordinates written in millimetres)
+and the validated Froge scene JSON when the job originated from that schema.
+FBX embeds textures and preserves an existing armature; it never invents a rig.
+OBJ/MTL cannot preserve every PBR shader, and STL has neither textures nor an
+automatic print-readiness guarantee.
 It is separate from the desktop Blender add-on and the example dragon.
 
 ## Photo-guided generation (version 14)

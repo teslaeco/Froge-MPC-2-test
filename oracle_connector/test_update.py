@@ -36,7 +36,7 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'runtime/anatomy.py').write_text('anatomy_version = 8\n')
         (self.source / 'runtime/wardrobe.py').write_text('wardrobe_version = 10\n')
         (self.source / 'runtime/textiles.py').write_text('textiles_version = 10\n')
-        for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_orbits.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py','review_views.py'):
+        for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_orbits.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py','review_views.py','scene_exports.py'):
             (self.source/'runtime'/name).write_text('quality_revision = 1\n')
         shutil.copytree(Path(__file__).parent/'runtime/assets', self.source/'runtime/assets')
         for name in ('photo_face.py','photo_face_color.py','reference_surfaces.py','reference_quality.py','reference_match.py'):
