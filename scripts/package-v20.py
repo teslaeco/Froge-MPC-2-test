@@ -25,7 +25,7 @@ template=template.replace("compile(base64.b64decode(encoded, validate=True), nam
 template=template.replace('timeout=180','timeout=900').replace('timeout=360','timeout=1080')
 template=template.replace('FROGE_PORTRAIT_OK','FROGE_V20_OK')
 template=template.replace("health.get('materialQualityRevision') != 2:",
-                          "health.get('materialQualityRevision') != 2 or health.get('interchangeRevision') != 2:")
+                          "health.get('materialQualityRevision') != 2 or health.get('interchangeRevision') != 2 or health.get('materialRepairRevision') != 1:")
 template=template.replace('Poprawiona figurka jest juz dostepna na stronie.', 'Model kontrolny zostal zapisany na Oracle. Sprawdz jego wyglad; nowe modele tworz w generatorze.')
 # Retain the actual verification model so it can be inspected after installation.
 template=template.replace("with tempfile.TemporaryDirectory(prefix='portrait-export-check-', dir=target / 'state') as folder:",
@@ -40,7 +40,14 @@ folder=root/'public/downloads';folder.mkdir(parents=True,exist_ok=True)
 (folder/'froge-v20.py').write_text(result)
 readme='''FORGE v20 — poprawka eksportów i generatora, 2026-09-11
 
-Nowa poprawka: rozdzielone tekstury FBX, przenośny OBJ+MTL z folderem textures,
+Naprawa materiałów (materialRepairRevision=1): brak definicji eyes_grey_green lub
+innego materiału uruchamia jedną ograniczoną korektę palety. Geometria pozostaje
+z pierwotnego planu; wszystkie odwołania muszą wskazywać zadeklarowane materiały.
+Nie dodano trzeciej próby planowania; zachowano limity 600 s AI i 900 s Blendera.
+Instalator sprawdza materialRepairRevision=1 w odpowiedzi uruchomionego serwera.
+Ta zmiana nie poprawia automatycznie poprzednich nieudanych zleceń.
+
+Wcześniejsza poprawka: rozdzielone tekstury FBX, przenośny OBJ+MTL z folderem textures,
 raport rozmiarów i SHA256, pobieranie eksportów po uwierzytelnieniu. Kolor skóry
 twarzy jest wypalany do atlasu bez dodawania oświetlenia sceny. Materiały
 projekcyjne ubrania nadal mają ograniczenia FBX/OBJ; nie każdy shader jest

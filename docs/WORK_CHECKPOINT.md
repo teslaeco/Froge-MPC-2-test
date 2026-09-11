@@ -1,3 +1,32 @@
+## 2026-09-11 — missing material error repaired (materialRepairRevision 1)
+
+- User screenshot and the existing Site DB both confirm failed job
+  6fe3f4c4-93ce-4e00-b66c-e0cb9f01bb8c: `Nieznany material: eyes_grey_green`.
+  The raw Oracle scene response was not accessible; do not claim its exact palette.
+- Based on PR #9 head d98c38dc507b8d88019020b94fd285f7dbf3bc1a. Validator now
+  reports all missing bindings. The existing second planning attempt repairs only
+  an eight-slot palette and required bindings; original geometry is retained,
+  then full scene/anatomy validation runs. Original request/photos are retained.
+  Invalid repairs fail without a third planning attempt. Both AI providers receive
+  the constrained repair schema; no paid API requests were made during this fix.
+- 53 focused Python tests PASSED, including exact eyes_grey_green reproduction,
+  original geometry preservation, nine references sharing eight slots, invalid
+  bindings/colors/duplicate fields, anatomy enforcement, both providers, and real
+  SQLite worker lifecycle with mock AI/Blender. The test FROGE_UPDATE_OK output is
+  from a mocked update test, NOT proof of an Oracle installation.
+- Worker health advertises materialRepairRevision=1; generated installer requires
+  this value from the running service. Original scene, palette response and
+  material-repair.json remain in job state. Color fidelity is not independently
+  verified. Existing failed jobs are not automatically rerun.
+- Complete froge-v20.zip rebuilt; all 45 embedded files exactly match source,
+  Python files compile, ZIP integrity and installer capability check pass.
+  Payload SHA256: ccc8064d1a836d9673c379aed6739dfe684f82862e4cec81dd77717057145182.
+- This source/package fix is NOT installed on Oracle. Existing Site remains v38
+  and owner-only. Prior source-clone HTTP 500 and inaccessible Oracle Console
+  prevent installing/deploying here; the current worker did respond to this job.
+  Preserve current Site and authorized public-release goal. Next: install updated
+  worker, verify materialRepairRevision=1, then retry and inspect the real model.
+
 ## 2026-09-11 — generator and downloadable exports executed (after 5138178)
 
 - Continued at the user's instruction to execute the work directly. Parent remote

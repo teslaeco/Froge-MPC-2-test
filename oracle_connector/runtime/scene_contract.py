@@ -7,6 +7,7 @@ import json
 import math
 import re
 import unicodedata
+from copy import deepcopy
 
 
 def number(lo=-1000, hi=1000):
@@ -127,6 +128,11 @@ SCHEMA = record({
 })
 
 PROMPT = '''Design the user's requested 3D asset as a compact Froge scene JSON, version 1.
+MATERIAL CLOSURE: declare at most 8 materials, then use their exact names in
+every material and *_material field. A color description is not a declaration.
+For example eye_material "eyes_grey_green" requires a material with exactly
+that name. Check every reference, including eyes, nails, shoes and trim. Share
+compatible materials when needed; never leave an undeclared ninth material.
 Material rgb values are display/sRGB colors; keep the reference palette. Colored
 cloth and crystal panels must not be replaced by silver metal. Metals are trim.
 COUTURE REFERENCE: for a standing adult woman in a fitted floor-length crystalline
@@ -337,6 +343,49 @@ def polygon_outline(points):
     return [(x-shift,y) for x,y in contour]
 
 
+MATERIAL_FIELDS = ('material','cap_material','leaf_material','bulb_material',
+                   'skin_material','hair_material','top_material','trouser_material',
+                   'shoe_material','accent_material','eye_material','nail_material',
+                   'dress_material','crystal_material')
+
+
+class MaterialReferenceError(ValueError):
+    """Structurally valid scene with unresolved material references."""
+    def __init__(self, scene, missing):
+        self.scene=deepcopy(scene)
+        self.missing=deepcopy(missing)
+        super().__init__('Nieznany material: '+', '.join(missing))
+
+
+def material_repair_schema(scene):
+    """Fixed palette slots make every returned binding resolve by construction."""
+    fields=SCHEMA['properties']['materials']['items']['properties']
+    names=sorted({p[field] for p in scene['parts'] for field in MATERIAL_FIELDS if field in p})
+    return record({'slots':array(record({k:v for k,v in fields.items() if k!='name'}),8,8),
+                   'bindings':record({name:{'type':'integer','minimum':0,'maximum':7} for name in names})})
+
+
+def apply_material_repair(original, text, prompt=None):
+    repair=load_scene_json(text)
+    check(repair,material_repair_schema(original),'material_repair')
+    bindings=repair['bindings'];slot_names={}
+    # Keep existing names where possible; names can select procedural textures.
+    for material in original['materials']:
+        if material['name'] in bindings:
+            slot_names.setdefault(bindings[material['name']],material['name'])
+    for name,index in bindings.items():slot_names.setdefault(index,name)
+    scene=deepcopy(original)
+    scene['materials']=[{'name':slot_names[i],**repair['slots'][i]} for i in sorted(slot_names)]
+    for part in scene['parts']:
+        for field in MATERIAL_FIELDS:
+            if field in part:part[field]=slot_names[bindings[part[field]]]
+    scene=parse_scene(json.dumps(scene),prompt)
+    return scene,{'kind':'bounded-material-palette-repair',
+        'bindings':{name:slot_names[i] for name,i in bindings.items()},
+        'material_count':len(scene['materials']),'geometry_from_original_plan':True,
+        'colors_independently_verified':False}
+
+
 def validate_scene(value):
     # Backward-compatible input normalization only; no unknown fields accepted.
     if isinstance(value,dict) and isinstance(value.get('parts'),list):
@@ -351,15 +400,18 @@ def validate_scene(value):
     mats = [m['name'] for m in value['materials']]
     if len(set(mats)) != len(mats):
         raise ValueError('Powtorzona nazwa materialu.')
+    missing={}
+    for p in value['parts']:
+        for field in MATERIAL_FIELDS:
+            if field in p and p[field] not in mats:
+                missing.setdefault(p[field],[]).append(p['name']+'.'+field)
+    if missing:raise MaterialReferenceError(value,missing)
     known = {}
     vertices = triangles = objects = 0
     for p in value['parts']:
         kind, name = p['kind'], p['name']
         if name in known:
             raise ValueError('Powtorzona nazwa czesci: ' + name)
-        for field in ('material', 'cap_material', 'leaf_material', 'bulb_material', 'skin_material', 'hair_material', 'top_material', 'trouser_material', 'shoe_material', 'accent_material', 'eye_material','nail_material','dress_material','crystal_material'):
-            if field in p and p[field] not in mats:
-                raise ValueError('Nieznany material: ' + p[field])
         v, t, count = 0, 0, 1
         if kind == 'mesh':
             for face in p['faces']:
@@ -482,7 +534,7 @@ def apply_person_intent(scene, prompt):
     return validate_scene(scene)
 
 
-def parse_scene(text, prompt=None):
+def load_scene_json(text):
     if not isinstance(text, str) or not text.strip() or len(text.encode()) > 60000:
         raise ValueError('Oczekiwano kompletnego planu JSON do 60 KB.')
     def unique(pairs):
@@ -492,6 +544,10 @@ def parse_scene(text, prompt=None):
                 raise ValueError('Powtorzone pole JSON: ' + k)
             result[k] = v
         return result
-    scene=apply_person_intent(validate_scene(json.loads(text, object_pairs_hook=unique)),prompt)
+    return json.loads(text, object_pairs_hook=unique)
+
+
+def parse_scene(text, prompt=None):
+    scene=apply_person_intent(validate_scene(load_scene_json(text)),prompt)
     enforce_portrait_floor(scene,prompt)
     return scene

@@ -43,6 +43,28 @@ textures and review views if the bounded visual-refinement build fails or cancel
 
 It is separate from the desktop Blender add-on and the example dragon.
 
+## Missing material references (materialRepairRevision 1)
+
+A structurally valid AI plan can still reference an undeclared material, such as
+`eyes_grey_green`. The validator now reports all unresolved references. On the
+first planning attempt only, the existing second attempt requests a constrained
+palette with eight slots and a required binding for every material reference.
+The worker changes only materials and their bindings in the original plan, then
+runs the full scene and anatomy validation before Blender. Unused slots are
+discarded; no ninth material, arbitrary fallback color or third planning attempt
+is added. The original request and photos remain available to the repair model.
+
+Raw plans, the palette response and `material-repair.json` stay in the job folder.
+The report records renamed/shared bindings and does not claim independent color
+verification. Both providers receive the repair schema. The 600 s AI and 900 s
+Blender budgets remain unchanged. Existing failed jobs are not automatically
+resubmitted. Install the updated worker before retrying through the Site; source
+commits and ZIP downloads alone do not update Oracle. The one-file installer now
+requires `materialRepairRevision: 1` from the running worker.
+
+Regression checks: `python -m unittest test_material_repair test_scene_contract
+test_connector test_openai test_update` (53 tests; no paid API generation).
+
 ## Photo-guided generation (version 14)
 
 Install the current `froge-oracle-update.zip` using the update instructions in Studio,
