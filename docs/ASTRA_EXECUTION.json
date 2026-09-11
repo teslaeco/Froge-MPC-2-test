@@ -1,18 +1,21 @@
 {
   "date": "2026-09-11",
   "version": 22,
-  "status": "source_and_installer_verified_not_installed",
+  "status": "oracle_v22_confirmed_live_generation_running",
   "user_requirement": "Astra only for photo generation; Meshy was a quality comparison, not requested integration",
   "source_parent_commit": "14701654a8de83fb8b90605f2175d5ddde6a2902",
   "photo_ai": "gpt-6-astra",
   "photo_reasoning_effort": "max",
   "photo_max_output_tokens": 24000,
   "mesh_provider_removed": true,
-  "paid_ai_calls_this_turn": 0,
+  "submitted_live_photo_jobs": 1,
+  "live_job_id": "1dc26a4a-f8f4-480b-ba51-524d558ff355",
+  "live_generation_state": "generating",
   "new_character_generated": false,
   "likeness_verified": false,
   "oracle_v21_installation": "confirmed by user screenshot showing FROGE_V21_OK",
-  "oracle_v22_installed": false,
+  "oracle_v22_installed": true,
+  "oracle_v22_evidence": "User FROGE_V22_OK screenshot and independent live Studio v22/gpt-6-astra readiness",
   "site_deployed": false,
   "validation": {
     "python_tests_run": 58,
@@ -67,8 +70,7 @@
     "payload_sha256": "3fcd5317c0b4bee3138d26a9a077d32a2ffe84b892b27a37e86c91a83ef89f29"
   },
   "remaining": [
-    "Install v22 on Oracle",
-    "Live Astra generation and visual likeness assessment",
+    "Finish live Astra job 1dc26a4a-f8f4-480b-ba51-524d558ff355 and assess its actual model",
     "Site UI source deployment previously blocked by canonical Git HTTP 500"
   ]
 }

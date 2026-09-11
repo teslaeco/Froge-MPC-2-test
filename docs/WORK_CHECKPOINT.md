@@ -1,3 +1,26 @@
+## 2026-09-11 — v22 installation confirmed; live reference generation and PR review
+
+- User screenshot shows FROGE_V22_OK. Live Studio independently confirms Oracle
+  v22, photo support and gpt-6-astra using the existing OpenAI connection.
+- Uploaded the exact supplied 1229x1536 emerald character image through Studio;
+  submitted one new photo job: 1dc26a4a-f8f4-480b-ba51-524d558ff355.
+  View is three-quarter; prompt is 1326 characters. The job is generating.
+  No Meshy connection, repeated submission or replacement by an older model.
+- PR #9 title/body now describe v22 and actual validation. Head at review was
+  da985b79a4fd080bf25b019473584ee5bc9571ad; GitHub reports clean/mergeable,
+  zero reviews, zero check runs/statuses/workflow runs. No .github workflows
+  exist in this tree. User explicitly authorizes merge when checks permit.
+- 11 focused export/material-repair tests additionally passed in this review.
+- Source review: face has seven bounded parameters plus optional landmark fit;
+  couture uses authored garment tools. Max effort is not native image-to-3D.
+- WebMCP tools expose local scene editing, not the Oracle job lifecycle/export
+  report. The current browser reports modelContext unavailable; UI works.
+  Recommend authenticated job/status/cancel/export/quality tools and CI, then
+  broader image-conditioned geometry/UV/material fitting for general likeness.
+- Site remains v38. No Site deployment or audience change performed here.
+  Await the live job, inspect its actual GLB/textures and save the outcome before
+  claiming likeness. Do not submit a duplicate while this job is active.
+
 ## 2026-09-11 — user correction: Astra only; Meshy integration retired in v22
 
 - User explicitly clarified: Meshy was a quality comparison, not permission to
