@@ -4,9 +4,24 @@ This is the text/photos → selected AI → Blender worker for the Froge test st
 Each completed scene keeps the editable BLEND master and exports GLB, FBX,
 OBJ+MTL, STL (unitless format with numeric coordinates written in millimetres)
 and the validated Froge scene JSON when the job originated from that schema.
-FBX embeds textures and preserves an existing armature; it never invents a rig.
+FBX requests embedded textures and preserves an existing armature; it never invents a rig.
 OBJ/MTL cannot preserve every PBR shader, and STL has neither textures nor an
 automatic print-readiness guarantee.
+Interchange export revision 2 materializes packed/generated PNG and JPEG images
+under unique content-addressed names in `textures/`, then temporarily binds ordinary
+file images for the native exporters. Original image nodes and master geometry are
+restored. Deliver OBJ together with its MTL and the entire `textures/` directory.
+A failed optional exporter is reported as `status: partial`; the completed GLB/BLEND
+remain available. `formats` includes only nonempty files produced successfully.
+An export report does not claim that a native reimport was performed for every job.
+
+Run `python -m unittest test_scene_exports` for failure handling, and
+`blender --background --python verify_scene_exports.py` for real FBX/OBJ/STL imports.
+The native fixture checks two distinct packed images with empty paths, preserved
+image bytes/material assignments, geometry, UVs, STL units and a relocated OBJ.
+Complex shader graphs, vertex-color-driven skin and advanced PBR require inspection
+in the target application; shipping their source images is not a shader bake.
+
 It is separate from the desktop Blender add-on and the example dragon.
 
 ## Photo-guided generation (version 14)
@@ -233,3 +248,4 @@ each model and review renders; `--scene rapper.scene.json` selects one fixture. 
 See `docs/ASTRA-3D-NOTES.md` in the project for the documentation review and measured results.
 
 Version 9 adds separate top/trouser unions, post-union localized folds, sewn pocket panels, cuffs and a folded hood. Sneakers use flat rubber soles, layered uppers, quarter panels, crossed laces and heel tabs. The wardrobe remains a generic procedural design, not an automatic guarantee of retail or print quality. `wardrobe.py` is trusted bundled runtime code and is included in updater rollback.
+

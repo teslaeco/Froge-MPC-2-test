@@ -1,0 +1,11 @@
+{
+  "blender": "4.3.0",
+  "triangles": 24,
+  "packed_texture_count": 2,
+  "fbx_embedded_bytes_preserved": true,
+  "obj_relocated_textures_preserved": true,
+  "uv_and_geometry_preserved": true,
+  "master_state_preserved": true,
+  "stl_millimetres_verified": true,
+  "scope": "Native regression fixture; does not claim every Blender shader survives interchange"
+}

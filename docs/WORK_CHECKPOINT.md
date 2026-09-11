@@ -1,3 +1,31 @@
+## 2026-09-11 — export texture repair executed in PR #9
+
+- User explicitly asked this assistant to execute the continuation, not just draft it.
+- Starting remote head: a8089e19f20eadc4b25cc54d23a9c7c26193da68, PR #9 branch
+  codex/przygotuj-i-opublikuj-mcp-2, base codex/reference-fidelity-4k-8k.
+- Reproduced original native FBX image aliasing and missing OBJ textures using the
+  unchanged model.blend from FORGE-modelka-4K.zip. Repaired packed/generated image
+  transfer with unique files and temporary file-image bindings; original node
+  bindings and selection are restored. Optional failures preserve GLB/BLEND and
+  produce an explicit partial report. JSON is listed only when written; runtime
+  uses the current output folder's scene.json.
+- Native Blender 4.3.0 two-image fixture PASSED: FBX with only the FBX file available,
+  relocated OBJ+MTL+textures, exact image bytes/materials, vertices, UVs, triangles,
+  master state and STL millimetres. Five focused failure-handling tests PASSED.
+- Actual unchanged character: FBX, OBJ and STL reimport with 592136 triangles.
+  FBX/OBJ now recover 13 distinct material image entries instead of aliased/missing
+  maps. Fourteen original images are delivered. The skin atlas behind a complex
+  shader is not directly bound by these native exporters; this is still an
+  appearance limitation, not a claim of complete PBR or reference likeness.
+- Native fixture and verification report are committed with this checkpoint.
+- Current Site remains owner-private v38. Another authorized clone of its source
+  repository failed with HTTP 500 / expected packfile. Do not overwrite current UI
+  with this older GitHub mirror. Sites reports no server-MCP declaration; existing
+  browser WebMCP and the product name MCP 2 are separate from that capability.
+- No Oracle installation, Site deployment, paid AI call or visual geometry fix is
+  claimed in this checkpoint. Continuing generator/model work next; source access
+  and Oracle installation remain to be resolved before public release.
+
 # Generator upgrade verified — follow-up to 2dd0fb9
 
 ## 2026-09-11 — interchange export source checkpoint; deployment still blocked
@@ -2957,3 +2985,4 @@ clothes-review.png, shoes-review.png, back-review.png and verification.json.
 - Preserve the existing connection and OpenAI key.
 - Re-deliver the Site, model, preview and update ZIP links now. No new generation is pending.
 - Later quality work should start with the user's feedback on this verified v10 output.
+

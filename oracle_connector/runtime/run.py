@@ -236,7 +236,7 @@ def finish(output=None):
         report['export_validation']=verify_export(output/'model.glb',objects)
     from scene_exports import export_interchange
     report['interchange_exports']=export_interchange(
-        output, '/work/scene.json' if Path('/work/scene.json').is_file() else None)
+        output, output/'scene.json' if (output/'scene.json').is_file() else None)
     report['master_export']['formats']=report['interchange_exports']['formats']
     (output/'result.json').write_text(json.dumps(report))
     review_request=output/'review-request.json'
