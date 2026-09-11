@@ -1,5 +1,25 @@
 # Generator upgrade verified — follow-up to 2dd0fb9
 
+## 2026-09-11 — requested model preview; website update blocked
+
+Sebastian confirmed the Oracle v20 installation with FROGE_V20_OK and a passing GLB test. His next studio screenshot reports Oracle v20 connected, but still displays a previous chess king. He requested the model from FORGE-modelka-4K.zip to be added to the website preview.
+
+Verified this turn:
+- The supplied ZIP contains the expected FORGE model. GLB: 39,711,312 bytes; SHA256 63d9924795454898e60f52fe8bce87c5906e60016f06211c19b0f2f88078b99b.
+- Native Sites get_site confirms the same owner-private site and version 38. Version 38 source is 868131794689da730f851a8845ff951f2da8c92b. No newer version was saved or published this turn.
+- The previous local checkout was removed by workspace maintenance. Three attempts to clone the existing Site's returned source repository (normal, shallow, and filtered shallow) all failed with HTTP 500 / expected packfile. The server reported that filtering was unsupported. No access policy was changed and no replacement Site was created. The Site commit is not available in the GitHub mirror either.
+- Consequently, the button and direct link proposed for the website were NOT added. Restoring current Site source access is required before editing/publishing its existing viewer. Do not overwrite it with the older ModelStudio.tsx from the GitHub mirror; that file lacks controls visible in the user's current screenshot.
+- Prepared a standalone offline HTML viewer containing the exact GLB, bundled Three.js 0.185.1, OrbitControls and GLTFLoader, studio lighting, whole-body/face/back views, and download of the unchanged GLB. No photo enlargement, geometry regeneration, decimation or AI call.
+- Real headless Chromium test completed: modelLoaded=true, faceSelected=true, downloadEnabled=true, pageErrors=[]. Source/bundle syntax passed. This verifies the standalone viewer, not the hosted page.
+- Saved deliverables with successful durable write receipts:
+  - FORGE-modelka-podglad-3D.html, 55,078,078 bytes, libfile_e434f79462dc8191a29452691e3ffe85 (version 0).
+  - FORGE-modelka-4K.glb, libfile_20ecc730588481919bfb5095dbd7fab3 (version 0).
+  - FORGE-modelka-podglad.png, libfile_a7b1f4fe52a08191aeb9774825d430f0 (version 0); unchanged 840x1080 render from the ZIP.
+- PR #8 remains draft and unmerged. Original reference likeness and commercial print readiness are still not accepted.
+
+Next necessary work: recover the current Site checkout; add this asset to its existing viewer and explicit example selection, preventing auto-restore of an earlier job from replacing it; preserve the current site UI and audience; verify the resulting load and publish the requested preview. User authorization to add this preview to their studio is present in this turn.
+
+
 Implementation tested: 123 Python tests, 70 focused Vitest tests, successful
 production build. Real 4K-profile generated GLB: 39711312 bytes, SHA256
 63d9924795454898e60f52fe8bce87c5906e60016f06211c19b0f2f88078b99b.
