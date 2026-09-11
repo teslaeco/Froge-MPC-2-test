@@ -1,5 +1,17 @@
 # FORGE: image-conditioned geometry and textures
 
+Polecenie: przebuduj generator, aby każde przesłane zdjęcie prowadziło
+rzeczywiste generowanie geometrii i tekstur. Zastosuj silnik image-to-3D,
+zachowaj wygląd konkretnej postaci, udostępnij pełny GLB, FBX i mapy PBR.
+Nie podstawiaj gotowej twarzy ani sylwetki. Sprawdź pliki i pokaż rzeczywisty
+wynik; nie deklaruj zgodności 1:1 bez oceny wygenerowanego modelu.
+
+Wykonanie: kod v21, panel Meshy, pobieranie eksportów oraz instalator są
+przygotowane. Testy protokołu/HTTP/UI i natywnego eksportu przeprowadzono.
+Generowanie postaci w Meshy nie zostało uruchomione: brak połączenia Meshy,
+konsola Oracle jest niedostępna, a pobranie źródeł strony zwraca HTTP 500.
+Szczegóły i rozdzielenie tych etapów: `IMAGE3D_EXECUTION.json`.
+
 ## Command to Codex
 
 Replace the photo-generation pipeline with a real image-to-3D model. For every
@@ -36,8 +48,8 @@ successful production deployment or completed generation without evidence.
 
 - Architecture confirmed: previous photo path made a constrained Astra scene
   plan and built a generic anatomical template. It was not neural image-to-3D.
-- Implement a new provider path and authenticated configuration, leaving existing
-  text modelling and saved historical jobs available.
+- Implemented a new provider path and authenticated configuration, leaving
+  existing text modelling and explicitly replayed historical jobs available.
 - Runtime account checked: no Meshy credential or local GPU was available.
   Paid neural generation and likeness review require that connection.
 - API reference: https://docs.meshy.ai/en/api/image-to-3d and

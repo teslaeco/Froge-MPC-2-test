@@ -1,20 +1,44 @@
-## 2026-09-11 — image-to-3D replacement: backend checkpoint, integration in progress
+## 2026-09-11 — v21 image-to-3D integration and installer completed; live execution blocked
 
-- User rejected the template/composition-specific repair. New photo requests now
-  require a real image-to-3D connection and cannot silently recover old templates.
-- Added Meshy 7 Ultra adapter for exact input bytes, 1–4 views of one subject,
-  native geometry, requested 4K/8K PBR, preserved pose and no image enhancement.
-- Remote task intent/ID survives polling, download and export failures. No
-  automatic repeat of an ambiguous paid POST; no key or signed URL in reports.
-- Blender imports the neural GLB directly, preserves its original bytes, makes
-  actual FBX/OBJ/STL/BLEND, and only reduces textures in a separate preview.
-- Added authenticated image3d configuration and secure getpass CLI. No Meshy
-  credential found in local or Site configuration; no paid API call performed.
-- Backend Python compilation passed. Offline provider/HTTP/render/export tests
-  exercised; frontend configuration/download wiring and full installer remain
-  in progress at this checkpoint. No neural model or likeness result yet.
-- Site remains v38. No Oracle installation, Site deployment, merge or audience
-  change. Continue from docs/CODEX_IMAGE_TO_3D.md; do not regenerate a template.
+- General photo path now uses Meshy 7 Ultra (single/multi view, actual JPEG
+  bytes, preserved pose, no image enhancement or remesh, 4K/8K PBR requested).
+  No new photo-to-template fallback; text and explicit historical replay remain.
+- Meshy is configured separately via authenticated settings or getpass over SSH.
+  Readiness is independent of Astra. Remote task intent/ID persists; ambiguous
+  paid submissions are not repeated, and free result/export resume is explicit.
+- Original GLB and PBR maps retained, native FBX/OBJ/STL/BLEND exported, preview
+  textures reduced only in a separate GLB when necessary. Added authenticated,
+  streamed downloads for master, FBX, PBR archive and other completed formats.
+- 50 Python tests plus a new PBR-download test and 66 UI/API tests passed.
+  Typecheck of the materialized generation modules/dependencies passes. Full
+  deployed Site build was not run: its canonical Git clone returns HTTP 500.
+- Native Blender 4.3 check: 732 triangles retained across master/preview/FBX/OBJ/
+  STL, distinct-axis bounds preserved within 0.000001 m; texture 8192x64 remains
+  full size in master/FBX/OBJ while preview is 4096x32. These are authored TEST
+  objects, not neural generation or photographic likeness evidence. Separate
+  12-triangle textured installation fixture also passes native import/exports.
+- Full v21 installer: 49 payload files, rollback-safe worker install, secure
+  optional --connect-meshy. It tests a cube without calling paid AI. The update
+  package is not an installed worker. See IMAGE3D_EXECUTION.json for results.
+- No Meshy API connection found locally or in Site settings. 0 paid AI calls.
+  Oracle browser reports Site Unavailable; no SSH key available in this session.
+  Site source clone with renewed credential returned HTTP 500. Site stays v38;
+  no Oracle install, Site deployment, audience change or neural model produced.
+- Backend checkpoint is 759ac60f169ca7d694064a0cd56b5c0f8cb1a85f on PR #9.
+  Final integration source follows on the same branch. Do not regenerate or
+  re-deliver the old template model as a successful image-to-3D result.
+
+## 2026-09-11 — image-to-3D backend saved; integration in progress
+
+- User rejected procedural/composition-specific results. Photo path now requires
+  Meshy 7 Ultra and sends each subject's actual image bytes; no template fallback.
+- 37 offline provider/HTTP/render/export tests pass, as does Python compilation.
+- Full input GLB preserved; native Blender export stage added with separate
+  preview textures. Native import/export fixture and frontend wiring still pending.
+- Backend source saved on PR #9 as 759ac60f169ca7d694064a0cd56b5c0f8cb1a85f.
+- No Meshy connection found. No paid API call, neural model or likeness proof.
+- No Site deployment, Oracle install or access change. Site remains v38.
+- Continue docs/CODEX_IMAGE_TO_3D.md, frontend settings/downloads and v21 installer.
 
 ## 2026-09-11 — geometry r2: model, exports and installer verified and saved
 
@@ -3167,4 +3191,3 @@ clothes-review.png, shoes-review.png, back-review.png and verification.json.
 - Preserve the existing connection and OpenAI key.
 - Re-deliver the Site, model, preview and update ZIP links now. No new generation is pending.
 - Later quality work should start with the user's feedback on this verified v10 output.
-

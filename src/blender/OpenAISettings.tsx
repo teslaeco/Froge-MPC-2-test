@@ -7,15 +7,15 @@ ssh -T -o IdentitiesOnly=yes -o ConnectTimeout=20 -i "$HOME/ssh-key-2026-09-06.k
 export const oracleRebuildUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-rebuild.zip').replaceAll('froge-openai-update', 'froge-rebuild-update')
 export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-update.zip').replaceAll('froge-openai-update', 'froge-photos-v14-update')
 export const oracleRepairCommand = 'python3 "$HOME/froge-napraw-oracle.py"'
-export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v20.zip" "$HOME/froge-v20"\npython3 "$HOME/froge-v20/froge-v20.py"'
+export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v21.zip" "$HOME/froge-v21"\npython3 "$HOME/froge-v21/froge-v21.py"'
 
 export function GeometryUpdate({ required = true }: { required?: boolean }) {
   const [copyNote, setCopyNote] = useState('')
   return <div className="blender-setup">
-    <strong>{required ? 'Włącz generator postaci · v20' : 'Pełna aktualizacja generatora · v20'}</strong>
-    <p>Dopasowana suknia, cienkie zdobienia i wachlarz z wirnikami. Zachowane sceny do 3 postaci, fryzury, zdjęcia oraz pełne pliki geometrii i tekstur. Anatomiczna twarz z teksturą 2048 px, osobne oczy, pięć palców i paznokcie na każdej dłoni. Generator sprawdza te elementy przed zapisaniem wyniku. Podobieństwo do zdjęcia nadal wymaga oceny w podglądzie.</p>
-    <a href="/downloads/froge-v20.zip" download>Pobierz pełną paczkę · v20</a>
-    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza prawdziwy eksport GLB bez zapytania do AI. Po FROGE_V20_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
+    <strong>{required ? 'Włącz generator zdjęć → 3D · v21' : 'Pełna aktualizacja generatora · v21'}</strong>
+    <p>Zdjęcia prowadzą generowanie geometrii i tekstur w Meshy Ultra. Pełny GLB, FBX, OBJ i Blender zachowują model źródłowy; strona może korzystać z lżejszego podglądu. Po instalacji podłącz osobny klucz Meshy. Dotychczasowe modele pozostają zapisane.</p>
+    <a href="/downloads/froge-v21.zip" download>Pobierz pełną paczkę · v21</a>
+    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza import oraz eksport GLB i FBX na pliku testowym bez zapytania do AI. Po FROGE_V21_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
   </div>
 }
 
@@ -37,7 +37,7 @@ export function OpenAISettings({ connection, busy, onSaved }: { connection: Blen
       await blenderRequest('ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider, ...(value && provider === 'openai' ? { apiKey: value } : {}) }) })
       setApiKey('')
       await onSaved()
-      setNote(provider === 'openai' ? 'OpenAI podłączone. Możesz wygenerować model.' : 'Wybrano lokalne AI.')
+      setNote(provider === 'openai' ? 'OpenAI podłączone do tworzenia scen z opisu.' : 'Wybrano lokalne AI do opisu.')
     } catch (error) { setNote((error as Error).message) }
     finally { setSaving(false) }
   }

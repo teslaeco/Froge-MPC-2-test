@@ -215,7 +215,7 @@ def export_interchange(output, scene_source=None):
         'obj': {'mtl': 'model.mtl', 'uvs_requested': True, 'normals_requested': True,
                 'reimport_verified': False,
                 'shader_boundary': 'OBJ/MTL cannot reproduce every Blender or glTF PBR shader'},
-        'stl': {'numeric_unit': 'millimetre', 'textures': False,
+        'stl': {'numeric_unit': 'millimetre', 'textures': False, 'axis_forward': '-Z', 'axis_up': 'Y',
                 'print_readiness_assessed': False, 'reimport_verified': False},
         'scene_json': {'schema': 'Froge scene contract', 'present': False, 'status': 'unavailable'},
     }

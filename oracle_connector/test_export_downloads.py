@@ -53,6 +53,25 @@ class ExportDownloadTests(unittest.TestCase):
         formats=json.loads(self.request_bytes(base)[2])['formats']
         self.assertEqual([x['format'] for x in formats],['obj'])
 
+    def test_provider_pbr_archive_is_complete_private_and_hash_checked(self):
+        folder, report, _ = self.make_export()
+        (folder / 'provider-textures').mkdir()
+        data = b'offline normal map transport fixture'
+        name = 'provider-textures/00-normal.png'
+        (folder / name).write_bytes(data)
+        report['pbr'] = {'status':'ready','files':[{'path':name,'bytes':len(data),'sha256':hashlib.sha256(data).hexdigest()}]}
+        (folder / 'result.json').write_text(json.dumps({'interchange_exports':report}))
+        url = '/v1/jobs/' + JOB + '/exports/pbr'
+        self.assertEqual(self.request_bytes(url,token='invalid')[0],401)
+        code, headers, body = self.request_bytes(url)
+        self.assertEqual(code,200)
+        self.assertEqual(headers['Content-Type'],'application/zip')
+        with zipfile.ZipFile(io.BytesIO(body)) as archive:
+            self.assertEqual(archive.namelist(),[name])
+            self.assertEqual(archive.read(name),data)
+        (folder / name).write_bytes(b'changed')
+        self.assertEqual(self.request_bytes(url)[0],409)
+
     def test_failed_jobs_missing_textures_and_symlinks_are_not_downloadable(self):
         folder,report,_=self.make_export();base='/v1/jobs/'+JOB+'/exports/'
         (folder/'textures/skin.png').unlink()

@@ -48,11 +48,12 @@ SYSTEM = PROMPT
 
 EXPORT_FILES = {'fbx': ('fbx', ('model.fbx',)),
                 'master': ('master', ('model-master.glb',)),
+                'pbr': ('pbr', ()),
                 'obj': ('obj', ('model.obj', 'model.mtl')),
                 'stl': ('stl', ('model-mm.stl',)),
                 'blend': (None, ('model.blend',)),
                 'scene-json': ('scene_json', ('model.froge-scene.json',))}
-EXPORT_LIMIT = 256 * 1024**2
+EXPORT_LIMIT = 512 * 1024**2
 
 
 def export_files(folder, format_name):
@@ -70,6 +71,12 @@ def export_files(folder, format_name):
         if entry.get('status') != 'ready':
             raise ValueError('Ten format nie zostal poprawnie wyeksportowany.')
         records = {r['path']: r for r in entry.get('files', [])}
+        if not records:
+            raise ValueError('Brak plikow eksportu.')
+        if format_name == 'pbr':
+            if any(not re.fullmatch(r'provider-textures/[0-9]{2}-(base_color|metallic|roughness|normal)\.(png|jpg)', name) for name in records):
+                raise ValueError('Nieprawidlowa sciezka mapy PBR.')
+            names = tuple(records)
         if any(name not in records for name in names):
             raise ValueError('Niekompletny raport eksportu.')
         if format_name == 'obj':
@@ -88,7 +95,7 @@ def export_files(folder, format_name):
         size = path.stat().st_size
         total += size
         if size < 1 or total > EXPORT_LIMIT:
-            raise ValueError('Eksport jest pusty lub przekracza limit 256 MiB.')
+            raise ValueError('Eksport jest pusty lub przekracza limit 512 MiB.')
         if key:
             digest = hashlib.sha256()
             with path.open('rb') as source:
@@ -580,6 +587,8 @@ class Handler(BaseHTTPRequestHandler):
                         source_folder = JOBS / source_id
                         source_path = source_folder / 'scene.json'
                         neural_replay = (source_folder / 'image3d-task.json').is_file()
+                        if data.get('resumeImage3d') and not neural_replay:
+                            return self.send_json({'error': 'To zlecenie nie ma zapisanego zadania Meshy. Nie uruchomiono starego szablonu ani nowej platnej generacji.'}, 409)
                         scene_replay = source_path.is_file()
                         if neural_replay:
                             source_path = source_folder / 'image3d-task.json'
@@ -624,7 +633,7 @@ class Handler(BaseHTTPRequestHandler):
                     db.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?)', (job_id, prompt.strip(), 'queued', 'Opis przyjety.', now, now))
                 WAKE.set()
                 return self.send_json({'id': job_id, 'state': 'queued'}, 202)
-            match = re.fullmatch(r'/v1/jobs/([a-f0-9-]{36})(?:/(model|cancel|exports(?:/(?:fbx|obj|stl|blend|scene-json|master))?))?', self.path)
+            match = re.fullmatch(r'/v1/jobs/([a-f0-9-]{36})(?:/(model|cancel|exports(?:/(?:fbx|obj|stl|blend|scene-json|master|pbr))?))?', self.path)
             if not match or not UUID.fullmatch(match[1]):
                 return self.send_json({'error': 'Nie znaleziono funkcji.'}, 404)
             job_id, action = match.groups()
@@ -649,22 +658,26 @@ class Handler(BaseHTTPRequestHandler):
                         try:
                             paths = export_files(folder, name)
                             formats.append({'format': name, 'path': '/v1/jobs/' + job_id + '/exports/' + name,
-                                            'bytes': sum(p.stat().st_size for p in paths), 'archive': name == 'obj'})
+                                            'bytes': sum(p.stat().st_size for p in paths), 'archive': name in ('obj', 'pbr')})
                         except (ValueError, OSError, KeyError, TypeError):
                             continue
-                    return self.send_json({'revision': 2, 'formats': formats, 'glb': '/v1/jobs/' + job_id + '/model'})
+                    report_path = folder / 'result.json'
+                    report = json.loads(report_path.read_text()) if report_path.is_file() and report_path.stat().st_size < 2 * 1024**2 else {}
+                    return self.send_json({'revision': 2, 'formats': formats, 'glb': '/v1/jobs/' + job_id + '/model',
+                        'quality': {'texturesReduced': report.get('preview', {}).get('textures_reduced', False),
+                                    'masterTextures': report.get('master_textures', []), 'likenessVerified': False}})
                 name = action.split('/')[1]
                 try:
                     paths = export_files(folder, name)
                 except (ValueError, OSError, KeyError, TypeError):
                     return self.send_json({'error': 'Eksport niedostepny lub niekompletny. Wymagany ponowny eksport.'}, 409)
-                if name == 'obj':
+                if name in ('obj', 'pbr'):
                     with tempfile.TemporaryFile() as output:
                         with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
                             for path in paths:
                                 archive.write(path, path.relative_to(folder).as_posix())
                         size = output.tell(); output.seek(0)
-                        self.send_export(output, size, 'model-obj.zip', 'application/zip')
+                        self.send_export(output, size, 'model-obj.zip' if name == 'obj' else 'model-pbr-textures.zip', 'application/zip')
                 else:
                     with paths[0].open('rb') as output:
                         self.send_export(output, paths[0].stat().st_size, paths[0].name,

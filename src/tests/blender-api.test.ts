@@ -1,3 +1,4 @@
+/// <reference types="node" />
 // @vitest-environment node
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite'
@@ -52,6 +53,48 @@ beforeEach(() => {
 afterEach(() => { db.close(); vi.unstubAllGlobals() })
 
 describe('private Blender request lifecycle with real SQLite', () => {
+  it('configures Meshy separately and never returns or stores its key in D1', async () => {
+    await pair()
+    const key = 'offline-fixture-meshy-key-123456789'
+    const upstream = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => Response.json({ saved: true }))
+    vi.stubGlobal('fetch', upstream)
+    expect((await request('image3d', 'POST', { provider: 'meshy', apiKey: key, textureResolution: '8k' }, 'owner-a', 'https://foreign.test')).status).toBe(403)
+    expect(upstream).not.toHaveBeenCalled()
+    const response = await request('image3d', 'POST', { provider: 'meshy', apiKey: key, textureResolution: '8k' })
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ saved: true })
+    expect(upstream.mock.calls[0][0]).toBe(endpoint + '/v1/image3d')
+    expect(JSON.stringify(db.prepare('SELECT * FROM blender_connections').all())).not.toContain(key)
+    expect(db.prepare('SELECT COUNT(*) AS n FROM blender_jobs').get()?.n).toBe(0)
+  })
+  it('streams actual FBX bytes only to the model owner', async () => {
+    await pair(); await submit()
+    db.prepare("UPDATE blender_jobs SET state='succeeded',artifact='ready.glb' WHERE id=?").run(id)
+    const bytes = new TextEncoder().encode('offline FBX transport fixture')
+    const upstream = vi.fn(async (_url: RequestInfo | URL, _init?: RequestInit) => new Response(bytes, { headers: { 'content-length': String(bytes.length) } }))
+    vi.stubGlobal('fetch', upstream)
+    expect((await request(`jobs/${id}/exports/fbx`, 'GET', undefined, 'owner-b')).status).toBe(404)
+    expect(upstream).not.toHaveBeenCalled()
+    const response = await request(`jobs/${id}/exports/fbx`)
+    expect(response.status).toBe(200)
+    expect(response.headers.get('content-disposition')).toContain('model.fbx')
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    expect(new Uint8Array(await response.arrayBuffer())).toEqual(bytes)
+    expect(upstream.mock.calls[0][0]).toBe(endpoint + `/v1/jobs/${id}/exports/fbx`)
+  })
+  it('forwards a free image3d resume explicitly without resending new photos', async () => {
+    await pair()
+    const upstream = vi.fn(async (url, _init) => Response.json(String(url).endsWith('/health') ? { connectorVersion:21, image3dRevision:1, image3dReady:true, sceneReplay:true } : {state:'queued'}))
+    vi.stubGlobal('fetch',upstream)
+    expect((await request('jobs','POST',{id,prompt:'Reference model',photos:[photo]})).status).toBe(202)
+    db.prepare("UPDATE blender_jobs SET state='failed',detail='Meshy download interrupted' WHERE id=?").run(id)
+    upstream.mockClear()
+    const next = id.slice(0,-1)+'d'
+    const resume = {id:next,prompt:'Reference model',sourceJobId:id,resumeImage3d:true}
+    expect((await request('jobs','POST',resume)).status).toBe(202)
+    const call = upstream.mock.calls.find(([url])=>String(url).endsWith('/v1/jobs'))!
+    expect(JSON.parse(call[1].body)).toEqual(resume)
+  })
   it('accepts 5000 UTF-16 units only on a capable worker and rejects 5001 before submitting', async () => {
     await pair()
     const upstream=vi.fn(async url=>Response.json(String(url).endsWith('/health') ? {connectorVersion:19,promptMaxLength:5000} : {state:'queued'}))
@@ -74,16 +117,16 @@ describe('private Blender request lifecycle with real SQLite', () => {
   // Small JPEG framing fixture; these tests verify transport, not visual quality.
   const image = new Uint8Array([255,216,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,2,0,255,217])
   const photo = { name: 'front.jpg', view: 'front', dataUrl: 'data:image/jpeg;base64,' + Buffer.from(image).toString('base64') }
-  it('gates native material profiles and preserves their setting on replay', async () => {
+  it('requires a neural connection and preserves input resolution on replay', async () => {
     await pair()
-    const capabilities = { connectorVersion:20, portraitRevision:2, provider:'openai', photoInput:true,
+    const capabilities = { connectorVersion:21, image3dRevision:1, image3dReady:false, portraitRevision:2, provider:'openai', photoInput:true,
       referenceQualityRevision:1, materialQualityRevision:0, sceneReplay:true }
     const upstream=vi.fn(async (url, _init) => Response.json(String(url).endsWith('/health') ? capabilities : {state:'queued'}))
     vi.stubGlobal('fetch',upstream)
     const input={id,prompt:'Model z referencji',photos:[{...photo,textureMaxSize:8192}]}
     expect((await request('jobs','POST',input)).status).toBe(409)
     expect(upstream.mock.calls.some(([url])=>String(url).endsWith('/v1/jobs'))).toBe(false)
-    capabilities.materialQualityRevision=2
+    capabilities.materialQualityRevision=2; capabilities.image3dReady=true
     expect((await request('jobs','POST',input)).status).toBe(202)
     const posted=JSON.parse(upstream.mock.calls.find(([url])=>String(url).endsWith('/v1/jobs'))![1].body)
     expect(posted.photos[0].textureMaxSize).toBe(8192)
@@ -94,16 +137,16 @@ describe('private Blender request lifecycle with real SQLite', () => {
     expect((await request('jobs','POST',{id:rebuilt,prompt:input.prompt,sourceJobId:id})).status).toBe(202)
     expect((await (await request(`jobs/${rebuilt}`)).json()).job.referencePhotos[0].textureMaxSize).toBe(8192)
   })
-  it('keeps measured landmarks on private retries and blocks an incapable worker', async () => {
+  it('preserves legacy photo metadata but requires image-to-3D instead of a face fitter', async () => {
     await pair()
     const digest = Buffer.from(await crypto.subtle.digest('SHA-256', image)).toString('hex')
     const measured = { ...photo, faceLandmarks: { revision: 1, width: 1, height: 1, imageSha256: digest, points: Array.from({length:478}, () => [.5,.5,0]) } }
-    const capabilities = { connectorVersion:20,portraitRevision:2,provider:'openai',photoInput:true,faceFitRevision:0 }
+    const capabilities = { connectorVersion:21,image3dRevision:1,image3dReady:false,portraitRevision:2,provider:'openai',photoInput:true,faceFitRevision:0 }
     const upstream = vi.fn(async (url, _init) => Response.json(String(url).endsWith('/health') ? capabilities : {state:'queued'}))
     vi.stubGlobal('fetch', upstream)
     expect((await request('jobs','POST',{id,prompt:'Postać ze zdjęcia',photos:[measured]})).status).toBe(409)
     expect(db.prepare('SELECT COUNT(*) AS n FROM blender_jobs').get()?.n).toBe(0)
-    capabilities.faceFitRevision=1
+    capabilities.image3dReady=true
     const accepted=await request('jobs','POST',{id,prompt:'Postać ze zdjęcia',photos:[measured]})
     expect(accepted.status).toBe(202)
     expect(JSON.stringify(await accepted.json())).not.toContain('points')
@@ -114,7 +157,7 @@ describe('private Blender request lifecycle with real SQLite', () => {
   })
   it('copies private photo history for a saved-plan replay but sends only its source ID to Oracle', async () => {
     await pair()
-    const capabilities = { connectorVersion: 15, portraitRevision: 1, provider: 'openai', photoInput: true, sceneReplay: false }
+    const capabilities = { connectorVersion: 21, image3dRevision: 1, image3dReady: true, portraitRevision: 1, provider: 'openai', photoInput: true, sceneReplay: false }
     const upstream = vi.fn(async (url, _init) => Response.json(String(url).endsWith('/health') ? capabilities : { state: 'queued' }))
     vi.stubGlobal('fetch', upstream)
     expect((await request('jobs', 'POST', { id, prompt: 'Girl from photo', photos: [photo] })).status).toBe(202)
@@ -137,7 +180,7 @@ describe('private Blender request lifecycle with real SQLite', () => {
   })
   it('persists reference bytes privately, restores them in history and repeats the same photographs', async () => {
     await pair()
-    const upstream = vi.fn(async (url, _init) => Response.json(String(url).endsWith('/health') ? { connectorVersion: 15, portraitRevision: 1, provider: 'openai', photoInput: true } : { state: 'queued' }))
+    const upstream = vi.fn(async (url, _init) => Response.json(String(url).endsWith('/health') ? { connectorVersion: 21, image3dRevision: 1, image3dReady: true, portraitRevision: 1, provider: 'openai', photoInput: true } : { state: 'queued' }))
     vi.stubGlobal('fetch', upstream)
     const input = { id, prompt: 'Model z referencji', photos: [photo, { ...photo, name: 'side.jpg', view: 'side' }] }
     const response = await request('jobs', 'POST', input)
@@ -188,7 +231,7 @@ describe('private Blender request lifecycle with real SQLite', () => {
   })
   it('does not submit a photo generation when durable image storage fails', async () => {
     await pair()
-    const upstream = vi.fn(async () => Response.json({ connectorVersion: 15, portraitRevision: 1, provider: 'openai', photoInput: true }))
+    const upstream = vi.fn(async () => Response.json({ connectorVersion: 21, image3dRevision: 1, image3dReady: true, portraitRevision: 1, provider: 'openai', photoInput: true }))
     vi.stubGlobal('fetch', upstream)
     env.BUCKET!.put = async () => { throw new Error('storage unavailable') }
     expect((await request('jobs', 'POST', { id, prompt: 'Model', photos: [photo] })).status).toBe(503)

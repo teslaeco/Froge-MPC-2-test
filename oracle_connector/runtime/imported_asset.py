@@ -3,7 +3,6 @@ import hashlib
 import json
 import math
 from pathlib import Path
-import shutil
 
 import bpy
 from mathutils import Vector
@@ -54,14 +53,29 @@ def import_and_export(folder):
     exports['master'] = {'status': 'ready', 'files': [record],
                          'provider_bytes_preserved': True}
     exports['formats'].append('master-glb')
+    maps = manifest.get('textures', [])
+    exports['pbr'] = {'status': 'ready' if maps else 'unavailable', 'files': maps,
+                      'provider_bytes_preserved': True}
+    if maps:
+        exports['formats'].append('pbr-textures')
     exports['physical_dimensions_verified'] = False
     if exports['fbx'].get('status') != 'ready':
         raise ValueError('FBX export failed; original master retained for a free export retry.')
     preview = folder / 'model.glb'
+    preview.unlink(missing_ok=True)
     preview_images = master_images
+    def export_preview():
+        # Meshy's original may use Draco. Deliver a standard GLB to the existing
+        # browser loader while retaining the provider file as the full master.
+        status = bpy.ops.export_scene.gltf(filepath=str(preview), export_format='GLB',
+            export_image_format='AUTO', export_texcoords=True, export_normals=True,
+            export_materials='EXPORT', export_extras=True, export_yup=True,
+            export_draco_mesh_compression_enable=False)
+        if status != {'FINISHED'}:
+            raise ValueError('Browser preview export failed; master retained.')
     if source.stat().st_size <= PREVIEW_LIMIT:
-        shutil.copyfile(source, preview)
-    else:
+        export_preview()
+    if not preview.is_file() or preview.stat().st_size > PREVIEW_LIMIT:
         for maximum in (4096, 2048, 1024, 512):
             for image in images:
                 width, height = image.size
@@ -69,11 +83,7 @@ def import_and_export(folder):
                     factor = maximum / max(width, height)
                     image.scale(max(1, round(width * factor)), max(1, round(height * factor)))
                     image.pack()
-            status = bpy.ops.export_scene.gltf(filepath=str(preview), export_format='GLB',
-                export_image_format='AUTO', export_texcoords=True, export_normals=True,
-                export_materials='EXPORT', export_extras=True, export_yup=True)
-            if status != {'FINISHED'}:
-                raise ValueError('Browser preview export failed; master retained.')
+            export_preview()
             if preview.stat().st_size <= PREVIEW_LIMIT:
                 preview_images = [{'name': i.name, 'size': list(i.size)} for i in images]
                 break
