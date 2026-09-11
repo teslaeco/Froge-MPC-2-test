@@ -30,7 +30,7 @@ class UpdateTests(unittest.TestCase):
         (self.target / 'code_policy.py').write_text('policy = "strict"\n')
         (self.target / 'server.py').write_text('version = 1\n')
         (self.source / 'runtime').mkdir()
-        for name in ('freeform_geometry.py','projection_math.py','photo_projection.py'):
+        for name in ('freeform_geometry.py','projection_math.py','photo_projection.py','model_checkpoint.py'):
             (self.source/'runtime'/name).write_text('v23 = True\n')
         (self.target / 'runtime').mkdir()
         (self.source / 'runtime/run.py').write_text('preserve_packed_images = True\n')

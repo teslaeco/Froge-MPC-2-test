@@ -10,7 +10,7 @@ import unittest
 from unittest.mock import patch
 import urllib.error
 
-from ai_stream import OpenAIServiceError, stream_chat
+from ai_stream import OpenAIServiceError, AIStreamTimeout, stream_chat
 from code_policy import CodePolicyError, StreamPolicyGuard
 import openai_provider
 import server
@@ -35,6 +35,7 @@ class ResponseFixture(BaseHTTPRequestHandler):
             for item in self.server.events:
                 self.wfile.write(('event: %s\ndata: %s\n\n' % (item['type'], json.dumps(item))).encode())
                 self.wfile.flush()
+            time.sleep(self.server.linger)
         except OSError:
             pass
 
@@ -43,6 +44,7 @@ class ResponsesTests(unittest.TestCase):
     def setUp(self):
         self.http = ThreadingHTTPServer(('127.0.0.1', 0), ResponseFixture)
         self.http.delay, self.http.status = 0, 200
+        self.http.linger=0
         self.http.events = [
             {'type': 'response.output_text.delta', 'delta': 'import math\n'},
             {'type': 'response.output_text.delta', 'delta': 'angle = math.pi\n'},
@@ -89,6 +91,20 @@ class ResponsesTests(unittest.TestCase):
         self.http.events = [{'type': 'response.output_text.delta', 'delta': 'import math\n'}]
         with self.assertRaisesRegex(ValueError, 'kompletnego'):
             self.call()
+
+    def test_completed_event_finishes_even_if_http_connection_stays_open(self):
+        self.http.linger=1
+        result=stream_chat(self.url,{},threading.Event(),lambda *_:None,
+                           response_protocol='responses',timeout=.35)
+        self.assertEqual(result,'import math\nangle = math.pi\n')
+
+    def test_timeout_preserves_partial_draft_without_promoting_it_to_success(self):
+        self.http.events=[{'type':'response.output_text.delta','delta':'{"version":2,'}]
+        self.http.linger=1
+        with self.assertRaises(AIStreamTimeout) as failure:
+            stream_chat(self.url,{},threading.Event(),lambda *_:None,
+                        response_protocol='responses',timeout=.15)
+        self.assertEqual(failure.exception.partial_text,'{"version":2,')
 
     def test_http_quota_failure_and_cancellation_before_headers_are_explicit(self):
         self.http.status, self.http.events = 429, []
@@ -190,4 +206,3 @@ class ConfigurationTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-

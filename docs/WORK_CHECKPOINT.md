@@ -1,3 +1,29 @@
+## 2026-09-11 — v24 timeout recovery fix packaged
+
+- User reported the generic timeout screenshot. Live Studio confirms Oracle v23.
+  The v23 catch-all erased the failing stage; the precise incident stage and
+  failed job ID cannot be recovered from that screenshot. No new paid job run.
+- Responses streaming now returns at response.completed, independently of HTTP
+  socket closure; incomplete responses remain failures with retained draft data.
+- Photo planning: 900 s (was 600); text planning remains 600; visual review keeps
+  240 s. Token caps and no automatic retry after timeout are unchanged.
+- Blender writes atomic, hash-bound checkpoints after core GLB and interchange
+  export. On timeout the current verified GLB can survive unfinished exports or
+  review. Each build clears its old checkpoint; stale/corrupt files are rejected.
+- Identical retries after a timeout reuse a valid saved scene without new AI.
+  Error messages and failure.json identify the phase; failure timings persist.
+- 58 Python test executions passed, including real local SSE with an open HTTP
+  connection, partial-stream failure, current/stale model checkpoint behavior,
+  saved-plan recovery and updater rollback. Native Blender 4.3 verified exports,
+  projection and checksums of geometry/projection model checkpoints.
+- Complete froge-v24.zip: 55 source-verified files, 15,510,834 bytes, SHA-256
+  523ffc25787a4aab7a4baa6f6ce733e21280597c6055969b9b1dc53c82af7e58.
+  ZIP and FORGE-v24-instrukcja.md successfully saved for download.
+- v24 is NOT installed on Oracle in this session; Site remains unchanged.
+  No claim of successful recovery of the user's live job or improved likeness.
+- Runtime source parent: 93720297e3f07c5b4c5beb7c916ca4555b9eee68.
+  Install command is in docs/V24_TIMEOUT_FIX.md. PR #9 remains unmerged.
+
 ## 2026-09-11 — v23 download delivered after explicit user retry
 
 - User explicitly requests the v23 download and Oracle command again, with an

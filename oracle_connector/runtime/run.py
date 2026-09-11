@@ -239,11 +239,14 @@ def finish(output=None):
     if heads:
         from couture_qa import verify_export
         report['export_validation']=verify_export(output/'model.glb',objects)
+    from model_checkpoint import save_ready
+    save_ready(output,report,'core_export')
     from scene_exports import export_interchange
     report['interchange_exports']=export_interchange(
         output, output/'scene.json' if (output/'scene.json').is_file() else None)
     report['master_export']['formats']=report['interchange_exports']['formats']
     (output/'result.json').write_text(json.dumps(report))
+    save_ready(output,report,'interchange_exports')
     review_request=output/'review-request.json'
     if review_request.is_file() and json.loads(review_request.read_text()).get('enabled') is True:
         from review_views import render_review_checked

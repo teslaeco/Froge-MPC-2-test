@@ -19,7 +19,8 @@ import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, prepare_code, repair_instruction, validate_code
-from ai_stream import stream_chat
+from ai_stream import stream_chat, AIStreamTimeout
+from runtime.model_checkpoint import NAME as MODEL_CHECKPOINT, recover_ready
 import openai_provider
 import photo_input
 from generation_budget import initial_ai_remaining, total_ai_limit, initial_blender_remaining
@@ -34,7 +35,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 23
+CONNECTOR_VERSION = 24
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
@@ -164,7 +165,7 @@ def health():
     return {**state, 'textReady': state['ready'], 'astraPhotoRevision': 1,
             'photoEngine': 'astra-blender', 'photoReasoningEffort': 'max',
             'freeformGeometryRevision':1,'photoProjectionRevision':1,
-            'planningBudgetSeconds':600,'photoReviewReservedSeconds':240,
+            'planningBudgetSeconds':600,'photoPlanningBudgetSeconds':900,'photoReviewReservedSeconds':240,'timeoutRecoveryRevision':1,
             'photoAiBudgetSeconds':840,'qualityReports':True,
             'reviewViews': ['front', 'three-quarter', 'face', 'side', 'back']}
 
@@ -220,6 +221,8 @@ def blender_command(job_id, folder):
             '--python', '/runner/run.py']
 
 def run_blender(job_id, folder, cancelled, timeout=BLENDER_TIME_LIMIT):
+    # A checkpoint is valid only for the current build, never an older attempt.
+    (folder/MODEL_CHECKPOINT).unlink(missing_ok=True)
     log_path = folder / 'blender.log'
     with log_path.open('wb') as log:
         process = subprocess.Popen(blender_command(job_id, folder), stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)
@@ -246,6 +249,9 @@ def run_blender(job_id, folder, cancelled, timeout=BLENDER_TIME_LIMIT):
                             process.kill();process.wait(timeout=5)
                 if cancelled.is_set():
                     raise InterruptedError('Zlecenie anulowane.')
+                if recover_ready(folder) is not None:
+                    status(job_id,'building','Glowny model zapisany. Limit przerwal dodatkowy eksport lub rendery; zachowuje sprawdzony GLB.')
+                    return
                 raise TimeoutError('Blender przekroczyl limit %d minut. Model nie zostal zapisany.' % (timeout // 60))
         if process.returncode:
             tail = log_path.read_bytes()[-3500:].decode('utf-8', errors='replace')
@@ -276,6 +282,7 @@ def worker():
         code = ''
         started = time.monotonic()
         ai_seconds = blender_seconds = 0
+        phase='runtime_start'
         try:
             status(job['id'], 'generating', 'Sprawdzam, czy Blender moze uruchomic model…')
             verify_runtime(job_memory_gib(folder))
@@ -289,7 +296,9 @@ def worker():
                     write_json(folder/'review-request.json',{'enabled':True})
                 status(job['id'], 'building', 'Blender wykonuje zapisany plan. Bez nowego zapytania do AI…')
                 phase_started = time.monotonic()
-                run_blender(job['id'], folder, cancelled, timeout=BLENDER_TIME_LIMIT)
+                phase='blender'
+                try:run_blender(job['id'], folder, cancelled, timeout=BLENDER_TIME_LIMIT)
+                finally:blender_seconds+=time.monotonic()-phase_started
                 elapsed = time.monotonic() - started
                 write_json(folder / 'timing.json', {'total_seconds': round(elapsed, 2), 'ai_seconds': 0, 'blender_seconds': round(time.monotonic() - phase_started, 2)})
                 status(job['id'], 'succeeded', 'Model gotowy w %.1f s. Wykorzystano zapisany plan, bez nowego zapytania do AI. Zapisano GLB z materialami.' % elapsed)
@@ -315,7 +324,8 @@ def worker():
                         code = saved_script.read_text(encoding='utf-8')
                     else:
                         phase_started = time.monotonic()
-                        deadline = phase_started + initial_ai_remaining(ai_seconds)
+                        phase='astra_plan' if is_openai else 'local_plan'
+                        deadline = phase_started + initial_ai_remaining(ai_seconds,bool(photos))
                         try:
                             if material_repair is not None:
                                 code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1, selected,
@@ -342,6 +352,7 @@ def worker():
                     if cancelled.is_set():
                         raise InterruptedError('Zlecenie anulowane.')
                     status(job['id'], 'building', 'Plan sprawdzony. Blender buduje geometrie i zapisuje GLB…')
+                    phase='blender'
                     phase_started = time.monotonic()
                     try:
                         remaining_blender=initial_blender_remaining(blender_seconds,bool(photos and is_openai and not reuse))
@@ -350,7 +361,10 @@ def worker():
                     finally:
                         blender_seconds += time.monotonic() - phase_started
                     review_report=None
-                    if photos and is_openai and not reuse:
+                    render_result=json.loads((folder/'result.json').read_text()) if (folder/'result.json').is_file() else {}
+                    recovered=bool(render_result.get('timeout_recovery'))
+                    if photos and is_openai and not reuse and not recovered:
+                        phase='visual_review'
                         from visual_review import refine
                         status(job['id'],'building','Astra porownuje rzeczywiste rendery ze zdjeciem referencyjnym…')
                         def visual_generate(review_messages,schema,remaining):
@@ -373,6 +387,7 @@ def worker():
                         if review_report['status']=='refined_requires_visual_acceptance':detail+=' Astra porownala rendery i przebudowala plan. Poprzedni model zachowany; ocen wyglad w podgladzie.'
                         elif review_report['status']=='reviewed':detail+=' Astra ocenila rendery; podobienstwo wymaga Twojej oceny.'
                         else:detail+=' Zachowano model; dodatkowa ocena wizualna nie zostala ukonczona.'
+                    if recovered:detail+=' Zachowano sprawdzony GLB; dodatkowy eksport lub podglady przerwal limit czasu. Ocena wygladu pozostaje nieukonczona.'
                     status(job['id'], 'succeeded', detail)
                     break
                 except (ValueError, SyntaxError) as error:
@@ -402,32 +417,48 @@ def worker():
                     messages.append({'role': 'user', 'content': 'Return a complete corrected scene JSON for the ORIGINAL request. Preserve its requested features. Fix this validation/build error: ' + str(error)[-1800:]})
         except InterruptedError:
             status(job['id'], 'cancelled', 'Zlecenie anulowane.')
-        except TimeoutError:
-            status(job['id'], 'failed', 'Przekroczono limit czasu. Nie uruchamiam kolejnej dlugiej proby. Jesli wybrano Qwen, podlacz OpenAI Astra w ustawieniach.')
+        except TimeoutError as error:
+            timeout_report={'kind':'timeout','phase':phase,'detail':str(error)[:500],
+                            'scene_saved':(folder/'scene.json').is_file()}
+            if isinstance(error,AIStreamTimeout) and error.partial_text:
+                draft=folder/'incomplete-response.txt';draft.write_text(error.partial_text,encoding='utf-8');os.chmod(draft,0o600)
+                timeout_report['draft_characters']=len(error.partial_text)
+            write_json(folder/'failure.json',timeout_report)
+            stage={'astra_plan':'plan Astry','local_plan':'plan lokalnego AI','blender':'Blender','visual_review':'ocena renderow'}.get(phase,'uruchomienie srodowiska')
+            detail='Etap: '+stage+'. '+str(error)[:250]
+            detail+=(' Zachowano plan. Ponow z tym samym opisem i zdjeciami, aby zbudowac go bez kolejnego zapytania AI.' if timeout_report['scene_saved'] else ' Brak kompletnego planu. Nie uruchomiono kolejnego platnego zapytania; zachowano dane diagnostyczne.')
+            status(job['id'],'failed',detail)
         except Exception as error:
             detail = str(error)
             if isinstance(error, urllib.error.URLError):
                 detail = 'Brak odpowiedzi lokalnego AI. Sprawdz usluge Ollama i sprobuj ponownie.'
             status(job['id'], 'failed', detail[-600:])
         finally:
+            write_json(folder/'timing.json',{'total_seconds':round(time.monotonic()-started,2),
+                'ai_seconds':round(ai_seconds,2),'blender_seconds':round(blender_seconds,2),'last_phase':phase})
             with LOCK:
                 CANCEL.pop(job['id'], None)
                 RUNNING.discard(job['id'])
 
 def recoverable_review_scene(db, prompt, photos):
-    """Reuse only the latest identical request after the known OIDN failure."""
+    """Reuse the latest identical request after a render or planning timeout."""
     source=db.execute('SELECT * FROM jobs WHERE prompt=? ORDER BY created DESC LIMIT 1',
                       (prompt,)).fetchone()
     if not source or source['state']!='failed':return None
     detail=source['detail'].lower()
-    if 'failed to denoise' not in detail or 'build has no openimagedenoise support' not in detail:
+    timeout='przekroczono limit czasu' in detail
+    failure=JOBS/source['id']/'failure.json'
+    if failure.is_file() and not failure.is_symlink() and failure.stat().st_size<10000:
+        timeout=timeout or json.loads(failure.read_text()).get('kind')=='timeout'
+    if not timeout and ('failed to denoise' not in detail or 'build has no openimagedenoise support' not in detail):
         return None
     folder=JOBS/source['id']
     previous=photo_input.read_photos(folder)
     if photo_input.metadata(previous)!=photo_input.metadata(photos) or \
             [p['bytes'] for p in previous]!=[p['bytes'] for p in photos]:return None
     path=folder/'scene.json'
-    if path.is_symlink() or not path.is_file() or path.stat().st_size>60000:
+    if timeout and not path.is_file():return None
+    if path.is_symlink() or not path.is_file() or path.stat().st_size>256000:
         raise ValueError('Brak poprawnego zapisanego planu po bledzie podgladu. Nie zamowiono kolejnego planu AI.')
     saved=path.read_text(encoding='utf-8')
     parse_scene(saved,prompt)

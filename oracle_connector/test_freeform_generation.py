@@ -84,7 +84,8 @@ class FreeformTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'photo_index'):validate_photo_plan(s,[{}])
 
     def test_review_and_rebuild_reserves_survive_maximal_initial_work(self):
-        self.assertEqual(total_ai_limit(True)-600,240)
+        self.assertEqual(total_ai_limit(True)-900,240)
+        self.assertEqual(initial_ai_remaining(600,True),300)
         self.assertEqual(total_ai_limit(False),600)
         self.assertEqual(initial_ai_remaining(601),0)
         self.assertEqual(initial_blender_remaining(590,True),10)
