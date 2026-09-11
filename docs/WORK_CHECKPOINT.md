@@ -1,3 +1,35 @@
+## 2026-09-11 — OpenImageDenoise review failure: verified fix
+
+- Screenshot and current Site DB confirm failed job
+  4c950a69-8729-4162-ab80-c9860fa76648, updated 2026-09-11T14:10:30.420Z:
+  runtime/review_views.py forced denoising, but the Oracle Blender build has no
+  OpenImageDenoise support. This occurs after the export stage in runtime/run.py;
+  the actual Oracle artifact files have not been inspected from this session.
+- Parent remote PR #9 head: a88207de480a5f982edc0ac69032a19e41c0be69.
+- Added OIDN build detection; CPU OIDN/12 samples when supported and 64 CPU
+  samples without denoising otherwise. Recognized capability failure retries only
+  that frame once. Atomic PNG publication and explicit review settings report.
+- Optional preview failure no longer discards validated model exports. It records
+  an unavailable review and removes stale PNGs; missing views stop visual AI calls.
+- Exact retry after the latest matching OIDN failure now reuses its validated saved
+  plan and original photos, with no AI request even if AI is offline. Different
+  prompt/photo metadata/bytes do not reuse it. Original failed job stays intact.
+- Worker health and installer require reviewRenderRevision=1. Installer now also
+  exercises three real GLB preview renders, retaining the existing resource budget.
+- 56 focused Python tests PASSED, including identical-photo/offline recovery,
+  changed-input rejection and idempotency. Native Blender 4.3.0 PASSED: three
+  actual 640x800 PNGs at 64 samples/2 CPU threads with the unsupported-OIDN
+  branch forced; all images decoded. GLB/BLEND/FBX/OBJ/STL remain valid files
+  after an injected optional preview failure. Local Blender includes OIDN;
+  this is a tested compatibility branch, not an Oracle ARM installation test.
+- Complete updated froge-v20.zip verified: all 45 embedded source files match,
+  Python compiles, ZIP integrity passes, health revision and three-view installer
+  gate are present. Archive bytes: 15481101.
+  Payload SHA256: 7ca25b99f5ca0eb9ae07e7090bf09a17e9190def3c660bd053080e01d2f38ab8.
+- No paid AI calls, Oracle installation, Site deployment or public access change
+  performed here. Existing installation-access block persists. Complete and save
+  the package, install on Oracle, then retry the unchanged failed request.
+
 ## 2026-09-11 — missing material error repaired (materialRepairRevision 1)
 
 - User screenshot and the existing Site DB both confirm failed job

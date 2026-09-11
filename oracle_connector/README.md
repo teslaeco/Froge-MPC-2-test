@@ -43,6 +43,34 @@ textures and review views if the bounded visual-refinement build fails or cancel
 
 It is separate from the desktop Blender add-on and the example dragon.
 
+## CPU review rendering and recovery (reviewRenderRevision 1)
+
+Review rendering checks the same OIDN build capability as Blender's Cycles UI.
+Supported builds use CPU OpenImageDenoise with 12 samples; unsupported builds
+use 64 CPU samples without denoising. A recognized missing-OIDN runtime error
+retries that frame once without denoising. Other errors are not retried in a loop.
+PNG views are published only after a complete file is written. The actual settings
+and completed views are recorded in `review/render-settings.json`.
+
+An optional review failure now leaves validated model exports available and writes
+`review_render.status=unavailable` in `result.json`. Stale/partial review images
+are removed so they cannot enter an AI comparison. Visual refinement still reports
+that its assessment was not completed; it does not buy a new plan without views.
+
+After installation, retrying the latest request with exactly the same prompt and
+photo metadata/bytes reuses its validated scene if that request failed specifically
+with `Failed to denoise, build has no OpenImageDenoise support`. This also works
+when AI is offline, and never calls either AI provider. The new job retains the
+old job and records `render-recovery.json`. Changed inputs are a new generation;
+unrelated failures are not automatically replayed. Existing failed jobs are not
+changed or queued merely by installing the update.
+
+The installer requires `reviewRenderRevision: 1` and now exercises three actual
+GLB review renders in its existing bounded native Blender check. Run the native
+fixture with `blender -b --python verify_review_runtime.py -- OUTPUT_DIRECTORY`.
+It forces the unsupported capability branch on the available local Blender;
+it is not proof of installation on the Oracle ARM worker or of character likeness.
+
 ## Missing material references (materialRepairRevision 1)
 
 A structurally valid AI plan can still reference an undeclared material, such as

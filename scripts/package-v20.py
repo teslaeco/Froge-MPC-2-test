@@ -25,20 +25,28 @@ template=template.replace("compile(base64.b64decode(encoded, validate=True), nam
 template=template.replace('timeout=180','timeout=900').replace('timeout=360','timeout=1080')
 template=template.replace('FROGE_PORTRAIT_OK','FROGE_V20_OK')
 template=template.replace("health.get('materialQualityRevision') != 2:",
-                          "health.get('materialQualityRevision') != 2 or health.get('interchangeRevision') != 2 or health.get('materialRepairRevision') != 1:")
+                          "health.get('materialQualityRevision') != 2 or health.get('interchangeRevision') != 2 or health.get('materialRepairRevision') != 1 or health.get('reviewRenderRevision') != 1:")
 template=template.replace('Poprawiona figurka jest juz dostepna na stronie.', 'Model kontrolny zostal zapisany na Oracle. Sprawdz jego wyglad; nowe modele tworz w generatorze.')
 # Retain the actual verification model so it can be inspected after installation.
 template=template.replace("with tempfile.TemporaryDirectory(prefix='portrait-export-check-', dir=target / 'state') as folder:",
     "with __import__('contextlib').nullcontext(target / 'state' / ('couture-review-v20-' + uuid.uuid4().hex)) as folder:")
-template=template.replace('work = Path(folder)',"work = Path(folder)\n        work.mkdir(mode=0o700, parents=True)")
+template=template.replace('work = Path(folder)',"work = Path(folder)\n        work.mkdir(mode=0o700, parents=True)\n        (work / 'review-request.json').write_text(json.dumps({'enabled': True}))")
 template=template.replace("print('FROGE_PORTRAIT_EXPORT_OK:","print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)\n        if json.loads((work / 'result.json').read_text()).get('export_validation', {}).get('reimported') is not True:\n            raise RuntimeError('Ponowne otwarcie GLB nie zostalo potwierdzone.')\n        print('FROGE_PORTRAIT_EXPORT_OK:")
 result=template.replace('__PAYLOAD_B64__',base64.b64encode(gzip.compress(raw,mtime=0)).decode()).replace('__PAYLOAD_SHA256__',hashlib.sha256(raw).hexdigest())
 result=result.replace("print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)",
-    "for format_name in server.EXPORT_FILES:\n            server.export_files(work,format_name)\n        print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)")
+    "if json.loads((work / 'result.json').read_text()).get('review_render', {}).get('status') != 'rendered':\n            raise RuntimeError('Nie wykonano trzech rzeczywistych podgladow modelu.')\n        for format_name in server.EXPORT_FILES:\n            server.export_files(work,format_name)\n        print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)")
 compile(result,'froge-v20.py','exec')
 folder=root/'public/downloads';folder.mkdir(parents=True,exist_ok=True)
 (folder/'froge-v20.py').write_text(result)
 readme='''FORGE v20 — poprawka eksportów i generatora, 2026-09-11
+
+Naprawa podglądu (reviewRenderRevision=1): Blender sprawdza dostępność OIDN.
+Przy jej braku renderuje na CPU z 64 próbkami bez odszumiania. Błąd podglądu
+nie odrzuca gotowego modelu; nieukończona ocena jest jawnie raportowana.
+Po instalacji ponów ostatnie zlecenie z IDENTYCZNYM opisem i zdjęciami. Jeżeli
+ostatnie takie zlecenie ma dokładnie błąd braku OIDN i poprawny zapisany plan,
+serwer wykona ten plan bez nowego zapytania do AI. Zmiana opisu lub zdjęć
+oznacza nowe generowanie. Instalator teraz sprawdza także trzy rendery z GLB.
 
 Naprawa materiałów (materialRepairRevision=1): brak definicji eyes_grey_green lub
 innego materiału uruchamia jedną ograniczoną korektę palety. Geometria pozostaje

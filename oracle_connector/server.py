@@ -133,7 +133,7 @@ def health():
         ready = bool(selected.get('api_key'))
         return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
                 'detail': 'OpenAI Astra jest polaczone. Blender wykona sprawdzony plan sceny.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
-                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'materialRepairRevision': 1, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'materialRepairRevision': 1, 'reviewRenderRevision': 1, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
@@ -141,9 +141,9 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'materialRepairRevision': 1, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'materialRepairRevision': 1, 'reviewRenderRevision': 1, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
     except Exception:
-        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'materialRepairRevision': 1, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'materialRepairRevision': 1, 'reviewRenderRevision': 1, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
 
 def ai_settings():
     path = STATE / 'ai-provider.json'
@@ -266,6 +266,8 @@ def worker():
                 scene = parse_scene(saved_scene.read_text(encoding='utf-8'), job['prompt'])
                 write_json(folder / 'scene.json', scene)
                 write_json(folder / 'provider.json', {'provider': 'saved-scene', 'model': None})
+                if photo_input.read_photos(folder):
+                    write_json(folder/'review-request.json',{'enabled':True})
                 status(job['id'], 'building', 'Blender wykonuje zapisany plan. Bez nowego zapytania do AI…')
                 phase_started = time.monotonic()
                 run_blender(job['id'], folder, cancelled, timeout=BLENDER_TIME_LIMIT)
@@ -391,6 +393,26 @@ def worker():
                 CANCEL.pop(job['id'], None)
                 RUNNING.discard(job['id'])
 
+def recoverable_review_scene(db, prompt, photos):
+    """Reuse only the latest identical request after the known OIDN failure."""
+    source=db.execute('SELECT * FROM jobs WHERE prompt=? ORDER BY created DESC LIMIT 1',
+                      (prompt,)).fetchone()
+    if not source or source['state']!='failed':return None
+    detail=source['detail'].lower()
+    if 'failed to denoise' not in detail or 'build has no openimagedenoise support' not in detail:
+        return None
+    folder=JOBS/source['id']
+    previous=photo_input.read_photos(folder)
+    if photo_input.metadata(previous)!=photo_input.metadata(photos) or \
+            [p['bytes'] for p in previous]!=[p['bytes'] for p in photos]:return None
+    path=folder/'scene.json'
+    if path.is_symlink() or not path.is_file() or path.stat().st_size>60000:
+        raise ValueError('Brak poprawnego zapisanego planu po bledzie podgladu. Nie zamowiono kolejnego planu AI.')
+    saved=path.read_text(encoding='utf-8')
+    parse_scene(saved,prompt)
+    return {'source_id':source['id'],'scene':saved}
+
+
 class Handler(BaseHTTPRequestHandler):
     server_version = 'Froge/1'
     def log_message(self, *_):
@@ -480,9 +502,10 @@ class Handler(BaseHTTPRequestHandler):
                         return self.send_json(dict(prior))
                     if db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]:
                         return self.send_json({'error': 'Serwer wykonuje poprzedni model. Poczekaj na wynik lub anuluj tamto zlecenie.'}, 409)
-                    if source_id is None and not health()['ready']:
+                    recovery=recoverable_review_scene(db,prompt.strip(),photos) if source_id is None else None
+                    if source_id is None and not recovery and not health()['ready']:
                         return self.send_json({'error': 'Wybrane AI nie jest jeszcze gotowe. Sprawdz ustawienia.'}, 409)
-                    if photos and not health().get('photoInput'):
+                    if photos and not recovery and not health().get('photoInput'):
                         return self.send_json({'error': 'Wybrane AI nie obsluguje zdjec. Wybierz OpenAI w ustawieniach.'}, 409)
                     if shutil.disk_usage(STATE).free < 2 * 1024**3:
                         return self.send_json({'error': 'Na serwerze zostalo mniej niz 2 GB wolnego miejsca.'}, 409)
@@ -490,6 +513,12 @@ class Handler(BaseHTTPRequestHandler):
                         return self.send_json({'error': 'Osiagnieto limit 300 zlecen. Zarchiwizuj modele na serwerze przed dalsza praca.'}, 409)
                     if (JOBS / job_id).exists():
                         return self.send_json({'error': 'Identyfikator zlecenia jest juz zajety. Sprobuj ponownie.'}, 409)
+                    if recovery:
+                        destination=JOBS/job_id;destination.mkdir(mode=0o700)
+                        (destination/'saved-scene.json').write_text(recovery['scene'],encoding='utf-8')
+                        os.chmod(destination/'saved-scene.json',0o600)
+                        write_json(destination/'render-recovery.json',{'id':recovery['source_id'],
+                            'reason':'openimagedenoise_unavailable','new_ai_request':False})
                     if source_id is not None:
                         source = db.execute('SELECT * FROM jobs WHERE id=?', (source_id,)).fetchone()
                         source_folder = JOBS / source_id

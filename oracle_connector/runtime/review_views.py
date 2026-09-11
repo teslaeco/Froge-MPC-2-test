@@ -1,9 +1,67 @@
 """Small, honest review images rendered from the delivered GLB, on CPU."""
 from pathlib import Path
+import json
 import bpy
 from mathutils import Vector
 
 LABELS=('front','three-quarter','face')
+
+
+def configure_review(scene, allow_denoising=True):
+    # The same build capability used by Blender's Cycles denoiser selector.
+    try:
+        import _cycles
+        available=bool(getattr(_cycles,'with_openimagedenoise',False))
+    except ImportError:
+        available=False
+    enabled=available and allow_denoising
+    scene.render.engine='CYCLES';scene.cycles.device='CPU'
+    scene.cycles.use_denoising=enabled
+    scene.cycles.samples=12 if enabled else 64
+    if enabled:
+        scene.cycles.denoiser='OPENIMAGEDENOISE'
+        if hasattr(scene.cycles,'denoising_use_gpu'):scene.cycles.denoising_use_gpu=False
+    return {'revision':1,'engine':'CYCLES','device':'CPU',
+            'denoiser':'OPENIMAGEDENOISE' if enabled else 'none',
+            'samples':scene.cycles.samples,'oidn_build_support':available,
+            'reason':'available' if enabled else 'denoising_unavailable', 'views_completed':[]}
+
+
+def render_frame(scene, path, settings):
+    path=Path(path);pending=path.with_name(path.stem+'.pending.png')
+    pending.unlink(missing_ok=True)
+    scene.render.filepath=str(pending)
+    try:
+        try:
+            bpy.ops.render.render(write_still=True)
+        except RuntimeError as error:
+            message=str(error).lower()
+            if not scene.cycles.use_denoising or 'failed to denoise' not in message or 'openimagedenoise' not in message or 'support' not in message:
+                raise
+            completed=settings['views_completed']
+            settings.update(configure_review(scene,allow_denoising=False))
+            settings.update(reason='oidn_runtime_unavailable',views_completed=completed)
+            pending.unlink(missing_ok=True)
+            bpy.ops.render.render(write_still=True)
+        data=pending.read_bytes()
+        if len(data)<45 or data[:8]!=b'\x89PNG\r\n\x1a\n' or data[-12:]!=b'\x00\x00\x00\x00IEND\xaeB`\x82':
+            raise ValueError('Blender nie zapisal kompletnego podgladu PNG.')
+        pending.replace(path)
+    finally:
+        pending.unlink(missing_ok=True)
+
+
+def render_review_checked(model,folder):
+    """Optional previews must never discard an already validated model export."""
+    folder=Path(folder)
+    try:
+        return {'revision':1,'status':'rendered','views':render_review(model,folder)}
+    except Exception as error:
+        for label in LABELS:
+            for suffix in ('.png','.pending.png'):
+                (folder/(label+suffix)).unlink(missing_ok=True)
+        return {'revision':1,'status':'unavailable','views':[],
+                'detail':str(error)[:500],'likeness_verified':False}
 
 
 def render_review(model,folder):
@@ -25,7 +83,7 @@ def render_review(model,folder):
         light.rotation_euler=(target-light.location).to_track_quat('-Z','Y').to_euler()
     bpy.ops.object.camera_add();camera=bpy.context.object;scene.camera=camera
     camera.data.type='ORTHO'
-    scene.render.engine='CYCLES';scene.cycles.samples=12;scene.cycles.use_denoising=True
+    settings=configure_review(scene)
     scene.render.threads_mode='FIXED';scene.render.threads=2
     scene.render.resolution_x=640;scene.render.resolution_y=800;scene.render.resolution_percentage=100
     scene.render.image_settings.file_format='PNG'
@@ -39,6 +97,8 @@ def render_review(model,folder):
         camera.location=aim+Vector(direction)
         camera.rotation_euler=(aim-camera.location).to_track_quat('-Z','Y').to_euler()
         camera.data.ortho_scale=frame
-        scene.render.filepath=str(folder/(label+'.png'))
-        bpy.ops.render.render(write_still=True)
+        render_frame(scene,folder/(label+'.png'),settings)
+        settings['views_completed'].append({'label':label,'samples':scene.cycles.samples,
+                                          'denoising':bool(scene.cycles.use_denoising)})
+        (folder/'render-settings.json').write_text(json.dumps(settings),encoding='utf-8')
     return [str(folder/(label+'.png')) for label in LABELS]

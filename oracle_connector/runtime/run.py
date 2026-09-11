@@ -241,8 +241,9 @@ def finish(output=None):
     (output/'result.json').write_text(json.dumps(report))
     review_request=output/'review-request.json'
     if review_request.is_file() and json.loads(review_request.read_text()).get('enabled') is True:
-        from review_views import render_review
-        render_review(output/'model.glb',output/'review')
+        from review_views import render_review_checked
+        report['review_render']=render_review_checked(output/'model.glb',output/'review')
+        (output/'result.json').write_text(json.dumps(report))
 
 if __name__ == '__main__':
     bpy.ops.wm.read_factory_settings(use_empty=True)

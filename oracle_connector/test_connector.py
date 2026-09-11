@@ -191,6 +191,38 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual((server.JOBS / rebuilt / 'reference-0.jpg').read_bytes(), image)
         self.assertEqual(json.loads((server.JOBS / rebuilt / 'timing.json').read_text())['ai_seconds'], 0)
 
+    def test_identical_retry_after_oidn_error_reuses_scene_without_ai(self):
+        scene=(Path(__file__).parent/'examples/textures-eight.scene.json').read_text()
+        folder=server.JOBS/JOB;folder.mkdir();(folder/'scene.json').write_text(scene)
+        image=bytes([255,216,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,2,0,255,217])
+        raw={'name':'front.jpg','view':'front','dataUrl':'data:image/jpeg;base64,'+base64.b64encode(image).decode()}
+        photos=server.photo_input.validate_photos([raw])
+        (folder/'reference-0.jpg').write_bytes(image)
+        server.write_json(folder/'reference-photos.json',server.photo_input.metadata(photos))
+        with server.database() as db:
+            db.execute('INSERT INTO jobs VALUES (?,?,?,?,0,0)',(JOB,'Model','failed',
+                'Failed to denoise, build has no OpenImageDenoise support'))
+            self.assertIsNone(server.recoverable_review_scene(db,'Different',[]))
+            self.assertIsNone(server.recoverable_review_scene(db,'Model',[]))
+            changed=server.photo_input.validate_photos([{**raw,'view':'back'}])
+            self.assertIsNone(server.recoverable_review_scene(db,'Model',changed))
+        rebuilt='12345678-1234-4234-8234-123456789abd'
+        server.health.return_value={'ready':False,'photoInput':False,'provider':'ollama'}
+        request={'id':rebuilt,'prompt':'Model','photos':[raw]}
+        self.assertEqual(self.call('/v1/jobs',request)[0],202)
+        self.assertEqual(self.call('/v1/jobs',request)[0],200)
+        self.assertEqual((server.JOBS/rebuilt/'saved-scene.json').read_text(),scene)
+        with patch.object(server,'WAKE') as wake,patch.object(server,'verify_runtime'), \
+             patch.object(server,'ai_settings') as settings,patch.object(server,'generate_code') as ai, \
+             patch.object(server,'run_blender') as blender:
+            wake.wait.side_effect=[None,StopIteration]
+            with self.assertRaises(StopIteration):server.worker()
+            settings.assert_not_called();ai.assert_not_called();blender.assert_called_once()
+        self.assertEqual(self.call('/v1/jobs/'+rebuilt)[1]['state'],'succeeded')
+        self.assertEqual((server.JOBS/rebuilt/'reference-0.jpg').read_bytes(),image)
+        self.assertTrue(json.loads((server.JOBS/rebuilt/'review-request.json').read_text())['enabled'])
+        self.assertEqual(json.loads((server.JOBS/rebuilt/'timing.json').read_text())['ai_seconds'],0)
+
     def test_renderer_limit_does_not_buy_a_second_ai_plan(self):
         self.call('/v1/jobs', {'id': JOB, 'prompt': 'Eight fabrics'})
         scene = (Path(__file__).parent / 'examples/textures-eight.scene.json').read_text()
