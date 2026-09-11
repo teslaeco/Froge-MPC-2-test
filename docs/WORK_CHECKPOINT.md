@@ -1,3 +1,23 @@
+## 2026-09-11 — v23 download delivered after explicit user retry
+
+- User explicitly requests the v23 download and Oracle command again, with an
+  urgent contest deadline and limited funds. Reused the already verified ZIP.
+- Confirmed successful saves for froge-v23.zip and FORGE-v23-instrukcja.md;
+  both ordered results succeeded and local identity metadata was applied.
+  No regeneration or archive change: 15,508,252 bytes, SHA-256
+  f83e549f9aad15ba521a0f2e017c1c8dc2f8702a989ac9a0fdaf7661de9e792c.
+- Delivered the actual ZIP link and the two Cloud Shell install commands.
+  Installation remains user-side; no FROGE_V23_OK confirmation this turn.
+- Current Sites metadata confirms Site version 38. Fresh canonical-source
+  clone with a refreshed credential exceeded the 45 s limit (exit 124).
+  No Site source modification/deployment or audience change occurred.
+  The publication does not declare a Sites HTTP MCP server; existing WebMCP
+  page tools are a separate integration.
+- No new paid AI generation, new model or additional limit increase was made.
+  Next required evidence: Oracle FROGE_V23_OK and actual v23 reference renders.
+- Runtime source is saved in PR #9 at 335409a4587295f9534e8e6d4c99d3b3410d6e81.
+  Package is available; visual acceptance and PR merge remain pending.
+
 ## 2026-09-11 — v23 freeform and photo projection update prepared
 
 - User requests broader, more faithful reconstruction for different uploaded

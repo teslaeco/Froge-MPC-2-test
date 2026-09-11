@@ -19,7 +19,10 @@
   "new_paid_ai_jobs": 0,
   "arbitrary_photo_likeness_verified": false,
   "pr_merge": "not_performed_quality_not_accepted",
-  "artifact_saved": false,
+  "artifact_saved": true,
   "source_parent_commit": "592710412a96c972c0437ab016aab3967428445b",
-  "artifact_save_status": "Commit outcome unknown after HTTP 502; filename lookup found no matching new artifact. No duplicate write attempted."
+  "artifact_save_status": "Confirmed on explicit user retry: both ZIP and instruction saves succeeded, with local metadata applied.",
+  "artifact_saved_date": "2026-09-11",
+  "confirmed_site_version": 38,
+  "last_source_clone_status": "Timed out after 45 seconds on fresh credential, exit 124; no deployment."
 }
