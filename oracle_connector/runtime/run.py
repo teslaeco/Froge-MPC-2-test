@@ -247,6 +247,11 @@ def finish(output=None):
 
 if __name__ == '__main__':
     bpy.ops.wm.read_factory_settings(use_empty=True)
+    if Path('/work/image3d-manifest.json').is_file():
+        from imported_asset import import_and_export
+        import_and_export(Path('/work'))
+        print('FROGE_IMAGE3D_READY')
+        raise SystemExit(0)
     if Path('/work/scene.json').is_file():
         from scene_contract import parse_scene
         from build_scene import build_scene

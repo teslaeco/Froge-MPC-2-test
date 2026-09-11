@@ -51,20 +51,20 @@ def render_frame(scene, path, settings):
         pending.unlink(missing_ok=True)
 
 
-def render_review_checked(model,folder):
+def render_review_checked(model,folder,asset_views=False):
     """Optional previews must never discard an already validated model export."""
     folder=Path(folder)
     try:
-        return {'revision':1,'status':'rendered','views':render_review(model,folder)}
+        return {'revision':1,'status':'rendered','views':render_review(model,folder,asset_views=asset_views)}
     except Exception as error:
-        for label in LABELS:
+        for label in (*LABELS,'side','back'):
             for suffix in ('.png','.pending.png'):
                 (folder/(label+suffix)).unlink(missing_ok=True)
         return {'revision':1,'status':'unavailable','views':[],
                 'detail':str(error)[:500],'likeness_verified':False}
 
 
-def render_review(model,folder):
+def render_review(model,folder,asset_views=False):
     folder=Path(folder);folder.mkdir(parents=True,exist_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     bpy.ops.import_scene.gltf(filepath=str(model))
@@ -90,10 +90,16 @@ def render_review(model,folder):
     scale=max(span.z,span.x/0.8)*1.12
     eyes=[o.matrix_world.translation for o in meshes if o.get('anatomical_eye')]
     face=sum(eyes,Vector())/len(eyes) if eyes else target
-    for label,direction,aim,frame in (
+    views = (
         ('front',(0,-4,.12),target,scale),
         ('three-quarter',(2,-4,.5),target,scale),
-        ('face',(.6,-3,.1),face+Vector((0,0,-.025)),max(.40,span.x*1.15) if len(eyes)>2 else .40)):
+        ('face',(.6,-3,.1),face+Vector((0,0,-.025)),max(.40,span.x*1.15) if len(eyes)>2 else .40))
+    if asset_views:
+        frame=max(span)*1.6
+        distance=max(span)*3
+        views=tuple((label,tuple(v*distance for v in direction),target,frame) for label,direction in (
+            ('front',(0,-1,0)),('side',(1,0,0)),('back',(0,1,0)),('three-quarter',(.6,-1,.2))))
+    for label,direction,aim,frame in views:
         camera.location=aim+Vector(direction)
         camera.rotation_euler=(aim-camera.location).to_track_quat('-Z','Y').to_euler()
         camera.data.ortho_scale=frame
@@ -101,4 +107,4 @@ def render_review(model,folder):
         settings['views_completed'].append({'label':label,'samples':scene.cycles.samples,
                                           'denoising':bool(scene.cycles.use_denoising)})
         (folder/'render-settings.json').write_text(json.dumps(settings),encoding='utf-8')
-    return [str(folder/(label+'.png')) for label in LABELS]
+    return [str(folder/(view[0]+'.png')) for view in views]

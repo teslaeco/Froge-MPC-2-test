@@ -99,7 +99,7 @@ class WorkerHTTPTests(unittest.TestCase):
         self.paths.start(); server.PAIR_ATTEMPTS.clear(); server.CANCEL.clear()
         server.initialize()
         self.config = json.loads(server.CONFIG.read_text())
-        self.ready = patch.object(server, 'health', return_value={'ready': True, 'model': 'local-coder', 'detail': 'ready'})
+        self.ready = patch.object(server, 'health', return_value={'ready': True, 'textReady': True, 'model': 'local-coder', 'detail': 'ready'})
         self.ready.start()
         self.http = server.ThreadingHTTPServer(('127.0.0.1', 0), server.Handler)
         self.thread = threading.Thread(target=self.http.serve_forever, daemon=True); self.thread.start()
@@ -191,7 +191,7 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual((server.JOBS / rebuilt / 'reference-0.jpg').read_bytes(), image)
         self.assertEqual(json.loads((server.JOBS / rebuilt / 'timing.json').read_text())['ai_seconds'], 0)
 
-    def test_identical_retry_after_oidn_error_reuses_scene_without_ai(self):
+    def test_new_photo_request_cannot_silently_reuse_old_template_after_oidn_error(self):
         scene=(Path(__file__).parent/'examples/textures-eight.scene.json').read_text()
         folder=server.JOBS/JOB;folder.mkdir();(folder/'scene.json').write_text(scene)
         image=bytes([255,216,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,2,0,255,217])
@@ -209,19 +209,11 @@ class WorkerHTTPTests(unittest.TestCase):
         rebuilt='12345678-1234-4234-8234-123456789abd'
         server.health.return_value={'ready':False,'photoInput':False,'provider':'ollama'}
         request={'id':rebuilt,'prompt':'Model','photos':[raw]}
-        self.assertEqual(self.call('/v1/jobs',request)[0],202)
-        self.assertEqual(self.call('/v1/jobs',request)[0],200)
-        self.assertEqual((server.JOBS/rebuilt/'saved-scene.json').read_text(),scene)
-        with patch.object(server,'WAKE') as wake,patch.object(server,'verify_runtime'), \
-             patch.object(server,'ai_settings') as settings,patch.object(server,'generate_code') as ai, \
-             patch.object(server,'run_blender') as blender:
-            wake.wait.side_effect=[None,StopIteration]
-            with self.assertRaises(StopIteration):server.worker()
-            settings.assert_not_called();ai.assert_not_called();blender.assert_called_once()
-        self.assertEqual(self.call('/v1/jobs/'+rebuilt)[1]['state'],'succeeded')
-        self.assertEqual((server.JOBS/rebuilt/'reference-0.jpg').read_bytes(),image)
-        self.assertTrue(json.loads((server.JOBS/rebuilt/'review-request.json').read_text())['enabled'])
-        self.assertEqual(json.loads((server.JOBS/rebuilt/'timing.json').read_text())['ai_seconds'],0)
+        code, response = self.call('/v1/jobs',request)
+        self.assertEqual(code,409)
+        self.assertIn('Podlacz Meshy',response['error'])
+        self.assertFalse((server.JOBS/rebuilt).exists())
+        self.assertEqual((folder/'scene.json').read_text(),scene)
 
     def test_renderer_limit_does_not_buy_a_second_ai_plan(self):
         self.call('/v1/jobs', {'id': JOB, 'prompt': 'Eight fabrics'})
@@ -247,7 +239,7 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual(self.call('/v1/jobs/' + JOB)[1]['state'], 'cancelled')
         self.assertEqual(self.call('/v1/jobs', other)[0], 202)
 
-    def test_photo_queue_persists_bytes_and_forwards_them_to_the_scene_planner(self):
+    def test_photo_queue_forwards_exact_bytes_to_neural_engine_without_scene_planner(self):
         # Structural JPEG transport fixture; this does not claim visual fidelity.
         image = bytes([255,216,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,2,0,255,217])
         photo = {'name': 'front.jpg', 'view': 'front', 'dataUrl': 'data:image/jpeg;base64,' + base64.b64encode(image).decode()}
@@ -255,6 +247,9 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual(self.call('/v1/jobs', data)[0], 409)
         server.health.return_value = {'ready': True, 'provider': 'openai', 'photoInput': True}
         self.assertEqual(self.call('/v1/jobs', data, token='invalid')[0], 401)
+        # OpenAI readiness alone must not unlock image-to-3D.
+        self.assertEqual(self.call('/v1/jobs', data)[0], 409)
+        server.write_json(server.STATE/'image-provider.json', {'provider':'meshy','api_key':'offline-test-only','texture_resolution':'8k'})
         self.assertEqual(self.call('/v1/jobs', data)[0], 202)
         self.assertEqual(self.call('/v1/jobs', data)[0], 200)
         self.assertEqual(self.call('/v1/jobs', {**data, 'photos': [{**photo, 'view': 'back'}]})[0], 409)
@@ -264,17 +259,16 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertNotIn('base64', (folder / 'reference-photos.json').read_text())
         # The mocked Blender finish normally writes the structural report.
         (folder / 'result.json').write_text('{}')
-        scene = (Path(__file__).parent / 'examples/rocket.scene.json').read_text()
-        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'ai_settings', return_value={'provider': 'openai'}), patch.object(server, 'generate_code', return_value=scene) as ai, patch.object(server, 'run_blender') as blender:
+        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server.image3d_provider,'generate',return_value={'task_id':'offline-task'}) as neural, patch.object(server, 'generate_code') as ai, patch.object(server, 'run_blender') as blender:
             wake.wait.side_effect = [None, StopIteration]
             with self.assertRaises(StopIteration):
                 server.worker()
             blender.assert_called_once()
-            content = ai.call_args.args[0][1]['content']
-            self.assertEqual([item['image_url'] for item in content if item['type'] == 'input_image'], [photo['dataUrl']])
+            ai.assert_not_called()
+            self.assertEqual(neural.call_args.args[0][0]['bytes'],image)
         result = self.call('/v1/jobs/' + JOB)[1]
         self.assertEqual(result['state'], 'succeeded')
-        self.assertIn('1 zdjec', result['detail'])
+        self.assertIn('Meshy Ultra', result['detail'])
 
     def test_rejects_invalid_photos_before_creating_a_queue_entry(self):
         for value in [[{'name': 'a.jpg', 'view': 'front', 'dataUrl': 'https://example.test/a.jpg'}], [None] * 5, [{'name': 'x', 'view': 'front', 'dataUrl': 'data:image/jpeg;base64,YWJj'}]]:

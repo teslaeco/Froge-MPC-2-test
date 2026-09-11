@@ -1,3 +1,21 @@
+## 2026-09-11 — image-to-3D replacement: backend checkpoint, integration in progress
+
+- User rejected the template/composition-specific repair. New photo requests now
+  require a real image-to-3D connection and cannot silently recover old templates.
+- Added Meshy 7 Ultra adapter for exact input bytes, 1–4 views of one subject,
+  native geometry, requested 4K/8K PBR, preserved pose and no image enhancement.
+- Remote task intent/ID survives polling, download and export failures. No
+  automatic repeat of an ambiguous paid POST; no key or signed URL in reports.
+- Blender imports the neural GLB directly, preserves its original bytes, makes
+  actual FBX/OBJ/STL/BLEND, and only reduces textures in a separate preview.
+- Added authenticated image3d configuration and secure getpass CLI. No Meshy
+  credential found in local or Site configuration; no paid API call performed.
+- Backend Python compilation passed. Offline provider/HTTP/render/export tests
+  exercised; frontend configuration/download wiring and full installer remain
+  in progress at this checkpoint. No neural model or likeness result yet.
+- Site remains v38. No Oracle installation, Site deployment, merge or audience
+  change. Continue from docs/CODEX_IMAGE_TO_3D.md; do not regenerate a template.
+
 ## 2026-09-11 — geometry r2: model, exports and installer verified and saved
 
 - Implemented the user's requested repair, starting from the actual completed
