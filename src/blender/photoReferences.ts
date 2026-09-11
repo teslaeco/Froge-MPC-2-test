@@ -9,7 +9,7 @@ export type PhotoView = keyof typeof PHOTO_VIEWS
 export type PhotoInput = { name: string; view: PhotoView; dataUrl: string; subject?: string; textureMaxSize?: TextureMaxSize; faceLandmarks?: FaceMeasurement; faceMeasurementStatus?: string }
 export type PhotoMetadata = { name: string; view: PhotoView; sha256: string; subject?: string; textureMaxSize?: TextureMaxSize; faceLandmarks?: FaceMeasurement }
 export type JobPhoto = { name: string; view: PhotoView; url: string; subject?: string; textureMaxSize?: TextureMaxSize }
-export const DEFAULT_PHOTO_PROMPT = 'Stwórz przybliżony model 3D głównego obiektu ze zdjęć. Dopasuj widoczne proporcje, kształt i kolory. Pomiń tło i napisy. Zbuduj rzeczywistą geometrię z materiałami i zapisz GLB.'
+export const DEFAULT_PHOTO_PROMPT = 'Odtwórz główną postać lub obiekt z przesłanych zdjęć: widoczny kształt, proporcje, twarz, fryzurę, pozę, strój, dodatki i kolory. Wygeneruj przestrzenną geometrię oraz tekstury. Zachowaj oryginalny model i przygotuj FBX oraz GLB.'
 
 // Browser-normalized JPEGs only: no remote URLs, SVGs or oversized decoded images.
 export function jpegDimensions(bytes: Uint8Array): [number, number] {
@@ -110,10 +110,7 @@ export async function prepareReferencePhoto(file: File, trimBorders = false, tex
     for (const quality of [0.95, 0.90, 0.86]) {
       const dataUrl = canvas.toDataURL('image/jpeg', quality)
       if (dataUrl.startsWith('data:image/jpeg;base64,') && dataUrl.length - 23 <= Math.floor(MAX_REFERENCE_BYTES / 3) * 4) {
-        let measurements: Pick<PhotoInput, 'faceLandmarks' | 'faceMeasurementStatus'>
-        try { measurements = await (await import('./faceLandmarks')).measureFace(dataUrl) }
-        catch { measurements = { faceMeasurementStatus: 'Pomiary twarzy są niedostępne. Zdjęcie pozostaje referencją wyglądu; dodaj je ponownie, aby ponowić pomiar.' } }
-        return { name: file.name.slice(0, 120) || 'Zdjęcie', view: 'other', dataUrl, textureMaxSize, ...measurements }
+        return { name: file.name.slice(0, 120) || 'Zdjęcie', view: 'other', dataUrl, textureMaxSize, ...await import('./faceLandmarks').then(module => module.measureFace(dataUrl)).catch(() => ({ faceMeasurementStatus: 'Nie udało się odczytać punktów twarzy. Zdjęcie pozostaje referencją dla Astry.' })) }
       }
     }
     throw new Error('Zdjęcie przekracza 2 MB po przygotowaniu. Wybierz 4K lub 2K; nie obniżamy automatycznie jakości poniżej 86%.')

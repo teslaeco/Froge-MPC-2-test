@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { BlenderRequestError, blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob } from './client'
 import './generator.css'
 import { OpenAISettings, GeometryUpdate } from './OpenAISettings'
+import { GenerationExports } from './GenerationExports'
 import { supportsGeneration, supportsPhotoGeneration, RECOMMENDED_CONNECTOR_VERSION, supportsPortraitQuality, requiresPortraitQuality, PORTRAIT_UPDATE_REASON, supportsCoutureQuality, requiresCoutureQuality, COUTURE_UPDATE_REASON } from './compatibility'
 import { PhotoReferences } from './PhotoReferences'
 import { DEFAULT_PHOTO_PROMPT, PHOTO_VIEWS, type PhotoInput } from './photoReferences'
@@ -30,16 +31,16 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
   const busy = submitting || (!!active && !finished(active))
   const textureLimitFailure = active?.state === 'failed' && active.detail.includes('Use at most 8 materials and 8 images')
   const currentWorker = supportsGeneration(connection?.connectorVersion)
-  const canGenerate = !!connection?.connected && !!connection.ready && currentWorker && !connectionError
+  const canGenerate = !!connection?.connected && !!connection.ready && currentWorker && !connectionError && (photos.length > 0 || connection.textReady !== false)
   const photosSupported = supportsPhotoGeneration(connection)
-  const photoBlockedReason = (connection?.connectorVersion ?? 0) < 14 ? 'Zdjęcie jest wybrane. Generowanie odblokuje aktualizacja Oracle do v20 — pobierz ją poniżej. Samo odświeżenie strony nie aktualizuje serwera.' : 'Wybrane AI nie obsługuje zdjęć. W ustawieniach serwera wybierz OpenAI; lokalny Qwen obsługuje tylko opis.'
-  const coutureBlocked=requiresCoutureQuality(prompt) && !supportsCoutureQuality(connection)
+  const photoBlockedReason = connection?.connectorVersion === 21 ? 'Zainstaluj v22 na Oracle, aby zdjęcia ponownie obsługiwała Astra.' : connection?.provider !== 'openai' ? 'Wybierz OpenAI · Astra w ustawieniach serwera.' : 'Sprawdź połączenie Astry i zaktualizuj generator na Oracle.'
+  const coutureBlocked= requiresCoutureQuality(prompt) && !supportsCoutureQuality(connection)
   const longPromptBlocked=prompt.length>2000 && connection?.promptMaxLength!==5000
-  const referenceQualityBlocked = photos.some(p => p.textureMaxSize) && (connection?.referenceQualityRevision !== 1 || connection?.materialQualityRevision !== 2)
-  const portraitBlocked=referenceQualityBlocked || (requiresPortraitQuality(prompt,photos.length) && !supportsPortraitQuality(connection)) || coutureBlocked || longPromptBlocked
+  const referenceQualityBlocked = photos.some(photo => (photo.textureMaxSize ?? 2048) > 2048) && (connection?.referenceQualityRevision !== 1 || connection?.materialQualityRevision !== 2)
+  const portraitBlocked=(requiresPortraitQuality(prompt, photos.length) && !supportsPortraitQuality(connection)) || coutureBlocked || longPromptBlocked || referenceQualityBlocked
   const updateAvailable = !!connection?.connected && connection.connectorVersion !== undefined && connection.connectorVersion < RECOMMENDED_CONNECTOR_VERSION
-  const oldWorkerReason = `Oracle zgłasza generator v${connection?.connectorVersion}. Zainstaluj aktualizację v20 na serwerze. Samo przesłanie ZIP-a nie uruchamia aktualizacji.`
-  const connectionDetail = connection?.ready && !currentWorker ? oldWorkerReason : connection?.detail || 'Odczytuję zapisane połączenie.'
+  const oldWorkerReason = `Oracle zgłasza generator v${connection?.connectorVersion}. Zainstaluj aktualizację v22 na serwerze. Samo przesłanie ZIP-a nie uruchamia aktualizacji.`
+  const connectionDetail = photos.length && !photosSupported ? photoBlockedReason : connection?.ready && !currentWorker ? oldWorkerReason : connection?.detail || 'Odczytuję zapisane połączenie.'
   const blockedReason = busy ? '' : preparingPhotos ? 'Przygotowuję zdjęcia…' : connectionError ? connectionError : !connection ? 'Sprawdzam, czy serwer może przyjąć zlecenie…' : !connection.connected ? 'Połącz serwer Blendera w ustawieniach powyżej.' : updateAvailable && !currentWorker ? 'Generowanie nie zostało uruchomione. ' + oldWorkerReason : !connection.ready ? 'Generowanie nie zostało uruchomione. ' + connectionDetail : photos.length && !photosSupported ? photoBlockedReason : portraitBlocked ? (referenceQualityBlocked ? 'Referencje 4K/8K wymagają aktualizacji generatora z obsługą jakości referencji.' : coutureBlocked ? COUTURE_UPDATE_REASON : longPromptBlocked ? 'Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v20.' : PORTRAIT_UPDATE_REASON) : !prompt.trim() && !photos.length ? 'Wpisz opis albo dodaj zdjęcia.' : ''
 
   async function refreshConnection() {
@@ -151,20 +152,19 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
       await refreshConnection()
     } catch (e) { setError((e as Error).message) } finally { setConnecting(false) }
   }
-  async function generate(requestedPrompt = prompt, sourceJobId?: string, referenceJobId?: string, useDraftPhotos = true) {
+  async function generate(requestedPrompt = prompt, sourceJobId?: string, referenceJobId?: string, useDraftPhotos = true, resumeImage3d = false) {
     const attached = useDraftPhotos && !sourceJobId && !referenceJobId ? photos : []
     const withPhotos = !!referenceJobId || attached.length > 0
     const description = requestedPrompt.trim() || (withPhotos ? DEFAULT_PHOTO_PROMPT : '')
-    if (submissionLock.current || busy || preparingPhotos || !currentWorker || !(sourceJobId ? connection?.connected : canGenerate) || !description) return
-    if (attached.some(p => p.textureMaxSize) && (connection?.referenceQualityRevision !== 1 || connection?.materialQualityRevision !== 2)) { setError('Zaktualizuj generator, aby zachować jakość referencji 4K/8K.'); return }
+    if (submissionLock.current || busy || preparingPhotos || !currentWorker || !(sourceJobId ? connection?.connected : withPhotos ? connection?.connected && photosSupported : canGenerate) || !description) return
     if (withPhotos && !photosSupported) { setError(photoBlockedReason); return }
-    if (requiresPortraitQuality(description, withPhotos ? 1 : 0) && !supportsPortraitQuality(connection)) { setError(PORTRAIT_UPDATE_REASON); return }
-    if (requiresCoutureQuality(description) && !supportsCoutureQuality(connection)) { setError(COUTURE_UPDATE_REASON); return }
+    if (!withPhotos && !resumeImage3d && requiresPortraitQuality(description) && !supportsPortraitQuality(connection)) { setError(PORTRAIT_UPDATE_REASON); return }
+    if (!withPhotos && !resumeImage3d && requiresCoutureQuality(description) && !supportsCoutureQuality(connection)) { setError(COUTURE_UPDATE_REASON); return }
     if (description.length>2000 && connection?.promptMaxLength!==5000) { setError('Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v20.'); return }
     submissionLock.current = true
     setSubmitting(true); setError('')
     try {
-      const payload = { prompt: description, ...(sourceJobId ? { sourceJobId } : {}), ...(referenceJobId ? { referenceJobId } : {}), ...(attached.length ? { photos: attached } : {}) }
+      const payload = { prompt: description, ...(sourceJobId ? { sourceJobId, ...(resumeImage3d ? { resumeImage3d: true } : {}) } : {}), ...(referenceJobId ? { referenceJobId } : {}), ...(attached.length ? { photos: attached } : {}) }
       const fingerprint = JSON.stringify(payload)
       const id = pendingSubmission.current?.fingerprint === fingerprint ? pendingSubmission.current.id : crypto.randomUUID()
       pendingSubmission.current = { fingerprint, id }
@@ -211,7 +211,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
   return <div className="remote-generator">
     <button className="new-model-button" disabled={busy || preparingPhotos} onClick={() => newModel()}>Nowy model · wyczyść formularz</button>
     <div className="blender-connection" role="status">
-      <strong>{connectionError ? 'Nie udało się sprawdzić połączenia' : connection === null ? 'Sprawdzam serwer…' : connection.ready && !currentWorker ? 'Generator wymaga aktualizacji' : connection.ready ? connection.provider === 'openai' ? 'OpenAI + Blender gotowe' : 'Lokalny Qwen + Blender' : connection.connected ? 'Serwer nie jest jeszcze gotowy' : 'Serwer niepołączony'}</strong>
+      <strong>{connectionError ? 'Nie udało się sprawdzić połączenia' : connection === null ? 'Sprawdzam serwer…' : photos.length ? photosSupported ? 'Astra + Blender · zdjęcia gotowe' : 'Sprawdź Astrę i generator' : connection.ready && !currentWorker ? 'Generator wymaga aktualizacji' : connection.ready ? connection.provider === 'openai' ? 'Opis → scena · Astra + Blender' : 'Opis → scena · lokalne AI' : connection.connected ? 'Serwer nie jest jeszcze gotowy' : 'Serwer niepołączony'}</strong>
       <p>{connectionDetail}</p>
       {connection?.connectorVersion !== undefined && <small>Generator na Oracle: v{connection.connectorVersion} · zdjęcia: {photosSupported ? 'obsługiwane' : 'niedostępne'}</small>}
       {connection?.connectorVersion !== undefined && <small>Standard postaci: {supportsCoutureQuality(connection) ? `v${connection.characterStandard ?? connection.connectorVersion} · suknia i wachlarz` : supportsPortraitQuality(connection) ? `v${connection.characterStandard ?? connection.connectorVersion} · anatomia` : 'nieaktywny'}</small>}
@@ -244,7 +244,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
     {supportsPortraitQuality(connection) && <p className="studio-helper">Standard postaci aktywny: anatomiczna twarz i dłonie, paznokcie oraz kontrola eksportu. Podobieństwo do zdjęcia oceniasz w podglądzie.</p>}
     <button disabled={checkingConnection} aria-busy={checkingConnection} onClick={() => void refreshConnection()}>{checkingConnection ? 'Sprawdzam połączenie…' : updateAvailable ? 'Sprawdź serwer po aktualizacji' : 'Sprawdź połączenie z Oracle'}</button>
     {!prompt.trim() && !photos.length && recent[0] && onReusePrompt && <button onClick={()=>onReusePrompt(recent[0].prompt)}>Przywróć ostatni opis</button>}
-    <p className="studio-helper">{connection?.provider === 'openai' ? 'Astra analizuje opis i dołączone zdjęcia, a Blender tworzy geometrię i materiały. Generowanie korzysta z płatnego OpenAI API na Twoim koncie; samo dodanie zdjęć niczego nie uruchamia.' : 'Wybrany jest lokalny Qwen, który może działać wolno na tym serwerze i obsługuje tylko tekst. Przycisk „Podłącz Astrę” pozwala wybrać OpenAI API.'}</p>
+    <p className="studio-helper">{connection?.provider === 'openai' ? 'Astra analizuje zdjęcia i opis. Blender buduje geometrię oraz tekstury; Astra porównuje rendery z referencją. Generowanie korzysta z Twojego OpenAI API. Dodanie zdjęć niczego nie uruchamia.' : 'Lokalne AI obsługuje opis sceny. Do pracy ze zdjęciami wybierz OpenAI · Astra.'}</p>
     {active && !submitting && <div className={'generation-job state-' + active.state} role="status">
       <strong>{jobError && !finished(active) ? 'Postęp chwilowo niedostępny' : active.state === 'succeeded' ? displayed ? fromHistory ? 'Zapisany model w podglądzie' : 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
       {finished(active) ? <details className="saved-job-prompt"><summary>Opis tego zlecenia</summary><p className="generation-prompt">{active.prompt}</p></details> : <p className="generation-prompt">{active.prompt}</p>}
@@ -271,9 +271,10 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
           <button disabled={busy || !connection?.connected} onClick={() => void generate(active.prompt, active.id)}>Wykonaj zapisany skrypt</button>
         </> : <p>Ten skrypt pochodzi ze starego generatora. Utwórz nowy model po aktualizacji, korzystając ze sprawdzanego planu sceny.</p>}
       </> : <p>{active.detail === 'timed out' ? 'AI nie odpowiedziało w limicie czasu. Model nie został zapisany.' : active.detail}</p>}
-      {['failed', 'cancelled'].includes(active.state) && !textureLimitFailure && <button disabled={busy || !canGenerate || (!!active.referencePhotos?.length && !photosSupported)} onClick={() => void generate(active.prompt, undefined, active.referencePhotos?.length ? active.id : undefined, false)}>{active.referencePhotos?.length ? 'Ponów z tymi zdjęciami' : 'Ponów ten opis'}</button>}
+      {['failed', 'cancelled'].includes(active.state) && !textureLimitFailure && <button disabled={busy || (active.referencePhotos?.length ? !photosSupported : !canGenerate)} onClick={() => void generate(active.prompt, undefined, active.referencePhotos?.length ? active.id : undefined, false)}>{active.referencePhotos?.length ? 'Generuj ponownie z tych zdjęć · OpenAI API' : 'Ponów ten opis'}</button>}
       {!finished(active) && <button onClick={() => void cancel()}>Anuluj zlecenie</button>}
       {active.state === 'succeeded' && !displayed && <button onClick={() => void openModel(active)}>Wczytaj wynik do podglądu</button>}
+      {active.state === 'succeeded' && <GenerationExports jobId={active.id}/>}
       {active.state === 'succeeded' && onReusePrompt && <button onClick={()=>onReusePrompt(active.prompt)}>Edytuj opis tego modelu</button>}
       {jobError && <div className="studio-error" role="alert">
         <p>{jobError.message}</p>

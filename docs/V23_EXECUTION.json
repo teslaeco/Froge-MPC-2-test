@@ -1,0 +1,28 @@
+{
+  "version": 23,
+  "file": "froge-v23.zip",
+  "bytes": 15508252,
+  "sha256": "f83e549f9aad15ba521a0f2e017c1c8dc2f8702a989ac9a0fdaf7661de9e792c",
+  "payload_sha256": "afca9c737d6cb02a5cfda80b178d0557d8267bc36cebbd5ada2f05dca1651ffc",
+  "payload_files": 54,
+  "payload_matches_source": true,
+  "installed_on_oracle": false,
+  "site_deployed": false,
+  "python_test_executions": 62,
+  "native_blender": "4.3.0",
+  "native_freeform_and_projection_verified": true,
+  "native_install_fixture": {
+    "vertices": 196,
+    "triangles": 364,
+    "projected_faces": 2
+  },
+  "new_paid_ai_jobs": 0,
+  "arbitrary_photo_likeness_verified": false,
+  "pr_merge": "not_performed_quality_not_accepted",
+  "artifact_saved": true,
+  "source_parent_commit": "592710412a96c972c0437ab016aab3967428445b",
+  "artifact_save_status": "Confirmed on explicit user retry: both ZIP and instruction saves succeeded, with local metadata applied.",
+  "artifact_saved_date": "2026-09-11",
+  "confirmed_site_version": 38,
+  "last_source_clone_status": "Timed out after 45 seconds on fresh credential, exit 124; no deployment."
+}

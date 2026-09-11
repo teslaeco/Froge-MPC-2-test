@@ -7,7 +7,7 @@ import math
 import bpy
 from mathutils import Vector, Matrix, Euler, Quaternion
 from detailed_geometry import loft
-from portrait import build_portrait
+from portrait import build_portrait, portrait_transforms
 from portrait_hands import build_hand, fit_grip_wrist
 import anatomy
 import couture_geometry as geometry
@@ -96,32 +96,49 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
     seams=add(join_meshes(piping,p['name']+'-couture-seams'),'couture-seams')
     seams['seam_count']=len(piping);seams['radius_m']=.00062
     if p['cape']:
-        vv=[];ff=[];rows=52;cols=64
-        for j in range(rows):
-            t=j/(rows-1);z=1.425-1.375*t
-            for k in range(cols):
-                u=2*k/(cols-1)-1
-                x=u*(.19+.19*t)
-                y=.050+.22*t+.040*(1-u*u)+.013*math.sin(10*math.pi*u)*(t+.1)
-                vv.append((x,y,z+.017*math.sin(math.pi*u)**2*t))
-                if j and k:ff.append(((j-1)*cols+k-1,(j-1)*cols+k,j*cols+k,j*cols+k-1))
-        cape=add(mesh_object(p['name']+'-shoulder-drape',vv,ff,dress),'shoulder-drape')
+        vv,ff=geometry.cape_surface(p['hem_radius'],width,offset=offset)
+        # Reuse the shared cloth slot: the worker's material budget stays at
+        # 16, including anatomical and measured-reference materials. This
+        # finish also belongs on the unobserved gown back and cloth sleeves.
+        reverse=dress
+        cloth_rgb=tuple(dress.get('couture_original_rgb',dress.diffuse_color[:3]))
+        dress['couture_original_rgb']=cloth_rgb
+        reverse_rgb=tuple(.75*a+.25*b for a,b in zip(cloth_rgb,crystal.diffuse_color[:3]))
+        reverse.diffuse_color=(*reverse_rgb,1)
+        shader=reverse.node_tree.nodes.get('Principled BSDF')
+        for socket in ('Base Color','Roughness','Metallic'):
+            for link in list(shader.inputs[socket].links):reverse.node_tree.links.remove(link)
+        shader.inputs['Base Color'].default_value=tuple(c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4 for c in reverse_rgb)+(1,)
+        shader.inputs['Roughness'].default_value=.52
+        shader.inputs['Metallic'].default_value=.03
+        shader.inputs['Specular IOR Level'].default_value=.20
+        shader.inputs['Coat Weight'].default_value=.02
+        cape=add(mesh_object(p['name']+'-shoulder-drape',vv,ff,reverse),'shoulder-drape')
+        cape['drape_geometry_revision']=2;cape['unobserved_back_reconstructed']=True
         for face in cape.data.polygons:face.use_smooth=True
         solid=cape.modifiers.new('Thin cloth drape','SOLIDIFY');solid.thickness=thickness
         bpy.context.view_layer.objects.active=cape;bpy.ops.object.modifier_apply(modifier=solid.name)
+        # Continue the visible dress's thin seam language onto the inferred
+        # reverse. These are attached paths, not photographed back details.
+        for u in (.17,.5,.83):
+            path=[]
+            for j in range(53):
+                t=j/52;x,y,z=geometry.cape_point(t,u,p['hem_radius'],width,offset=offset)
+                path.append((x,y+.0018,z))
+            seam=line('reconstructed-back-seam',path,[.00065]*len(path),metal,6)
+            seam['unobserved_back_reconstructed']=True
         # Visible shoulder cape: radial cloth folds fall in front of the
         # upper arm, rather than leaving a featureless black sleeve exposed.
-        cv=[];cf=[];uv=[];nr=45;nc=33
+        nr=45;nc=33
+        cv,cf=geometry.cape_surface(p['hem_radius'],width,side=True,rows=nr,cols=nc,offset=offset)
+        uv=[]
         for j in range(nr):
             t=j/(nr-1)
             for k in range(nc):
                 u=k/(nc-1)
-                cv.append((.174+.046*t+u*(.094+.110*t),
-                    -.052+.042*t+(.003+.012*t)*math.sin(12*math.pi*u+.5*t),
-                    1.425-1.32*t-.018*u))
                 uv.append(photo_surface.quad_uv(u,1-t,((1094,1490),(1214,1477),(1054,949),(1008,932))))
-                if j and k:cf.append(((j-1)*nc+k-1,(j-1)*nc+k,j*nc+k,j*nc+k-1))
         side_cape=add(mesh_object(p['name']+'-visible-pleated-cape',cv,cf,dress),'visible-pleated-cape')
+        side_cape['drape_geometry_revision']=2
         for face in side_cape.data.polygons:face.use_smooth=True
         if reference_material:
             layer=side_cape.data.uv_layers.new(name='ReferenceSurfaceUV')
@@ -224,8 +241,8 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
         if hits:
             cx=(min(v.x for v in hits)+max(v.x for v in hits))*.5
             cy=(min(v.y for v in hits)+max(v.y for v in hits))*.5
-            rx=max(.045,(max(v.x for v in hits)-min(v.x for v in hits))*.5+.006)
-            ry=max(.041,(max(v.y for v in hits)-min(v.y for v in hits))*.5+.006)
+            rx=max(.040,(max(v.x for v in hits)-min(v.x for v in hits))*.5+.003)
+            ry=max(.037,(max(v.y for v in hits)-min(v.y for v in hits))*.5+.003)
             clearance=max(1.,max(math.hypot((v.x-cx)/rx,(v.y-cy)/ry) for v in hits))
             collar_sections.append((cx,cy,rx*clearance,ry*clearance))
         else:collar_sections.append((0,-.017,.068-.020*t,.062-.016*t))
@@ -244,6 +261,7 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
                 a,b,c,d=(row-1)*cols+i-1,(row-1)*cols+i,row*cols+i,row*cols+i-1
                 ff.extend(((a,b,c),(a,c,d)))
     collar=add(mesh_object(p['name']+'-standing-collar',vv,ff,crystal),'standing-collar')
+    collar['neck_clearance_metres']=.003
     for face in collar.data.polygons:face.use_smooth=True
     colour=collar.data.color_attributes.new(name='CollarSapphireTint',type='FLOAT_COLOR',domain='CORNER')
     for face in collar.data.polygons:
@@ -281,7 +299,7 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
         groom_origin=Vector((0,-.025,1.70));groom_clearance_count=0
         for vertex in scalp.data.vertices:
             v=vertex.co;t=max(0,min(1,(v.z-1.705)/.095))
-            # A diagonal, low crown roll follows the reference. The Gaussian
+            # A diagonal raised crown roll follows the requested updo. The Gaussian
             # displacement changes the silhouette without a second cap or the
             # old tower of identical tubes.
             crown=t*t
@@ -289,16 +307,16 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
             roll=math.exp(-(diagonal/.060)**2)*max(0,min(1,(-v.y+.055)/.13))*crown
             root_blend=max(0,min(1,(v.z-1.744)/.036));root_blend=root_blend*root_blend*(3-2*root_blend)
             puff=math.exp(-((v.z-1.769)/.038)**2-((v.x-.010)/.055)**2)*max(0,min(1,(-v.y+.025)/.10))*root_blend
-            v.z+=.0048*crown+.017*puff
-            v.x+=.003*puff
-            v.y-=.002*crown+.006*puff
+            v.z+=.014*crown+.028*puff
+            v.x+=.005*puff
+            v.y-=.002*crown+.009*puff
             # A tucked root band leads into an elevated rearward sweep. This
             # breaks the formerly straight vertical front of the helmet cap.
             groom_front=max(0,min(1,(-v.y-.010)/.10))
             groom_root=math.exp(-((v.z-1.755)/.010)**2)*groom_front
             groom_crest=math.exp(-((v.z-1.784)/.022)**2-((v.x-.010)/.060)**2)*groom_front
-            v.y+=.002*groom_root-.004*groom_crest
-            v.z+=.004*groom_crest
+            v.y+=.002*groom_root-.006*groom_crest
+            v.z+=.011*groom_crest
             # Broad asymmetric furrows break the cap highlight while keeping
             # a single continuous supporting volume underneath every lock.
             angle=math.atan2(v.x,-v.y-.025)
@@ -312,7 +330,7 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
                 v[:]=groom_hit+groom_ray.normalized()*.0018;groom_clearance_count+=1
         scalp.data.update();scalp['froge_role']='swept-updo'
         scalp['root_clearance_corrected_vertices']=groom_clearance_count
-        scalp['groom_revision']='asymmetric-reference-crest-r10'
+        scalp['groom_revision']='raised-swept-crest-r11'
         uv=scalp.data.uv_layers.new(name='SweptHairFlow')
         for face in scalp.data.polygons:
             values=[]
@@ -324,7 +342,7 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
                 t=max(0,min(1,(1.55-polar)/1.31))
                 # Inverse of the real lock sweep: fine strands travel along
                 # the locks instead of forming a crossing herringbone pattern.
-                sweep=.78-.69*max(0,math.cos(a))**4
+                sweep=.88-.56*max(0,math.cos(a))**4
                 values.append(((a-sweep*math.sin(t*math.pi*.72))/math.tau+.5,t))
             seam=max(u for u,v in values)-min(u for u,v in values)>.5
             for loop,(u,v) in zip(face.loop_indices,values):uv.data[loop].uv=(u+1 if seam and u<.5 else u,v)
@@ -337,7 +355,7 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
         # Brighter brown is an authored correction for this reference only,
         # not an encoding repair or a measured lighting-free pigment.
         lock_material=hair.copy();lock_material.name=p['name']+'-warm-hair-locks'
-        lock_rgb=(.118,.071,.046) if groom_reference else tuple(min(.9,c*1.72) for c in source_rgb)
+        lock_rgb=(.090,.054,.035) if groom_reference else tuple(min(.9,c*1.72) for c in source_rgb)
         lock_material.diffuse_color=(*lock_rgb,1)
         lock_shader=lock_material.node_tree.nodes.get('Principled BSDF')
         lock_shader.inputs['Base Color'].default_value=tuple(c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4 for c in lock_rgb)+(1,)
@@ -346,25 +364,25 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
         lock_shader.inputs['Anisotropic'].default_value=.42
         add_strand_normal(scalp,[hair,lock_material])
         shader=hair.node_tree.nodes.get('Principled BSDF')
-        base_rgb=(.100,.060,.040) if groom_reference else tuple(min(.9,c*1.67) for c in source_rgb)
+        base_rgb=(.071,.042,.029) if groom_reference else tuple(min(.9,c*1.67) for c in source_rgb)
         hair.diffuse_color=(*base_rgb,1)
         shader.inputs['Base Color'].default_value=tuple(c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4 for c in base_rgb)+(1,)
         shader.inputs['Roughness'].default_value=.59
-        shader.inputs['Specular IOR Level'].default_value=.065
-        shader.inputs['Anisotropic'].default_value=.25
+        shader.inputs['Specular IOR Level'].default_value=.15
+        shader.inputs['Anisotropic'].default_value=.42
         lock_shader.inputs['Roughness'].default_value=.56
-        lock_shader.inputs['Specular IOR Level'].default_value=.035
-        lock_shader.inputs['Anisotropic'].default_value=.30
-        for mat,strength in ((hair,.64),(lock_material,.70)):
+        lock_shader.inputs['Specular IOR Level'].default_value=.18
+        lock_shader.inputs['Anisotropic'].default_value=.48
+        for mat,strength in ((hair,.34),(lock_material,.38)):
             node=mat.node_tree.nodes.get('Principled BSDF')
             node.inputs['Metallic'].default_value=0
             node.inputs['Coat Weight'].default_value=0
-            node.inputs['IOR'].default_value=1.36
+            node.inputs['IOR'].default_value=1.48
             for node in mat.node_tree.nodes:
                 if node.type=='NORMAL_MAP':node.inputs['Strength'].default_value=strength
         add_strand_colour([hair,lock_material])
         scalp['hair_pigment_authored_reference']=bool(groom_reference)
-        bun_centre=Vector((.004,.066,1.687));bun_radii=Vector((.053,.037,.065))
+        bun_centre=Vector((.004,.071,1.703));bun_radii=Vector((.051,.039,.072))
         bun=add(ellipsoid(p['name']+'-updo-back',bun_centre,bun_radii,hair,4),'updo-volume')
         # Overlapping diagonal rolls replace the perfectly spherical bun.
         # Surface samples use the same ellipsoid as the underlying volume.
@@ -399,7 +417,7 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
             # on its near slope, which made the tips form scalloped curls.
             groom_tip=.20+.07*math.sin(phase)-.32*max(0,math.cos(phase))**4
             polar=roots[phase]*(1-t)+groom_tip*t
-            sweep=.78-.69*max(0,math.cos(phase))**4
+            sweep=.88-.56*max(0,math.cos(phase))**4
             # Frontal roots first rise almost straight back; the turn gathers
             # gradually into the crown instead of diagonal parallel ropes.
             a=phase+sweep*math.sin(t*math.pi*.72)+.032*math.sin(phase*3.1)*math.sin(math.pi*t)**2
@@ -498,8 +516,7 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
                     edges.append(tube('jewel-facet-rim',[tuple(Vector(centre)+Vector(vv[i])) for i in (a,b)],[.00042]*2,metal,5))
         add(join_meshes(edges,p['name']+'-hair-jewel-rims'),'hair-ornament-rims')
     bpy.context.view_layer.update()
-    pivot=Vector(portrait_plan['center'])
-    head_turn=Matrix.Translation(pivot)@Euler(p['head_rotation']).to_matrix().to_4x4()@Matrix.Translation(-pivot)
+    _,head_turn,_=portrait_transforms(portrait_plan)
     for obj in parts[head_accessory_start:]:obj.matrix_world=head_turn@obj.matrix_world
     if p['fan']['enabled']:
         f=p['fan'];pivot=fan_pivot

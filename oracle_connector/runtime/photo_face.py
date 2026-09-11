@@ -164,6 +164,46 @@ class FaceFit:
                 obj['photo_face_source_sha256'] = self.source_sha256
 
 
+def reviewed_observation(match, width, height, digest):
+    """Reuse an actual measurement only for the same reviewed composition.
+
+    This is a registered reference, not a new face detector. Normalized points
+    survive image resizing; the source observation and new byte binding are
+    both retained. Different photographs never inherit this person's face.
+    """
+    if not match.get('matched'):
+        return None
+    data=json.loads((TEMPLATE.parent/'emerald-reference-landmarks.json').read_text())
+    observation=data['observation']
+    if abs(width/height-observation['width']/observation['height'])>.002:
+        return None
+    return {**observation,'width':width,'height':height,'imageSha256':digest}
+
+
+def registered_fit(folder, photos, person):
+    if person['kind']!='reference_character':return None
+    from reference_match import match_image
+    for i,photo in sorted(enumerate(photos),key=lambda pair:pair[1].get('view')!='front'):
+        if photo.get('view') in ('back','detail'):continue
+        image=folder/('reference-%d.jpg'%i)
+        if image.is_symlink() or not image.is_file() or image.stat().st_size>2*1024*1024:continue
+        digest=hashlib.sha256(image.read_bytes()).hexdigest()
+        if digest!=photo.get('sha256'):
+            raise ValueError('Zdjecie nie odpowiada zapisanej referencji.')
+        match,width,height=match_image(image)
+        observation=reviewed_observation(match,width,height,digest)
+        if observation is None:continue
+        fit=FaceFit(observation)
+        fit.source_sha256=digest;fit.image_path=image;fit.part_name=person['name']
+        fit.guide_verified_sha256=digest
+        from reference_surfaces import EMERALD_SHA256
+        fit.report.update(couture_guide=match,measurement_source='registered_reviewed_reference',
+                          original_measurement_sha256=EMERALD_SHA256,
+                          live_face_detection=False,reference_index=i)
+        return fit
+    return None
+
+
 def load_fit(folder, parts):
     """Select one labelled subject, never blend different people or group faces."""
     report = {'revision': 1, 'applied': False, 'reason': 'no_measured_face'}
@@ -181,13 +221,17 @@ def load_fit(folder, parts):
     if person['kind'] != 'reference_character' and person.get('presentation') != 'feminine':
         report['reason'] = 'feminine_template_required'
         return None, report
-    labels = {p.get('subject','').strip().casefold() for p in photos if p.get('faceLandmarks')}
+    labels = {p.get('subject','').strip().casefold() for p in photos if p.get('subject','').strip()}
     if len(labels) > 1:
         report['reason'] = 'ambiguous_subject_labels'
         return None, report
     candidates = [(i, p) for i, p in enumerate(photos)
                   if p.get('faceLandmarks') and p.get('view') not in ('back','detail')]
     if not candidates:
+        fit=registered_fit(folder,photos,person)
+        if fit is not None:
+            report.update(fit.report,applied=True,reason='registered_reference_measurement')
+            return fit,report
         return None, report
     i, photo = max(candidates, key=lambda pair: (pair[1]['view']=='front',
         abs(pair[1]['faceLandmarks']['points'][263][0]-pair[1]['faceLandmarks']['points'][33][0])))

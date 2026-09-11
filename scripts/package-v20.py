@@ -24,17 +24,59 @@ template=template.replace("report.get('revision') != 1", "report.get('revision')
 template=template.replace("compile(base64.b64decode(encoded, validate=True), name, 'exec')", "decoded = base64.b64decode(encoded, validate=True)\n        if name.endswith('.py'): compile(decoded, name, 'exec')")
 template=template.replace('timeout=180','timeout=900').replace('timeout=360','timeout=1080')
 template=template.replace('FROGE_PORTRAIT_OK','FROGE_V20_OK')
+template=template.replace("health.get('materialQualityRevision') != 2:",
+                          "health.get('materialQualityRevision') != 2 or health.get('interchangeRevision') != 2 or health.get('materialRepairRevision') != 1 or health.get('reviewRenderRevision') != 1 or health.get('portraitGeometryRevision') != 2 or health.get('registeredReferenceRevision') != 1:")
 template=template.replace('Poprawiona figurka jest juz dostepna na stronie.', 'Model kontrolny zostal zapisany na Oracle. Sprawdz jego wyglad; nowe modele tworz w generatorze.')
 # Retain the actual verification model so it can be inspected after installation.
 template=template.replace("with tempfile.TemporaryDirectory(prefix='portrait-export-check-', dir=target / 'state') as folder:",
     "with __import__('contextlib').nullcontext(target / 'state' / ('couture-review-v20-' + uuid.uuid4().hex)) as folder:")
-template=template.replace('work = Path(folder)',"work = Path(folder)\n        work.mkdir(mode=0o700, parents=True)")
+template=template.replace('work = Path(folder)',"work = Path(folder)\n        work.mkdir(mode=0o700, parents=True)\n        (work / 'review-request.json').write_text(json.dumps({'enabled': True}))")
 template=template.replace("print('FROGE_PORTRAIT_EXPORT_OK:","print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)\n        if json.loads((work / 'result.json').read_text()).get('export_validation', {}).get('reimported') is not True:\n            raise RuntimeError('Ponowne otwarcie GLB nie zostalo potwierdzone.')\n        print('FROGE_PORTRAIT_EXPORT_OK:")
 result=template.replace('__PAYLOAD_B64__',base64.b64encode(gzip.compress(raw,mtime=0)).decode()).replace('__PAYLOAD_SHA256__',hashlib.sha256(raw).hexdigest())
+result=result.replace("print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)",
+    "if json.loads((work / 'result.json').read_text()).get('review_render', {}).get('status') != 'rendered':\n            raise RuntimeError('Nie wykonano trzech rzeczywistych podgladow modelu.')\n        for format_name in server.EXPORT_FILES:\n            server.export_files(work,format_name)\n        print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)")
 compile(result,'froge-v20.py','exec')
 folder=root/'public/downloads';folder.mkdir(parents=True,exist_ok=True)
 (folder/'froge-v20.py').write_text(result)
-readme='''FORGE v20 — pełna aktualizacja generatora, referencje 4K/8K
+readme='''FORGE v20 — szyja i przestrzenna peleryna rev2, 2026-09-11
+
+Nowa geometria: obrót głowy wokół górnej szyi, wspólna transformacja oczu,
+włosów i biżuterii. Peleryna obejmuje plecy, ma zaokrąglony dół i zmienne
+fałdy; odstęp uwzględnia bryłę sukni. Tył jest autorską rekonstrukcją.
+Dla tego samego rozpoznanego zdjęcia kobiety ze szmaragdowym wachlarzem
+pracownik może użyć wcześniej zmierzonych 478 punktów, także gdy starsza
+strona ich nie wysyła. Sprawdza cały kadr, twarz, wachlarz i strój oraz SHA
+zdjęcia. To zarejestrowana referencja, nie nowy detektor twarzy dla dowolnych
+zdjęć. Inne zdjęcia nie dziedziczą tych pomiarów. Podobieństwo nie jest 1:1.
+Instalator wymaga portraitGeometryRevision=2 i registeredReferenceRevision=1.
+Poprzednie zapisane GLB pozostają poprzednimi modelami; wymagają przebudowy.
+
+
+Naprawa podglądu (reviewRenderRevision=1): Blender sprawdza dostępność OIDN.
+Przy jej braku renderuje na CPU z 64 próbkami bez odszumiania. Błąd podglądu
+nie odrzuca gotowego modelu; nieukończona ocena jest jawnie raportowana.
+Po instalacji ponów ostatnie zlecenie z IDENTYCZNYM opisem i zdjęciami. Jeżeli
+ostatnie takie zlecenie ma dokładnie błąd braku OIDN i poprawny zapisany plan,
+serwer wykona ten plan bez nowego zapytania do AI. Zmiana opisu lub zdjęć
+oznacza nowe generowanie. Instalator teraz sprawdza także trzy rendery z GLB.
+
+Naprawa materiałów (materialRepairRevision=1): brak definicji eyes_grey_green lub
+innego materiału uruchamia jedną ograniczoną korektę palety. Geometria pozostaje
+z pierwotnego planu; wszystkie odwołania muszą wskazywać zadeklarowane materiały.
+Nie dodano trzeciej próby planowania; zachowano limity 600 s AI i 900 s Blendera.
+Instalator sprawdza materialRepairRevision=1 w odpowiedzi uruchomionego serwera.
+Ta zmiana nie poprawia automatycznie poprzednich nieudanych zleceń.
+
+Wcześniejsza poprawka: rozdzielone tekstury FBX, przenośny OBJ+MTL z folderem textures,
+raport rozmiarów i SHA256, pobieranie eksportów po uwierzytelnieniu. Kolor skóry
+twarzy jest wypalany do atlasu bez dodawania oświetlenia sceny. Materiały
+projekcyjne ubrania nadal mają ograniczenia FBX/OBJ; nie każdy shader jest
+równoważny. Ponowny eksport nie tworzy nowego detalu ani podobieństwa twarzy.
+Poprawiono powieki, układ włosów i dopasowanie kołnierza. Nieudana korekta
+przywraca wszystkie formaty i tekstury. Instalator sprawdza komplet eksportów;
+nie wywołuje płatnego AI. Samo pobranie ZIP nie aktualizuje Oracle ani strony.
+Paczka jest sprawdzona lokalnie; instalację na konkretnej VM potwierdza dopiero
+FROGE_V20_OK po jej wykonaniu. Limity kosztu i czasu nie zostały podniesione.
 
 Prześlij froge-v20.zip do Oracle Cloud Shell (Menu > Upload), potem:
 python3 -m zipfile -e "$HOME/froge-v20.zip" "$HOME/froge-v20"

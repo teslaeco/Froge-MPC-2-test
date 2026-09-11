@@ -1,4 +1,426 @@
+## 2026-09-11 — v24 timeout recovery fix packaged
+
+- User reported the generic timeout screenshot. Live Studio confirms Oracle v23.
+  The v23 catch-all erased the failing stage; the precise incident stage and
+  failed job ID cannot be recovered from that screenshot. No new paid job run.
+- Responses streaming now returns at response.completed, independently of HTTP
+  socket closure; incomplete responses remain failures with retained draft data.
+- Photo planning: 900 s (was 600); text planning remains 600; visual review keeps
+  240 s. Token caps and no automatic retry after timeout are unchanged.
+- Blender writes atomic, hash-bound checkpoints after core GLB and interchange
+  export. On timeout the current verified GLB can survive unfinished exports or
+  review. Each build clears its old checkpoint; stale/corrupt files are rejected.
+- Identical retries after a timeout reuse a valid saved scene without new AI.
+  Error messages and failure.json identify the phase; failure timings persist.
+- 58 Python test executions passed, including real local SSE with an open HTTP
+  connection, partial-stream failure, current/stale model checkpoint behavior,
+  saved-plan recovery and updater rollback. Native Blender 4.3 verified exports,
+  projection and checksums of geometry/projection model checkpoints.
+- Complete froge-v24.zip: 55 source-verified files, 15,510,834 bytes, SHA-256
+  523ffc25787a4aab7a4baa6f6ce733e21280597c6055969b9b1dc53c82af7e58.
+  ZIP and FORGE-v24-instrukcja.md successfully saved for download.
+- v24 is NOT installed on Oracle in this session; Site remains unchanged.
+  No claim of successful recovery of the user's live job or improved likeness.
+- Runtime source parent: 93720297e3f07c5b4c5beb7c916ca4555b9eee68.
+  Install command is in docs/V24_TIMEOUT_FIX.md. PR #9 remains unmerged.
+
+## 2026-09-11 — v23 download delivered after explicit user retry
+
+- User explicitly requests the v23 download and Oracle command again, with an
+  urgent contest deadline and limited funds. Reused the already verified ZIP.
+- Confirmed successful saves for froge-v23.zip and FORGE-v23-instrukcja.md;
+  both ordered results succeeded and local identity metadata was applied.
+  No regeneration or archive change: 15,508,252 bytes, SHA-256
+  f83e549f9aad15ba521a0f2e017c1c8dc2f8702a989ac9a0fdaf7661de9e792c.
+- Delivered the actual ZIP link and the two Cloud Shell install commands.
+  Installation remains user-side; no FROGE_V23_OK confirmation this turn.
+- Current Sites metadata confirms Site version 38. Fresh canonical-source
+  clone with a refreshed credential exceeded the 45 s limit (exit 124).
+  No Site source modification/deployment or audience change occurred.
+  The publication does not declare a Sites HTTP MCP server; existing WebMCP
+  page tools are a separate integration.
+- No new paid AI generation, new model or additional limit increase was made.
+  Next required evidence: Oracle FROGE_V23_OK and actual v23 reference renders.
+- Runtime source is saved in PR #9 at 335409a4587295f9534e8e6d4c99d3b3410d6e81.
+  Package is available; visual acceptance and PR merge remain pending.
+
+## 2026-09-11 — v23 freeform and photo projection update prepared
+
+- User requests broader, more faithful reconstruction for different uploaded
+  objects while retaining Astra + Blender. Meshy remains removed.
+- Scene v2 adds bounded surface_grid and contour_loft geometry. New photo jobs
+  require camera/mask reference_views, with source hash checks, multiple views,
+  face orientation and BVH depth tests. Hidden faces retain their materials.
+- Added per-face colour UV consolidation for FBX/OBJ, private quality reports,
+  600 s planning + 240 s visual assessment, and 600+300 s Blender budgets.
+  A successful file is never promoted to automatic likeness acceptance.
+- 62 Python test executions passed. Native Blender 4.3 verified manifold
+  surfaces, front/back image assignment, occlusion rejection, UV restoration
+  and FBX reimport. The separate installer fixture has 196 vertices / 364
+  triangles and correctly projects two faces. These are authored test assets,
+  not new Astra generations or proof of universal reconstruction quality.
+- Full froge-v23.zip: 54 source-verified files, 15,508,252 bytes, SHA-256
+  f83e549f9aad15ba521a0f2e017c1c8dc2f8702a989ac9a0fdaf7661de9e792c.
+  Packaging compiles the Python files, verifies payload hash and ZIP integrity.
+- Oracle v23 is NOT installed; last confirmed worker v22 and Site v38 remain.
+  No new Site source checkout/deployment was attempted here after the prior
+  canonical Git HTTP 500. No new paid AI generation was started this stage.
+- Artifact save returned HTTP 502 with uncertain commit outcome; filename
+  lookup found no matching new artifact. No duplicate write was attempted.
+  Complete ZIP and instructions remain in scratch/deliverables; source and
+  packager are being saved to the authorized GitHub PR.
+- Source starts from PR head 592710412a96c972c0437ab016aab3967428445b.
+- Report: docs/V23_UPDATE.md; execution receipt: docs/V23_EXECUTION.json.
+  After installation, real Astra tests on a person, hard-surface object and
+  organic object remain necessary. PR #9 remains open pending visual acceptance.
+
+## 2026-09-11 — actual Astra v22 reference test completed; visual acceptance failed
+
+- Native FBX review found colour loss from vertex-colour/photo shader mixes.
+  Local emission bake to a new 4096px atlas and explicit UV ordering restored
+  main colours. The atlas adds no source detail; fine texture/shader differences
+  remain. Final local FBX is 31,402,300 bytes; actual-model reimport retains all
+  594,064 triangles and 103 UV objects, bounds error 8.94e-8 m.
+- Fixed invalid RNA references when removing UV layers in scene_exports.py;
+  native actual-model export/reimport and 11 export/material tests pass.
+  This small code fix is not installed on Oracle or in the prior v22 ZIP.
+  Original installer verification applies to its packaged source snapshot.
+
+- Live job 1dc26a4a-f8f4-480b-ba51-524d558ff355 succeeded in 824.4 seconds:
+  AI 600.0 s, Blender 224.1 s. Additional Astra visual review did not finish
+  within the shared budget; the original generated model was retained.
+- Downloaded actual Oracle GLB, 26,650,972 bytes, SHA-256
+  2cc3c67497a55e9c1d967ceba84d21b6cd5172cb4529759392134c4aaca63fb2.
+  594,064 instantiated triangles (589,492 in unique meshes), 103 mesh objects,
+  94 unique meshes, 102 unique UV primitives, 12 embedded image assets;
+  maximum edge 2048 px. The supplied reference remains 1229x1536 in the GLB.
+  This result has no 4K or 8K texture maps.
+- Independently rendered actual GLB front/profile/back/full in Blender 4.3,
+  640x800, Cycles 24 samples. Visual quality is NOT accepted: generic face,
+  helmet-like updo, skin-colour contamination on the collar, simplified rear
+  cape and material response/proportions differing from the reference.
+- GLB metadata confirms registered_reviewed_reference, 478 saved measurements,
+  live_face_detection=false. This successful known-image fit is not evidence
+  of arbitrary-photo reconstruction. Unseen back/lower body are inferred.
+- PR #9 remains open: user asked to merge when green, but visual acceptance
+  failed and GitHub has no CI workflows/check-runs. Functional local tests
+  passed, including 11 additional export/material tests in this review.
+- Site source clone with a renewed repo-scoped credential again failed with
+  HTTP 500 / expected packfile. No Site deployment or audience change. Site
+  remains v38; its /exports route returns not found although the GLB exists.
+- Download acknowledgement failed in Browser, but the original job-named GLB
+  was transferred to the shared downloads directory and its complete GLB
+  length/header were validated. API identity-less access returned 401; no
+  authentication rules were changed. No duplicate paid generation occurred.
+- Saved MCP2-test-Astra-v22.zip (71,859,937 bytes, 40 files) and three actual
+  GLB render images. The package contains original GLB, local FBX, original
+  and FBX texture images, verification data and the review. Follow
+  docs/reviews/astra-v22-live-2026-09-11.md for findings and next changes.
+
+## 2026-09-11 — v22 installation confirmed; live reference generation and PR review
+
+- User screenshot shows FROGE_V22_OK. Live Studio independently confirms Oracle
+  v22, photo support and gpt-6-astra using the existing OpenAI connection.
+- Uploaded the exact supplied 1229x1536 emerald character image through Studio;
+  submitted one new photo job: 1dc26a4a-f8f4-480b-ba51-524d558ff355.
+  View is three-quarter; prompt is 1326 characters. The job is generating.
+  No Meshy connection, repeated submission or replacement by an older model.
+- PR #9 title/body now describe v22 and actual validation. Head at review was
+  da985b79a4fd080bf25b019473584ee5bc9571ad; GitHub reports clean/mergeable,
+  zero reviews, zero check runs/statuses/workflow runs. No .github workflows
+  exist in this tree. User explicitly authorizes merge when checks permit.
+- 11 focused export/material-repair tests additionally passed in this review.
+- Source review: face has seven bounded parameters plus optional landmark fit;
+  couture uses authored garment tools. Max effort is not native image-to-3D.
+- WebMCP tools expose local scene editing, not the Oracle job lifecycle/export
+  report. The current browser reports modelContext unavailable; UI works.
+  Recommend authenticated job/status/cancel/export/quality tools and CI, then
+  broader image-conditioned geometry/UV/material fitting for general likeness.
+- Site remains v38. No Site deployment or audience change performed here.
+  Await the live job, inspect its actual GLB/textures and save the outcome before
+  claiming likeness. Do not submit a duplicate while this job is active.
+
+## 2026-09-11 — user correction: Astra only; Meshy integration retired in v22
+
+- User explicitly clarified: Meshy was a quality comparison, not permission to
+  replace Astra. Current requirement is Astra + Blender using existing OpenAI.
+- User screenshot confirms FROGE_V21_OK on Oracle; Meshy was not connected.
+- Removed the external provider implementation/UI and photo-readiness requirement.
+  Retired configuration/resume endpoints reject without forwarding credentials,
+  uploading images or calling another provider. Existing assets remain.
+- Restored Astra photo planning, identical-input offline render recovery,
+  per-image facial measurements and original texture/portrait compatibility gates.
+- Official gpt-6-astra docs confirm max effort; image calls now use max and a
+  24000-token ceiling, retaining the cumulative 600-second AI budget. This is
+  not a newly trained 3D model or proof of photographic output quality.
+- Actual review set now includes front, three-quarter, face, side and back.
+  Original/candidate backup and bounded single refinement remain in place.
+- 58 Python test executions and 63 UI/API tests passed; generator typecheck
+  passed. Native Blender rendered five real 640x800 test-cube views. No paid
+  AI generation, new character, likeness acceptance or Site deployment here.
+- Complete froge-v22.zip contains 48 byte-verified payload files and passes ZIP
+  integrity. Installer uses saved OpenAI, no third command or additional key;
+  progress appears every 15 seconds. See docs/ASTRA_EXECUTION.json.
+- V22 is not installed on Oracle yet. Previous Site source Git HTTP 500 was not
+  claimed fixed. Source changes build on PR #9 head 14701654a8de83fb8b90605f2175d5ddde6a2902.
+- Prior Meshy notes below are historical and superseded by this explicit request.
+
+## 2026-09-11 — v21 image-to-3D integration and installer completed; live execution blocked
+
+- General photo path now uses Meshy 7 Ultra (single/multi view, actual JPEG
+  bytes, preserved pose, no image enhancement or remesh, 4K/8K PBR requested).
+  No new photo-to-template fallback; text and explicit historical replay remain.
+- Meshy is configured separately via authenticated settings or getpass over SSH.
+  Readiness is independent of Astra. Remote task intent/ID persists; ambiguous
+  paid submissions are not repeated, and free result/export resume is explicit.
+- Original GLB and PBR maps retained, native FBX/OBJ/STL/BLEND exported, preview
+  textures reduced only in a separate GLB when necessary. Added authenticated,
+  streamed downloads for master, FBX, PBR archive and other completed formats.
+- 50 Python tests plus a new PBR-download test and 66 UI/API tests passed.
+  Typecheck of the materialized generation modules/dependencies passes. Full
+  deployed Site build was not run: its canonical Git clone returns HTTP 500.
+- Native Blender 4.3 check: 732 triangles retained across master/preview/FBX/OBJ/
+  STL, distinct-axis bounds preserved within 0.000001 m; texture 8192x64 remains
+  full size in master/FBX/OBJ while preview is 4096x32. These are authored TEST
+  objects, not neural generation or photographic likeness evidence. Separate
+  12-triangle textured installation fixture also passes native import/exports.
+- Full v21 installer: 49 payload files, rollback-safe worker install, secure
+  optional --connect-meshy. It tests a cube without calling paid AI. The update
+  package is not an installed worker. See IMAGE3D_EXECUTION.json for results.
+- No Meshy API connection found locally or in Site settings. 0 paid AI calls.
+  Oracle browser reports Site Unavailable; no SSH key available in this session.
+  Site source clone with renewed credential returned HTTP 500. Site stays v38;
+  no Oracle install, Site deployment, audience change or neural model produced.
+- Backend checkpoint is 759ac60f169ca7d694064a0cd56b5c0f8cb1a85f on PR #9.
+  Final integration source follows on the same branch. Do not regenerate or
+  re-deliver the old template model as a successful image-to-3D result.
+
+## 2026-09-11 — image-to-3D backend saved; integration in progress
+
+- User rejected procedural/composition-specific results. Photo path now requires
+  Meshy 7 Ultra and sends each subject's actual image bytes; no template fallback.
+- 37 offline provider/HTTP/render/export tests pass, as does Python compilation.
+- Full input GLB preserved; native Blender export stage added with separate
+  preview textures. Native import/export fixture and frontend wiring still pending.
+- Backend source saved on PR #9 as 759ac60f169ca7d694064a0cd56b5c0f8cb1a85f.
+- No Meshy connection found. No paid API call, neural model or likeness proof.
+- No Site deployment, Oracle install or access change. Site remains v38.
+- Continue docs/CODEX_IMAGE_TO_3D.md, frontend settings/downloads and v21 installer.
+
+## 2026-09-11 — geometry r2: model, exports and installer verified and saved
+
+- Implemented the user's requested repair, starting from the actual completed
+  Site job 3960f64c-eb60-432b-b1aa-8f831f7bf613 and its exact 1122x1402 photo.
+  Original GLB (23,801,248 bytes, 588,028 triangles) is retained locally.
+  Node metadata confirms the user's model had no measured face fitting.
+- New shared cervical pivot keeps the skull, eyes, hair and jewellery together;
+  lower neck remains anchored. Rear/side cape now has a curved cross-section,
+  shaped hem, fitted shoulder yoke, thin seams and a softer shared cloth finish.
+  Existing 16-material budget is retained. The first extra-material variant was
+  rejected by the real runtime, then corrected and regenerated successfully.
+- Registered 478-point measurement is reused only after the frame, face, fan and
+  garment agree with this previously measured composition, with SHA binding.
+  This is explicitly NOT live face detection for arbitrary photos. Different
+  compositions do not inherit these points. Face likeness remains approximate.
+- Final native Blender 4.3.0 build: 34.47 s, 305,299 vertices, 594,064 triangles,
+  103 objects, 14 image datablocks; 38,915,808-byte GLB. No paid AI request.
+  Measured residual RMS 2.3776 -> 0.3020 mm, no inverted fit triangles. This is
+  control-fit error, not proof of identity. Rear/lower body remain reconstructed.
+- Actual exported GLB rendered from front, profile, back and full three-quarter;
+  actual FBX front rendered after import. Neck/face/cape improvement inspected.
+  Remaining: exact facial likeness, updo and lip refinement, source lighting in
+  colour maps, inferred hidden shape, multi-material shader differences in FBX.
+- Native FBX, OBJ and STL reopen with exactly 594,064 triangles; world-bound
+  error below 0.0000003 m. FBX/OBJ include the actual baked face-colour texture.
+  This verifies exports, not full shader equivalence or commercial print readiness.
+- 43 unique focused Python tests passed across runs. The dependency/package test
+  was rerun successfully after rebuilding the final archive. Full v20 installer
+  has 46 byte-matched files, compiles and passes ZIP integrity; capability gate
+  requires portraitGeometryRevision=2 and registeredReferenceRevision=1.
+  Payload SHA256: 8ab5c5e795dd83dc8e46ab8714780b7497460cc28af6235f1d2b93c9af88f415.
+- Durable source checkpoint parent e0ad28a7903745404238e3b293b76cbeed0b2747
+  is on existing PR #9. Final source correction and preview helper follow it.
+  No merge, Oracle installation, Site source deployment or access change here.
+- Four artifact saves succeeded with local identity metadata:
+  froge-v20.zip (15,492,429 bytes): libfile_13dffd55f64c819193134b69232c0de0 v3;
+  MCP2-model-geometria-r2.zip (153,448,370 bytes): libfile_211a340af5a48191b419584acb9f05c4 v0;
+  MCP2-model-geometria-r2.glb: libfile_fbccd9fab5c48191b45f296ab7f9f33c v0;
+  MCP2-porownanie-geometrii-r2.html: libfile_29a7cceab9fc819181c7293cc557e5d8 v0.
+  The ZIP includes every model format, textures, provenance and native reports.
+  HTML has nine complete embedded images, actual 640x840 renders, matching
+  cameras/lights and normalized 1.88 m comparison height (24 vs 32 samples).
+- Authored replacement scene uses the exact user-job photo; the original Oracle
+  plan JSON could not be accessed. This distinction is recorded with the model.
+- Full model imports successfully in the existing Site v38. Catalog rejects
+  files above its 24 MB cap, including re-export of a separate 1024 px preview.
+  Separate 512 px preview (19,790,144 bytes, same 594,064 triangles) successfully
+  saved as a draft named Szmaragdowa postac - poprawiona szyja i plecy (podglad).
+  Save and name confirmed after reloading the Site catalog. Download route:
+  /api/commerce/models/a6483e30-bd26-4e65-945a-ab528fd079f8.glb
+  Full masters retain their original textures. No store listing was published.
+  Oracle Console remains unavailable here; installing the saved update package
+  is still needed for future generations.
+
+## 2026-09-11 — OpenImageDenoise review failure: verified fix
+
+- Screenshot and current Site DB confirm failed job
+  4c950a69-8729-4162-ab80-c9860fa76648, updated 2026-09-11T14:10:30.420Z:
+  runtime/review_views.py forced denoising, but the Oracle Blender build has no
+  OpenImageDenoise support. This occurs after the export stage in runtime/run.py;
+  the actual Oracle artifact files have not been inspected from this session.
+- Parent remote PR #9 head: a88207de480a5f982edc0ac69032a19e41c0be69.
+- Added OIDN build detection; CPU OIDN/12 samples when supported and 64 CPU
+  samples without denoising otherwise. Recognized capability failure retries only
+  that frame once. Atomic PNG publication and explicit review settings report.
+- Optional preview failure no longer discards validated model exports. It records
+  an unavailable review and removes stale PNGs; missing views stop visual AI calls.
+- Exact retry after the latest matching OIDN failure now reuses its validated saved
+  plan and original photos, with no AI request even if AI is offline. Different
+  prompt/photo metadata/bytes do not reuse it. Original failed job stays intact.
+- Worker health and installer require reviewRenderRevision=1. Installer now also
+  exercises three real GLB preview renders, retaining the existing resource budget.
+- 56 focused Python tests PASSED, including identical-photo/offline recovery,
+  changed-input rejection and idempotency. Native Blender 4.3.0 PASSED: three
+  actual 640x800 PNGs at 64 samples/2 CPU threads with the unsupported-OIDN
+  branch forced; all images decoded. GLB/BLEND/FBX/OBJ/STL remain valid files
+  after an injected optional preview failure. Local Blender includes OIDN;
+  this is a tested compatibility branch, not an Oracle ARM installation test.
+- Complete updated froge-v20.zip verified: all 45 embedded source files match,
+  Python compiles, ZIP integrity passes, health revision and three-view installer
+  gate are present. Archive bytes: 15481101.
+  Payload SHA256: 7ca25b99f5ca0eb9ae07e7090bf09a17e9190def3c660bd053080e01d2f38ab8.
+- No paid AI calls, Oracle installation, Site deployment or public access change
+  performed here. Existing installation-access block persists. Complete and save
+  the package, install on Oracle, then retry the unchanged failed request.
+
+## 2026-09-11 — missing material error repaired (materialRepairRevision 1)
+
+- User screenshot and the existing Site DB both confirm failed job
+  6fe3f4c4-93ce-4e00-b66c-e0cb9f01bb8c: `Nieznany material: eyes_grey_green`.
+  The raw Oracle scene response was not accessible; do not claim its exact palette.
+- Based on PR #9 head d98c38dc507b8d88019020b94fd285f7dbf3bc1a. Validator now
+  reports all missing bindings. The existing second planning attempt repairs only
+  an eight-slot palette and required bindings; original geometry is retained,
+  then full scene/anatomy validation runs. Original request/photos are retained.
+  Invalid repairs fail without a third planning attempt. Both AI providers receive
+  the constrained repair schema; no paid API requests were made during this fix.
+- 53 focused Python tests PASSED, including exact eyes_grey_green reproduction,
+  original geometry preservation, nine references sharing eight slots, invalid
+  bindings/colors/duplicate fields, anatomy enforcement, both providers, and real
+  SQLite worker lifecycle with mock AI/Blender. The test FROGE_UPDATE_OK output is
+  from a mocked update test, NOT proof of an Oracle installation.
+- Worker health advertises materialRepairRevision=1; generated installer requires
+  this value from the running service. Original scene, palette response and
+  material-repair.json remain in job state. Color fidelity is not independently
+  verified. Existing failed jobs are not automatically rerun.
+- Complete froge-v20.zip rebuilt; all 45 embedded files exactly match source,
+  Python files compile, ZIP integrity and installer capability check pass.
+  Payload SHA256: ccc8064d1a836d9673c379aed6739dfe684f82862e4cec81dd77717057145182.
+- This source/package fix is NOT installed on Oracle. Existing Site remains v38
+  and owner-only. Prior source-clone HTTP 500 and inaccessible Oracle Console
+  prevent installing/deploying here; the current worker did respond to this job.
+  Preserve current Site and authorized public-release goal. Next: install updated
+  worker, verify materialRepairRevision=1, then retry and inspect the real model.
+
+## 2026-09-11 — generator and downloadable exports executed (after 5138178)
+
+- Continued at the user's instruction to execute the work directly. Parent remote
+  commit: 51381781f42130e0508afb7ac0e0ccd5db98bf20, same PR #9, no merge.
+- Changed the reusable portrait/couture runtime: neutral lid-template alignment,
+  raised/swept crown, finer procedural hair fibres, darker hair and closer collar.
+  Rebuilt the original authored scene with 478 measured reference landmarks in
+  native Blender 4.3.0. No paid AI request or new Astra-generated scene was made.
+- Actual new GLB: 39,043,816 bytes, 591,960 triangles. Initial measured build was
+  31.27 s / 1,339,412 KiB peak RSS, before the later standalone skin-bake exports;
+  this is not an Oracle performance measurement. Inspected equal-camera front
+  renders before/after and profile. Visual improvement remains modest; this is
+  not accepted photographic likeness or newly recovered 8K texture detail.
+- Native export now additionally bakes the single-material anatomical head's
+  image-times-vertex colour via EMIT into a 2048 atlas, without new scene lighting.
+  Source illumination remains. Other complex shaders and projected garment UVs
+  are not declared equivalent; they need separate texture baking/unwrapping.
+- Actual FBX render exposed blank eyes despite correct texture bytes. Fixed native
+  FBX's missing UVSet bindings by temporarily placing the colour UV channel first
+  on single-material meshes. Actual render caught a fan regression when doing this
+  across multi-material meshes; those keep original UV order and report a limitation.
+  Extended the packed-image native fixture with a decoy first UV layer; exact
+  geometry/UV/texture/material comparisons, original-state restoration and STL
+  millimetres pass. New reusable existing-asset reimport and rendering scripts added.
+- Added authenticated completed-job export listing and downloads (FBX, OBJ ZIP,
+  STL, BLEND, scene JSON). OBJ includes only declared texture files. Hash/size,
+  state, missing-file and symlink checks reject incomplete or changed output.
+  Downloads never call AI. Existing GLB 48 MiB gate remains; interchange aggregate
+  download limit is 256 MiB. Health now reports interchangeRevision=2.
+- Fixed visual-refinement rollback/cancellation to restore every format, texture
+  folder and review view, and remove candidate-only artifacts.
+- 78 focused Python tests passed, including real HTTP, archive integrity, queue,
+  rollback, update, photo fit and geometry checks. A mocked update test prints
+  FROGE_UPDATE_OK; that message is NOT evidence of a real Oracle installation.
+- Added scripts/package-worker.py to build complete fresh/update/one-file worker
+  packages independently of frontend/add-on assets. Installer compiles and payload
+  bytes match all 45 runtime files; installation also checks all generated formats
+  and the new health revision. Reproducible binary packages are deliverables, not
+  committed source. Packages have not been installed on the actual Oracle VM.
+- Existing Site still v38/owner-only, source 868131794689da730f851a8845ff951f2da8c92b.
+  Valid fresh-credential source clone attempts (including protocol v0) return
+  HTTP 500 / expected packfile. Oracle Console browser access returns Site
+  Unavailable. The source-access and installation blocks persist; no existing UI
+  was replaced, no Site deployed and no public access switch was performed.
+- Publication authorization persists after required fixes. Remaining: recover
+  current Site source, connect export downloads and explicit example selection,
+  install worker, perform a real new-prompt generation, inspect materials and
+  likeness, then publish the same Site to the authorized public audience.
+
+## 2026-09-11 — export texture repair executed in PR #9
+
+- User explicitly asked this assistant to execute the continuation, not just draft it.
+- Starting remote head: a8089e19f20eadc4b25cc54d23a9c7c26193da68, PR #9 branch
+  codex/przygotuj-i-opublikuj-mcp-2, base codex/reference-fidelity-4k-8k.
+- Reproduced original native FBX image aliasing and missing OBJ textures using the
+  unchanged model.blend from FORGE-modelka-4K.zip. Repaired packed/generated image
+  transfer with unique files and temporary file-image bindings; original node
+  bindings and selection are restored. Optional failures preserve GLB/BLEND and
+  produce an explicit partial report. JSON is listed only when written; runtime
+  uses the current output folder's scene.json.
+- Native Blender 4.3.0 two-image fixture PASSED: FBX with only the FBX file available,
+  relocated OBJ+MTL+textures, exact image bytes/materials, vertices, UVs, triangles,
+  master state and STL millimetres. Five focused failure-handling tests PASSED.
+- Actual unchanged character: FBX, OBJ and STL reimport with 592136 triangles.
+  FBX/OBJ now recover 13 distinct material image entries instead of aliased/missing
+  maps. Fourteen original images are delivered. The skin atlas behind a complex
+  shader is not directly bound by these native exporters; this is still an
+  appearance limitation, not a claim of complete PBR or reference likeness.
+- Native fixture and verification report are committed with this checkpoint.
+- Current Site remains owner-private v38. Another authorized clone of its source
+  repository failed with HTTP 500 / expected packfile. Do not overwrite current UI
+  with this older GitHub mirror. Sites reports no server-MCP declaration; existing
+  browser WebMCP and the product name MCP 2 are separate from that capability.
+- No Oracle installation, Site deployment, paid AI call or visual geometry fix is
+  claimed in this checkpoint. Continuing generator/model work next; source access
+  and Oracle installation remain to be resolved before public release.
+
 # Generator upgrade verified — follow-up to 2dd0fb9
+
+## 2026-09-11 — interchange export source checkpoint; deployment still blocked
+
+- Added one-master-scene worker export paths for FBX, OBJ+MTL and millimetre-valued
+  STL alongside the existing GLB/BLEND and validated Froge scene JSON. The export
+  report states axis, rig, texture and shader boundaries and does not call STL
+  textured or print-ready. `scene_exports.py` is included in the worker manifest.
+- Two isolated unit tests pass and production typecheck passes. Native Blender is
+  absent from this restored workspace, so FBX/OBJ/STL reopen tests and an updated
+  worker ZIP were **not** completed here; this source checkpoint is not an Oracle
+  installation or a verified multi-format artifact delivery.
+- The checkout has no Git remote or GitHub credentials. The available toolset has
+  no Sites or Oracle operation. Current Sites v38 source therefore could not be
+  recovered, renamed, made public or redeployed, and Oracle health/capabilities
+  could not be queried. Preserve v38 rather than publishing this older UI.
+- The requested GPT-6 Astra runtime/reasoning setting is not exposed to this
+  session and was not claimed. No AI API call and no new cost were incurred.
+- Next required stage: recover Sites v38 source and native Blender, run every
+  export/reimport comparison (FBX importer identified), generate a second prompt,
+  then install with rollback, verify Oracle health/generation, and only afterward
+  publish the same Site publicly as MCP 2 and test anonymous desktop/mobile access.
 
 ## 2026-09-11 — requested model preview; website update blocked
 

@@ -19,7 +19,7 @@ class VisualReviewTests(unittest.TestCase):
         self.folder=Path(self.temp.name);(self.folder/'review').mkdir()
         self.scene=parse_scene((Path(__file__).parent/'examples/couture-fan-v20.scene.json').read_text())
         self.cancel=threading.Event()
-        for label in ('front','three-quarter','face'):
+        for label in ('front','three-quarter','face','side','back'):
             (self.folder/'review'/(label+'.png')).write_bytes(b'\x89PNG\r\n\x1a\n'+b'0'*24)
         for name in ('scene.json','model.glb','model.blend','result.json'):(self.folder/name).write_bytes(b'original-'+name.encode())
 
@@ -27,10 +27,10 @@ class VisualReviewTests(unittest.TestCase):
         value=deepcopy(scene or self.scene);value['parts'][0]['fan']['radius']=.34
         return json.dumps({'action':'refine','issues':['Fan too large'],'scene':value})
 
-    def test_reference_and_three_actual_views_are_sent_without_external_urls(self):
+    def test_reference_and_five_actual_views_are_sent_without_external_urls(self):
         content=review_content('Original request',[],self.folder,self.scene)
         images=[c['image_url'] for c in content if c.get('type')=='input_image']
-        self.assertEqual(len(images),3)
+        self.assertEqual(len(images),5)
         self.assertTrue(all(x.startswith('data:image/png;base64,') for x in images))
 
     def test_refinement_uses_remaining_cumulative_budgets_and_retains_original(self):
@@ -44,13 +44,24 @@ class VisualReviewTests(unittest.TestCase):
         self.assertFalse(report['likeness_verified'])
 
     def test_failed_rebuild_restores_the_previous_model_and_scene(self):
+        (self.folder/'model.fbx').write_bytes(b'original fbx')
+        (self.folder/'textures').mkdir()
+        (self.folder/'textures/skin.png').write_bytes(b'original skin')
         def fail(_):
             (self.folder/'model.glb').write_bytes(b'broken candidate')
+            (self.folder/'model.fbx').write_bytes(b'new fbx')
+            (self.folder/'model.obj').write_bytes(b'new obj with no original')
+            (self.folder/'textures/skin.png').write_bytes(b'new skin')
+            (self.folder/'textures/stale.png').write_bytes(b'new texture')
             raise ValueError('geometry failed')
         _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,lambda *_:self.response(),fail)
         self.assertEqual(report['status'],'original_retained')
         self.assertEqual((self.folder/'model.glb').read_bytes(),b'original-model.glb')
         self.assertEqual((self.folder/'scene.json').read_bytes(),b'original-scene.json')
+        self.assertEqual((self.folder/'model.fbx').read_bytes(),b'original fbx')
+        self.assertEqual((self.folder/'textures/skin.png').read_bytes(),b'original skin')
+        self.assertFalse((self.folder/'model.obj').exists())
+        self.assertFalse((self.folder/'textures/stale.png').exists())
 
     def test_cancellation_after_provider_does_not_start_a_rebuild(self):
         def generate(*_):self.cancel.set();return self.response()
@@ -71,6 +82,14 @@ class VisualReviewTests(unittest.TestCase):
         generate=Mock();build=Mock()
         _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,generate,build,599,899)
         self.assertEqual(report['status'],'budget_exhausted');generate.assert_not_called();build.assert_not_called()
+
+    def test_keep_can_be_assessed_without_repeating_scene_or_rebuild_budget(self):
+        generate=Mock(return_value=json.dumps({'action':'keep','issues':['Requires new geometry'], 'scene':None}))
+        build=Mock()
+        _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,generate,build,600,899,ai_limit=840)
+        self.assertEqual(generate.call_args.args[2],240)
+        self.assertTrue(report['assessment_completed']);self.assertFalse(report['likeness_verified'])
+        build.assert_not_called()
 
 
 if __name__=='__main__':unittest.main()

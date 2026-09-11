@@ -35,16 +35,18 @@ def head(p, skin, eyes, hair, mesh_object, ellipsoid):
     glam=p.get('makeup')=='soft_glam'
     from reference_surfaces import has_guide
     couture_orbits=photo_fit is not None and has_guide(photo_fit)
-    # The reference's upper lid covers more of the iris. Narrow the connected
-    # lid mesh before fitting brows/lashes; keep both globes and measured gaze.
-    lid_strength=.48 if couture_orbits else .36 if glam else .20
-    upper_lid_bias=.12 if couture_orbits else .08 if glam else 0
+    # Measured residuals are calibrated against the neutral soft-glam template.
+    # An extra couture squint changed that starting surface and closed the eyes
+    # a second time. Keep its exact lid basis before applying measured residuals.
+    lid_strength=.36 if glam else .20
+    upper_lid_bias=.08 if glam else 0
     for side in ('l','r'):
         center=anatomy.landmark(side+'-eye',p['presentation'])
         for vertex in obj.data.vertices:
             vertex.co=relaxed_lid_point(vertex.co,center,lid_strength,upper_lid_bias)
     obj.data.update()
-    obj['reference_lid_aperture_authored']=bool(couture_orbits)
+    obj['reference_lid_aperture_authored']=False
+    obj['lid_template_basis']='neutral-soft-glam' if photo_fit is not None else 'authored-style'
     obj['anatomical_head']=True;obj['quality_revision']=2
     # One front-facing iris per globe, including from the side and rear.
     for eye in parts:
@@ -327,23 +329,30 @@ def head(p, skin, eyes, hair, mesh_object, ellipsoid):
     return parts
 
 
+def portrait_transforms(p):
+    """One rotation shared by the skull, eyes, hair and couture jewellery."""
+    eye_center=(anatomy.landmark('l-eye',p['presentation'])+anatomy.landmark('r-eye',p['presentation']))*.5
+    neutral=Matrix.Translation(p['center'])@Matrix.Scale(p['scale'],4)@Matrix.Translation(-eye_center)
+    pivot=neutral@Vector((0,-.015,1.565)) if 'makeup_rgb' in p else Vector(p['center'])
+    turn=Matrix.Translation(pivot)@Euler(p['rotation']).to_matrix().to_4x4()@Matrix.Translation(-pivot)
+    return neutral,turn,turn@neutral
+
+
 def build_portrait(p, materials, mesh_object, ellipsoid):
     parts=head(p,materials[p['skin_material']],materials[p['eye_material']],materials[p['hair_material']],mesh_object,ellipsoid)
     # Primitive scale/location setters do not synchronously refresh matrix_world.
     # Reading a stale matrix here can turn an eyeglass lens into a metre sphere.
     bpy.context.view_layer.update()
-    eye_center=(anatomy.landmark('l-eye',p['presentation'])+anatomy.landmark('r-eye',p['presentation']))*.5
-    transform=Matrix.Translation(p['center'])@Euler(p['rotation']).to_matrix().to_4x4()@Matrix.Scale(p['scale'],4)@Matrix.Translation(-eye_center)
+    neutral,_,transform=portrait_transforms(p)
     for obj in parts:
         if obj.get('anatomical_head') and 'makeup_rgb' in p:
             # Turn the skull while anchoring the lower neck in its garment.
             # Rotating the entire cut neck about the eyes exposed its jagged
             # lower boundary outside the standing collar at stronger rolls.
-            neutral=Matrix.Translation(p['center'])@Matrix.Scale(p['scale'],4)@Matrix.Translation(-eye_center)
             inverse=transform.inverted();anchored=0
             for vertex in obj.data.vertices:
                 v=vertex.co.copy()
-                weight=max(0.,min(1.,(v.z-1.485)/.110));weight=weight*weight*(3-2*weight)
+                weight=max(0.,min(1.,(v.z-1.485)/.090));weight=weight*weight*(3-2*weight)
                 front=max(0.,min(1.,(-.065-v.y)/.045));front=front*front*(3-2*front)
                 chin=max(0.,min(1.,(v.z-1.530)/.040));chin=chin*chin*(3-2*chin)
                 weight+=(1-weight)*front*chin
@@ -351,6 +360,8 @@ def build_portrait(p, materials, mesh_object, ellipsoid):
                     vertex.co=inverse@((neutral@v).lerp(transform@v,weight));anchored+=1
             obj['neck_pose_anchored_vertices']=anchored
             obj['neck_pose_lower_anchor']=1.485
+            obj['neck_pose_revision']=2
+            obj['head_pivot_local']=[0,-.015,1.565]
             obj.data.update()
         obj.matrix_world=transform@obj.matrix_world
     return parts

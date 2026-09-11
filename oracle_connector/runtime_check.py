@@ -22,6 +22,10 @@ def available_memory_bytes():
 
 
 def job_memory_gib(folder):
+    import json
+    settings = Path(folder) / 'image3d-settings.json'
+    if settings.is_file():
+        return 8 if json.loads(settings.read_text()).get('texture_resolution') == '8k' else 4
     from runtime.reference_quality import requested_edge
     return 8 if requested_edge(folder) == 8192 else 4
 

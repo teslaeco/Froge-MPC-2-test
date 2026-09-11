@@ -15,8 +15,13 @@ FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'photo_input.py
 FILES += ('visual_review.py',)
 FILES += ('runtime/reference_surfaces.py','runtime/reference_quality.py','runtime/reference_match.py','runtime/assets/emerald-reference-signature.json')
 FILES += ('face_measurement.py','runtime/photo_face.py','runtime/photo_face_color.py','runtime/assets/face-template-feminine.json')
-FILES += tuple('runtime/'+name for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_orbits.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py','review_views.py'))
-EXPECTED_VERSION = 20
+FILES += ('runtime/assets/emerald-reference-landmarks.json',)
+FILES += tuple('runtime/'+name for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_orbits.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py','review_views.py','scene_exports.py'))
+FILES += ('image3d_fixture.py', 'runtime/imported_asset.py')
+FILES += ('generation_budget.py','quality_report.py','v23_fixture.py',
+          'runtime/freeform_geometry.py','runtime/projection_math.py','runtime/photo_projection.py')
+FILES += ('runtime/model_checkpoint.py',)
+EXPECTED_VERSION = 24
 EXPECTED_RENDERER_REVISION = 3
 
 
@@ -72,9 +77,9 @@ def update(source, target, verify=None):
             try:
                 with urllib.request.urlopen(request, timeout=2) as response:
                     health = json.loads(response.read(10000))
-                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2:
+                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('freeformGeometryRevision') == 1 and health.get('photoProjectionRevision') == 1 and health.get('photoReviewReservedSeconds') == 240 and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
                         print('FROGE_UPDATE_OK')
-                        print('Odswiez Froge. v20: dopasowanie sukni, kolor i makijaz w eksporcie oraz ocena renderow przez Astre. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Froge v24: naprawa timeoutu, zachowanie modelu i ponowienie zapisanego planu bez AI. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass

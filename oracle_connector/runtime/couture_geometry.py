@@ -66,6 +66,44 @@ def gown_point(z, angle, hem=.30, width=1., offset=.004):
             cy+(ry+offset+folds*.6)*math.sin(angle), z)
 
 
+def cape_point(t, u, hem=.30, width=1., side=False, offset=.004):
+    """Authored hanging cloth with a curved cross-section, never a rear plane.
+
+    The back is unobserved. Clearance is measured against the same gown
+    envelope; folds vary in phase and width instead of identical corrugations.
+    t runs shoulder to hem; u runs across the cloth, both in [0, 1].
+    """
+    if not 0 <= t <= 1 or not 0 <= u <= 1:
+        raise ValueError('Cape coordinates outside the cloth')
+    angle = (-.36 + .69*u) if side else (.30+(math.pi-.60)*u)
+    top = 1.415 - .021*u if side else 1.414+.029*math.sin(math.pi*u)**2
+    bottom = .075 + (.065*(1-u) if side else .085*abs(2*u-1)**1.7)
+    z = top*(1-t)+bottom*t
+    rx, ry, cy = profile(z, hem, width)
+    # A loose cut hangs outside the waist while resting close to the shoulders.
+    hang_x = .180*width*(1-t)+(hem+.028)*t
+    hang_y = .108*(1-t)+.262*t
+    wave = (.003+.009*t)*(.67*math.sin(11*angle+.55*t)+
+                          .33*math.sin(19*angle-1.1*t))
+    radius_x = max(rx+.024,hang_x)+wave
+    yoke=min(1.,t/.16);yoke=yoke*yoke*(3-2*yoke)
+    radius_y = (ry+offset+.004)*(1-yoke)+(max(ry+.026,hang_y)+wave*.7)*yoke
+    x,y=radius_x*math.cos(angle),cy+radius_y*math.sin(angle)
+    # Protect fold valleys at the widest allowed gown offset, including its
+    # own folds. Uniform radial projection preserves the drape's cross-section.
+    ratio=envelope_ratio((x,y,z),hem,width,offset+.005)
+    if ratio<1:x,y=x/ratio,cy+(y-cy)/ratio
+    return (x,y,z)
+
+
+def cape_surface(hem=.30, width=1., side=False, rows=52, cols=65,offset=.004):
+    vertices=[cape_point(j/(rows-1),k/(cols-1),hem,width,side,offset)
+              for j in range(rows) for k in range(cols)]
+    faces=[((j-1)*cols+k-1,j*cols+k-1,j*cols+k,(j-1)*cols+k)
+           for j in range(1,rows) for k in range(1,cols)]
+    return vertices,faces
+
+
 def gown(hem=.30, width=1., offset=.004, thickness=.002, sides=96, rings=96):
     if not .001 <= thickness <= .006 or not .001 <= offset <= .018:
         raise ValueError('Garment clearance/thickness outside fitted range')
