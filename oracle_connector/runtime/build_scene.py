@@ -5,10 +5,20 @@ import random
 import bpy
 from mathutils import Vector
 from detailed_geometry import loft, revolve, person, extrusion
-from couture import reference_character, rotor
 
 
-def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes):
+def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes, reference_folder=None):
+    from portrait import build_portrait
+    from portrait_hands import build_hand
+    from photo_face import load_fit
+    import json
+    from reference_quality import requested_edge
+    bpy.context.scene['material_max_edge'] = requested_edge(reference_folder) if reference_folder else 2048
+    face_fit, fit_report = load_fit(reference_folder, scene['parts'])
+    bpy.context.scene['photo_face_fit'] = json.dumps(fit_report)
+    bpy.context.scene['expected_heads']=sum(p['kind'] in ('person','portrait','reference_character') for p in scene['parts'])
+    bpy.context.scene['expected_hands']=sum(2 if p['kind'] in ('person','reference_character') else 1 if p['kind']=='anatomical_hand' else 0 for p in scene['parts'])
+    bpy.context.scene['reference_couture']=any(p['kind']=='reference_character' for p in scene['parts'])
     materials, objects = {}, {}
     for m in scene['materials']:
         material = make_material(m['name'], m['rgb'], m['pattern'], m['roughness'], m['metallic'])
@@ -84,16 +94,37 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
         return [trunk_obj, crown]
 
     for p in scene['parts']:
+        if face_fit is not None and p['name'] == face_fit.part_name:
+            p = {**p, '_photo_fit': face_fit}
         kind, name = p['kind'], p['name']
         material = materials.get(p.get('material'))
+        if kind=='reference_character':
+            from couture import reference_character
+            objects[name]=reference_character(p,materials,mesh_object,tube,ellipsoid,join_meshes)
+            continue
+        if kind=='rotor':
+            from couture import rotor
+            objects[name]=[rotor(p,material,materials[p['accent_material']],mesh_object)]
+            continue
+        if kind=='radial_copies':
+            from couture_geometry import radial_positions
+            source=objects[p['source']][0];copies=[]
+            for i,center in enumerate(radial_positions(p['count'],p['radius'],p['start_angle'],p['arc_angle'],p['center'])):
+                obj=source.copy();obj.name=name+'-%d'%i;obj.location=center
+                bpy.context.collection.objects.link(obj);copies.append(obj)
+            objects[name]=copies
+            continue
+        if kind=='portrait':
+            objects[name]=build_portrait(p,materials,mesh_object,ellipsoid)
+            continue
+        if kind=='anatomical_hand':
+            objects[name]=build_hand(p,materials[p['skin_material']],materials[p['nail_material']],mesh_object)
+            continue
         if kind == 'oak':
             objects[name] = oak(p)
             continue
         if kind == 'person':
             objects[name] = person(p, materials, mesh_object, tube, ellipsoid, join_meshes)
-            continue
-        if kind == 'reference_character':
-            objects[name] = reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes, loft)
             continue
         if kind == 'garland':
             base = Vector(p['center'])
@@ -122,14 +153,15 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
             obj.data.materials.append(material)
         elif kind == 'tube':
             obj = tube(name, p['points'], p['radii'], material, p['sides'])
+        elif kind in ('surface_grid','contour_loft'):
+            from freeform_geometry import build
+            obj = build(p, material, mesh_object)
         elif kind == 'mesh':
             obj = mesh_object(name, p['vertices'], p['faces'], material)
         elif kind == 'loft':
             obj = loft(name, p['sections'], p['sides'], material, mesh_object)
         elif kind == 'extrusion':
             obj = extrusion(p, material, materials[p['cap_material']], mesh_object)
-        elif kind == 'rotor':
-            obj = rotor(p, material, materials[p['accent_material']], mesh_object)
         elif kind == 'lathe':
             obj = revolve(name, p['profile'], p['center'], p['sides'], material, mesh_object)
         elif kind == 'copies':
@@ -143,19 +175,13 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes)
                 copies.append(obj)
             objects[name] = copies
             continue
-        elif kind == 'radial_copies':
-            source = objects[p['source']][0]
-            copies = []
-            for i in range(p['count']):
-                angle = p['start_angle'] + (p['arc_angle'] * i / max(1, p['count'] - 1))
-                obj = source.copy(); obj.data = source.data
-                obj.name = name+'-%d'%i
-                obj.location = Vector(p['center']) + Vector((p['radius']*math.cos(angle), 0, p['radius']*math.sin(angle)))
-                obj.rotation_euler[1] = -angle
-                bpy.context.collection.objects.link(obj); copies.append(obj)
-            objects[name] = copies
-            continue
         else:
             raise ValueError('Unsupported scene part')
         objects[name] = [obj]
+    if face_fit is not None:
+        fit_report.update(face_fit.report)
+        bpy.context.scene['photo_face_fit']=json.dumps(fit_report)
+    from photo_projection import apply_projections
+    projection_report=apply_projections(scene.get('reference_views',[]),objects,reference_folder)
+    bpy.context.scene['photo_projection']=json.dumps(projection_report)
     return objects

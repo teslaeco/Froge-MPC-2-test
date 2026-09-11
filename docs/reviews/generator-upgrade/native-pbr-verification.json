@@ -1,0 +1,95 @@
+{
+  "revision": 2,
+  "requested_max_edge": 8192,
+  "textures": [
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture.png",
+      "source_size": [
+        8192,
+        8192
+      ],
+      "export_size": [
+        8192,
+        8192
+      ],
+      "resampled": false,
+      "upscaled": false,
+      "origin": "source_or_legacy",
+      "color_space": "sRGB",
+      "source_sha256": null,
+      "contains_photographed_lighting": false
+    },
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture_normal.png",
+      "source_size": [
+        4096,
+        4096
+      ],
+      "export_size": [
+        4096,
+        4096
+      ],
+      "resampled": false,
+      "upscaled": false,
+      "origin": "source_or_legacy",
+      "color_space": "Non-Color",
+      "source_sha256": null,
+      "contains_photographed_lighting": false
+    },
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture_metallic.png",
+      "source_size": [
+        4096,
+        4096
+      ],
+      "export_size": [
+        4096,
+        4096
+      ],
+      "resampled": false,
+      "upscaled": false,
+      "origin": "source_or_legacy",
+      "color_space": "Non-Color",
+      "source_sha256": null,
+      "contains_photographed_lighting": false
+    },
+    {
+      "name": "Meshy_AI_Emerald_Prism_Empress_0910195350_texture_roughness.png",
+      "source_size": [
+        4096,
+        4096
+      ],
+      "export_size": [
+        4096,
+        4096
+      ],
+      "resampled": false,
+      "upscaled": false,
+      "origin": "source_or_legacy",
+      "color_space": "Non-Color",
+      "source_sha256": null,
+      "contains_photographed_lighting": false
+    }
+  ],
+  "memory_budget": {
+    "source_pixels": 117440512,
+    "export_pixels": 117440512,
+    "estimated_peak_bytes": 6710886400,
+    "memory_limit_bytes": 8589934592,
+    "max_export_pixels": 201326592,
+    "estimate_is_measured_peak": false
+  },
+  "upscaling_used": false,
+  "likeness_verified": false,
+  "note": "4K/8K is a maximum texture edge, not recovered detail or render resolution.",
+  "reference_maps_only": true,
+  "transport_fixture": "cube",
+  "geometry_unchanged_by_texture_policy": true,
+  "rejected_4g_without_mutation": true,
+  "reimported": true,
+  "base_color_and_normal_bytes_preserved": true,
+  "roughness_and_metallic_channels_verified": true,
+  "glb_bytes": 107349060,
+  "glb_sha256": "52b2e92a1a7bfe347df5b00eb2c6b4e2b874d63ec5c64cb6e2e6b5fc308b68b5",
+  "blender": "4.3.0"
+}

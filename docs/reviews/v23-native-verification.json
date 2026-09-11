@@ -1,0 +1,68 @@
+{
+  "fixture_only": true,
+  "openai_calls": 0,
+  "likeness_test": false,
+  "geometry": {
+    "curved-panel": {
+      "vertices": 162,
+      "triangles": 320
+    },
+    "asymmetric-vessel": {
+      "vertices": 544,
+      "triangles": 1084
+    }
+  },
+  "shells_manifold": true,
+  "projection": {
+    "revision": 1,
+    "status": "projected_requires_visual_review",
+    "mapped_faces": 2,
+    "unmapped_faces": 1,
+    "source_images": [
+      {
+        "photo_index": 0,
+        "sha256": "a14ee24c8034c85ea4494d6c96a1c827e7386e88e9f3790e4d8cc2ec8efbe7ff",
+        "size": [
+          64,
+          64
+        ],
+        "resampled": false
+      },
+      {
+        "photo_index": 1,
+        "sha256": "128cffb408c33b23083236de529bcedf6a2e7aace7c90a932e079250d7e5122f",
+        "size": [
+          64,
+          64
+        ],
+        "resampled": false
+      }
+    ],
+    "regions": [
+      {
+        "part": "target",
+        "photo_index": 0,
+        "eligible_faces": 1,
+        "outside_mask": 0,
+        "back_facing": 1,
+        "occluded": 1
+      },
+      {
+        "part": "target",
+        "photo_index": 1,
+        "eligible_faces": 1,
+        "outside_mask": 0,
+        "back_facing": 2,
+        "occluded": 0
+      }
+    ],
+    "camera_estimates_verified": false,
+    "photographed_lighting_removed": false,
+    "likeness_verified": false,
+    "added_materials": 2,
+    "hidden_surfaces": "original materials retained; unobserved geometry remains inferred"
+  },
+  "fbx_triangles_before": 8,
+  "fbx_triangles_after": 8,
+  "per_face_uv_export_and_restore": true
+}

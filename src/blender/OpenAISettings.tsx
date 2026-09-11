@@ -5,14 +5,17 @@ export const oracleOpenAIUpdateCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ss
 ssh -T -o IdentitiesOnly=yes -o ConnectTimeout=20 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'python3 -m zipfile -e "$HOME/froge-oracle-openai.zip" "$HOME/froge-openai-update" && python3 "$HOME/froge-openai-update/apply_update.py"'`
 
 export const oracleRebuildUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-rebuild.zip').replaceAll('froge-openai-update', 'froge-rebuild-update')
-export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-portrait-v10.zip').replaceAll('froge-openai-update', 'froge-portrait-v10-update')
+export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-update.zip').replaceAll('froge-openai-update', 'froge-photos-v14-update')
+export const oracleRepairCommand = 'python3 "$HOME/froge-napraw-oracle.py"'
+export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v22.zip" "$HOME/froge-v22"\npython3 "$HOME/froge-v22/froge-v22.py"'
 
-export function GeometryUpdate() {
+export function GeometryUpdate({ required = true }: { required?: boolean }) {
+  const [copyNote, setCopyNote] = useState('')
   return <div className="blender-setup">
-    <strong>Zaktualizuj generator na Oracle</strong>
-    <p>Wersja 10 poprawia szyję i barki, dodaje krótkie włosy, koszulki z odkrytymi przedramionami oraz tekstury bawełny i denimu.</p>
-    <a href="/downloads/froge-oracle-portrait-v10.zip" download>Pobierz aktualizację generatora</a>
-    <details><summary>Jak zainstalować aktualizację?</summary><p>Prześlij ZIP w Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{oracleGeometryUpdateCommand}</pre><p>Po FROGE_UPDATE_OK odśwież stronę i utwórz nowy model. Zapisany klucz OpenAI i połączenie zostają zachowane.</p></details>
+    <strong>{required ? 'Przywróć Astrę do zdjęć · v22' : 'Pełna aktualizacja generatora · v22'}</strong>
+    <p>Astra Max analizuje zdjęcia i steruje budową modelu w Blenderze. Ocena obejmuje również profil i plecy. Aktualizacja korzysta z zapisanego klucza OpenAI i zachowuje wcześniejsze modele oraz eksport FBX.</p>
+    <a href="/downloads/froge-v22.zip" download>Pobierz pełną paczkę · v22</a>
+    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza import oraz eksport GLB i FBX na pliku testowym bez zapytania do AI. Po FROGE_V22_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
   </div>
 }
 
@@ -34,15 +37,13 @@ export function OpenAISettings({ connection, busy, onSaved }: { connection: Blen
       await blenderRequest('ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ provider, ...(value && provider === 'openai' ? { apiKey: value } : {}) }) })
       setApiKey('')
       await onSaved()
-      setNote(provider === 'openai' ? 'OpenAI podłączone. Możesz wygenerować model.' : 'Wybrano lokalne AI.')
+      setNote(provider === 'openai' ? 'OpenAI podłączone do tworzenia scen z opisu i zdjęć.' : 'Wybrano lokalne AI do opisu.')
     } catch (error) { setNote((error as Error).message) }
     finally { setSaving(false) }
   }
   if ((connection.connectorVersion || 1) < 4) return <div className="blender-setup">
     <strong>OpenAI · Astra</strong>
-    <p>OpenAI przygotuje instrukcje modelu, a Blender wykona je na Oracle. Najpierw zaktualizuj program na serwerze.</p>
-    <a href="/downloads/froge-oracle-openai.zip" download>Pobierz aktualizację OpenAI</a>
-    <details><summary>Jak zaktualizować Oracle?</summary><p>Anuluj aktywne zlecenie. W Oracle Cloud Shell wybierz Menu → Upload i prześlij pobrany ZIP. Następnie wklej to polecenie:</p><pre tabIndex={0}>{oracleOpenAIUpdateCommand}</pre><p>Po FROGE_UPDATE_OK odśwież stronę i podłącz klucz API w tym miejscu.</p></details>
+    <p>Połączony generator jest zbyt stary, aby wybrać OpenAI. Uruchom aktualizację v14 z instrukcji powyżej i sprawdź serwer ponownie.</p>
   </div>
   return <div className="blender-setup">
     <strong>OpenAI · Astra</strong>

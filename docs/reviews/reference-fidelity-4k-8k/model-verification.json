@@ -1,0 +1,464 @@
+{
+  "vertices": 304459,
+  "triangles": 592396,
+  "objects": 100,
+  "images": 14,
+  "portrait_quality": {
+    "revision": 2,
+    "heads": 1,
+    "eyes": 2,
+    "hands": 2,
+    "nails": 10,
+    "structural_checks_passed": true,
+    "likeness_verified": false
+  },
+  "characterStandard": 20,
+  "reference_likeness_verified": false,
+  "texture_quality": {
+    "revision": 1,
+    "requested_max_edge": 4096,
+    "textures": [
+      {
+        "name": "anatomical-dedicated-iris",
+        "source_size": [
+          512,
+          512
+        ],
+        "export_size": [
+          512,
+          512
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "couture-inferred-skin-pore-normal",
+        "source_size": [
+          1024,
+          1024
+        ],
+        "export_size": [
+          1024,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "couture-inferred-skin-roughness",
+        "source_size": [
+          1024,
+          1024
+        ],
+        "export_size": [
+          1024,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "crystal-microfacet-albedo",
+        "source_size": [
+          1024,
+          1024
+        ],
+        "export_size": [
+          1024,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "crystal-microfacet-normal",
+        "source_size": [
+          1024,
+          1024
+        ],
+        "export_size": [
+          1024,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "dress-UV",
+        "source_size": [
+          512,
+          512
+        ],
+        "export_size": [
+          512,
+          512
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "emerald-muse-warm-hair-locks-strand-albedo",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "emerald-muse-warm-hair-locks-strand-roughness",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "female-skin.png",
+        "source_size": [
+          2048,
+          2048
+        ],
+        "export_size": [
+          2048,
+          2048
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "hair-strand-albedo",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "hair-strand-roughness",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "original-couture-reference",
+        "source_size": [
+          1229,
+          1536
+        ],
+        "export_size": [
+          1229,
+          1536
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": "638bee0231879a1eb2118c065ba5b052534fc4c1affaa59dbc4da83191295997",
+        "contains_photographed_lighting": true
+      },
+      {
+        "name": "procedural-fine-hair-strands-normal",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "silver-UV",
+        "source_size": [
+          512,
+          512
+        ],
+        "export_size": [
+          512,
+          512
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      }
+    ],
+    "upscaling_used": false,
+    "likeness_verified": false,
+    "note": "4K/8K is a maximum texture edge, not recovered detail or render resolution.",
+    "geometry_preserved_during_texture_export": true,
+    "geometry_sha256_before_export": "bb0c4356605a0efbd19454717e5a533786776a26e09782d23892b378b6461bb3"
+  },
+  "photo_face_fit": {
+    "revision": 1,
+    "applied": true,
+    "reason": "measured_reference",
+    "method": "measured-landmark-residual",
+    "detected_landmarks": 478,
+    "fitted_controls": 112,
+    "anchor_rms_before_mm": 2.3879376938779915,
+    "anchor_rms_after_mm": 0.30074304863647594,
+    "single_view_depth_estimated": true,
+    "hidden_side_symmetrized": true,
+    "likeness_verified": false,
+    "couture_guide": {
+      "matched": true,
+      "reason": "reviewed_composition",
+      "mean_absolute_rgb_error": {
+        "frame": 2.473980506086567e-06,
+        "face": 2.5188922882080077e-06,
+        "fan": 2.549526819524893e-06,
+        "garment": 2.5347181935868565e-06
+      },
+      "likeness_verified": false
+    },
+    "reference_index": 0,
+    "deformation_strength": 1.0,
+    "inverted_triangles": 0,
+    "max_displacement_mm": 11.378638602107705,
+    "reference_depth_authored": true,
+    "reference_depth_max_mm": 1.1712409196864864,
+    "reference_depth_preserves_neutral_xz": true,
+    "photo_skin_atlas_calibrated": true,
+    "photo_skin_atlas_linear_gain": [
+      0.3803240068019293,
+      0.36295508053370723,
+      0.348455691006567
+    ],
+    "photo_skin_measured_midtone_srgb": [
+      0.7799661322272086,
+      0.5662550147559069,
+      0.4433019538686611
+    ],
+    "photo_skin_midtone_luminance_percentiles": [
+      20,
+      45
+    ],
+    "photo_skin_diffuse_exposure_inferred": 0.34,
+    "photo_skin_warm_balance_inferred": [
+      1.0,
+      0.9,
+      0.8
+    ],
+    "photo_skin_microstructure_inferred": true,
+    "photo_unobserved_skin_colour_inferred": true,
+    "photo_color_vertices": 29748,
+    "photo_colour_applied": true,
+    "photo_lighting_removed": false,
+    "photo_eye_pixels_excluded": true,
+    "photo_hidden_colour_mirrored": true
+  },
+  "export_validation": {
+    "reimported": true,
+    "anatomy": {
+      "anatomical_head": 1,
+      "anatomical_eye": 2,
+      "anatomical_hand": 2,
+      "anatomical_nail": 10
+    },
+    "roles": {
+      "body-under-gown": 1,
+      "collar-diagonal-inlay": 2,
+      "collar-front-edge": 2,
+      "collar-rim": 1,
+      "conformal-facets": 1,
+      "couture-seams": 1,
+      "earring-chain": 2,
+      "earring-rim": 2,
+      "earring": 2,
+      "exposed-upper-arm": 1,
+      "fan-dark-continuous-outline": 1,
+      "fan-grip-handle": 1,
+      "fan-outer-rim": 1,
+      "fan-pendant-chain": 1,
+      "fan-pendant": 1,
+      "fan-rib": 11,
+      "fan-rotor": 10,
+      "updo-filaments": 1,
+      "fitted-gown": 1,
+      "fitted-palm-glove": 1,
+      "fitted-sleeve": 2,
+      "glove-facet-edges": 1,
+      "glove-facet-panels": 1,
+      "glove-wrist-seam": 1,
+      "hair-ornament-rims": 1,
+      "hair-ornament": 3,
+      "hairline-wisps": 1,
+      "leg": 2,
+      "neck": 1,
+      "pleated-fan": 1,
+      "shoe-heel": 2,
+      "reconstructed-shoe": 2,
+      "shoulder-drape": 1,
+      "shoulder-fold": 2,
+      "shoulder-inlay": 2,
+      "shoulder-silver-edge": 2,
+      "standing-collar": 1,
+      "updo-locks": 1,
+      "updo-volume": 1,
+      "updo-folds": 1,
+      "visible-pleated-cape": 1,
+      "waist-gem-rim": 1,
+      "waist-gem": 1,
+      "waist-metal-ribbon": 4,
+      "swept-updo": 1
+    },
+    "packed_images": 14,
+    "reference_surface_objects": 7,
+    "reference_surface_faces": 42184,
+    "fan_apertures": {
+      "windows": 10,
+      "clear_rays": 130,
+      "filled_panel_rays": 10,
+      "filled_frame_junction_rays": 60,
+      "passed": true
+    },
+    "prop_grip": {
+      "hands": 1,
+      "contacts": 5,
+      "details": [
+        {
+          "fingertip_surface_gaps_mm": [
+            1.676,
+            0.112,
+            0.831,
+            0.024,
+            0.085
+          ],
+          "local_signed_depths_mm": [
+            4.601,
+            0.0,
+            0.0,
+            1.018,
+            1.718
+          ]
+        }
+      ],
+      "passed": true,
+      "complete_hand_collision_checked": false
+    },
+    "free_hand_clearance": {
+      "hands": 1,
+      "details": [
+        {
+          "hand": "anatomical-hand-left.001",
+          "checked_edges": 20198,
+          "crossing_edges": 0,
+          "minimum_vertex_clearance_mm": 21.13
+        }
+      ],
+      "passed": true,
+      "scope": "free hand skin versus gown and cape"
+    },
+    "fingerless_glove": {
+      "gloves": 1,
+      "details": [
+        {
+          "closed_shell": true,
+          "volume_m3": 1.1272133233925426e-05,
+          "surface_samples": 1000
+        }
+      ],
+      "passed": true,
+      "scope": "closed leather shell; does not verify every finger collision"
+    },
+    "eyebrows_fibres_and_photo_contour": [
+      [
+        420,
+        true
+      ],
+      [
+        420,
+        true
+      ]
+    ],
+    "garment_containment": {
+      "samples": 11774,
+      "worst_envelope_ratio": 0.98224,
+      "passed": true
+    },
+    "makeup_heads": 1,
+    "upper_lashes_per_eye": [
+      [
+        44,
+        44
+      ]
+    ],
+    "likeness_assessed": false,
+    "print_readiness_assessed": false
+  },
+  "blender": "4.3.0",
+  "build_seconds": 25.16,
+  "source": "authored scene using production runtime; no paid AI",
+  "visual_reviewed": true,
+  "rendered_views": [
+    "full-three-quarter",
+    "face-front",
+    "face-profile",
+    "hand-detail"
+  ],
+  "render_source": "exported GLB reimport",
+  "render_device": "CPU",
+  "render_threads": 4,
+  "render_samples": 12,
+  "total_seconds": 74.67,
+  "glb_sha256": "f1d5383bf1ab8cf112e59028d7e41294dba6cac1e374833f1d718548e6757cd8",
+  "visual_findings": [
+    "Face, eye shape/gaze and swept updo differ from reference.",
+    "Glove, collar and shoulder construction remain approximate.",
+    "Photographic highlights stretch on inferred lower gown.",
+    "Four actual reimported-GLB renders inspected; likeness not accepted."
+  ],
+  "render_sha256": {
+    "face-front.png": "3f6da876970191e8b424787a126bfe97ba85d54d3fcc817b43b5f0d534ce8873",
+    "full-three-quarter.png": "94b77eaaf33aaeb68714830ef3d6cae195ece128d2932965056ba70e03c6d146",
+    "hand-detail.png": "83210a737eddec6dd74cf491ec0f7577e040d16a16a7e255d947292054d626c5",
+    "face-profile.png": "caf71385e90fe7d10fd7262ae1ae104823ea5246fefdf34d2d7e86e45d9fb9c7"
+  }
+}

@@ -11,8 +11,18 @@ import urllib.request
 from runtime_check import RuntimeUnavailable, setup_runtime
 
 ASSETS = ('anatomy.json.gz', 'male-skin.png', 'female-skin.png','cotton-jersey-albedo.png','indigo-denim-albedo.png', 'LICENSE.CC0.md', 'SOURCES.md', 'manifest.json')
-FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py', 'runtime/wardrobe.py', 'runtime/textiles.py', 'runtime/couture.py') + tuple('runtime/assets/'+name for name in ASSETS)
-EXPECTED_VERSION = 18
+FILES = ('code_policy.py', 'ai_stream.py', 'openai_provider.py', 'photo_input.py', 'runtime_check.py', 'server.py', 'runtime/run.py', 'runtime/scene_contract.py', 'runtime/build_scene.py', 'runtime/detailed_geometry.py', 'runtime/anatomy.py', 'runtime/wardrobe.py', 'runtime/textiles.py') + tuple('runtime/assets/'+name for name in ASSETS)
+FILES += ('visual_review.py',)
+FILES += ('runtime/reference_surfaces.py','runtime/reference_quality.py','runtime/reference_match.py','runtime/assets/emerald-reference-signature.json')
+FILES += ('face_measurement.py','runtime/photo_face.py','runtime/photo_face_color.py','runtime/assets/face-template-feminine.json')
+FILES += ('runtime/assets/emerald-reference-landmarks.json',)
+FILES += tuple('runtime/'+name for name in ('portrait.py','portrait_eyes.py','portrait_shape.py','portrait_orbits.py','portrait_hands.py','portrait_hair.py','portrait_hair_surface.py','portrait_locks.py','fashion.py','couture.py','couture_geometry.py','couture_qa.py','review_views.py','scene_exports.py'))
+FILES += ('image3d_fixture.py', 'runtime/imported_asset.py')
+FILES += ('generation_budget.py','quality_report.py','v23_fixture.py',
+          'runtime/freeform_geometry.py','runtime/projection_math.py','runtime/photo_projection.py')
+FILES += ('runtime/model_checkpoint.py',)
+EXPECTED_VERSION = 24
+EXPECTED_RENDERER_REVISION = 3
 
 
 def replace(path, data):
@@ -23,7 +33,7 @@ def replace(path, data):
     temporary.replace(path)
 
 
-def update(source, target):
+def update(source, target, verify=None):
     state = target / 'state'
     config_path = state / 'config.json'
     db_path = state / 'jobs.sqlite'
@@ -37,6 +47,8 @@ def update(source, target):
         raise RuntimeError('Niekompletne lub uszkodzone dane anatomii. Pobierz ZIP ponownie. Nie zmieniono instalacji.')
     original = {name: (target / name).read_bytes() if (target / name).exists() else None for name in FILES}
     command = ['systemctl', '--user']
+    # Hold the queue lock until the HTTP worker stops, preventing a new job from
+    # being accepted between checking the queue and replacing its running code.
     with sqlite3.connect(db_path, timeout=15) as db:
         db.execute('BEGIN IMMEDIATE')
         busy = db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]
@@ -55,15 +67,19 @@ def update(source, target):
                 replace(backup / name, data)
         for name, data in incoming.items():
             replace(target / name, data)
+        if verify is not None:
+            verify(target)
         subprocess.run(command + ['start', 'froge-worker.service'], check=True, timeout=30)
+        # Use the existing credential locally; it is never printed or changed.
         token = json.loads(config_path.read_text())['token']
         request = urllib.request.Request('http://127.0.0.1:8765/v1/health', headers={'Authorization': 'Bearer ' + token})
         for _ in range(20):
             try:
                 with urllib.request.urlopen(request, timeout=2) as response:
-                    if json.loads(response.read(10000)).get('connectorVersion') == EXPECTED_VERSION:
+                    health = json.loads(response.read(10000))
+                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('freeformGeometryRevision') == 1 and health.get('photoProjectionRevision') == 1 and health.get('photoReviewReservedSeconds') == 240 and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
                         print('FROGE_UPDATE_OK')
-                        print('Wersja 18 uruchomiona. Dodano zaufana rekonstrukcje couture, jawna proweniencje, QA geometrii i zwarte radialne detale. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Froge v24: naprawa timeoutu, zachowanie modelu i ponowienie zapisanego planu bez AI. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass

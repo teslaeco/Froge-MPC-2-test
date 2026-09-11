@@ -1,0 +1,21 @@
+{
+  "version": 24,
+  "file": "froge-v24.zip",
+  "bytes": 15510834,
+  "sha256": "523ffc25787a4aab7a4baa6f6ce733e21280597c6055969b9b1dc53c82af7e58",
+  "payload_sha256": "c679e765063a4973695b2c4dd5f8c86d1f031be2025c85940ec38f6ea8b1ca2f",
+  "payload_files": 55,
+  "payload_matches_source": true,
+  "python_test_executions": 58,
+  "native_checkpoint_verified": [
+    "geometry",
+    "projection"
+  ],
+  "paid_ai_jobs": 0,
+  "oracle_version_observed": 23,
+  "installed_on_oracle": false,
+  "site_deployed": false,
+  "artifact_saved": true,
+  "source_parent_commit": "93720297e3f07c5b4c5beb7c916ca4555b9eee68",
+  "incident_stage": "Unknown: v23 replaced all TimeoutError details with a generic message."
+}

@@ -6,6 +6,20 @@ import runtime_check
 
 
 class RuntimeCheckTests(unittest.TestCase):
+    def test_8k_memory_preflight_refuses_before_container_or_ai(self):
+        with patch.object(runtime_check,'available_memory_bytes',return_value=9*1024**3),patch.object(runtime_check.subprocess,'run') as run:
+            with self.assertRaisesRegex(ValueError,'Nie zamowiono instrukcji AI'):runtime_check.verify_runtime(8)
+            run.assert_not_called()
+
+    def test_8k_profile_preserves_isolation_without_swap(self):
+        with patch.object(runtime_check,'available_memory_bytes',return_value=12*1024**3),patch.object(runtime_check.subprocess,'run',return_value=subprocess.CompletedProcess([],0,'','')) as run:
+            runtime_check.verify_runtime(8)
+        command=run.call_args.args[0]
+        for flag in ('--memory=8g','--memory-swap=8g','--cpus=2','--network=none','--read-only','--pids-limit=256','FROGE_EXPORT_MEMORY_GIB=8'):
+            self.assertIn(flag,command)
+        for value in (True,3,16,'8'):
+            with self.assertRaises(ValueError):runtime_check.sandbox_options(value)
+
     def test_probe_retains_all_limits_and_runs_no_generated_code(self):
         with patch.object(runtime_check.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, '', '')) as run:
             runtime_check.verify_runtime()

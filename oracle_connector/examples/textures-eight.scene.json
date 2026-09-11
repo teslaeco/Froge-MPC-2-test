@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "name": "Eight textile materials export check",
+  "materials": [
+    {
+      "name": "fabric-0",
+      "rgb": [
+        0.1,
+        0.3,
+        0.5
+      ],
+      "pattern": "cotton",
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "fabric-1",
+      "rgb": [
+        0.2,
+        0.3,
+        0.5
+      ],
+      "pattern": "denim",
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "fabric-2",
+      "rgb": [
+        0.30000000000000004,
+        0.3,
+        0.5
+      ],
+      "pattern": "cotton",
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "fabric-3",
+      "rgb": [
+        0.4,
+        0.3,
+        0.5
+      ],
+      "pattern": "denim",
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "fabric-4",
+      "rgb": [
+        0.5,
+        0.3,
+        0.5
+      ],
+      "pattern": "cotton",
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "fabric-5",
+      "rgb": [
+        0.6,
+        0.3,
+        0.5
+      ],
+      "pattern": "denim",
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "fabric-6",
+      "rgb": [
+        0.7000000000000001,
+        0.3,
+        0.5
+      ],
+      "pattern": "cotton",
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "fabric-7",
+      "rgb": [
+        0.8,
+        0.3,
+        0.5
+      ],
+      "pattern": "denim",
+      "roughness": 0.85,
+      "metallic": 0,
+      "emission": 0
+    }
+  ],
+  "parts": [
+    {
+      "kind": "box",
+      "name": "box-0",
+      "material": "fabric-0",
+      "center": [
+        0.0,
+        0,
+        0.5
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "box",
+      "name": "box-1",
+      "material": "fabric-1",
+      "center": [
+        1.5,
+        0,
+        0.5
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "box",
+      "name": "box-2",
+      "material": "fabric-2",
+      "center": [
+        3.0,
+        0,
+        0.5
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "box",
+      "name": "box-3",
+      "material": "fabric-3",
+      "center": [
+        4.5,
+        0,
+        0.5
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "box",
+      "name": "box-4",
+      "material": "fabric-4",
+      "center": [
+        6.0,
+        0,
+        0.5
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "box",
+      "name": "box-5",
+      "material": "fabric-5",
+      "center": [
+        7.5,
+        0,
+        0.5
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "box",
+      "name": "box-6",
+      "material": "fabric-6",
+      "center": [
+        9.0,
+        0,
+        0.5
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "kind": "box",
+      "name": "box-7",
+      "material": "fabric-7",
+      "center": [
+        10.5,
+        0,
+        0.5
+      ],
+      "size": [
+        1,
+        1,
+        1
+      ],
+      "rotation": [
+        0,
+        0,
+        0
+      ]
+    }
+  ]
+}

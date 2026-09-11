@@ -2,40 +2,85 @@ import { useEffect, useRef, useState } from 'react'
 import { BlenderRequestError, blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob } from './client'
 import './generator.css'
 import { OpenAISettings, GeometryUpdate } from './OpenAISettings'
+import { GenerationExports } from './GenerationExports'
+import { supportsGeneration, supportsPhotoGeneration, RECOMMENDED_CONNECTOR_VERSION, supportsPortraitQuality, requiresPortraitQuality, PORTRAIT_UPDATE_REASON, supportsCoutureQuality, requiresCoutureQuality, COUTURE_UPDATE_REASON } from './compatibility'
+import { PhotoReferences } from './PhotoReferences'
+import { DEFAULT_PHOTO_PROMPT, PHOTO_VIEWS, type PhotoInput } from './photoReferences'
 
 export const oracleInstallCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ssh-key-2026-09-06.key" "$HOME/froge-oracle-connector.zip" opc@141.148.242.30:/home/opc/froge-oracle-connector.zip &&
 ssh -T -o IdentitiesOnly=yes -o ServerAliveInterval=30 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'mkdir -p "$HOME/froge-connector" && python3 -m zipfile -e "$HOME/froge-oracle-connector.zip" "$HOME/froge-connector" && bash "$HOME/froge-connector/install.sh"'`
 
-type Props = { prompt: string; onStart: () => number; onResult: (bytes: ArrayBuffer, job: GenerationJob, revision: number) => Promise<boolean> }
-export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
+type Props = { prompt: string; onStart: () => number; onResult: (bytes: ArrayBuffer, job: GenerationJob, revision: number) => Promise<boolean>; canAutoRestore?: () => boolean; onRestorePrompt?: (prompt:string)=>void; onReusePrompt?: (prompt:string)=>void; onNewModel?: (preservePrompt: boolean) => void }
+export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel }: Props) {
   const [connection, setConnection] = useState<BlenderConnection | null>(null)
   const [endpoint, setEndpoint] = useState(''), [code, setCode] = useState('')
   const [connecting, setConnecting] = useState(false), [submitting, setSubmitting] = useState(false)
   const [setup, setSetup] = useState(false), [error, setError] = useState(''), [copyNote, setCopyNote] = useState('')
   const [connectionError, setConnectionError] = useState(''), [jobError, setJobError] = useState<Error | null>(null)
+  const [checkingConnection, setCheckingConnection] = useState(true), [checkedAt, setCheckedAt] = useState('')
   const [active, setActive] = useState<GenerationJob | null>(null), [recent, setRecent] = useState<GenerationJob[]>([])
-  const [displayed, setDisplayed] = useState(false)
-  const callbacks = useRef({ onStart, onResult }); callbacks.current = { onStart, onResult }
+  const [displayed, setDisplayed] = useState(false), [fromHistory, setFromHistory] = useState(false)
+  const [photos, setPhotos] = useState<PhotoInput[]>([]), [preparingPhotos, setPreparingPhotos] = useState(false)
+  const callbacks = useRef({ onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel }); callbacks.current = { onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel }
   const revision = useRef(0), serial = useRef(0), loaded = useRef(''), mounted = useRef(true)
   const retryPoll = useRef<() => void>(() => {})
+  const connectionRequest = useRef<AbortController | null>(null), connectionSerial = useRef(0), submissionLock = useRef(false)
+  // Keep the same identifier after a lost acknowledgement. A second click must
+  // resolve the original request, never silently buy another AI generation.
+  const pendingSubmission = useRef<{ fingerprint: string; id: string } | null>(null)
   const busy = submitting || (!!active && !finished(active))
-  const currentWorker = (connection?.connectorVersion || 1) >= 10
-  const canGenerate = !!connection?.ready && currentWorker
+  const textureLimitFailure = active?.state === 'failed' && active.detail.includes('Use at most 8 materials and 8 images')
+  const currentWorker = supportsGeneration(connection?.connectorVersion)
+  const canGenerate = !!connection?.connected && !!connection.ready && currentWorker && !connectionError && (photos.length > 0 || connection.textReady !== false)
+  const photosSupported = supportsPhotoGeneration(connection)
+  const photoBlockedReason = connection?.connectorVersion === 21 ? 'Zainstaluj v22 na Oracle, aby zdjęcia ponownie obsługiwała Astra.' : connection?.provider !== 'openai' ? 'Wybierz OpenAI · Astra w ustawieniach serwera.' : 'Sprawdź połączenie Astry i zaktualizuj generator na Oracle.'
+  const coutureBlocked= requiresCoutureQuality(prompt) && !supportsCoutureQuality(connection)
+  const longPromptBlocked=prompt.length>2000 && connection?.promptMaxLength!==5000
+  const referenceQualityBlocked = photos.some(photo => (photo.textureMaxSize ?? 2048) > 2048) && (connection?.referenceQualityRevision !== 1 || connection?.materialQualityRevision !== 2)
+  const portraitBlocked=(requiresPortraitQuality(prompt, photos.length) && !supportsPortraitQuality(connection)) || coutureBlocked || longPromptBlocked || referenceQualityBlocked
+  const updateAvailable = !!connection?.connected && connection.connectorVersion !== undefined && connection.connectorVersion < RECOMMENDED_CONNECTOR_VERSION
+  const oldWorkerReason = `Oracle zgłasza generator v${connection?.connectorVersion}. Zainstaluj aktualizację v22 na serwerze. Samo przesłanie ZIP-a nie uruchamia aktualizacji.`
+  const connectionDetail = photos.length && !photosSupported ? photoBlockedReason : connection?.ready && !currentWorker ? oldWorkerReason : connection?.detail || 'Odczytuję zapisane połączenie.'
+  const blockedReason = busy ? '' : preparingPhotos ? 'Przygotowuję zdjęcia…' : connectionError ? connectionError : !connection ? 'Sprawdzam, czy serwer może przyjąć zlecenie…' : !connection.connected ? 'Połącz serwer Blendera w ustawieniach powyżej.' : updateAvailable && !currentWorker ? 'Generowanie nie zostało uruchomione. ' + oldWorkerReason : !connection.ready ? 'Generowanie nie zostało uruchomione. ' + connectionDetail : photos.length && !photosSupported ? photoBlockedReason : portraitBlocked ? (referenceQualityBlocked ? 'Referencje 4K/8K wymagają aktualizacji generatora z obsługą jakości referencji.' : coutureBlocked ? COUTURE_UPDATE_REASON : longPromptBlocked ? 'Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v20.' : PORTRAIT_UPDATE_REASON) : !prompt.trim() && !photos.length ? 'Wpisz opis albo dodaj zdjęcia.' : ''
 
   async function refreshConnection() {
+    const requestSerial = ++connectionSerial.current
+    connectionRequest.current?.abort()
+    const controller = new AbortController()
+    connectionRequest.current = controller
+    setCheckingConnection(true)
     try {
-      const result = await blenderRequest<BlenderConnection>('connection')
-      if (mounted.current) {
-        setConnection(previous => result.connected && previous?.connected && result.endpoint === previous.endpoint ? { ...previous, ...result } : result)
+      const result = await blenderRequest<BlenderConnection>('connection', { signal: controller.signal })
+      if (mounted.current && requestSerial === connectionSerial.current) {
+        setConnection(result)
         setConnectionError('')
+        setCheckedAt(new Date().toLocaleTimeString('pl-PL'))
       }
-    } catch (e) { if (mounted.current) setConnectionError((e as Error).message) }
+    } catch (e) { if (mounted.current && requestSerial === connectionSerial.current) setConnectionError((e as Error).message) }
+    finally {
+      if (mounted.current && requestSerial === connectionSerial.current) {
+        connectionRequest.current = null
+        setCheckingConnection(false)
+      }
+    }
   }
   function selectJob(job: GenerationJob) {
     serial.current++
     revision.current = callbacks.current.onStart()
     loaded.current = ''
-    setDisplayed(false); setError(''); setJobError(null); setActive(job)
+    setDisplayed(false); setFromHistory(job.state === 'succeeded'); setError(''); setJobError(null); setActive(job)
+  }
+  function newModel(preservePrompt = false) {
+    if (busy) return
+    serial.current++
+    loaded.current = ''
+    setActive(null); setDisplayed(false); setFromHistory(false); setError(''); setJobError(null)
+    if (!preservePrompt) setPhotos([])
+    callbacks.current.onNewModel?.(preservePrompt)
+  }
+  function changePhotos(next: PhotoInput[]) {
+    if (!photos.length && next.length) newModel(true)
+    setPhotos(next)
   }
   useEffect(() => {
     mounted.current = true
@@ -43,10 +88,13 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
     void blenderRequest<{ jobs: GenerationJob[] }>('jobs').then(({ jobs }) => {
       if (!mounted.current) return
       setRecent(jobs)
-      if (serial.current === 0 && jobs.length) selectJob(jobs[0])
+      if (serial.current === 0 && jobs.length && (callbacks.current.canAutoRestore?.() ?? true)) {
+        if (!finished(jobs[0])) callbacks.current.onRestorePrompt?.(jobs[0].prompt)
+        selectJob(jobs[0])
+      }
     }).catch(e => { if (mounted.current) setError(e.message) })
-    const timer = window.setInterval(() => void refreshConnection(), 20000)
-    return () => { mounted.current = false; window.clearInterval(timer) }
+    const timer = window.setInterval(() => { if (!connectionRequest.current) void refreshConnection() }, 20000)
+    return () => { mounted.current = false; connectionSerial.current++; connectionRequest.current?.abort(); connectionRequest.current = null; window.clearInterval(timer) }
   }, [])
   useEffect(() => {
     if (!active) return
@@ -104,19 +152,44 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       await refreshConnection()
     } catch (e) { setError((e as Error).message) } finally { setConnecting(false) }
   }
-  async function generate(requestedPrompt = prompt, sourceJobId?: string) {
-    if (busy || !currentWorker || !(sourceJobId ? connection?.connected : canGenerate) || !requestedPrompt.trim()) return
+  async function generate(requestedPrompt = prompt, sourceJobId?: string, referenceJobId?: string, useDraftPhotos = true, resumeImage3d = false) {
+    const attached = useDraftPhotos && !sourceJobId && !referenceJobId ? photos : []
+    const withPhotos = !!referenceJobId || attached.length > 0
+    const description = requestedPrompt.trim() || (withPhotos ? DEFAULT_PHOTO_PROMPT : '')
+    if (submissionLock.current || busy || preparingPhotos || !currentWorker || !(sourceJobId ? connection?.connected : withPhotos ? connection?.connected && photosSupported : canGenerate) || !description) return
+    if (withPhotos && !photosSupported) { setError(photoBlockedReason); return }
+    if (!withPhotos && !resumeImage3d && requiresPortraitQuality(description) && !supportsPortraitQuality(connection)) { setError(PORTRAIT_UPDATE_REASON); return }
+    if (!withPhotos && !resumeImage3d && requiresCoutureQuality(description) && !supportsCoutureQuality(connection)) { setError(COUTURE_UPDATE_REASON); return }
+    if (description.length>2000 && connection?.promptMaxLength!==5000) { setError('Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v20.'); return }
+    submissionLock.current = true
     setSubmitting(true); setError('')
-    const input = { id: crypto.randomUUID(), prompt: requestedPrompt.trim(), ...(sourceJobId ? { sourceJobId } : {}) }
-    const requestSerial = ++serial.current
-    const nextRevision = callbacks.current.onStart()
     try {
-      const { job } = await blenderRequest<{ job: GenerationJob }>('jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) })
+      const payload = { prompt: description, ...(sourceJobId ? { sourceJobId, ...(resumeImage3d ? { resumeImage3d: true } : {}) } : {}), ...(referenceJobId ? { referenceJobId } : {}), ...(attached.length ? { photos: attached } : {}) }
+      const fingerprint = JSON.stringify(payload)
+      const id = pendingSubmission.current?.fingerprint === fingerprint ? pendingSubmission.current.id : crypto.randomUUID()
+      pendingSubmission.current = { fingerprint, id }
+      const input = { id, ...payload }
+      const requestSerial = ++serial.current
+      const nextRevision = callbacks.current.onStart()
+      let result: { job: GenerationJob }
+      try {
+        result = await blenderRequest<{ job: GenerationJob }>('jobs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input) })
+      } catch (failure) {
+        if (!(failure instanceof BlenderRequestError) || !failure.retryable) { pendingSubmission.current = null; throw failure }
+        // The server may have saved/accepted the job before the response failed.
+        try {
+          result = await blenderRequest<{ job: GenerationJob }>('jobs/' + id)
+          if (!result?.job || result.job.id !== id) throw failure
+        }
+        catch { throw failure }
+      }
+      const { job } = result
+      pendingSubmission.current = null
       if (!mounted.current || serial.current !== requestSerial) return
       revision.current = nextRevision; loaded.current = ''
-      setDisplayed(false); setJobError(null); setActive(job)
+      setDisplayed(false); setFromHistory(false); setJobError(null); setActive(job)
       setRecent(items => [job, ...items].slice(0, 10))
-    } catch (e) { if (mounted.current) setError((e as Error).message) } finally { if (mounted.current) setSubmitting(false) }
+    } catch (e) { if (mounted.current) setError(e instanceof Error ? e.message : 'Nie udało się wysłać zlecenia. Spróbuj ponownie.') } finally { submissionLock.current = false; if (mounted.current) setSubmitting(false) }
   }
   async function cancel() {
     if (!active || finished(active)) return
@@ -126,23 +199,28 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
     } catch (e) { setError((e as Error).message) }
   }
   async function openModel(job: GenerationJob) {
+    const requestSerial = ++serial.current
     try {
       const nextRevision = callbacks.current.onStart()
       const bytes = await generatedModel(job.id)
-      setDisplayed(await callbacks.current.onResult(bytes, job, nextRevision))
+      if (!mounted.current || serial.current !== requestSerial) return
+      const shown = await callbacks.current.onResult(bytes, job, nextRevision)
+      if (mounted.current && serial.current === requestSerial) setDisplayed(shown)
     } catch (e) { setError((e as Error).message) }
   }
   return <div className="remote-generator">
+    <button className="new-model-button" disabled={busy || preparingPhotos} onClick={() => newModel()}>Nowy model · wyczyść formularz</button>
     <div className="blender-connection" role="status">
-      <strong>{connection === null ? 'Sprawdzam serwer…' : connection.ready ? connection.provider === 'openai' ? 'OpenAI + Blender gotowe' : 'Lokalny Qwen + Blender' : connection.connected ? 'Serwer nie jest jeszcze gotowy' : 'Serwer niepołączony'}</strong>
-      <p>{connection?.detail || 'Odczytuję zapisane połączenie.'}</p>
+      <strong>{connectionError ? 'Nie udało się sprawdzić połączenia' : connection === null ? 'Sprawdzam serwer…' : photos.length ? photosSupported ? 'Astra + Blender · zdjęcia gotowe' : 'Sprawdź Astrę i generator' : connection.ready && !currentWorker ? 'Generator wymaga aktualizacji' : connection.ready ? connection.provider === 'openai' ? 'Opis → scena · Astra + Blender' : 'Opis → scena · lokalne AI' : connection.connected ? 'Serwer nie jest jeszcze gotowy' : 'Serwer niepołączony'}</strong>
+      <p>{connectionDetail}</p>
+      {connection?.connectorVersion !== undefined && <small>Generator na Oracle: v{connection.connectorVersion} · zdjęcia: {photosSupported ? 'obsługiwane' : 'niedostępne'}</small>}
+      {connection?.connectorVersion !== undefined && <small>Standard postaci: {supportsCoutureQuality(connection) ? `v${connection.characterStandard ?? connection.connectorVersion} · suknia i wachlarz` : supportsPortraitQuality(connection) ? `v${connection.characterStandard ?? connection.connectorVersion} · anatomia` : 'nieaktywny'}</small>}
       {connection?.model && <small>Model AI: {connection.model}</small>}
-      {connection?.connected && <small>Oracle v{connection.connectorVersion || 1} · standard postaci {connection.characterStandard || 'starszy'}</small>}
+      {checkedAt && !connectionError && <small>Ostatnie sprawdzenie: {checkedAt}</small>}
       <button onClick={() => setSetup(value => !value)} aria-expanded={setup}>{setup ? 'Zamknij ustawienia' : connection?.connected ? 'Ustawienia serwera' : 'Połącz serwer Blendera'}</button>
       {connection?.connected && connection.provider !== 'openai' && !setup && <button onClick={() => setSetup(true)}>Podłącz Astrę</button>}
       {connectionError && <p className="studio-error" role="alert">{connectionError}</p>}
     </div>
-    {connection?.connected && !currentWorker && <GeometryUpdate/>}
     {setup && connection?.connected && <OpenAISettings connection={connection} busy={busy} onSaved={refreshConnection}/>}
     {setup && <details className="blender-setup" open={!connection?.connected}>
       <summary>{connection?.connected ? 'Zmień połączenie z Oracle' : 'Połącz Oracle'}</summary>
@@ -159,14 +237,32 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
       <p>Wklej kod wyświetlony przez instalator. Klucz SSH pozostaje w Oracle Cloud Shell.</p>
       <p>Połączenie korzysta z tunelu testowego. Po jego restarcie adres może się zmienić.</p>
     </details>}
-    <button className="studio-primary" disabled={busy || !canGenerate || !prompt.trim()} onClick={() => void generate()}>{busy ? 'Generowanie w toku…' : 'Generuj model 3D'}</button>
-    <p className="studio-helper">{connection?.provider === 'openai' ? 'Astra projektuje scenę. Po sprawdzeniu planu Blender tworzy geometrię i materiały. Wynik pokaże zmierzony czas obu etapów.' : 'Wybrany jest lokalny Qwen, który może działać wolno na tym serwerze. Przycisk „Podłącz Astrę” pozwala wybrać OpenAI API.'}</p>
-    {active && <div className={'generation-job state-' + active.state} role="status">
-      <strong>{jobError && !finished(active) ? 'Postęp chwilowo niedostępny' : active.state === 'succeeded' ? displayed ? 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
-      <p className="generation-prompt">{active.prompt}</p>
+    <PhotoReferences photos={photos} onChange={changePhotos} disabled={busy} onPreparing={setPreparingPhotos}/>
+    <button className="studio-primary" aria-describedby="generation-blocked-reason" disabled={busy || preparingPhotos || !canGenerate || (!prompt.trim() && !photos.length) || (photos.length > 0 && !photosSupported) || portraitBlocked} onClick={() => void generate()}>{submitting ? 'Wysyłam zlecenie…' : busy ? 'Generowanie w toku…' : photos.length ? 'Generuj model 3D ze zdjęć' : 'Generuj model 3D'}</button>
+    <p id="generation-blocked-reason" className="studio-helper" role="status">{submitting ? 'Czekam na potwierdzenie przyjęcia zlecenia. Generowanie jeszcze nie zostało potwierdzone.' : blockedReason}</p>
+    {connection?.connected && (portraitBlocked || updateAvailable) && <GeometryUpdate required={portraitBlocked || !currentWorker}/>}
+    {supportsPortraitQuality(connection) && <p className="studio-helper">Standard postaci aktywny: anatomiczna twarz i dłonie, paznokcie oraz kontrola eksportu. Podobieństwo do zdjęcia oceniasz w podglądzie.</p>}
+    <button disabled={checkingConnection} aria-busy={checkingConnection} onClick={() => void refreshConnection()}>{checkingConnection ? 'Sprawdzam połączenie…' : updateAvailable ? 'Sprawdź serwer po aktualizacji' : 'Sprawdź połączenie z Oracle'}</button>
+    {!prompt.trim() && !photos.length && recent[0] && onReusePrompt && <button onClick={()=>onReusePrompt(recent[0].prompt)}>Przywróć ostatni opis</button>}
+    <p className="studio-helper">{connection?.provider === 'openai' ? 'Astra analizuje zdjęcia i opis. Blender buduje geometrię oraz tekstury; Astra porównuje rendery z referencją. Generowanie korzysta z Twojego OpenAI API. Dodanie zdjęć niczego nie uruchamia.' : 'Lokalne AI obsługuje opis sceny. Do pracy ze zdjęciami wybierz OpenAI · Astra.'}</p>
+    {active && !submitting && <div className={'generation-job state-' + active.state} role="status">
+      <strong>{jobError && !finished(active) ? 'Postęp chwilowo niedostępny' : active.state === 'succeeded' ? displayed ? fromHistory ? 'Zapisany model w podglądzie' : 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
+      {finished(active) ? <details className="saved-job-prompt"><summary>Opis tego zlecenia</summary><p className="generation-prompt">{active.prompt}</p></details> : <p className="generation-prompt">{active.prompt}</p>}
+      {!!active.referencePhotos?.length && <div className="photo-reference-grid job-photos" aria-label="Zdjęcia tego zlecenia">{active.referencePhotos.map((photo, index) => <a href={photo.url} target="_blank" rel="noreferrer" key={photo.url}><img src={photo.url} alt={`Referencja ${index + 1}: ${photo.name}`} loading="lazy"/><span>{PHOTO_VIEWS[photo.view]}</span></a>)}</div>}
       {jobError && !finished(active) ? <>
         <p>Zlecenie może nadal działać na Oracle. Sprawdzam jego status.</p>
         <details><summary>Ostatni odebrany status</summary><p>{active.detail}</p></details>
+      </> : textureLimitFailure ? <>
+        <p>Plan modelu został zapisany na Oracle. Eksport zatrzymał się przez błędny limit tekstur.</p>
+        {connection?.sceneReplay && (connection.rendererRevision ?? 0) >= 2 ? <>
+          <p>Poprawka tekstur jest zainstalowana. Możesz wykonać zapisany plan bez kolejnego zapytania do AI.</p>
+          <button disabled={busy || !connection.connected || !!connectionError} onClick={() => void generate(active.prompt, active.id, undefined, false)}>Wykonaj zapisany plan bez AI</button>
+        </> : <>
+          <p>Pobierz poprawkę, prześlij plik do Cloud Shell i uruchom poniższe polecenie. Następnie sprawdź połączenie z Oracle na tej stronie.</p>
+          <a href="/downloads/froge-napraw-tekstury.py" download>Pobierz poprawkę tekstur</a>
+          <pre><code>python3 "$HOME/froge-napraw-tekstury.py"</code></pre>
+        </>}
+        <details><summary>Szczegóły błędu</summary><p>{active.detail}</p></details>
       </> : active.state === 'failed' && active.detail.includes('/work/generate.py') ? <>
         <p>Wygenerowany skrypt zawiera błąd. Model nie został utworzony.</p>
         <details><summary>Szczegóły błędu</summary><p>{active.detail}</p></details>
@@ -175,9 +271,11 @@ export function RemoteGenerator({ prompt, onStart, onResult }: Props) {
           <button disabled={busy || !connection?.connected} onClick={() => void generate(active.prompt, active.id)}>Wykonaj zapisany skrypt</button>
         </> : <p>Ten skrypt pochodzi ze starego generatora. Utwórz nowy model po aktualizacji, korzystając ze sprawdzanego planu sceny.</p>}
       </> : <p>{active.detail === 'timed out' ? 'AI nie odpowiedziało w limicie czasu. Model nie został zapisany.' : active.detail}</p>}
-      {['failed', 'cancelled'].includes(active.state) && <button disabled={busy || !canGenerate} onClick={() => void generate(active.prompt)}>Ponów ten opis</button>}
+      {['failed', 'cancelled'].includes(active.state) && !textureLimitFailure && <button disabled={busy || (active.referencePhotos?.length ? !photosSupported : !canGenerate)} onClick={() => void generate(active.prompt, undefined, active.referencePhotos?.length ? active.id : undefined, false)}>{active.referencePhotos?.length ? 'Generuj ponownie z tych zdjęć · OpenAI API' : 'Ponów ten opis'}</button>}
       {!finished(active) && <button onClick={() => void cancel()}>Anuluj zlecenie</button>}
       {active.state === 'succeeded' && !displayed && <button onClick={() => void openModel(active)}>Wczytaj wynik do podglądu</button>}
+      {active.state === 'succeeded' && <GenerationExports jobId={active.id}/>}
+      {active.state === 'succeeded' && onReusePrompt && <button onClick={()=>onReusePrompt(active.prompt)}>Edytuj opis tego modelu</button>}
       {jobError && <div className="studio-error" role="alert">
         <p>{jobError.message}</p>
         {jobError instanceof BlenderRequestError && jobError.retryable && <p>Ponawiam odczyt tego samego zlecenia.</p>}

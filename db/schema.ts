@@ -12,4 +12,5 @@ export const blenderJobs = sqliteTable('blender_jobs', {
   id: text('id').primaryKey(), owner: text('owner').notNull(), endpoint: text('endpoint').notNull(),
   prompt: text('prompt').notNull(), state: text('state').notNull(), detail: text('detail').notNull(),
   artifact: text('artifact'), created: text('created').notNull(), updated: text('updated').notNull(),
+  referencePhotos: text('reference_photos').notNull().default('[]'),
 }, table => [index('blender_jobs_owner_created').on(table.owner, table.created)])

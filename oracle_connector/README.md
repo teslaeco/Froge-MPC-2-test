@@ -1,7 +1,126 @@
 # Froge Oracle connector
 
-This is the text → selected AI → Blender → GLB worker for the private Froge test studio.
+This is the text/photos → selected AI → Blender worker for the Froge test studio.
+Each completed scene keeps the editable BLEND master and exports GLB, FBX,
+OBJ+MTL, STL (unitless format with numeric coordinates written in millimetres)
+and the validated Froge scene JSON when the job originated from that schema.
+FBX requests embedded textures and preserves an existing armature; it never invents a rig.
+OBJ/MTL cannot preserve every PBR shader, and STL has neither textures nor an
+automatic print-readiness guarantee.
+Interchange export revision 2 materializes packed/generated PNG and JPEG images
+under unique content-addressed names in `textures/`, then temporarily binds ordinary
+file images for the native exporters. Original image nodes and master geometry are
+restored. On single-material meshes the colour UV channel is temporarily placed first for native FBX,
+which otherwise ignores named shader UV bindings; the original mesh is restored. Deliver OBJ together with its MTL and the entire `textures/` directory.
+A failed optional exporter is reported as `status: partial`; the completed GLB/BLEND
+remain available. `formats` includes only nonempty files produced successfully.
+An export report does not claim that a native reimport was performed for every job.
+
+Run `python -m unittest test_scene_exports` for failure handling, and
+`blender --background --python verify_scene_exports.py` for real FBX/OBJ/STL imports.
+The native fixture checks two distinct packed images with empty paths, preserved
+image bytes/material assignments, geometry, UVs, STL units and a relocated OBJ.
+Anatomical heads with a single skin material bake image-times-vertex colour to an
+emission atlas (2048 px for the current fixture, capped at 4096). No scene lighting
+is added, but illumination already in the reference image remains. The original
+GLB/BLEND shader and geometry are restored. Projected garment UVs can overlap;
+those shaders and advanced PBR still require inspection in the target application.
+Multi-material UV order is retained and reported as a limitation: globally choosing
+one material's UV channel can corrupt the other material's appearance.
+
+Authenticated download endpoints: `GET /v1/jobs/{id}/exports` lists available
+formats; `/exports/fbx`, `/exports/obj`, `/exports/stl`, `/exports/blend` and
+`/exports/scene-json` return files. OBJ is a ZIP containing OBJ, MTL and only the
+declared textures. Completed jobs only; recorded file hashes are checked, and
+missing, changed or symlinked artifacts are rejected. Downloads never invoke AI.
+The existing GLB endpoint and its 48 MiB limit remain; interchange downloads have
+a separate 256 MiB aggregate limit. Health advertises `interchangeRevision: 2`.
+
+Build standalone worker packages with `python scripts/package-worker.py` from the
+repository root. Native existing-asset reimports: run Blender with
+`--python verify_asset_exports.py -- JOB_FOLDER REPORT_JSON`. Restore all exports,
+textures and review views if the bounded visual-refinement build fails or cancels.
+
 It is separate from the desktop Blender add-on and the example dragon.
+
+## CPU review rendering and recovery (reviewRenderRevision 1)
+
+Review rendering checks the same OIDN build capability as Blender's Cycles UI.
+Supported builds use CPU OpenImageDenoise with 12 samples; unsupported builds
+use 64 CPU samples without denoising. A recognized missing-OIDN runtime error
+retries that frame once without denoising. Other errors are not retried in a loop.
+PNG views are published only after a complete file is written. The actual settings
+and completed views are recorded in `review/render-settings.json`.
+
+An optional review failure now leaves validated model exports available and writes
+`review_render.status=unavailable` in `result.json`. Stale/partial review images
+are removed so they cannot enter an AI comparison. Visual refinement still reports
+that its assessment was not completed; it does not buy a new plan without views.
+
+After installation, retrying the latest request with exactly the same prompt and
+photo metadata/bytes reuses its validated scene if that request failed specifically
+with `Failed to denoise, build has no OpenImageDenoise support`. This also works
+when AI is offline, and never calls either AI provider. The new job retains the
+old job and records `render-recovery.json`. Changed inputs are a new generation;
+unrelated failures are not automatically replayed. Existing failed jobs are not
+changed or queued merely by installing the update.
+
+The installer requires `reviewRenderRevision: 1` and now exercises three actual
+GLB review renders in its existing bounded native Blender check. Run the native
+fixture with `blender -b --python verify_review_runtime.py -- OUTPUT_DIRECTORY`.
+It forces the unsupported capability branch on the available local Blender;
+it is not proof of installation on the Oracle ARM worker or of character likeness.
+
+## Missing material references (materialRepairRevision 1)
+
+A structurally valid AI plan can still reference an undeclared material, such as
+`eyes_grey_green`. The validator now reports all unresolved references. On the
+first planning attempt only, the existing second attempt requests a constrained
+palette with eight slots and a required binding for every material reference.
+The worker changes only materials and their bindings in the original plan, then
+runs the full scene and anatomy validation before Blender. Unused slots are
+discarded; no ninth material, arbitrary fallback color or third planning attempt
+is added. The original request and photos remain available to the repair model.
+
+Raw plans, the palette response and `material-repair.json` stay in the job folder.
+The report records renamed/shared bindings and does not claim independent color
+verification. Both providers receive the repair schema. The 600 s AI and 900 s
+Blender budgets remain unchanged. Existing failed jobs are not automatically
+resubmitted. Install the updated worker before retrying through the Site; source
+commits and ZIP downloads alone do not update Oracle. The one-file installer now
+requires `materialRepairRevision: 1` from the running worker.
+
+Regression checks: `python -m unittest test_material_repair test_scene_contract
+test_connector test_openai test_update` (53 tests; no paid API generation).
+
+## Photo-guided generation (version 14)
+
+Install the current `froge-oracle-update.zip` using the update instructions in Studio,
+then select the already-configured OpenAI provider. Publishing the Site does not
+install the worker on Oracle. The updater preserves pairing, the API key and history.
+Text-only Qwen and workers older than v14 are explicitly blocked for photo jobs.
+
+The browser accepts 1–4 JPG/PNG/WebP files, each up to 12 MiB, with view labels.
+It normalizes them to JPEG, at most 1600 pixels on the long side and 768 KiB each,
+stripping source metadata through canvas encoding. Selecting files alone does not
+upload them or start an API request. After Generate, the authenticated Site saves
+the normalized bytes in owner-scoped R2 objects and metadata/hashes in D1. Private
+history thumbnails and retries remain available with the job, including after
+disconnecting the worker. Migration 0002 adds a default-empty metadata column.
+
+The worker validates and privately stores those same bytes, then sends them as
+Responses `input_image` data URLs alongside the prompt and view labels. It never
+fetches caller-supplied image URLs or silently routes photos to the local text model.
+AI produces the existing bounded scene JSON; Blender builds its actual geometry.
+This is approximate photo-guided construction, not photogrammetry, a textured scan
+or verified facial likeness. Hidden surfaces are inferred and the supported scene
+operations limit detail. Each generation uses the owner's selected OpenAI API account.
+
+Focused tests cover authenticated image storage/replay, limits, capability gates,
+UI selection and explicit submission, a real local HTTP/SQLite worker, and image
+content through the real Responses transport to a local SSE fixture. They make no
+paid API calls and do not establish the quality of a newly generated photo model.
+Image-input format: [official OpenAI guide](https://developers.openai.com/api/docs/guides/images-vision).
 
 ## Checked scene plans (version 8)
 
@@ -28,9 +147,10 @@ function. Limited replay of a compatible material-only script remains available,
 an incompatible stored geometry script requires a fresh scene plan. Original job files
 and failures are retained.
 
-Install `froge-oracle-wardrobe-v9.zip`, refresh the studio and generate a
-new model. An already configured OpenAI key is preserved. The Site refuses new jobs on older workers rather than launching an obsolete
-code-generation attempt.
+Install `froge-oracle-update.zip` for the latest worker and figure appearance. Existing
+OpenAI credentials are preserved. Validated-scene workers v7–v13 can still generate text jobs
+using their own bundled schema and geometry. The update is recommended, not a
+protocol requirement; v5/v6 remain blocked because of their known script/profile failures.
 
 
 Version 7 accepts valid closed, descending and stepped lathe cross-sections. Radius

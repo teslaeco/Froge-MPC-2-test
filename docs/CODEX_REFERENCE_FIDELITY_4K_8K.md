@@ -1,0 +1,40 @@
+Aktualizacja wykonawcza: [zakres i polecenie](CODEX_GENERATOR_UPGRADE.md), [wyniki i pozostałe różnice](reviews/generator-upgrade/README.md). Opis budżetu 80 Mi poniżej dotyczy wcześniejszej wersji; obecny eksport materiałów ma osobny limit 192 Mi oraz kontrolę RAM. Limit zdjęć wejściowych pozostaje 80 Mi.
+
+# Polecenie dla Codexa — FORGE MCP: wierna rekonstrukcja i tekstury 4K/8K
+
+Kontynuuj istniejący Froge-MPC-2-test, przeczytaj AGENTS.md oraz docs/WORK_CHECKPOINT.md. Nie zastępuj nowszego generatora starszym PR. Wykonaj realne zmiany kodu i sprawdź je w Blenderze, następnie otwórz PR do main.
+
+Celem jest zachowanie widocznej geometrii twarzy, anatomii, fryzury, kroju i kolorów oryginalnej kreacji: dopasowanej szmaragdowo-turkusowej sukni, niebiesko-srebrnego kołnierza, lekkich naramienników, odsłoniętego fragmentu skóry pod pachą, rękawiczki bez palców z nieregularnymi srebrnymi płytkami, kolczyków i kryształowego wachlarza z mechanizmami. Nie zastępuj sukni bluzą ani grubym pancerzem. Modelka ma naturalną skórę, charakterystyczne policzki, nos i usta, spójny kierunek wzroku, makijaż, rzęsy, włosy prowadzone nad uchem i za ucho. Pięć palców, paznokcie i rzeczywisty chwyt wachlarza są obowiązkowe.
+
+1. Zachowaj źródło i wersje. Zmiana tekstur nie może przebudowywać geometrii, pozy, UV ani przypisania materiałów. Każdą edycję konkretnej części porównuj z poprzednim GLB; nie poprawiaj jej przez niezwiązany nowy preset. Skontroluj, czy powtórnie zapisane to samo zdjęcie nadal uruchamia właściwe mapowanie.
+2. Obsłuż referencje do 4096 i 8192 px z kontrolą bajtów i pamięci, bez cichego rozciągania czy upscalingu. Pokaż rzeczywisty rozmiar źródła i tekstur w raporcie. 4K/8K tekstur, rozdzielczość renderu i jakość geometrii to osobne parametry. Mały obraz nie staje się źródłem 8K.
+3. Dopasowuj siatkę na podstawie mierzonych punktów i zgodnych ujęć tej samej osoby. Utrzymuj grubość ubrania, ostre krawędzie dodatków i ciągłość UV. Niewidoczny tył i dół oznacz jako rekonstrukcję. Wyższa liczba wielokątów ani fotograficzne odbicia w teksturze nie dowodzą zgodności.
+4. Materiały skóry, włosów, metalu i tkaniny muszą zachować kolory. Nie nazywaj zdjęcia z oświetleniem mapą fizycznego albedo. Nie wytwarzaj detali twarzy przez losowy szum ani nie nazywaj dopasowania uczeniem wag AI.
+5. Uruchom aktualny generator, eksport GLB, ponowny import i rzeczywiste rendery: sylwetka, twarz z przodu, profil, trzy czwarte, dłoń i strój. Zapisz SHA pliku użytego do renderów. Porównaj z oryginałem i popraw wykryte błędy; nie używaj ilustracji jako renderu modelu.
+6. Sprawdź transport zdjęć UI → API → Oracle, wersję/capabilities pracownika, zachowanie ustawień przy ponowieniu, pakiet aktualizacji, skalę i materiały GLB. Nie deklaruj wdrożenia na Oracle bez potwierdzenia health i nowej generacji na tym serwerze. Nie uruchamiaj nowych płatnych usług ani sprzedaży.
+7. Kryterium zakończenia rekonstrukcji: wizualna zgodność stroju i twarzy zaakceptowana przez Sebastiana. Dopóki to nie nastąpi, oznacz PR jako draft i nazwij pozostałe różnice. Testy techniczne nie są oceną podobieństwa.
+
+## Implementacja w tym PR
+
+Nowszy generator v20/v25; obsługa referencji i maksymalnego eksportu tekstur 2K/4K/8K; brak automatycznego powiększania; eksport zachowujący proporcje; kontrola geometrii/UV/pozy/przypisań materiałów; rozpoznanie tej samej kompozycji po ponownym kodowaniu JPEG; ograniczenia rozmiaru i pamięci; raport rzeczywistych tekstur oraz capability referenceQualityRevision=1. Dalsza ręczna rekonstrukcja twarzy, włosów i stroju pozostaje konieczna. To aktualizacja programu, nie nowo wytrenowany model generatywny.
+
+## Uzupełnienie: dostarczony wzorzec Meshy, 2026-09-10
+
+Kontynuuj istniejący draft PR #8. Sebastian dostarczył `Meshy_AI_Emerald_Prism_Empress_0910195448_generate.fbx` jako przykład oczekiwanej jakości. Wykonany import w Blenderze potwierdza 1 539 459 wierzchołków i 3 079 530 trójkątów w jednym obiekcie, bez UV, materiałów i obrazów. Ten FBX jest wzorcem rzeźby. Pierwszy upload paczki tekstur nie dotarł. Ponowny upload został zweryfikowany: kolor PNG 8192 × 8192 oraz normalne, metaliczność i chropowatość PNG po 4096 × 4096. Raport uzupełniający: `docs/reviews/meshy-reference/TEXTURES.md`. Nie odtwarzaj brakujących map z miniaturek ekranowych.
+
+8. Najpierw porównaj widoczny na zdjęciu biust modelki: twarz, linia włosów, ucho, kołnierz, naramienniki, rękawiczka, uchwyt i wachlarz. Użyj neutralnego materiału, przodu, trzech czwartych i tyłu. Nie oceniaj zgodności wyłącznie przez nałożone zdjęcie. Niewidoczna część pleców i nogi nie są potwierdzoną referencją. Zrzuty i dostarczony model są wzorcem porównania; nie zastępuj wyniku naszego generatora importem Meshy ani nie przedstawiaj tego importu jako uczenia AI.
+9. Dla każdej poprawki zapisz wejście, konfigurację, SHA wynikowego GLB, rzeczywiste rendery po ponownym imporcie i konkretną ocenę twarzy, fryzury, stroju oraz chwytu. Aktualny generator korzysta z ogólnej bazy anatomicznej i reguł budowania kreacji. Konieczna jest przebudowa dopasowania geometrii; samo zwiększenie limitu trójkątów albo atlasu tekstur nie spełni celu.
+10. Zachowaj szczegółową siatkę źródłową jako master. Jeśli dodajesz LOD do podglądu mobilnego, zapisz go jako osobny eksport i porównaj sylwetkę, twarz, UV, normalne oraz ostre dodatki z masterem. Nie stosuj istniejącego budżetu uproszczonego generatora do niszczącego nadpisania dostarczonego wzorca.
+11. Po otrzymaniu ZIP-a sprawdź model z teksturami i jego UV, powiązania materiałów, faktyczne wymiary map bazowego koloru, normalnych, roughness i metallic. Przetestuj GLB z osadzonymi mapami po ponownym imporcie. Oznaczenie 8K na screenie nie jest dowodem rozdzielczości wyeksportowanych map. Materiały o stałym kolorze nie muszą mieć sztucznego atlasu 8K.
+12. Uruchom `scripts/inspect-reference-asset.py` na wzorcu i wyniku. To audyt techniczny, bez automatycznej oceny podobieństwa. Opcje `--require-textures` i `--min-base-color-edge` są dobrowolnymi, rygorystycznymi kontrolami kompletności obrazów dla wszystkich użytych materiałów; nie włączaj ich bezwarunkowo do generatora z poprawnymi materiałami o stałym kolorze. Kryterium wizualne nadal wymaga obejrzenia renderów i akceptacji Sebastiana.
+
+Wyniki porównania, rzeczywiste rendery i odtwarzalne polecenia: `docs/reviews/meshy-reference/README.md`. W tej aktualizacji wdrożono audyt plików i benchmark; **nie wdrożono jeszcze rekonstrukcji o jakości dostarczonego FBX**.
+
+
+## Zweryfikowany zestaw PBR z ponownego uploadu
+
+13. Uwzględnij rzeczywisty przypadek 8K + trzy mapy 4K: 117 440 512 pikseli, czyli 112 Mi pikseli. Obecny eksport FORGE ma limit 83 886 080 pikseli i nie obsługuje tego pełnego zestawu bez redukcji. Wprowadź osobny, zmierzony budżet materiałów i ogranicz buforowanie kopii obrazów. Zanim zwiększysz limit, sprawdź pamięć rzeczywistego pracownika Oracle i wykonaj test kompletnego zestawu. Zachowaj osobne zasady przyjmowania zdjęć wejściowych. Nie rozwiązuj problemu przez ciche zmniejszenie map lub samą zmianę etykiety 8K.
+14. Preferuj dostarczone zewnętrzne PNG dla map master. W tym FBX osadzony kolor i normalne są JPEG; testowy GLB z PNG zachował oryginalne bajty koloru i normalnych. Metaliczność i roughness mogą zajmować osobne kanały wspólnej mapy 4K. Zachowaj sRGB dla koloru i Non-Color dla map danych; nie podpinaj normalnych bez odpowiedniego węzła.
+15. Rozróżniaj zmianę indeksów od zmiany kształtu. Dostarczone dwa FBX-y mają inną kolejność wierzchołków i ścian. Dopasowanie przestrzenne oraz kontrola zbioru trójkątów z orientacją potwierdziły zgodność powierzchni w tolerancji 1e-6 jednostki sceny. Testuj też deformację, odwrócenie ściany oraz zastąpienie ściany duplikatem. Wszystkie surowe hashe, tolerancje i wyniki zachowaj w raporcie.
+
+Weryfikacja wzorca i eksportu GLB jest wykonana. Pełna obsługa tego zestawu przez pracownika FORGE i rekonstrukcja podobnej jakości pozostają do implementacji. Nie przedstawiaj zaimportowanego Meshy jako wyniku naszego generatora.

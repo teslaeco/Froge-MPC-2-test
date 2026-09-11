@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "name": "Kobieta LA \u2014 falowane wlosy",
+  "materials": [
+    {
+      "name": "skin",
+      "rgb": [
+        0.67,
+        0.47,
+        0.36
+      ],
+      "pattern": "skin",
+      "roughness": 0.6,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "hair",
+      "rgb": [
+        0.055,
+        0.022,
+        0.012
+      ],
+      "pattern": "plain",
+      "roughness": 0.6,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "hoodie",
+      "rgb": [
+        0.55,
+        0.23,
+        0.27
+      ],
+      "pattern": "cotton",
+      "roughness": 0.9,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "pants",
+      "rgb": [
+        0.055,
+        0.095,
+        0.14
+      ],
+      "pattern": "denim",
+      "roughness": 0.8,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "shoes",
+      "rgb": [
+        0.67,
+        0.7,
+        0.72
+      ],
+      "pattern": "plain",
+      "roughness": 0.65,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "gold",
+      "rgb": [
+        0.035,
+        0.04,
+        0.05
+      ],
+      "pattern": "plain",
+      "roughness": 0.8,
+      "metallic": 0,
+      "emission": 0
+    },
+    {
+      "name": "eyes",
+      "rgb": [
+        0.055,
+        0.035,
+        0.017
+      ],
+      "pattern": "plain",
+      "roughness": 0.6,
+      "metallic": 0,
+      "emission": 0
+    }
+  ],
+  "parts": [
+    {
+      "kind": "portrait",
+      "name": "Anatomical portrait",
+      "center": [
+        0,
+        -0.025,
+        1.68
+      ],
+      "scale": 1,
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "skin_material": "skin",
+      "eye_material": "eyes",
+      "hair_material": "hair",
+      "presentation": "feminine",
+      "hair_style": "long_wavy",
+      "headwear": "none",
+      "face": {
+        "nose_width": 0,
+        "nose_projection": 0,
+        "mouth_width": 0,
+        "lip_fullness": 0,
+        "jaw_width": 0,
+        "chin_height": 0,
+        "cheek_fullness": 0
+      },
+      "makeup": "soft_glam"
+    },
+    {
+      "kind": "anatomical_hand",
+      "name": "left hand",
+      "wrist": [
+        0.29,
+        -0.055,
+        0.93
+      ],
+      "direction": [
+        0,
+        -0.12,
+        -1
+      ],
+      "palm_normal": [
+        1,
+        0,
+        0.1
+      ],
+      "side": "left",
+      "presentation": "feminine",
+      "scale": 1,
+      "curl": 0.18,
+      "nail_length": 0.001,
+      "skin_material": "skin",
+      "nail_material": "skin"
+    },
+    {
+      "kind": "anatomical_hand",
+      "name": "right hand",
+      "wrist": [
+        -0.29,
+        -0.055,
+        0.93
+      ],
+      "direction": [
+        0,
+        -0.12,
+        -1
+      ],
+      "palm_normal": [
+        -1,
+        0,
+        0.1
+      ],
+      "side": "right",
+      "presentation": "feminine",
+      "scale": 1,
+      "curl": 0.18,
+      "nail_length": 0.001,
+      "skin_material": "skin",
+      "nail_material": "skin"
+    }
+  ],
+  "subject_type": "person"
+}

@@ -1,0 +1,112 @@
+{
+  "revision": 1,
+  "date": "2026-09-11",
+  "status": "implemented_and_offline_verified_live_execution_blocked",
+  "engine": "Meshy 7 Ultra",
+  "paid_ai_calls": 0,
+  "neural_model_generated": false,
+  "likeness_verified": false,
+  "oracle_installed": false,
+  "site_deployed": false,
+  "site_version": 38,
+  "source_backend_checkpoint": "759ac60f169ca7d694064a0cd56b5c0f8cb1a85f",
+  "validation": {
+    "python_suite": 50,
+    "additional_pbr_download_test": 1,
+    "ui_and_api_tests": 66,
+    "generation_module_typecheck": "passed (materialized generation sources and their direct dependencies; no full Site build)",
+    "native_blender": "4.3.0",
+    "native_export_reimports": {
+      "master": {
+        "triangles": 732,
+        "dimensions": [
+          2.799999713897705,
+          1.3999996185302734,
+          2.5999999046325684
+        ],
+        "textures": [
+          [
+            8192,
+            64
+          ]
+        ]
+      },
+      "preview": {
+        "triangles": 732,
+        "dimensions": [
+          2.799999713897705,
+          1.3999996185302734,
+          2.5999999046325684
+        ],
+        "textures": [
+          [
+            4096,
+            32
+          ]
+        ]
+      },
+      "fbx": {
+        "triangles": 732,
+        "dimensions": [
+          2.799999713897705,
+          1.399999737739563,
+          2.600000023841858
+        ],
+        "textures": [
+          [
+            8192,
+            64
+          ]
+        ]
+      },
+      "obj": {
+        "triangles": 732,
+        "dimensions": [
+          2.799999952316284,
+          1.4000002145767212,
+          2.6000001430511475
+        ],
+        "textures": [
+          [
+            8192,
+            64
+          ]
+        ]
+      },
+      "stl": {
+        "triangles": 732,
+        "dimensions": [
+          2.799999952316284,
+          1.3999997973442078,
+          2.6000001430511475
+        ]
+      },
+      "kind": "offline authored fixture; no neural generation or likeness claim"
+    },
+    "installation_fixture": {
+      "kind": "authored textured cube",
+      "triangles": 12,
+      "native_import_exports": "passed"
+    }
+  },
+  "blockers": [
+    "Meshy API connection not configured in available runtime",
+    "Oracle browser: Site Unavailable; no SSH private key in this session",
+    "Canonical Site source clone with renewed credential: HTTP 500 / expected packfile"
+  ],
+  "notes": [
+    "Hidden surfaces are inferred from supplied views.",
+    "Requested 4K/8K is not proof of returned texture resolution; measure artifacts.",
+    "Procedural text mode and explicit historical scene replay remain available.",
+    "Native fixture exports validate file handling, not Meshy output quality."
+  ],
+  "installer": {
+    "file": "froge-v21.zip",
+    "bytes": 15504742,
+    "sha256": "ac64a5dbdbead260c6bbdc9550bf3d328aa70739c57e2ac4fe0137ecb13a0fb3",
+    "payload_files": 49,
+    "payload_sha256": "b9529b3a741d0983df5fe249a9bd0f3a75402ba374fd29ec8a4b31c437bc3f5d",
+    "archive_and_source_match": true,
+    "installed_on_oracle": false
+  }
+}

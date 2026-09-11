@@ -1,0 +1,11 @@
+{
+  "blender": "4.3.0",
+  "passed": 5,
+  "checks": [
+    "Closed cube has 12 triangles; missing material fails texture admission.",
+    "An unconnected 8K image does not qualify a 4K material as 8K.",
+    "A missing connected texture is rejected.",
+    "A texture without a mesh UV layer does not pass texture admission.",
+    "An open triangle reports three boundary edges; no print-readiness claim."
+  ]
+}

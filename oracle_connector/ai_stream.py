@@ -12,6 +12,14 @@ class OpenAIServiceError(RuntimeError):
     """A sanitized provider failure, never raw upstream response text."""
 
 
+class AIStreamTimeout(TimeoutError):
+    """Retain bounded draft evidence; never treat a partial stream as success."""
+    def __init__(self,message,partial_text='',elapsed=0):
+        super().__init__(message)
+        self.partial_text=partial_text
+        self.elapsed=elapsed
+
+
 def openai_error(code):
     if code in (401, 'invalid_api_key'):
         return 'OpenAI odrzucilo klucz API. Sprawdz klucz w ustawieniach.'
@@ -31,12 +39,11 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
     No prompts are placed in command-line arguments or diagnostic output.
     """
     is_openai = response_protocol == 'responses'
-    timeout_message = ('OpenAI przekroczylo limit 3 minut na instrukcje. Model nie zostal zapisany.'
-                       if is_openai else 'AI przekroczylo laczny limit 30 minut. Model nie zostal zapisany.')
+    timeout_message = ('OpenAI' if is_openai else 'Lokalne AI') + ' przekroczylo limit %.0f s na kompletna odpowiedz.' % max(0,timeout)
     if cancelled.is_set():
         raise InterruptedError('Zlecenie anulowane.')
     if timeout <= 0:
-        raise TimeoutError(timeout_message)
+        raise AIStreamTimeout(timeout_message)
     started = time.monotonic()
     last_data = started
     next_progress = started
@@ -74,7 +81,7 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
                 if cancelled.is_set():
                     raise InterruptedError('Zlecenie anulowane.')
                 if now - started >= timeout:
-                    raise TimeoutError(timeout_message)
+                    raise AIStreamTimeout(timeout_message,''.join(pieces),now-started)
                 if now >= next_progress:
                     progress(characters, now - started, now - last_data)
                     next_progress = now + interval
@@ -122,6 +129,12 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
                                 if usage_callback:
                                     usage = response.get('usage') or {}
                                     usage_callback({k: v for k, v in usage.items() if k in ('input_tokens', 'output_tokens', 'total_tokens') and type(v) is int})
+                                if not characters:
+                                    raise ValueError('OpenAI zakonczylo odpowiedz bez planu.')
+                                # response.completed is the authoritative terminal
+                                # event. A proxy may keep the HTTP stream open.
+                                progress(characters,time.monotonic()-started,0)
+                                return ''.join(pieces)
                         else:
                             if item.get('error'):
                                 raise ValueError(str(item['error'])[:500])
@@ -147,11 +160,11 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
             try:
                 result = process.wait(timeout=remaining)
             except subprocess.TimeoutExpired:
-                raise TimeoutError(timeout_message) from None
+                raise AIStreamTimeout(timeout_message,''.join(pieces),time.monotonic()-started) from None
             if cancelled.is_set():
                 raise InterruptedError('Zlecenie anulowane.')
             if result == 28:
-                raise TimeoutError('AI nie zakonczylo odpowiedzi w limicie czasu. Model nie zostal zapisany.')
+                raise AIStreamTimeout(timeout_message,''.join(pieces),time.monotonic()-started)
             if result:
                 if is_openai:
                     raise OpenAIServiceError(openai_error(http_status))

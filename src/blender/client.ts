@@ -1,5 +1,7 @@
-export type GenerationJob = { id: string; prompt: string; state: string; detail: string; created: string; updated: string; hasModel: boolean }
-export type BlenderConnection = { connected: boolean; ready: boolean; endpoint?: string; model?: string; detail: string; provider?: 'ollama' | 'openai'; connectorVersion?: number; characterStandard?: number }
+import type { JobPhoto } from './photoReferences'
+export type GenerationJob = { id: string; prompt: string; state: string; detail: string; created: string; updated: string; hasModel: boolean; referencePhotos?: JobPhoto[] }
+export type Image3DCapabilities = { textReady?: boolean; astraPhotoRevision?: number; photoEngine?: string; photoReasoningEffort?: string }
+export type BlenderConnection = Image3DCapabilities & { connected: boolean; ready: boolean; endpoint?: string; model?: string; detail: string; provider?: 'ollama' | 'openai'; connectorVersion?: number; photoInput?: boolean; sceneReplay?: boolean; rendererRevision?: number; portraitRevision?: number; characterStandard?: number; coutureRevision?: number; promptMaxLength?: number; referenceQualityRevision?: number; materialQualityRevision?: number }
 export const finished = (job: GenerationJob) => ['succeeded', 'failed', 'cancelled'].includes(job.state)
 export class BlenderRequestError extends Error {
   readonly retryable: boolean

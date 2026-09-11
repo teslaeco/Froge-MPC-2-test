@@ -1,0 +1,67 @@
+{
+  "blender": "4.3.0",
+  "fixtures": [
+    {
+      "revision": 1,
+      "requested_max_edge": 4096,
+      "textures": [
+        {
+          "name": "Native-8192-test-pattern",
+          "source_size": [
+            8192,
+            1024
+          ],
+          "export_size": [
+            4096,
+            512
+          ],
+          "resampled": true,
+          "upscaled": false,
+          "source_sha256": null,
+          "contains_photographed_lighting": true
+        }
+      ],
+      "upscaling_used": false,
+      "likeness_verified": false,
+      "note": "4K/8K is a maximum texture edge, not recovered detail or render resolution.",
+      "reimported": true,
+      "expected_size": [
+        4096,
+        512
+      ],
+      "geometry_unchanged": true,
+      "glb_bytes": 69728
+    },
+    {
+      "revision": 1,
+      "requested_max_edge": 8192,
+      "textures": [
+        {
+          "name": "Native-8192-test-pattern",
+          "source_size": [
+            8192,
+            1024
+          ],
+          "export_size": [
+            8192,
+            1024
+          ],
+          "resampled": false,
+          "upscaled": false,
+          "source_sha256": null,
+          "contains_photographed_lighting": true
+        }
+      ],
+      "upscaling_used": false,
+      "likeness_verified": false,
+      "note": "4K/8K is a maximum texture edge, not recovered detail or render resolution.",
+      "reimported": true,
+      "expected_size": [
+        8192,
+        1024
+      ],
+      "geometry_unchanged": true,
+      "glb_bytes": 153352
+    }
+  ]
+}

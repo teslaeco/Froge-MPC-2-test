@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "source_file": "Meshy_AI_Emerald_Prism_Empress_0910195448_generate.fbx",
+  "source_sha256": "8c517ff85e83284a06e16b3db705c17fa60372b1b7501ff061e433a71224c086",
+  "source_bytes": 99865372,
+  "blender": "4.3.0",
+  "totals": {
+    "vertices": 1539459,
+    "faces": 3079530,
+    "triangles": 3079530,
+    "boundary_edges": 0,
+    "wire_edges": 0,
+    "edges_with_more_than_two_faces": 2,
+    "nonfinite_vertices": 0
+  },
+  "mesh_objects": 1,
+  "unique_meshes": 1,
+  "meshes": [
+    {
+      "name": "mesh_node",
+      "vertices": 1539459,
+      "faces": 3079530,
+      "triangles": 3079530,
+      "edges": 4619293,
+      "boundary_edges": 0,
+      "wire_edges": 0,
+      "edges_with_more_than_two_faces": 2,
+      "vertices_unused_by_faces": 0,
+      "nonfinite_vertices": 0,
+      "uv_layers": [],
+      "material_slots": [],
+      "used_materials": [],
+      "unassigned_material_faces": 3079530,
+      "world_bounds": {
+        "min": [
+          -0.6405878663063049,
+          -0.6105943918228149,
+          -0.9604967832565308
+        ],
+        "max": [
+          0.6563143134117126,
+          0.6063539981842041,
+          0.9502460360527039
+        ]
+      },
+      "matrix_world": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          4.371138828673793e-08,
+          0.0
+        ],
+        [
+          0.0,
+          -4.371138828673793e-08,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  ],
+  "materials": [],
+  "images": [],
+  "texture_evidence": {
+    "all_meshes_have_uv_layers": false,
+    "all_faces_have_materials": false,
+    "all_used_materials_have_loaded_base_color_images": false,
+    "minimum_loaded_base_color_long_edge": 0
+  },
+  "limitations": [
+    "Counts include each scene mesh instance. They do not measure identity or reconstruction fidelity.",
+    "Boundary counts use imported indices without welding; UV seams can split GLB vertices.",
+    "Two faces per edge alone does not establish watertightness, correct normals or print readiness.",
+    "Image dimensions and UV presence do not establish native detail, UV quality or physical PBR albedo.",
+    "Channel traversal supports ordinary imported Principled shaders; arbitrary node groups need manual review.",
+    "Bounds are in imported scene units. Physical scale is not independently calibrated."
+  ],
+  "validation": {
+    "status": "passed",
+    "failures": [],
+    "require_textures": false,
+    "min_base_color_edge": null,
+    "likeness_verified": false
+  },
+  "clay_review": {
+    "mode": "neutral clay material override",
+    "front": "negative-y",
+    "lower_crop_fraction": 0,
+    "renders": [
+      {
+        "file": "meshy-front-clay.png",
+        "sha256": "b74bb44e700f55ccc492f48820b39793b308194bd4d01d00c963e2a666f70e75",
+        "size": [
+          768,
+          768
+        ]
+      },
+      {
+        "file": "meshy-three-quarter-clay.png",
+        "sha256": "d5f0276e0d52e96927a92ed333ec53521d1cb5cb9f3184dc297a56789b60cd81",
+        "size": [
+          768,
+          768
+        ]
+      },
+      {
+        "file": "meshy-back-clay.png",
+        "sha256": "c4dbf59d55f12af9c1edcfb16c26e9c3944fcd518b92034ed038b457d7f9b5da",
+        "size": [
+          768,
+          768
+        ]
+      }
+    ]
+  }
+}

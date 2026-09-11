@@ -1,0 +1,1 @@
+ALTER TABLE `blender_jobs` ADD `reference_photos` text DEFAULT '[]' NOT NULL;

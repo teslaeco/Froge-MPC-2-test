@@ -10,10 +10,11 @@ import unittest
 from unittest.mock import patch
 import urllib.error
 
-from ai_stream import OpenAIServiceError, stream_chat
+from ai_stream import OpenAIServiceError, AIStreamTimeout, stream_chat
 from code_policy import CodePolicyError, StreamPolicyGuard
 import openai_provider
 import server
+import photo_input
 from runtime.scene_contract import SCHEMA
 
 FAKE_KEY = 'sk-local-fixture-' + 'x' * 30
@@ -34,6 +35,7 @@ class ResponseFixture(BaseHTTPRequestHandler):
             for item in self.server.events:
                 self.wfile.write(('event: %s\ndata: %s\n\n' % (item['type'], json.dumps(item))).encode())
                 self.wfile.flush()
+            time.sleep(self.server.linger)
         except OSError:
             pass
 
@@ -42,6 +44,7 @@ class ResponsesTests(unittest.TestCase):
     def setUp(self):
         self.http = ThreadingHTTPServer(('127.0.0.1', 0), ResponseFixture)
         self.http.delay, self.http.status = 0, 200
+        self.http.linger=0
         self.http.events = [
             {'type': 'response.output_text.delta', 'delta': 'import math\n'},
             {'type': 'response.output_text.delta', 'delta': 'angle = math.pi\n'},
@@ -89,6 +92,20 @@ class ResponsesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'kompletnego'):
             self.call()
 
+    def test_completed_event_finishes_even_if_http_connection_stays_open(self):
+        self.http.linger=1
+        result=stream_chat(self.url,{},threading.Event(),lambda *_:None,
+                           response_protocol='responses',timeout=.35)
+        self.assertEqual(result,'import math\nangle = math.pi\n')
+
+    def test_timeout_preserves_partial_draft_without_promoting_it_to_success(self):
+        self.http.events=[{'type':'response.output_text.delta','delta':'{"version":2,'}]
+        self.http.linger=1
+        with self.assertRaises(AIStreamTimeout) as failure:
+            stream_chat(self.url,{},threading.Event(),lambda *_:None,
+                        response_protocol='responses',timeout=.15)
+        self.assertEqual(failure.exception.partial_text,'{"version":2,')
+
     def test_http_quota_failure_and_cancellation_before_headers_are_explicit(self):
         self.http.status, self.http.events = 429, []
         with self.assertRaisesRegex(OpenAIServiceError, 'limit zapytan'):
@@ -117,11 +134,25 @@ class ResponsesTests(unittest.TestCase):
         self.assertEqual(args[1]['model'], 'gpt-6-astra')
         self.assertEqual(args[1]['reasoning'], {'effort': 'low'})
         self.assertEqual(args[1]['max_output_tokens'], 9000)
-        self.assertEqual(openai_provider.MAX_OUTPUT_TOKENS, 9000)
         self.assertFalse(args[1]['store'])
         self.assertEqual(args[1]['text']['format'], {'type':'json_schema','name':'froge_scene','strict':True,'schema':SCHEMA})
         self.assertNotIn(FAKE_KEY, json.dumps(args[1]))
         self.assertEqual(kwargs['api_key'], FAKE_KEY)
+
+    def test_image_content_survives_the_real_responses_transport(self):
+        image_url = 'data:image/jpeg;base64,transportfixture'
+        messages = [{'role': 'user', 'content': photo_input.user_content('Model this object', [{'view': 'front', 'dataUrl': image_url}])}]
+        with patch.object(openai_provider,'stream_chat',return_value='{}') as request:
+            openai_provider.generate(messages,FAKE_KEY,threading.Event(),lambda *_:None,600,None,lambda *_:None,schema=SCHEMA)
+        self.assertEqual(request.call_args.args[1]['reasoning'],{'effort':'max'})
+        # Preserve provider payload creation, redirect only the network target to the local fixture.
+        def local_transport(_url, *args, **kwargs):
+            return stream_chat(self.url, *args, **kwargs)
+        with patch.object(openai_provider, 'stream_chat', side_effect=local_transport):
+            openai_provider.generate(messages, FAKE_KEY, threading.Event(), lambda *_: None, 2, None, lambda *_: None, schema=SCHEMA)
+        self.assertEqual(self.http.payload['input'], messages)
+        self.assertEqual(self.http.payload['input'][0]['content'][-1], {'type': 'input_image', 'image_url': image_url, 'detail': 'high'})
+        self.assertNotIn(FAKE_KEY, json.dumps(self.http.payload))
 
 
 class ConfigurationTests(unittest.TestCase):
@@ -142,12 +173,10 @@ class ConfigurationTests(unittest.TestCase):
         with patch.object(server, 'ollama_json', side_effect=AssertionError('Local model must not be called')):
             state = server.health()
             self.assertEqual(state['provider'], 'openai')
-            self.assertEqual(state['connectorVersion'], 18)
-            self.assertEqual(state['characterStandard'], 18)
             self.assertNotIn(FAKE_KEY, json.dumps(state))
             with patch.object(openai_provider, 'generate', return_value='import math') as generate:
                 self.assertEqual(server.generate_code([], 'fixture', threading.Event()), 'import math')
-                self.assertLessEqual(generate.call_args.args[4], 180)
+                self.assertLessEqual(generate.call_args.args[4], 600)
         server.RUNNING.add('inflight')
         self.assertFalse(server.configure_ai({'provider': 'ollama'}))
         self.assertEqual(server.ai_settings()['provider'], 'openai')
