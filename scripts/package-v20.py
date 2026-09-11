@@ -24,6 +24,8 @@ template=template.replace("report.get('revision') != 1", "report.get('revision')
 template=template.replace("compile(base64.b64decode(encoded, validate=True), name, 'exec')", "decoded = base64.b64decode(encoded, validate=True)\n        if name.endswith('.py'): compile(decoded, name, 'exec')")
 template=template.replace('timeout=180','timeout=900').replace('timeout=360','timeout=1080')
 template=template.replace('FROGE_PORTRAIT_OK','FROGE_V20_OK')
+template=template.replace("health.get('materialQualityRevision') != 2:",
+                          "health.get('materialQualityRevision') != 2 or health.get('interchangeRevision') != 2:")
 template=template.replace('Poprawiona figurka jest juz dostepna na stronie.', 'Model kontrolny zostal zapisany na Oracle. Sprawdz jego wyglad; nowe modele tworz w generatorze.')
 # Retain the actual verification model so it can be inspected after installation.
 template=template.replace("with tempfile.TemporaryDirectory(prefix='portrait-export-check-', dir=target / 'state') as folder:",
@@ -31,10 +33,23 @@ template=template.replace("with tempfile.TemporaryDirectory(prefix='portrait-exp
 template=template.replace('work = Path(folder)',"work = Path(folder)\n        work.mkdir(mode=0o700, parents=True)")
 template=template.replace("print('FROGE_PORTRAIT_EXPORT_OK:","print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)\n        if json.loads((work / 'result.json').read_text()).get('export_validation', {}).get('reimported') is not True:\n            raise RuntimeError('Ponowne otwarcie GLB nie zostalo potwierdzone.')\n        print('FROGE_PORTRAIT_EXPORT_OK:")
 result=template.replace('__PAYLOAD_B64__',base64.b64encode(gzip.compress(raw,mtime=0)).decode()).replace('__PAYLOAD_SHA256__',hashlib.sha256(raw).hexdigest())
+result=result.replace("print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)",
+    "for format_name in server.EXPORT_FILES:\n            server.export_files(work,format_name)\n        print('Model kontrolny: ' + str(work / 'model.glb'), flush=True)")
 compile(result,'froge-v20.py','exec')
 folder=root/'public/downloads';folder.mkdir(parents=True,exist_ok=True)
 (folder/'froge-v20.py').write_text(result)
-readme='''FORGE v20 — pełna aktualizacja generatora, referencje 4K/8K
+readme='''FORGE v20 — poprawka eksportów i generatora, 2026-09-11
+
+Nowa poprawka: rozdzielone tekstury FBX, przenośny OBJ+MTL z folderem textures,
+raport rozmiarów i SHA256, pobieranie eksportów po uwierzytelnieniu. Kolor skóry
+twarzy jest wypalany do atlasu bez dodawania oświetlenia sceny. Materiały
+projekcyjne ubrania nadal mają ograniczenia FBX/OBJ; nie każdy shader jest
+równoważny. Ponowny eksport nie tworzy nowego detalu ani podobieństwa twarzy.
+Poprawiono powieki, układ włosów i dopasowanie kołnierza. Nieudana korekta
+przywraca wszystkie formaty i tekstury. Instalator sprawdza komplet eksportów;
+nie wywołuje płatnego AI. Samo pobranie ZIP nie aktualizuje Oracle ani strony.
+Paczka jest sprawdzona lokalnie; instalację na konkretnej VM potwierdza dopiero
+FROGE_V20_OK po jej wykonaniu. Limity kosztu i czasu nie zostały podniesione.
 
 Prześlij froge-v20.zip do Oracle Cloud Shell (Menu > Upload), potem:
 python3 -m zipfile -e "$HOME/froge-v20.zip" "$HOME/froge-v20"

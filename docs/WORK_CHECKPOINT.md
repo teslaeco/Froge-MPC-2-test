@@ -1,3 +1,50 @@
+## 2026-09-11 — generator and downloadable exports executed (after 5138178)
+
+- Continued at the user's instruction to execute the work directly. Parent remote
+  commit: 51381781f42130e0508afb7ac0e0ccd5db98bf20, same PR #9, no merge.
+- Changed the reusable portrait/couture runtime: neutral lid-template alignment,
+  raised/swept crown, finer procedural hair fibres, darker hair and closer collar.
+  Rebuilt the original authored scene with 478 measured reference landmarks in
+  native Blender 4.3.0. No paid AI request or new Astra-generated scene was made.
+- Actual new GLB: 39,043,816 bytes, 591,960 triangles. Initial measured build was
+  31.27 s / 1,339,412 KiB peak RSS, before the later standalone skin-bake exports;
+  this is not an Oracle performance measurement. Inspected equal-camera front
+  renders before/after and profile. Visual improvement remains modest; this is
+  not accepted photographic likeness or newly recovered 8K texture detail.
+- Native export now additionally bakes the single-material anatomical head's
+  image-times-vertex colour via EMIT into a 2048 atlas, without new scene lighting.
+  Source illumination remains. Other complex shaders and projected garment UVs
+  are not declared equivalent; they need separate texture baking/unwrapping.
+- Actual FBX render exposed blank eyes despite correct texture bytes. Fixed native
+  FBX's missing UVSet bindings by temporarily placing the colour UV channel first.
+  Extended the packed-image native fixture with a decoy first UV layer; exact
+  geometry/UV/texture/material comparisons, original-state restoration and STL
+  millimetres pass. New reusable existing-asset reimport and rendering scripts added.
+- Added authenticated completed-job export listing and downloads (FBX, OBJ ZIP,
+  STL, BLEND, scene JSON). OBJ includes only declared texture files. Hash/size,
+  state, missing-file and symlink checks reject incomplete or changed output.
+  Downloads never call AI. Existing GLB 48 MiB gate remains; interchange aggregate
+  download limit is 256 MiB. Health now reports interchangeRevision=2.
+- Fixed visual-refinement rollback/cancellation to restore every format, texture
+  folder and review view, and remove candidate-only artifacts.
+- 78 focused Python tests passed, including real HTTP, archive integrity, queue,
+  rollback, update, photo fit and geometry checks. A mocked update test prints
+  FROGE_UPDATE_OK; that message is NOT evidence of a real Oracle installation.
+- Added scripts/package-worker.py to build complete fresh/update/one-file worker
+  packages independently of frontend/add-on assets. Installer compiles and payload
+  bytes match all 45 runtime files; installation also checks all generated formats
+  and the new health revision. Reproducible binary packages are deliverables, not
+  committed source. Packages have not been installed on the actual Oracle VM.
+- Existing Site still v38/owner-only, source 868131794689da730f851a8845ff951f2da8c92b.
+  Valid fresh-credential source clone attempts (including protocol v0) return
+  HTTP 500 / expected packfile. Oracle Console browser access returns Site
+  Unavailable. The source-access and installation blocks persist; no existing UI
+  was replaced, no Site deployed and no public access switch was performed.
+- Publication authorization persists after required fixes. Remaining: recover
+  current Site source, connect export downloads and explicit example selection,
+  install worker, perform a real new-prompt generation, inspect materials and
+  likeness, then publish the same Site to the authorized public audience.
+
 ## 2026-09-11 — export texture repair executed in PR #9
 
 - User explicitly asked this assistant to execute the continuation, not just draft it.

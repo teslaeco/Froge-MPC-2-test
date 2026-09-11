@@ -59,6 +59,16 @@ def verify():
             node = material.node_tree.nodes.new('ShaderNodeTexImage'); node.image = texture
             shader = material.node_tree.nodes.get('Principled BSDF')
             material.node_tree.links.new(node.outputs['Color'], shader.inputs['Base Color'])
+            # The source uses a named second UV channel; FBX omits texture
+            # UVSet names and previously displayed the decoy first channel.
+            first=obj.data.uv_layers.active
+            values=[tuple(loop.uv) for loop in first.data]
+            for loop in first.data:loop.uv=(0.,0.)
+            primary=obj.data.uv_layers.new(name='AlbedoUV')
+            for loop,value in zip(primary.data,values):loop.uv=value
+            obj.data.uv_layers.active=primary;primary.active_render=True
+            uvnode=material.node_tree.nodes.new('ShaderNodeUVMap');uvnode.uv_map=primary.name
+            material.node_tree.links.new(uvnode.outputs['UV'],node.inputs['Vector'])
             originals.append((node, texture, image_hash(texture)))
         before = snapshot()
         selected = list(bpy.context.selected_objects)
@@ -95,6 +105,7 @@ def verify():
                 'packed_texture_count': 2, 'fbx_embedded_bytes_preserved': True,
                 'obj_relocated_textures_preserved': True, 'uv_and_geometry_preserved': True,
                 'master_state_preserved': True, 'stl_millimetres_verified': True,
+                'named_secondary_colour_uv_preserved': True,
                 'scope': 'Native regression fixture; does not claim every Blender shader survives interchange'}
 
 

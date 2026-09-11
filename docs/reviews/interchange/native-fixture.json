@@ -7,5 +7,6 @@
   "uv_and_geometry_preserved": true,
   "master_state_preserved": true,
   "stl_millimetres_verified": true,
+  "named_secondary_colour_uv_preserved": true,
   "scope": "Native regression fixture; does not claim every Blender shader survives interchange"
 }

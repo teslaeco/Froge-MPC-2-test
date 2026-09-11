@@ -10,7 +10,8 @@ automatic print-readiness guarantee.
 Interchange export revision 2 materializes packed/generated PNG and JPEG images
 under unique content-addressed names in `textures/`, then temporarily binds ordinary
 file images for the native exporters. Original image nodes and master geometry are
-restored. Deliver OBJ together with its MTL and the entire `textures/` directory.
+restored. The colour UV channel is temporarily placed first for native FBX,
+which otherwise ignores named shader UV bindings; the original mesh is restored. Deliver OBJ together with its MTL and the entire `textures/` directory.
 A failed optional exporter is reported as `status: partial`; the completed GLB/BLEND
 remain available. `formats` includes only nonempty files produced successfully.
 An export report does not claim that a native reimport was performed for every job.
@@ -19,8 +20,24 @@ Run `python -m unittest test_scene_exports` for failure handling, and
 `blender --background --python verify_scene_exports.py` for real FBX/OBJ/STL imports.
 The native fixture checks two distinct packed images with empty paths, preserved
 image bytes/material assignments, geometry, UVs, STL units and a relocated OBJ.
-Complex shader graphs, vertex-color-driven skin and advanced PBR require inspection
-in the target application; shipping their source images is not a shader bake.
+Anatomical heads with a single skin material bake image-times-vertex colour to an
+emission atlas (2048 px for the current fixture, capped at 4096). No scene lighting
+is added, but illumination already in the reference image remains. The original
+GLB/BLEND shader and geometry are restored. Projected garment UVs can overlap;
+those shaders and advanced PBR still require inspection in the target application.
+
+Authenticated download endpoints: `GET /v1/jobs/{id}/exports` lists available
+formats; `/exports/fbx`, `/exports/obj`, `/exports/stl`, `/exports/blend` and
+`/exports/scene-json` return files. OBJ is a ZIP containing OBJ, MTL and only the
+declared textures. Completed jobs only; recorded file hashes are checked, and
+missing, changed or symlinked artifacts are rejected. Downloads never invoke AI.
+The existing GLB endpoint and its 48 MiB limit remain; interchange downloads have
+a separate 256 MiB aggregate limit. Health advertises `interchangeRevision: 2`.
+
+Build standalone worker packages with `python scripts/package-worker.py` from the
+repository root. Native existing-asset reimports: run Blender with
+`--python verify_asset_exports.py -- JOB_FOLDER REPORT_JSON`. Restore all exports,
+textures and review views if the bounded visual-refinement build fails or cancels.
 
 It is separate from the desktop Blender add-on and the example dragon.
 
@@ -248,4 +265,3 @@ each model and review renders; `--scene rapper.scene.json` selects one fixture. 
 See `docs/ASTRA-3D-NOTES.md` in the project for the documentation review and measured results.
 
 Version 9 adds separate top/trouser unions, post-union localized folds, sewn pocket panels, cuffs and a folded hood. Sneakers use flat rubber soles, layered uppers, quarter panels, crossed laces and heel tabs. The wardrobe remains a generic procedural design, not an automatic guarantee of retail or print quality. `wardrobe.py` is trusted bundled runtime code and is included in updater rollback.
-

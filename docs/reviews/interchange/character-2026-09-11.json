@@ -1,0 +1,435 @@
+{
+  "blender": "4.3.0",
+  "source": {
+    "meshes": 100,
+    "triangles": 591960,
+    "bounds": [
+      [
+        -0.4169582426548004,
+        0.42585980892181396
+      ],
+      [
+        -0.31475216150283813,
+        0.3241693079471588
+      ],
+      [
+        0.006000000052154064,
+        1.8070741891860962
+      ]
+    ],
+    "uv_meshes": 100,
+    "maps": [
+      {
+        "image": "anatomical-dedicated-iris",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "1843dfb2c9b946800cc15ad39f899dc4c0a9bf8e64406133176fd02f9a77c8d6"
+      },
+      {
+        "image": "couture-inferred-skin-pore-normal",
+        "size": [
+          2048,
+          2048
+        ],
+        "sha256": "7646afac8d6319fbb8b038bd66f6b4003e194f0ee6f560c9ad5c7da1dc82267c"
+      },
+      {
+        "image": "couture-inferred-skin-roughness",
+        "size": [
+          2048,
+          2048
+        ],
+        "sha256": "08f96aef4ada58cdf1df0cfe0d931d44b418016b051268effe278f7ccc5b65be"
+      },
+      {
+        "image": "crystal-microfacet-albedo",
+        "size": [
+          2048,
+          2048
+        ],
+        "sha256": "d004f26a80ef4a8e137450947e3638b38aa73c352bb49a20348ae88d544bf486"
+      },
+      {
+        "image": "crystal-microfacet-normal",
+        "size": [
+          2048,
+          2048
+        ],
+        "sha256": "a044381128a985287f98c5a38a514be3758ef747e0533012bc4807d550cd9749"
+      },
+      {
+        "image": "dress-UV",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "e5a6e32ba6aca813601510bf5ffc36cf78bdc001e0d734b8f608a5dddcff859c"
+      },
+      {
+        "image": "emerald-muse-warm-hair-locks-strand-albedo",
+        "size": [
+          4096,
+          2048
+        ],
+        "sha256": "2fc2e42f95091dc8bad5ea7dad0f6a15a07ee8aa9d1dbf859f2007eaf4c19f48"
+      },
+      {
+        "image": "emerald-muse-warm-hair-locks-strand-roughness",
+        "size": [
+          4096,
+          2048
+        ],
+        "sha256": "50e0c9260bde81375c09178c838f39972192a88d8a2f4af4b12c459d329f71d3"
+      },
+      {
+        "image": "female-skin.png",
+        "size": [
+          2048,
+          2048
+        ],
+        "sha256": "2e8fc79589d4ae6bb4a146a11355f2649209bc16d7d82b47d57849bf31a88a87"
+      },
+      {
+        "image": "hair-strand-albedo",
+        "size": [
+          4096,
+          2048
+        ],
+        "sha256": "92d46c4a4c5ec244d1d37aee0024dd65aaebf68c500fb55bc558c45c5e8ba42a"
+      },
+      {
+        "image": "hair-strand-roughness",
+        "size": [
+          4096,
+          2048
+        ],
+        "sha256": "50e0c9260bde81375c09178c838f39972192a88d8a2f4af4b12c459d329f71d3"
+      },
+      {
+        "image": "original-couture-reference",
+        "size": [
+          1229,
+          1536
+        ],
+        "sha256": "638bee0231879a1eb2118c065ba5b052534fc4c1affaa59dbc4da83191295997"
+      },
+      {
+        "image": "procedural-fine-hair-strands-normal",
+        "size": [
+          4096,
+          2048
+        ],
+        "sha256": "defde37623488c9d3a3f4d6f57a5ff676678e572d8e94961c60cf53507a06a30"
+      },
+      {
+        "image": "silver-UV",
+        "size": [
+          512,
+          512
+        ],
+        "sha256": "8d6dc46c12e72abcd991e2f673adfc3e3cad49eeae104e5bab038bd08ab41662"
+      }
+    ]
+  },
+  "formats": {
+    "fbx": {
+      "passed": true,
+      "bounds_max_error_metres": 5.960464477539063e-08,
+      "meshes": 100,
+      "triangles": 591960,
+      "bounds": [
+        [
+          -0.4169582426548004,
+          0.42585980892181396
+        ],
+        [
+          -0.31475210189819336,
+          0.3241693079471588
+        ],
+        [
+          0.0059999991208314896,
+          1.8070741891860962
+        ]
+      ],
+      "uv_meshes": 100,
+      "maps": [
+        {
+          "image": "00-anatomical-dedicated-iris-1843dfb2c9b9.png",
+          "size": [
+            512,
+            512
+          ],
+          "sha256": "1843dfb2c9b946800cc15ad39f899dc4c0a9bf8e64406133176fd02f9a77c8d6"
+        },
+        {
+          "image": "01-baked-base-color-anatomical-head-e3ea029f3c12.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "e3ea029f3c12407213e7a1446b105f38b64759f36927add5af5affa8f3c66cb3"
+        },
+        {
+          "image": "02-couture-inferred-skin-pore-normal-7646afac8d63.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "7646afac8d6319fbb8b038bd66f6b4003e194f0ee6f560c9ad5c7da1dc82267c"
+        },
+        {
+          "image": "03-couture-inferred-skin-roughness-08f96aef4ada.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "08f96aef4ada58cdf1df0cfe0d931d44b418016b051268effe278f7ccc5b65be"
+        },
+        {
+          "image": "04-crystal-microfacet-albedo-d004f26a80ef.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "d004f26a80ef4a8e137450947e3638b38aa73c352bb49a20348ae88d544bf486"
+        },
+        {
+          "image": "05-crystal-microfacet-normal-a044381128a9.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "a044381128a985287f98c5a38a514be3758ef747e0533012bc4807d550cd9749"
+        },
+        {
+          "image": "06-dress-UV-e5a6e32ba6ac.png",
+          "size": [
+            512,
+            512
+          ],
+          "sha256": "e5a6e32ba6aca813601510bf5ffc36cf78bdc001e0d734b8f608a5dddcff859c"
+        },
+        {
+          "image": "07-emerald-muse-warm-hair-locks-strand-albedo-2fc2e42f9509.png",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "2fc2e42f95091dc8bad5ea7dad0f6a15a07ee8aa9d1dbf859f2007eaf4c19f48"
+        },
+        {
+          "image": "08-emerald-muse-warm-hair-locks-strand-roughness-50e0c9260bde.p",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "50e0c9260bde81375c09178c838f39972192a88d8a2f4af4b12c459d329f71d3"
+        },
+        {
+          "image": "10-hair-strand-albedo-92d46c4a4c5e.png",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "92d46c4a4c5ec244d1d37aee0024dd65aaebf68c500fb55bc558c45c5e8ba42a"
+        },
+        {
+          "image": "11-hair-strand-roughness-50e0c9260bde.png",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "50e0c9260bde81375c09178c838f39972192a88d8a2f4af4b12c459d329f71d3"
+        },
+        {
+          "image": "12-original-couture-reference-638bee023187.jpg",
+          "size": [
+            1229,
+            1536
+          ],
+          "sha256": "638bee0231879a1eb2118c065ba5b052534fc4c1affaa59dbc4da83191295997"
+        },
+        {
+          "image": "13-procedural-fine-hair-strands-normal-defde3762348.png",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "defde37623488c9d3a3f4d6f57a5ff676678e572d8e94961c60cf53507a06a30"
+        },
+        {
+          "image": "14-silver-UV-8d6dc46c12e7.png",
+          "size": [
+            512,
+            512
+          ],
+          "sha256": "8d6dc46c12e72abcd991e2f673adfc3e3cad49eeae104e5bab038bd08ab41662"
+        }
+      ],
+      "baked_face_colour_present": true
+    },
+    "obj": {
+      "passed": true,
+      "bounds_max_error_metres": 2.980232238769531e-07,
+      "meshes": 100,
+      "triangles": 591960,
+      "bounds": [
+        [
+          -0.4169580042362213,
+          0.4258599877357483
+        ],
+        [
+          -0.31475192308425903,
+          0.32416900992393494
+        ],
+        [
+          0.005999998189508915,
+          1.807073950767517
+        ]
+      ],
+      "uv_meshes": 100,
+      "maps": [
+        {
+          "image": "00-anatomical-dedicated-iris-1843dfb2c9b9.png",
+          "size": [
+            512,
+            512
+          ],
+          "sha256": "1843dfb2c9b946800cc15ad39f899dc4c0a9bf8e64406133176fd02f9a77c8d6"
+        },
+        {
+          "image": "01-baked-base-color-anatomical-head-e3ea029f3c12.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "e3ea029f3c12407213e7a1446b105f38b64759f36927add5af5affa8f3c66cb3"
+        },
+        {
+          "image": "02-couture-inferred-skin-pore-normal-7646afac8d63.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "7646afac8d6319fbb8b038bd66f6b4003e194f0ee6f560c9ad5c7da1dc82267c"
+        },
+        {
+          "image": "03-couture-inferred-skin-roughness-08f96aef4ada.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "08f96aef4ada58cdf1df0cfe0d931d44b418016b051268effe278f7ccc5b65be"
+        },
+        {
+          "image": "04-crystal-microfacet-albedo-d004f26a80ef.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "d004f26a80ef4a8e137450947e3638b38aa73c352bb49a20348ae88d544bf486"
+        },
+        {
+          "image": "05-crystal-microfacet-normal-a044381128a9.png",
+          "size": [
+            2048,
+            2048
+          ],
+          "sha256": "a044381128a985287f98c5a38a514be3758ef747e0533012bc4807d550cd9749"
+        },
+        {
+          "image": "06-dress-UV-e5a6e32ba6ac.png",
+          "size": [
+            512,
+            512
+          ],
+          "sha256": "e5a6e32ba6aca813601510bf5ffc36cf78bdc001e0d734b8f608a5dddcff859c"
+        },
+        {
+          "image": "07-emerald-muse-warm-hair-locks-strand-albedo-2fc2e42f9509.png",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "2fc2e42f95091dc8bad5ea7dad0f6a15a07ee8aa9d1dbf859f2007eaf4c19f48"
+        },
+        {
+          "image": "08-emerald-muse-warm-hair-locks-strand-roughness-50e0c9260bde.p",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "50e0c9260bde81375c09178c838f39972192a88d8a2f4af4b12c459d329f71d3"
+        },
+        {
+          "image": "10-hair-strand-albedo-92d46c4a4c5e.png",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "92d46c4a4c5ec244d1d37aee0024dd65aaebf68c500fb55bc558c45c5e8ba42a"
+        },
+        {
+          "image": "11-hair-strand-roughness-50e0c9260bde.png",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "50e0c9260bde81375c09178c838f39972192a88d8a2f4af4b12c459d329f71d3"
+        },
+        {
+          "image": "12-original-couture-reference-638bee023187.jpg",
+          "size": [
+            1229,
+            1536
+          ],
+          "sha256": "638bee0231879a1eb2118c065ba5b052534fc4c1affaa59dbc4da83191295997"
+        },
+        {
+          "image": "13-procedural-fine-hair-strands-normal-defde3762348.png",
+          "size": [
+            4096,
+            2048
+          ],
+          "sha256": "defde37623488c9d3a3f4d6f57a5ff676678e572d8e94961c60cf53507a06a30"
+        },
+        {
+          "image": "14-silver-UV-8d6dc46c12e7.png",
+          "size": [
+            512,
+            512
+          ],
+          "sha256": "8d6dc46c12e72abcd991e2f673adfc3e3cad49eeae104e5bab038bd08ab41662"
+        }
+      ],
+      "baked_face_colour_present": true
+    },
+    "stl": {
+      "passed": true,
+      "bounds_max_error_metres": 5.960464477539063e-08,
+      "meshes": 1,
+      "triangles": 591960,
+      "bounds": [
+        [
+          -0.4169582724571228,
+          0.42585980892181396
+        ],
+        [
+          -0.31475210189819336,
+          0.3241693377494812
+        ],
+        [
+          0.005999998189508915,
+          1.8070741891860962
+        ]
+      ],
+      "uv_meshes": 0,
+      "maps": [],
+      "baked_face_colour_present": false
+    }
+  },
+  "complete_shader_equivalence_verified": false,
+  "reference_likeness_verified": false
+}

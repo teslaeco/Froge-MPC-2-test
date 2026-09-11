@@ -64,8 +64,8 @@ def add_strand_normal(obj, palettes):
     u=np.arange(w,dtype=np.float32)[None,:]/w
     v=np.arange(h,dtype=np.float32)[:,None]/h
     phase=2*np.pi*(.055*np.sin(v*4.8)+.018*np.sin(v*13.6))
-    fine=.36*np.sin(2*np.pi*137*u+phase)+.22*np.sin(2*np.pi*263*u+phase*.68+.5)
-    fine+=.12*np.sin(2*np.pi*61*u+phase*1.45+1.2)
+    fine=.20*np.sin(2*np.pi*613*u+phase)+.12*np.sin(2*np.pi*997*u+phase*.68+.5)
+    fine+=.065*np.sin(2*np.pi*173*u+phase*1.45+1.2)
     nx=fine
     ny=.018*np.sin(2*np.pi*193*u+phase)*np.cos(v*4.8)
     nz=np.sqrt(np.maximum(.01,1-nx*nx-ny*ny))
@@ -96,9 +96,9 @@ def add_strand_colour(palettes):
     u=np.arange(w,dtype=np.float32)[None,:]/w
     v=np.arange(h,dtype=np.float32)[:,None]/h
     phase=2*np.pi*(.055*np.sin(v*4.8)+.018*np.sin(v*13.6))
-    grain=.20*np.sin(2*np.pi*137*u+phase)+.13*np.sin(2*np.pi*263*u+phase*.68+.5)
-    grain+=.085*np.sin(2*np.pi*61*u+phase*1.45+1.2)
-    grain+=.08*np.sin(2*np.pi*29*u+.4*np.sin(v*9))
+    grain=.095*np.sin(2*np.pi*613*u+phase)+.065*np.sin(2*np.pi*997*u+phase*.68+.5)
+    grain+=.045*np.sin(2*np.pi*173*u+phase*1.45+1.2)
+    grain+=.035*np.sin(2*np.pi*29*u+.4*np.sin(v*9))
     # Darker buried roots and separate pigment fibres, with no baked shine.
     root=.73+.27*np.minimum(1,v*6)
     shade=np.clip((.82+grain)*root,.30,1.18)

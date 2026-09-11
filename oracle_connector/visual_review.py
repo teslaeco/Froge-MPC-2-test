@@ -14,7 +14,18 @@ from runtime.scene_contract import SCHEMA,record,choice,array,parse_scene
 TEXT={'type':'string','maxLength':500}
 REVIEW_SCHEMA=record({'action':choice('keep','refine'),'issues':array(TEXT,0,8),'scene':SCHEMA})
 LABELS=('front','three-quarter','face')
-ASSETS=('scene.json','model.glb','model.blend','result.json')
+ASSETS=('scene.json','model.glb','model.blend','result.json','model.fbx','model.obj',
+        'model.mtl','model-mm.stl','model.froge-scene.json','textures','review')
+
+
+def copy_assets(source, destination, replace=False):
+    for name in ASSETS:
+        src, dst = source/name, destination/name
+        if replace:
+            if dst.is_dir() and not dst.is_symlink():shutil.rmtree(dst)
+            else:dst.unlink(missing_ok=True)
+        if src.is_dir():shutil.copytree(src,dst,dirs_exist_ok=True)
+        elif src.is_file():shutil.copy2(src,dst)
 
 
 def review_content(prompt,photos,folder,scene):
@@ -71,9 +82,7 @@ def refine(scene,prompt,photos,folder,cancelled,generate,build,ai_seconds=0.,ble
         if blender_limit-blender_seconds<30:
             report['status']='refinement_budget_exhausted';return ai_seconds,blender_seconds,report
         backup=folder/'before-refinement';backup.mkdir(exist_ok=True)
-        for name in ASSETS:
-            if (folder/name).is_file():shutil.copy2(folder/name,backup/name)
-        shutil.copytree(folder/'review',backup/'review',dirs_exist_ok=True)
+        copy_assets(folder,backup,replace=True)
         (folder/'scene.json').write_text(json.dumps(corrected),encoding='utf-8')
         start=clock()
         try:build(blender_limit-blender_seconds)
@@ -81,12 +90,11 @@ def refine(scene,prompt,photos,folder,cancelled,generate,build,ai_seconds=0.,ble
         if cancelled.is_set():raise InterruptedError('Zlecenie anulowane.')
         report.update(status='refined_requires_visual_acceptance',refinements=1,original_retained=True)
     except InterruptedError:
+        if backup:copy_assets(backup,folder,replace=True)
         raise
     except Exception as error:
         if backup:
-            for name in ASSETS:
-                if (backup/name).is_file():shutil.copy2(backup/name,folder/name)
-            shutil.copytree(backup/'review',folder/'review',dirs_exist_ok=True)
+            copy_assets(backup,folder,replace=True)
         report.update(status='original_retained',error=str(error)[:500])
     finally:
         (folder/'visual-review.json').write_text(json.dumps(report,ensure_ascii=False),encoding='utf-8')

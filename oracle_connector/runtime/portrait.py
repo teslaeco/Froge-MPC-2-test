@@ -35,16 +35,18 @@ def head(p, skin, eyes, hair, mesh_object, ellipsoid):
     glam=p.get('makeup')=='soft_glam'
     from reference_surfaces import has_guide
     couture_orbits=photo_fit is not None and has_guide(photo_fit)
-    # The reference's upper lid covers more of the iris. Narrow the connected
-    # lid mesh before fitting brows/lashes; keep both globes and measured gaze.
-    lid_strength=.48 if couture_orbits else .36 if glam else .20
-    upper_lid_bias=.12 if couture_orbits else .08 if glam else 0
+    # Measured residuals are calibrated against the neutral soft-glam template.
+    # An extra couture squint changed that starting surface and closed the eyes
+    # a second time. Keep its exact lid basis before applying measured residuals.
+    lid_strength=.36 if glam else .20
+    upper_lid_bias=.08 if glam else 0
     for side in ('l','r'):
         center=anatomy.landmark(side+'-eye',p['presentation'])
         for vertex in obj.data.vertices:
             vertex.co=relaxed_lid_point(vertex.co,center,lid_strength,upper_lid_bias)
     obj.data.update()
-    obj['reference_lid_aperture_authored']=bool(couture_orbits)
+    obj['reference_lid_aperture_authored']=False
+    obj['lid_template_basis']='neutral-soft-glam' if photo_fit is not None else 'authored-style'
     obj['anatomical_head']=True;obj['quality_revision']=2
     # One front-facing iris per globe, including from the side and rear.
     for eye in parts:

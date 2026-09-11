@@ -72,9 +72,9 @@ def update(source, target, verify=None):
             try:
                 with urllib.request.urlopen(request, timeout=2) as response:
                     health = json.loads(response.read(10000))
-                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2:
+                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2:
                         print('FROGE_UPDATE_OK')
-                        print('Odswiez Froge. v20: dopasowanie sukni, kolor i makijaz w eksporcie oraz ocena renderow przez Astre. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Froge v20: nowy eksport FBX/OBJ/STL i poprawki generatora aktywne. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass

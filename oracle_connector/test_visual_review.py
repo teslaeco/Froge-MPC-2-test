@@ -44,13 +44,24 @@ class VisualReviewTests(unittest.TestCase):
         self.assertFalse(report['likeness_verified'])
 
     def test_failed_rebuild_restores_the_previous_model_and_scene(self):
+        (self.folder/'model.fbx').write_bytes(b'original fbx')
+        (self.folder/'textures').mkdir()
+        (self.folder/'textures/skin.png').write_bytes(b'original skin')
         def fail(_):
             (self.folder/'model.glb').write_bytes(b'broken candidate')
+            (self.folder/'model.fbx').write_bytes(b'new fbx')
+            (self.folder/'model.obj').write_bytes(b'new obj with no original')
+            (self.folder/'textures/skin.png').write_bytes(b'new skin')
+            (self.folder/'textures/stale.png').write_bytes(b'new texture')
             raise ValueError('geometry failed')
         _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,lambda *_:self.response(),fail)
         self.assertEqual(report['status'],'original_retained')
         self.assertEqual((self.folder/'model.glb').read_bytes(),b'original-model.glb')
         self.assertEqual((self.folder/'scene.json').read_bytes(),b'original-scene.json')
+        self.assertEqual((self.folder/'model.fbx').read_bytes(),b'original fbx')
+        self.assertEqual((self.folder/'textures/skin.png').read_bytes(),b'original skin')
+        self.assertFalse((self.folder/'model.obj').exists())
+        self.assertFalse((self.folder/'textures/stale.png').exists())
 
     def test_cancellation_after_provider_does_not_start_a_rebuild(self):
         def generate(*_):self.cancel.set();return self.response()

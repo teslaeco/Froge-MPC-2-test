@@ -13,6 +13,8 @@ import struct
 import subprocess
 import threading
 import time
+import tempfile
+import zipfile
 import urllib.error
 import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -41,6 +43,59 @@ CANCEL = {}
 RUNNING = set()
 PAIR_ATTEMPTS = []
 SYSTEM = PROMPT
+
+EXPORT_FILES = {'fbx': ('fbx', ('model.fbx',)),
+                'obj': ('obj', ('model.obj', 'model.mtl')),
+                'stl': ('stl', ('model-mm.stl',)),
+                'blend': (None, ('model.blend',)),
+                'scene-json': ('scene_json', ('model.froge-scene.json',))}
+EXPORT_LIMIT = 256 * 1024**2
+
+
+def export_files(folder, format_name):
+    """Resolve only completed worker artifacts, never arbitrary job paths."""
+    if folder.is_symlink():
+        raise ValueError('Nieprawidlowy katalog modelu.')
+    key, names = EXPORT_FILES[format_name]
+    records = {}
+    if key:
+        result = folder / 'result.json'
+        if result.is_symlink() or not result.is_file() or result.stat().st_size > 2 * 1024**2:
+            raise ValueError('Brak raportu eksportu.')
+        report = json.loads(result.read_text()).get('interchange_exports', {})
+        entry = report.get(key, {})
+        if entry.get('status') != 'ready':
+            raise ValueError('Ten format nie zostal poprawnie wyeksportowany.')
+        records = {r['path']: r for r in entry.get('files', [])}
+        if any(name not in records for name in names):
+            raise ValueError('Niekompletny raport eksportu.')
+        if format_name == 'obj':
+            textures = report.get('textures', [])
+            for record in textures:
+                if not re.fullmatch(r'textures/[A-Za-z0-9_-]+\.(png|jpg)', record['path']):
+                    raise ValueError('Nieprawidlowa sciezka tekstury.')
+                records[record['path']] = record
+            names = (*names, *(r['path'] for r in textures))
+    paths = []
+    total = 0
+    for name in dict.fromkeys(names):
+        path = folder / name
+        if path.is_symlink() or path.parent.is_symlink() or not path.is_file():
+            raise ValueError('Brak pliku eksportu lub tekstury.')
+        size = path.stat().st_size
+        total += size
+        if size < 1 or total > EXPORT_LIMIT:
+            raise ValueError('Eksport jest pusty lub przekracza limit 256 MiB.')
+        if key:
+            digest = hashlib.sha256()
+            with path.open('rb') as source:
+                for block in iter(lambda: source.read(1024 * 1024), b''):
+                    digest.update(block)
+            record = records[name]
+            if record.get('bytes') != size or record.get('sha256') != digest.hexdigest():
+                raise ValueError('Plik zmienil sie po eksporcie. Wymagany ponowny eksport.')
+        paths.append(path)
+    return paths
 
 def write_json(path, value):
     temporary = path.with_suffix('.tmp')
@@ -77,7 +132,7 @@ def health():
         ready = bool(selected.get('api_key'))
         return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
                 'detail': 'OpenAI Astra jest polaczone. Blender wykona sprawdzony plan sceny.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
-                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+                'connectorVersion': CONNECTOR_VERSION, 'photoInput': ready, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
@@ -85,9 +140,9 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
     except Exception:
-        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
+        return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'photoInput': False, 'sceneReplay': True, 'rendererRevision': 3, 'portraitRevision': 2, 'faceFitRevision': 1, 'scenePeople': 3, 'characterStandard': 20, 'coutureRevision': 2, 'visualReview': True, 'promptMaxLength': PROMPT_MAX_LENGTH, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'exportDownloads': True, 'maxReferenceEdge': 8192, 'textureMaxSizes': [2048,4096,8192]}
 
 def ai_settings():
     path = STATE / 'ai-provider.json'
@@ -451,7 +506,7 @@ class Handler(BaseHTTPRequestHandler):
                     db.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?)', (job_id, prompt.strip(), 'queued', 'Opis przyjety.', now, now))
                 WAKE.set()
                 return self.send_json({'id': job_id, 'state': 'queued'}, 202)
-            match = re.fullmatch(r'/v1/jobs/([a-f0-9-]{36})(?:/(model|cancel))?', self.path)
+            match = re.fullmatch(r'/v1/jobs/([a-f0-9-]{36})(?:/(model|cancel|exports(?:/(?:fbx|obj|stl|blend|scene-json))?))?', self.path)
             if not match or not UUID.fullmatch(match[1]):
                 return self.send_json({'error': 'Nie znaleziono funkcji.'}, 404)
             job_id, action = match.groups()
@@ -466,6 +521,37 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({'cancelled': True})
             if write:
                 return self.send_json({'error': 'Niedozwolona metoda.'}, 405)
+            if action and action.startswith('exports'):
+                if row['state'] != 'succeeded':
+                    return self.send_json({'error': 'Model nie jest jeszcze gotowy.'}, 409)
+                folder = JOBS / job_id
+                if action == 'exports':
+                    formats = []
+                    for name in EXPORT_FILES:
+                        try:
+                            paths = export_files(folder, name)
+                            formats.append({'format': name, 'path': '/v1/jobs/' + job_id + '/exports/' + name,
+                                            'bytes': sum(p.stat().st_size for p in paths), 'archive': name == 'obj'})
+                        except (ValueError, OSError, KeyError, TypeError):
+                            continue
+                    return self.send_json({'revision': 2, 'formats': formats, 'glb': '/v1/jobs/' + job_id + '/model'})
+                name = action.split('/')[1]
+                try:
+                    paths = export_files(folder, name)
+                except (ValueError, OSError, KeyError, TypeError):
+                    return self.send_json({'error': 'Eksport niedostepny lub niekompletny. Wymagany ponowny eksport.'}, 409)
+                if name == 'obj':
+                    with tempfile.TemporaryFile() as output:
+                        with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as archive:
+                            for path in paths:
+                                archive.write(path, path.relative_to(folder).as_posix())
+                        size = output.tell(); output.seek(0)
+                        self.send_export(output, size, 'model-obj.zip', 'application/zip')
+                else:
+                    with paths[0].open('rb') as output:
+                        self.send_export(output, paths[0].stat().st_size, paths[0].name,
+                                         'application/json' if name == 'scene-json' else 'application/octet-stream')
+                return
             if action == 'model':
                 path = JOBS / job_id / 'model.glb'
                 if row['state'] != 'succeeded' or not path.is_file() or path.is_symlink():
@@ -492,6 +578,16 @@ class Handler(BaseHTTPRequestHandler):
             pass
         except Exception:
             self.send_json({'error': 'Blad serwera. Sprawdz dziennik uslugi Froge.'}, 500)
+
+    def send_export(self, source, size, filename, content_type):
+        self.send_response(200)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Content-Length', str(size))
+        self.send_header('Content-Disposition', 'attachment; filename="' + filename + '"')
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Content-Type-Options', 'nosniff')
+        self.end_headers()
+        shutil.copyfileobj(source, self.wfile, 65536)
 
 def pair_info():
     with LOCK:

@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import hashlib
 import re
 from pathlib import Path
+from array import array
 
 
 def _file_record(path, output):
@@ -11,6 +12,111 @@ def _file_record(path, output):
         raise ValueError('Exporter produced an empty file: ' + path.name)
     return {'path': path.relative_to(output).as_posix(), 'bytes': len(data),
             'sha256': hashlib.sha256(data).hexdigest()}
+
+
+@contextmanager
+def _portable_uvs(bpy, report):
+    """FBX's native exporter does not write node UVSet names. Put colour first."""
+    meshes=[]
+    def colour_uv(socket, depth=0):
+        if depth>8 or not socket.is_linked:return None
+        node=socket.links[0].from_node
+        if node.type=='TEX_IMAGE':
+            links=node.inputs['Vector'].links
+            return links[0].from_node.uv_map if links and links[0].from_node.type=='UVMAP' else None
+        for value in node.inputs:
+            name=colour_uv(value,depth+1)
+            if name:return name
+        return None
+    try:
+        for obj in bpy.context.scene.objects:
+            if obj.type!='MESH' or len(obj.data.uv_layers)<2:continue
+            primary=None
+            for material in obj.data.materials:
+                if not material or not material.use_nodes:continue
+                shader=material.node_tree.nodes.get('Principled BSDF')
+                if shader:primary=colour_uv(shader.inputs['Base Color'])
+                if primary:break
+            primary=primary or next((uv.name for uv in obj.data.uv_layers if uv.active_render),obj.data.uv_layers.active.name)
+            if primary==obj.data.uv_layers[0].name or primary not in obj.data.uv_layers:continue
+            original=obj.data;mesh=original.copy();meshes.append((obj,original,mesh));obj.data=mesh
+            layers=[]
+            for uv in mesh.uv_layers:
+                data=array('f',[0.])* (2*len(mesh.loops));uv.data.foreach_get('uv',data)
+                layers.append((uv.name,data))
+            for uv in list(mesh.uv_layers):mesh.uv_layers.remove(uv)
+            for name,data in sorted(layers,key=lambda entry:entry[0]!=primary):
+                uv=mesh.uv_layers.new(name=name);uv.data.foreach_set('uv',data)
+            mesh.uv_layers.active_index=0;mesh.uv_layers[0].active_render=True
+            report['uv_order_changes'].append({'object':obj.name,'primary':primary,
+                'other_uv_channels_preserved':True,'all_shader_uv_bindings_verified':False})
+        yield
+    finally:
+        for obj,original,mesh in meshes:
+            obj.data=original;bpy.data.meshes.remove(mesh)
+
+
+@contextmanager
+def _baked_base_colors(bpy, report):
+    """Flatten anatomical skin colour for formats without glTF COLOR_0.
+
+    Only colour is baked, with an emission pass: no new scene lighting.
+    The original shader, material slots and render settings survive export.
+    """
+    scene = bpy.context.scene
+    selected = list(bpy.context.selected_objects)
+    active = bpy.context.view_layer.objects.active
+    settings = (scene.render.engine, scene.cycles.samples, scene.render.bake.margin)
+    slots, materials, images = [], [], []
+    try:
+        for obj in list(scene.objects):
+            # The authored anatomy has an existing non-overlapping skin atlas.
+            # Projected garment UVs can overlap and need a separate unwrap;
+            # baking those here would silently overwrite colour at the seams.
+            if obj.type != 'MESH' or not obj.get('anatomical_head') or len(obj.material_slots) != 1:continue
+            for slot in obj.material_slots:
+                original = slot.material
+                if not original or not original.use_nodes:continue
+                shader = original.node_tree.nodes.get('Principled BSDF')
+                if not shader or not shader.inputs['Base Color'].is_linked:continue
+                source = shader.inputs['Base Color'].links[0].from_socket
+                if source.node.type not in {'MIX_RGB', 'MIX'}:continue
+                if not obj.data.uv_layers:
+                    raise ValueError('Mixed base colour requires UVs: ' + obj.name)
+                material = original.copy();materials.append(material)
+                slots.append((slot, original));slot.material = material
+                nodes, links = material.node_tree.nodes, material.node_tree.links
+                shader = nodes.get('Principled BSDF')
+                source = shader.inputs['Base Color'].links[0].from_socket
+                output = next(n for n in nodes if n.type == 'OUTPUT_MATERIAL' and n.is_active_output)
+                surface = output.inputs['Surface'].links[0].from_socket
+                emission = nodes.new('ShaderNodeEmission')
+                links.new(source,emission.inputs['Color']);links.new(emission.outputs[0],output.inputs['Surface'])
+                size = max([2048]+[max(n.image.size) for n in nodes if n.type == 'TEX_IMAGE' and n.image])
+                size = min(size,4096)
+                image = bpy.data.images.new('baked-base-color-'+obj.name,width=size,height=size,alpha=False)
+                images.append(image)
+                target = nodes.new('ShaderNodeTexImage');target.image = image;nodes.active = target
+                bpy.ops.object.select_all(action='DESELECT');obj.select_set(True)
+                bpy.context.view_layer.objects.active = obj
+                scene.render.engine = 'CYCLES';scene.cycles.samples = 1;scene.render.bake.margin = 8
+                status = bpy.ops.object.bake(type='EMIT')
+                if status != {'FINISHED'}:raise ValueError('Base-colour bake failed: '+obj.name)
+                links.new(surface,output.inputs['Surface']);nodes.remove(emission)
+                links.new(target.outputs['Color'],shader.inputs['Base Color'])
+                image.pack()
+                report['baked_base_colors'].append({'object':obj.name,'material':original.name,
+                    'size':[size,size],'pass':'EMIT','scene_lighting_baked':False,
+                    'reference_lighting_removed':False,'other_shader_channels_baked':False})
+        yield
+    finally:
+        for slot, original in slots:slot.material = original
+        for material in materials:bpy.data.materials.remove(material)
+        for image in images:bpy.data.images.remove(image)
+        scene.render.engine, scene.cycles.samples, scene.render.bake.margin = settings
+        bpy.ops.object.select_all(action='DESELECT')
+        for obj in selected:obj.select_set(True)
+        bpy.context.view_layer.objects.active = active
 
 
 @contextmanager
@@ -97,7 +203,7 @@ def export_interchange(output, scene_source=None):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     report = {
-        'revision': 2, 'formats': [], 'same_master_scene': True, 'textures': [],
+        'revision': 2, 'formats': [], 'same_master_scene': True, 'textures': [], 'baked_base_colors': [], 'uv_order_changes': [],
         'fbx': {'axis_forward': '-Z', 'axis_up': 'Y', 'textures_embedding_requested': True,
                 'reimport_verified': False,
                 'shader_boundary': 'FBX preserves supported image-based channels, not every Blender PBR shader',
@@ -118,7 +224,10 @@ def export_interchange(output, scene_source=None):
     try:
         bpy.ops.object.select_all(action='SELECT')
         try:
-            with _portable_images(bpy, output, report):
+            for name in ('model.fbx','model.obj','model.mtl'):
+                (output/name).unlink(missing_ok=True)
+            with _baked_base_colors(bpy,report), _portable_uvs(bpy,report), _portable_images(bpy, output, report):
+                bpy.ops.object.select_all(action='SELECT')
                 _checked_export(report, output, 'fbx', 'fbx', ['model.fbx'], lambda:
                     bpy.ops.export_scene.fbx(
                         filepath=str(output / 'model.fbx'), use_selection=True,
