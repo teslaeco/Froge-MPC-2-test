@@ -10,6 +10,22 @@ from runtime.scene_contract import parse_scene,validate_scene
 
 
 class CoutureGeometryTests(unittest.TestCase):
+    def test_reconstructed_cape_wraps_back_and_stays_outside_the_gown(self):
+        for hem,width in ((.22,.94),(.30,1.),(.45,1.)):
+            for side in (False,True):
+                vertices,faces=g.cape_surface(hem,width,side,offset=.018)
+                self.assertTrue(all(math.isfinite(c) for p in vertices for c in p))
+                # Outer cloth must clear the actual gown even at fold valleys.
+                self.assertGreater(min(g.envelope_ratio(v,hem,width,.018) for v in vertices),1.)
+                for face in faces:
+                    a,b,c=(vertices[i] for i in face[:3])
+                    ab=[b[i]-a[i] for i in range(3)];ac=[c[i]-a[i] for i in range(3)]
+                    area=sum((ab[(i+1)%3]*ac[(i+2)%3]-ab[(i+2)%3]*ac[(i+1)%3])**2 for i in range(3))
+                    self.assertGreater(area,1e-16)
+            left=g.cape_point(.5,0,hem,width);middle=g.cape_point(.5,.5,hem,width)
+            self.assertGreater(middle[1]-left[1],.08,'Back must curve around the torso')
+            self.assertGreater(g.cape_point(1,0,hem,width)[2]-g.cape_point(1,.5,hem,width)[2],.07)
+
     def check_solid(self,mesh):
         vertices,faces=mesh[:2]
         self.assertTrue(all(math.isfinite(c) for v in vertices for c in v))

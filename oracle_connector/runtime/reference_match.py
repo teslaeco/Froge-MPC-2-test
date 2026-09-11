@@ -36,9 +36,9 @@ def compare(pixels, template=None):
             'mean_absolute_rgb_error':errors, 'likeness_verified':False}
 
 
-def match_fit(fit):
+def match_image(path):
     import bpy
-    image = bpy.data.images.load(str(fit.image_path),check_existing=False)
+    image = bpy.data.images.load(str(path),check_existing=False)
     try:
         width,height=image.size
         if width*height > 80*1024*1024:
@@ -46,9 +46,14 @@ def match_fit(fit):
         pixels=np.empty(width*height*4,dtype=np.float32)
         image.pixels.foreach_get(pixels)
         result=compare(pixels.reshape(height,width,4)[::-1,:,:3])
-        if result['matched']:
-            fit.guide_verified_sha256=fit.source_sha256
-        fit.report['couture_guide']=result
-        return result
+        return result,width,height
     finally:
         bpy.data.images.remove(image)
+
+
+def match_fit(fit):
+    result,_,_=match_image(fit.image_path)
+    if result['matched']:
+        fit.guide_verified_sha256=fit.source_sha256
+    fit.report['couture_guide']=result
+    return result

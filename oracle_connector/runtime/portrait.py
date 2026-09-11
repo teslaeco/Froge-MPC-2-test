@@ -329,23 +329,30 @@ def head(p, skin, eyes, hair, mesh_object, ellipsoid):
     return parts
 
 
+def portrait_transforms(p):
+    """One rotation shared by the skull, eyes, hair and couture jewellery."""
+    eye_center=(anatomy.landmark('l-eye',p['presentation'])+anatomy.landmark('r-eye',p['presentation']))*.5
+    neutral=Matrix.Translation(p['center'])@Matrix.Scale(p['scale'],4)@Matrix.Translation(-eye_center)
+    pivot=neutral@Vector((0,-.015,1.565)) if 'makeup_rgb' in p else Vector(p['center'])
+    turn=Matrix.Translation(pivot)@Euler(p['rotation']).to_matrix().to_4x4()@Matrix.Translation(-pivot)
+    return neutral,turn,turn@neutral
+
+
 def build_portrait(p, materials, mesh_object, ellipsoid):
     parts=head(p,materials[p['skin_material']],materials[p['eye_material']],materials[p['hair_material']],mesh_object,ellipsoid)
     # Primitive scale/location setters do not synchronously refresh matrix_world.
     # Reading a stale matrix here can turn an eyeglass lens into a metre sphere.
     bpy.context.view_layer.update()
-    eye_center=(anatomy.landmark('l-eye',p['presentation'])+anatomy.landmark('r-eye',p['presentation']))*.5
-    transform=Matrix.Translation(p['center'])@Euler(p['rotation']).to_matrix().to_4x4()@Matrix.Scale(p['scale'],4)@Matrix.Translation(-eye_center)
+    neutral,_,transform=portrait_transforms(p)
     for obj in parts:
         if obj.get('anatomical_head') and 'makeup_rgb' in p:
             # Turn the skull while anchoring the lower neck in its garment.
             # Rotating the entire cut neck about the eyes exposed its jagged
             # lower boundary outside the standing collar at stronger rolls.
-            neutral=Matrix.Translation(p['center'])@Matrix.Scale(p['scale'],4)@Matrix.Translation(-eye_center)
             inverse=transform.inverted();anchored=0
             for vertex in obj.data.vertices:
                 v=vertex.co.copy()
-                weight=max(0.,min(1.,(v.z-1.485)/.110));weight=weight*weight*(3-2*weight)
+                weight=max(0.,min(1.,(v.z-1.485)/.090));weight=weight*weight*(3-2*weight)
                 front=max(0.,min(1.,(-.065-v.y)/.045));front=front*front*(3-2*front)
                 chin=max(0.,min(1.,(v.z-1.530)/.040));chin=chin*chin*(3-2*chin)
                 weight+=(1-weight)*front*chin
@@ -353,6 +360,8 @@ def build_portrait(p, materials, mesh_object, ellipsoid):
                     vertex.co=inverse@((neutral@v).lerp(transform@v,weight));anchored+=1
             obj['neck_pose_anchored_vertices']=anchored
             obj['neck_pose_lower_anchor']=1.485
+            obj['neck_pose_revision']=2
+            obj['head_pivot_local']=[0,-.015,1.565]
             obj.data.update()
         obj.matrix_world=transform@obj.matrix_world
     return parts

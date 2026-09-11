@@ -7,7 +7,7 @@ import math
 import bpy
 from mathutils import Vector, Matrix, Euler, Quaternion
 from detailed_geometry import loft
-from portrait import build_portrait
+from portrait import build_portrait, portrait_transforms
 from portrait_hands import build_hand, fit_grip_wrist
 import anatomy
 import couture_geometry as geometry
@@ -96,32 +96,44 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
     seams=add(join_meshes(piping,p['name']+'-couture-seams'),'couture-seams')
     seams['seam_count']=len(piping);seams['radius_m']=.00062
     if p['cape']:
-        vv=[];ff=[];rows=52;cols=64
-        for j in range(rows):
-            t=j/(rows-1);z=1.425-1.375*t
-            for k in range(cols):
-                u=2*k/(cols-1)-1
-                x=u*(.19+.19*t)
-                y=.050+.22*t+.040*(1-u*u)+.013*math.sin(10*math.pi*u)*(t+.1)
-                vv.append((x,y,z+.017*math.sin(math.pi*u)**2*t))
-                if j and k:ff.append(((j-1)*cols+k-1,(j-1)*cols+k,j*cols+k,j*cols+k-1))
-        cape=add(mesh_object(p['name']+'-shoulder-drape',vv,ff,dress),'shoulder-drape')
+        vv,ff=geometry.cape_surface(p['hem_radius'],width,offset=offset)
+        reverse=dress.copy();reverse.name=p['name']+'-inferred-teal-cloth-reverse'
+        reverse_rgb=tuple(.75*a+.25*b for a,b in zip(dress.diffuse_color[:3],crystal.diffuse_color[:3]))
+        reverse.diffuse_color=(*reverse_rgb,1)
+        shader=reverse.node_tree.nodes.get('Principled BSDF')
+        for socket in ('Base Color','Roughness','Metallic'):
+            for link in list(shader.inputs[socket].links):reverse.node_tree.links.remove(link)
+        shader.inputs['Base Color'].default_value=tuple(c/12.92 if c<=.04045 else ((c+.055)/1.055)**2.4 for c in reverse_rgb)+(1,)
+        shader.inputs['Roughness'].default_value=.52
+        shader.inputs['Metallic'].default_value=.03
+        shader.inputs['Specular IOR Level'].default_value=.20
+        shader.inputs['Coat Weight'].default_value=.02
+        cape=add(mesh_object(p['name']+'-shoulder-drape',vv,ff,reverse),'shoulder-drape')
+        cape['drape_geometry_revision']=2;cape['unobserved_back_reconstructed']=True
         for face in cape.data.polygons:face.use_smooth=True
         solid=cape.modifiers.new('Thin cloth drape','SOLIDIFY');solid.thickness=thickness
         bpy.context.view_layer.objects.active=cape;bpy.ops.object.modifier_apply(modifier=solid.name)
+        # Continue the visible dress's thin seam language onto the inferred
+        # reverse. These are attached paths, not photographed back details.
+        for u in (.17,.5,.83):
+            path=[]
+            for j in range(53):
+                t=j/52;x,y,z=geometry.cape_point(t,u,p['hem_radius'],width,offset=offset)
+                path.append((x,y+.0018,z))
+            seam=line('reconstructed-back-seam',path,[.00065]*len(path),metal,6)
+            seam['unobserved_back_reconstructed']=True
         # Visible shoulder cape: radial cloth folds fall in front of the
         # upper arm, rather than leaving a featureless black sleeve exposed.
-        cv=[];cf=[];uv=[];nr=45;nc=33
+        nr=45;nc=33
+        cv,cf=geometry.cape_surface(p['hem_radius'],width,side=True,rows=nr,cols=nc,offset=offset)
+        uv=[]
         for j in range(nr):
             t=j/(nr-1)
             for k in range(nc):
                 u=k/(nc-1)
-                cv.append((.174+.046*t+u*(.094+.110*t),
-                    -.052+.042*t+(.003+.012*t)*math.sin(12*math.pi*u+.5*t),
-                    1.425-1.32*t-.018*u))
                 uv.append(photo_surface.quad_uv(u,1-t,((1094,1490),(1214,1477),(1054,949),(1008,932))))
-                if j and k:cf.append(((j-1)*nc+k-1,(j-1)*nc+k,j*nc+k,j*nc+k-1))
         side_cape=add(mesh_object(p['name']+'-visible-pleated-cape',cv,cf,dress),'visible-pleated-cape')
+        side_cape['drape_geometry_revision']=2
         for face in side_cape.data.polygons:face.use_smooth=True
         if reference_material:
             layer=side_cape.data.uv_layers.new(name='ReferenceSurfaceUV')
@@ -499,8 +511,7 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
                     edges.append(tube('jewel-facet-rim',[tuple(Vector(centre)+Vector(vv[i])) for i in (a,b)],[.00042]*2,metal,5))
         add(join_meshes(edges,p['name']+'-hair-jewel-rims'),'hair-ornament-rims')
     bpy.context.view_layer.update()
-    pivot=Vector(portrait_plan['center'])
-    head_turn=Matrix.Translation(pivot)@Euler(p['head_rotation']).to_matrix().to_4x4()@Matrix.Translation(-pivot)
+    _,head_turn,_=portrait_transforms(portrait_plan)
     for obj in parts[head_accessory_start:]:obj.matrix_world=head_turn@obj.matrix_world
     if p['fan']['enabled']:
         f=p['fan'];pivot=fan_pivot

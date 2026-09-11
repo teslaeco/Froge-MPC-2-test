@@ -25,7 +25,7 @@ template=template.replace("compile(base64.b64decode(encoded, validate=True), nam
 template=template.replace('timeout=180','timeout=900').replace('timeout=360','timeout=1080')
 template=template.replace('FROGE_PORTRAIT_OK','FROGE_V20_OK')
 template=template.replace("health.get('materialQualityRevision') != 2:",
-                          "health.get('materialQualityRevision') != 2 or health.get('interchangeRevision') != 2 or health.get('materialRepairRevision') != 1 or health.get('reviewRenderRevision') != 1:")
+                          "health.get('materialQualityRevision') != 2 or health.get('interchangeRevision') != 2 or health.get('materialRepairRevision') != 1 or health.get('reviewRenderRevision') != 1 or health.get('portraitGeometryRevision') != 2 or health.get('registeredReferenceRevision') != 1:")
 template=template.replace('Poprawiona figurka jest juz dostepna na stronie.', 'Model kontrolny zostal zapisany na Oracle. Sprawdz jego wyglad; nowe modele tworz w generatorze.')
 # Retain the actual verification model so it can be inspected after installation.
 template=template.replace("with tempfile.TemporaryDirectory(prefix='portrait-export-check-', dir=target / 'state') as folder:",
@@ -38,7 +38,19 @@ result=result.replace("print('Model kontrolny: ' + str(work / 'model.glb'), flus
 compile(result,'froge-v20.py','exec')
 folder=root/'public/downloads';folder.mkdir(parents=True,exist_ok=True)
 (folder/'froge-v20.py').write_text(result)
-readme='''FORGE v20 — poprawka eksportów i generatora, 2026-09-11
+readme='''FORGE v20 — szyja i przestrzenna peleryna rev2, 2026-09-11
+
+Nowa geometria: obrót głowy wokół górnej szyi, wspólna transformacja oczu,
+włosów i biżuterii. Peleryna obejmuje plecy, ma zaokrąglony dół i zmienne
+fałdy; odstęp uwzględnia bryłę sukni. Tył jest autorską rekonstrukcją.
+Dla tego samego rozpoznanego zdjęcia kobiety ze szmaragdowym wachlarzem
+pracownik może użyć wcześniej zmierzonych 478 punktów, także gdy starsza
+strona ich nie wysyła. Sprawdza cały kadr, twarz, wachlarz i strój oraz SHA
+zdjęcia. To zarejestrowana referencja, nie nowy detektor twarzy dla dowolnych
+zdjęć. Inne zdjęcia nie dziedziczą tych pomiarów. Podobieństwo nie jest 1:1.
+Instalator wymaga portraitGeometryRevision=2 i registeredReferenceRevision=1.
+Poprzednie zapisane GLB pozostają poprzednimi modelami; wymagają przebudowy.
+
 
 Naprawa podglądu (reviewRenderRevision=1): Blender sprawdza dostępność OIDN.
 Przy jej braku renderuje na CPU z 64 próbkami bez odszumiania. Błąd podglądu

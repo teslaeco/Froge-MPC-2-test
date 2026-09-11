@@ -1,3 +1,25 @@
+## 2026-09-11 — active geometry repair after live model review
+
+- Downloaded exact Site job 3960f64c-eb60-432b-b1aa-8f831f7bf613 GLB
+  (23,801,248 bytes, 588,028 triangles) and its 1122x1402 source photo.
+  Metadata proves no measured face fit was applied. Original GLB retained.
+- Implemented shared cervical pivot for skull/eyes/hair/jewellery and a curved
+  rear/side cloth surface. Native Blender 4.3 generation/export/reimport passed
+  for an authored replacement scene using the exact job photo, without paid AI.
+  The original Oracle scene JSON is unavailable; replacement scene is labelled.
+- This exact photo matches the previously measured emerald reference composition.
+  Added explicit registered-reference reuse of 478 normalized measurements after
+  whole-frame/face/fan/garment checks and SHA binding. Other photos do not inherit
+  these points. This is not a generic live detector or photographic identity scan.
+- 23 focused geometry, photo binding and reference tests passed. Actual Cycles
+  front/profile/back comparisons show improved facial colour/placement, a better
+  neck junction and curved back. Cape shoulder attachment/material needs one
+  further refinement; do not deliver this intermediate model as final.
+- Pending: finish that refinement, rerun native exports, save updated full worker
+  package and final model/renders. Source save is not an Oracle installation or
+  Site deployment. Existing v38 Site remains unchanged and private. Browser access
+  recovered original artifacts; Oracle Console remains unavailable here.
+
 ## 2026-09-11 — OpenImageDenoise review failure: verified fix
 
 - Screenshot and current Site DB confirm failed job

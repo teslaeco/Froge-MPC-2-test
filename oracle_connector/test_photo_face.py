@@ -11,11 +11,20 @@ ROOT=Path(__file__).resolve().parent
 sys.path.insert(0,str(ROOT/'runtime'))
 import face_measurement
 import photo_input
-from photo_face import FaceFit, TEMPLATE, neutral_points, load_fit
+from photo_face import FaceFit, TEMPLATE, neutral_points, load_fit, reviewed_observation
 from photo_face_color import project
 
 
 class MeasuredPhotoFaceTest(unittest.TestCase):
+    def test_registered_measurement_is_explicit_and_cannot_cross_compositions(self):
+        digest='a'*64
+        self.assertIsNone(reviewed_observation({'matched':False},1122,1402,digest))
+        self.assertIsNone(reviewed_observation({'matched':True},1200,1402,digest))
+        result=reviewed_observation({'matched':True},1122,1402,digest)
+        self.assertEqual((result['width'],result['height'],result['imageSha256']),(1122,1402,digest))
+        self.assertEqual(len(result['points']),478)
+        self.assertGreater(FaceFit(result).report['anchor_rms_before_mm'],.1)
+
     def setUp(self):
         self.observation=json.loads(TEMPLATE.read_text())['observation']
 
