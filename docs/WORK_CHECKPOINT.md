@@ -1,24 +1,56 @@
-## 2026-09-11 — active geometry repair after live model review
+## 2026-09-11 — geometry r2: model, exports and installer verified and saved
 
-- Downloaded exact Site job 3960f64c-eb60-432b-b1aa-8f831f7bf613 GLB
-  (23,801,248 bytes, 588,028 triangles) and its 1122x1402 source photo.
-  Metadata proves no measured face fit was applied. Original GLB retained.
-- Implemented shared cervical pivot for skull/eyes/hair/jewellery and a curved
-  rear/side cloth surface. Native Blender 4.3 generation/export/reimport passed
-  for an authored replacement scene using the exact job photo, without paid AI.
-  The original Oracle scene JSON is unavailable; replacement scene is labelled.
-- This exact photo matches the previously measured emerald reference composition.
-  Added explicit registered-reference reuse of 478 normalized measurements after
-  whole-frame/face/fan/garment checks and SHA binding. Other photos do not inherit
-  these points. This is not a generic live detector or photographic identity scan.
-- 23 focused geometry, photo binding and reference tests passed. Actual Cycles
-  front/profile/back comparisons show improved facial colour/placement, a better
-  neck junction and curved back. Cape shoulder attachment/material needs one
-  further refinement; do not deliver this intermediate model as final.
-- Pending: finish that refinement, rerun native exports, save updated full worker
-  package and final model/renders. Source save is not an Oracle installation or
-  Site deployment. Existing v38 Site remains unchanged and private. Browser access
-  recovered original artifacts; Oracle Console remains unavailable here.
+- Implemented the user's requested repair, starting from the actual completed
+  Site job 3960f64c-eb60-432b-b1aa-8f831f7bf613 and its exact 1122x1402 photo.
+  Original GLB (23,801,248 bytes, 588,028 triangles) is retained locally.
+  Node metadata confirms the user's model had no measured face fitting.
+- New shared cervical pivot keeps the skull, eyes, hair and jewellery together;
+  lower neck remains anchored. Rear/side cape now has a curved cross-section,
+  shaped hem, fitted shoulder yoke, thin seams and a softer shared cloth finish.
+  Existing 16-material budget is retained. The first extra-material variant was
+  rejected by the real runtime, then corrected and regenerated successfully.
+- Registered 478-point measurement is reused only after the frame, face, fan and
+  garment agree with this previously measured composition, with SHA binding.
+  This is explicitly NOT live face detection for arbitrary photos. Different
+  compositions do not inherit these points. Face likeness remains approximate.
+- Final native Blender 4.3.0 build: 34.47 s, 305,299 vertices, 594,064 triangles,
+  103 objects, 14 image datablocks; 38,915,808-byte GLB. No paid AI request.
+  Measured residual RMS 2.3776 -> 0.3020 mm, no inverted fit triangles. This is
+  control-fit error, not proof of identity. Rear/lower body remain reconstructed.
+- Actual exported GLB rendered from front, profile, back and full three-quarter;
+  actual FBX front rendered after import. Neck/face/cape improvement inspected.
+  Remaining: exact facial likeness, updo and lip refinement, source lighting in
+  colour maps, inferred hidden shape, multi-material shader differences in FBX.
+- Native FBX, OBJ and STL reopen with exactly 594,064 triangles; world-bound
+  error below 0.0000003 m. FBX/OBJ include the actual baked face-colour texture.
+  This verifies exports, not full shader equivalence or commercial print readiness.
+- 43 unique focused Python tests passed across runs. The dependency/package test
+  was rerun successfully after rebuilding the final archive. Full v20 installer
+  has 46 byte-matched files, compiles and passes ZIP integrity; capability gate
+  requires portraitGeometryRevision=2 and registeredReferenceRevision=1.
+  Payload SHA256: 8ab5c5e795dd83dc8e46ab8714780b7497460cc28af6235f1d2b93c9af88f415.
+- Durable source checkpoint parent e0ad28a7903745404238e3b293b76cbeed0b2747
+  is on existing PR #9. Final source correction and preview helper follow it.
+  No merge, Oracle installation, Site source deployment or access change here.
+- Four artifact saves succeeded with local identity metadata:
+  froge-v20.zip (15,492,429 bytes): libfile_13dffd55f64c819193134b69232c0de0 v3;
+  MCP2-model-geometria-r2.zip (153,448,370 bytes): libfile_211a340af5a48191b419584acb9f05c4 v0;
+  MCP2-model-geometria-r2.glb: libfile_fbccd9fab5c48191b45f296ab7f9f33c v0;
+  MCP2-porownanie-geometrii-r2.html: libfile_29a7cceab9fc819181c7293cc557e5d8 v0.
+  The ZIP includes every model format, textures, provenance and native reports.
+  HTML has nine complete embedded images, actual 640x840 renders, matching
+  cameras/lights and normalized 1.88 m comparison height (24 vs 32 samples).
+- Authored replacement scene uses the exact user-job photo; the original Oracle
+  plan JSON could not be accessed. This distinction is recorded with the model.
+- Full model imports successfully in the existing Site v38. Catalog rejects
+  files above its 24 MB cap, including re-export of a separate 1024 px preview.
+  Separate 512 px preview (19,790,144 bytes, same 594,064 triangles) successfully
+  saved as a draft named Szmaragdowa postac - poprawiona szyja i plecy (podglad).
+  Save and name confirmed after reloading the Site catalog. Download route:
+  /api/commerce/models/a6483e30-bd26-4e65-945a-ab528fd079f8.glb
+  Full masters retain their original textures. No store listing was published.
+  Oracle Console remains unavailable here; installing the saved update package
+  is still needed for future generations.
 
 ## 2026-09-11 — OpenImageDenoise review failure: verified fix
 

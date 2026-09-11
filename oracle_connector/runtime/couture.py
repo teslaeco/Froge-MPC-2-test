@@ -97,8 +97,13 @@ def reference_character(p, materials, mesh_object, tube, ellipsoid, join_meshes)
     seams['seam_count']=len(piping);seams['radius_m']=.00062
     if p['cape']:
         vv,ff=geometry.cape_surface(p['hem_radius'],width,offset=offset)
-        reverse=dress.copy();reverse.name=p['name']+'-inferred-teal-cloth-reverse'
-        reverse_rgb=tuple(.75*a+.25*b for a,b in zip(dress.diffuse_color[:3],crystal.diffuse_color[:3]))
+        # Reuse the shared cloth slot: the worker's material budget stays at
+        # 16, including anatomical and measured-reference materials. This
+        # finish also belongs on the unobserved gown back and cloth sleeves.
+        reverse=dress
+        cloth_rgb=tuple(dress.get('couture_original_rgb',dress.diffuse_color[:3]))
+        dress['couture_original_rgb']=cloth_rgb
+        reverse_rgb=tuple(.75*a+.25*b for a,b in zip(cloth_rgb,crystal.diffuse_color[:3]))
         reverse.diffuse_color=(*reverse_rgb,1)
         shader=reverse.node_tree.nodes.get('Principled BSDF')
         for socket in ('Base Color','Roughness','Metallic'):
