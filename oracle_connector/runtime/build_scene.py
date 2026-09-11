@@ -153,6 +153,9 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes,
             obj.data.materials.append(material)
         elif kind == 'tube':
             obj = tube(name, p['points'], p['radii'], material, p['sides'])
+        elif kind in ('surface_grid','contour_loft'):
+            from freeform_geometry import build
+            obj = build(p, material, mesh_object)
         elif kind == 'mesh':
             obj = mesh_object(name, p['vertices'], p['faces'], material)
         elif kind == 'loft':
@@ -178,4 +181,7 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes,
     if face_fit is not None:
         fit_report.update(face_fit.report)
         bpy.context.scene['photo_face_fit']=json.dumps(fit_report)
+    from photo_projection import apply_projections
+    projection_report=apply_projections(scene.get('reference_views',[]),objects,reference_folder)
+    bpy.context.scene['photo_projection']=json.dumps(projection_report)
     return objects

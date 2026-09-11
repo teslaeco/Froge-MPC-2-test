@@ -83,5 +83,13 @@ class VisualReviewTests(unittest.TestCase):
         _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,generate,build,599,899)
         self.assertEqual(report['status'],'budget_exhausted');generate.assert_not_called();build.assert_not_called()
 
+    def test_keep_can_be_assessed_without_repeating_scene_or_rebuild_budget(self):
+        generate=Mock(return_value=json.dumps({'action':'keep','issues':['Requires new geometry'], 'scene':None}))
+        build=Mock()
+        _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,generate,build,600,899,ai_limit=840)
+        self.assertEqual(generate.call_args.args[2],240)
+        self.assertTrue(report['assessment_completed']);self.assertFalse(report['likeness_verified'])
+        build.assert_not_called()
+
 
 if __name__=='__main__':unittest.main()

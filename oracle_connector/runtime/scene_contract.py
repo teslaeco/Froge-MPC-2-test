@@ -64,6 +64,12 @@ COUTURE_FIELDS = {
 }
 
 PARTS = [
+    part('surface_grid', {'material':NAME, 'control_grid':array(array(VEC,2,16),2,16),
+                         'samples':{'type':'integer','minimum':1,'maximum':4},
+                         'thickness':number(0,.1)}),
+    part('contour_loft', {'material':NAME, 'rings':array(array(VEC,4,64),2,24),
+                         'samples':{'type':'integer','minimum':1,'maximum':4},
+                         'caps':{'type':'boolean'}}),
     part('reference_character',COUTURE_FIELDS),
     part('rotor',{'material':NAME,'accent_material':NAME,'center':VEC,'radius':number(.005,2),
                   'depth':number(.001,.2),'blades':{'type':'integer','minimum':3,'maximum':16}}),
@@ -117,17 +123,53 @@ PARTS = [
                      'bulbs': {'type': 'integer', 'minimum': 1, 'maximum': 100},
                      'bulb_radius': number(0.001, 1)}),
 ]
+REFERENCE_VIEW = record({
+    'photo_index':{'type':'integer','minimum':0,'maximum':3},
+    'position':VEC,'target':VEC,'up':VEC,
+    'projection':choice('orthographic','perspective'),
+    'vertical_span':number(.001,100), 'fov':number(.15,2.5),
+    'regions':array(record({'part':NAME,'polygon':array(array(number(0,1),2,2),3,64)}),1,80),
+})
 SCHEMA = record({
-    'version': {'type': 'integer', 'enum': [1]}, 'name': NAME,
+    'version': {'type': 'integer', 'enum': [1,2]}, 'name': NAME,
     'subject_type': choice('object','animal','person','portrait'),
     'materials': array(record({'name': NAME, 'rgb': COLOR,
                               'pattern': {'type': 'string', 'enum': ['plain', 'bark', 'wood', 'leaf', 'stone', 'fabric', 'cotton', 'denim', 'metal', 'windows', 'skin','satin','crystal']},
                               'roughness': number(0, 1), 'metallic': number(0, 1),
                               'emission': number(0, 5)}), 1, 8),
     'parts': array({'anyOf': PARTS}, 1, 80),
+    'reference_views':array(REFERENCE_VIEW,0,4),
 })
 
-PROMPT = '''Design the user's requested 3D asset as a compact Froge scene JSON, version 1.
+PROMPT = '''Design the user's requested 3D asset as a compact Froge scene JSON, version 2.
+REFERENCE-CONDITIONED CONSTRUCTION: identify each visible component and its silhouette,
+depth, orientation and material from the actual uploaded images. Choose tools that
+match that evidence. The presence of a human does not imply a preset outfit.
+For custom clothing, hair sections, organic shells, animals, furniture or product
+panels, surface_grid is a rectangular grid of XYZ control points in metres, with
+2..16 rows and columns, samples 1..4 per interval, thickness 0..0.1 m. It makes an
+interpolated surface; use positive physical thickness for a garment/panel shell.
+contour_loft joins 2..24 freeform closed rings of equal 4..64 XYZ points; samples
+1..4 interpolates along AND around rings; caps closes the ends. Start each ring at
+the corresponding landmark and keep winding consistent. Unlike elliptical loft,
+each ring may be asymmetric. Keep control grids regular, nondegenerate and modest.
+These tools support new shapes, not just known reference templates. A dense grid
+does not create missing detail: use controls to match the observed geometry.
+PHOTO TEXTURES: reference_views is [] without images. With images, estimate a camera
+and select visible subject regions for each useful photo. photo_index is ZERO-based.
+position/target/up are world coordinates; local front is -Y, Z is up. For orthographic
+views vertical_span is the full image height in world metres. For perspective views,
+fov is the vertical field of view in radians. Both fields must be supplied.
+Each region binds one existing part name to a simple polygon of normalized image
+coordinates (x right, y down, origin top left). Trace only pixels belonging to that
+part; exclude background, fingers over a prop, face over a collar and other occluders.
+Use separate part names and image polygons for clothing, hair, props and anatomy.
+The renderer projects original pixels only onto visible, camera-facing mesh faces
+inside the selected region, with depth testing. Other faces keep their material.
+Infer camera and geometry together; inaccurate camera estimates misalign textures.
+Reference projection is photographed colour, not de-lit PBR or verified identity.
+Never cover the entire scene with an image plane. Preserve hidden volume and use
+other supplied views for its observed sides; unseen surfaces remain inferred.
 MATERIAL CLOSURE: declare at most 8 materials, then use their exact names in
 every material and *_material field. A color description is not a declaration.
 For example eye_material "eyes_grey_green" requires a material with exactly
@@ -136,7 +178,7 @@ compatible materials when needed; never leave an undeclared ninth material.
 Material rgb values are display/sRGB colors; keep the reference palette. Colored
 cloth and crystal panels must not be replaced by silver metal. Metals are trim.
 COUTURE REFERENCE: for a standing adult woman in a fitted floor-length crystalline
-gown, use reference_character: continuous bodice/skirt, conformal thin inlays,
+gown, reference_character is an OPTIONAL approximation: continuous bodice/skirt, conformal thin inlays,
 collar, sleeves, legs, anatomical portrait/hands, updo and optional mechanical
 pleated fan. Never put a sweatshirt, T-shirt, trousers or padded armor beneath it.
 Set cape true only for a visible/requested drape attached to the shoulders.
@@ -389,6 +431,7 @@ def apply_material_repair(original, text, prompt=None):
 def validate_scene(value):
     # Backward-compatible input normalization only; no unknown fields accepted.
     if isinstance(value,dict) and isinstance(value.get('parts'),list):
+        value.setdefault('reference_views',[])
         value.setdefault('subject_type','person' if any(isinstance(p,dict) and p.get('kind') in ('person','reference_character') for p in value['parts']) else 'object')
         for p in value['parts']:
             if isinstance(p,dict) and p.get('kind') in ('person','portrait'):p.setdefault('eyewear','none')
@@ -413,7 +456,11 @@ def validate_scene(value):
         if name in known:
             raise ValueError('Powtorzona nazwa czesci: ' + name)
         v, t, count = 0, 0, 1
-        if kind == 'mesh':
+        if kind in ('surface_grid','contour_loft'):
+            try:from freeform_geometry import dimensions
+            except ModuleNotFoundError:from .freeform_geometry import dimensions
+            v,t=dimensions(p)
+        elif kind == 'mesh':
             for face in p['faces']:
                 if max(face) >= len(p['vertices']) or len(set(face)) != len(face):
                     raise ValueError('Sciana siatki ma nieprawidlowe indeksy.')
@@ -478,6 +525,13 @@ def validate_scene(value):
             count = len(p['offsets']) if kind=='copies' else p['count']; v, t = source[1] * count, source[2] * count
         known[name] = (kind, v, t)
         vertices += v; triangles += t; objects += count
+    try:from projection_math import camera_basis
+    except ModuleNotFoundError:from .projection_math import camera_basis
+    for view in value['reference_views']:
+        camera_basis(view)
+        for region in view['regions']:
+            if region['part'] not in known:raise ValueError('Referencja wskazuje nieznana czesc: '+region['part'])
+            polygon_outline(region['polygon'])
     heads=sum(p['kind'] in ('person','portrait','reference_character') for p in value['parts'])
     if heads > 3:
         raise ValueError('Scena obsluguje maksymalnie 3 szczegolowe postacie. Zbuduj grupe raz; osobne warianty wymagaja kolejnych zlecen, bez duplikowania grupy.')

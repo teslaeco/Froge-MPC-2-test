@@ -1,3 +1,33 @@
+## 2026-09-11 — v23 freeform and photo projection update prepared
+
+- User requests broader, more faithful reconstruction for different uploaded
+  objects while retaining Astra + Blender. Meshy remains removed.
+- Scene v2 adds bounded surface_grid and contour_loft geometry. New photo jobs
+  require camera/mask reference_views, with source hash checks, multiple views,
+  face orientation and BVH depth tests. Hidden faces retain their materials.
+- Added per-face colour UV consolidation for FBX/OBJ, private quality reports,
+  600 s planning + 240 s visual assessment, and 600+300 s Blender budgets.
+  A successful file is never promoted to automatic likeness acceptance.
+- 62 Python test executions passed. Native Blender 4.3 verified manifold
+  surfaces, front/back image assignment, occlusion rejection, UV restoration
+  and FBX reimport. The separate installer fixture has 196 vertices / 364
+  triangles and correctly projects two faces. These are authored test assets,
+  not new Astra generations or proof of universal reconstruction quality.
+- Full froge-v23.zip: 54 source-verified files, 15,508,252 bytes, SHA-256
+  f83e549f9aad15ba521a0f2e017c1c8dc2f8702a989ac9a0fdaf7661de9e792c.
+  Packaging compiles the Python files, verifies payload hash and ZIP integrity.
+- Oracle v23 is NOT installed; last confirmed worker v22 and Site v38 remain.
+  No new Site source checkout/deployment was attempted here after the prior
+  canonical Git HTTP 500. No new paid AI generation was started this stage.
+- Artifact save returned HTTP 502 with uncertain commit outcome; filename
+  lookup found no matching new artifact. No duplicate write was attempted.
+  Complete ZIP and instructions remain in scratch/deliverables; source and
+  packager are being saved to the authorized GitHub PR.
+- Source starts from PR head 592710412a96c972c0437ab016aab3967428445b.
+- Report: docs/V23_UPDATE.md; execution receipt: docs/V23_EXECUTION.json.
+  After installation, real Astra tests on a person, hard-surface object and
+  organic object remain necessary. PR #9 remains open pending visual acceptance.
+
 ## 2026-09-11 — actual Astra v22 reference test completed; visual acceptance failed
 
 - Native FBX review found colour loss from vertex-colour/photo shader mixes.

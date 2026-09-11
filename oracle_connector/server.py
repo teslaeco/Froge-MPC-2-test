@@ -22,6 +22,8 @@ from code_policy import CodePolicyError, StreamPolicyGuard, extract_code, prepar
 from ai_stream import stream_chat
 import openai_provider
 import photo_input
+from generation_budget import initial_ai_remaining, total_ai_limit, initial_blender_remaining
+from quality_report import quality_report
 from ai_stream import OpenAIServiceError
 from runtime_check import IMAGE, sandbox_options, verify_runtime, job_memory_gib
 from runtime.scene_contract import SCHEMA, PROMPT, parse_scene, human_prompt
@@ -32,7 +34,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 22
+CONNECTOR_VERSION = 23
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
@@ -161,6 +163,9 @@ def health():
     state = _text_health()
     return {**state, 'textReady': state['ready'], 'astraPhotoRevision': 1,
             'photoEngine': 'astra-blender', 'photoReasoningEffort': 'max',
+            'freeformGeometryRevision':1,'photoProjectionRevision':1,
+            'planningBudgetSeconds':600,'photoReviewReservedSeconds':240,
+            'photoAiBudgetSeconds':840,'qualityReports':True,
             'reviewViews': ['front', 'three-quarter', 'face', 'side', 'back']}
 
 def ai_busy():
@@ -301,7 +306,7 @@ def worker():
             reuse = saved_script.is_file()
             if reuse and human_prompt(job['prompt']):
                 raise ValueError('Ten stary skrypt postaci nie zawiera kontroli anatomii. Uruchom nowe zlecenie z zachowanym opisem i zdjeciami w standardzie v15.')
-            deadline = started + AI_TIME_LIMIT
+            deadline = time.monotonic() + AI_TIME_LIMIT
             material_repair=None
             write_json(folder / 'provider.json', {'provider': 'saved-script' if reuse else selected.get('provider'), 'model': None if reuse else openai_provider.MODEL if is_openai else MODEL})
             for attempt in range(1 if reuse else 2):
@@ -310,6 +315,7 @@ def worker():
                         code = saved_script.read_text(encoding='utf-8')
                     else:
                         phase_started = time.monotonic()
+                        deadline = phase_started + initial_ai_remaining(ai_seconds)
                         try:
                             if material_repair is not None:
                                 code = generate_code(messages, job['id'], cancelled, deadline, attempt + 1, selected,
@@ -331,13 +337,14 @@ def worker():
                             write_json(folder/'material-repair.json',{'missing':material_repair.missing,**repair_report})
                         else:
                             scene = parse_scene(code, job['prompt'])
+                        photo_input.validate_photo_plan(scene,photos)
                         write_json(folder / 'scene.json', scene)
                     if cancelled.is_set():
                         raise InterruptedError('Zlecenie anulowane.')
                     status(job['id'], 'building', 'Plan sprawdzony. Blender buduje geometrie i zapisuje GLB…')
                     phase_started = time.monotonic()
                     try:
-                        remaining_blender=BLENDER_TIME_LIMIT-blender_seconds
+                        remaining_blender=initial_blender_remaining(blender_seconds,bool(photos and is_openai and not reuse))
                         if remaining_blender<=0:raise TimeoutError('Wykorzystano budzet Blendera.')
                         run_blender(job['id'], folder, cancelled, timeout=remaining_blender)
                     finally:
@@ -353,13 +360,13 @@ def worker():
                             return openai_provider.generate(review_messages,selected['api_key'],cancelled,progress,remaining,None,usage,schema=schema)
                         ai_seconds,blender_seconds,review_report=refine(scene,job['prompt'],photos,folder,cancelled,
                             visual_generate,lambda remaining:run_blender(job['id'],folder,cancelled,timeout=remaining),
-                            ai_seconds,blender_seconds,AI_TIME_LIMIT,BLENDER_TIME_LIMIT)
+                            ai_seconds,blender_seconds,total_ai_limit(bool(photos)),BLENDER_TIME_LIMIT)
                     elapsed = time.monotonic() - started
                     write_json(folder / 'timing.json', {'total_seconds': round(elapsed, 2), 'ai_seconds': round(ai_seconds, 2), 'blender_seconds': round(blender_seconds, 2)})
                     detail = ('Model gotowy w %.1f s. Wykorzystano zapisany skrypt, bez nowego zapytania do AI.' % elapsed if reuse else 'Model gotowy w %.1f s. Instrukcje AI: %.1f s; Blender: %.1f s. Zapisano GLB z materialami.' % (elapsed, ai_seconds, blender_seconds))
                     if photos:
                         detail += ' Uzyto %d zdjec referencyjnych. Geometria jest przyblizona, niewidoczne powierzchnie sa szacowane.' % len(photos)
-                    if photos:
+                    if photos and not reuse and scene.get('subject_type') in ('person','portrait'):
                         fit_report=json.loads((folder/'result.json').read_text()).get('photo_face_fit',{})
                         detail += (' Dopasowano siatke twarzy do 478 punktow zdjecia; podobienstwo wymaga oceny.' if fit_report.get('applied') else ' Nie zastosowano pomiarow twarzy: wymagane czytelne zdjecie jednej postaci kobiecej.')
                     if review_report:
@@ -575,7 +582,7 @@ class Handler(BaseHTTPRequestHandler):
                     db.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?)', (job_id, prompt.strip(), 'queued', 'Opis przyjety.', now, now))
                 WAKE.set()
                 return self.send_json({'id': job_id, 'state': 'queued'}, 202)
-            match = re.fullmatch(r'/v1/jobs/([a-f0-9-]{36})(?:/(model|cancel|exports(?:/(?:fbx|obj|stl|blend|scene-json|master|pbr))?))?', self.path)
+            match = re.fullmatch(r'/v1/jobs/([a-f0-9-]{36})(?:/(model|cancel|quality|exports(?:/(?:fbx|obj|stl|blend|scene-json|master|pbr))?))?', self.path)
             if not match or not UUID.fullmatch(match[1]):
                 return self.send_json({'error': 'Nie znaleziono funkcji.'}, 404)
             job_id, action = match.groups()
@@ -590,6 +597,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json({'cancelled': True})
             if write:
                 return self.send_json({'error': 'Niedozwolona metoda.'}, 405)
+            if action=='quality':
+                return self.send_json(quality_report(JOBS/job_id,row['state']))
             if action and action.startswith('exports'):
                 if row['state'] != 'succeeded':
                     return self.send_json({'error': 'Model nie jest jeszcze gotowy.'}, 409)
@@ -607,7 +616,9 @@ class Handler(BaseHTTPRequestHandler):
                     report = json.loads(report_path.read_text()) if report_path.is_file() and report_path.stat().st_size < 2 * 1024**2 else {}
                     return self.send_json({'revision': 2, 'formats': formats, 'glb': '/v1/jobs/' + job_id + '/model',
                         'quality': {'texturesReduced': report.get('preview', {}).get('textures_reduced', False),
-                                    'masterTextures': report.get('master_textures', []), 'likenessVerified': False}})
+                                    'masterTextures': report.get('master_textures', []),
+                                    'textureReport':report.get('texture_quality',{}),
+                                    'photoProjection':report.get('photo_projection',{}), 'likenessVerified': False}})
                 name = action.split('/')[1]
                 try:
                     paths = export_files(folder, name)

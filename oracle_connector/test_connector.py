@@ -264,8 +264,12 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertNotIn('base64', (folder / 'reference-photos.json').read_text())
         # The mocked Blender finish normally writes the structural report.
         (folder / 'result.json').write_text('{}')
-        scene = (Path(__file__).parent / 'examples/rocket.scene.json').read_text()
-        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'ai_settings', return_value={'provider': 'openai'}), patch.object(server, 'generate_code', return_value=scene) as ai, patch.object(server, 'run_blender') as blender:
+        scene = json.loads((Path(__file__).parent / 'examples/rocket.scene.json').read_text())
+        scene['version']=2
+        scene['reference_views']=[{'photo_index':0,'position':[0,-3,1],'target':[0,0,1],'up':[0,0,1],
+            'projection':'orthographic','vertical_span':3,'fov':1,
+            'regions':[{'part':scene['parts'][0]['name'],'polygon':[[0,0],[1,0],[1,1],[0,1]]}]}]
+        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'ai_settings', return_value={'provider': 'openai'}), patch.object(server, 'generate_code', return_value=json.dumps(scene)) as ai, patch.object(server, 'run_blender') as blender:
             wake.wait.side_effect = [None, StopIteration]
             with self.assertRaises(StopIteration):
                 server.worker()

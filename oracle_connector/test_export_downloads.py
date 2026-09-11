@@ -72,6 +72,17 @@ class ExportDownloadTests(unittest.TestCase):
         (folder / name).write_bytes(b'changed')
         self.assertEqual(self.request_bytes(url)[0],409)
 
+    def test_quality_is_authenticated_and_does_not_turn_success_into_acceptance(self):
+        folder,_,_=self.make_export()
+        (folder/'visual-review.json').write_text(json.dumps({'status':'budget_exhausted'}))
+        url='/v1/jobs/'+JOB+'/quality'
+        self.assertEqual(self.request_bytes(url,token='invalid')[0],401)
+        code,headers,body=self.request_bytes(url)
+        self.assertEqual(code,200);self.assertEqual(headers['Cache-Control'],'no-store')
+        value=json.loads(body)
+        self.assertEqual(value['visualReview']['status'],'budget_exhausted')
+        self.assertFalse(value['likenessVerified']);self.assertFalse(value['automaticQualityAccepted'])
+
     def test_failed_jobs_missing_textures_and_symlinks_are_not_downloadable(self):
         folder,report,_=self.make_export();base='/v1/jobs/'+JOB+'/exports/'
         (folder/'textures/skin.png').unlink()

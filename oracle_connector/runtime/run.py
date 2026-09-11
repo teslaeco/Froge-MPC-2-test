@@ -175,7 +175,10 @@ def finish(output=None):
         if image.users == 0:
             bpy.data.images.remove(image)
     extra=max(0,bpy.context.scene.get('expected_heads',0)-1)
-    if len(bpy.data.materials) > 16+4*extra or len(bpy.data.images) > 16+4*extra:
+    projection=json.loads(bpy.context.scene.get('photo_projection','{}'))
+    projection_materials=min(64,projection.get('added_materials',0))
+    projection_images=min(4,len(projection.get('source_images',[])))
+    if len(bpy.data.materials) > 16+4*extra+projection_materials or len(bpy.data.images) > 16+4*extra+projection_images:
         raise ValueError('Export limit: 16 used materials and 16 used texture images. Plans still allow 8 shared materials. Actual: %d materials, %d images.' % (len(bpy.data.materials),len(bpy.data.images)))
     objects = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     if not objects or len(objects) > 256:
@@ -231,6 +234,8 @@ def finish(output=None):
                              'position_quantization_applied':heads>1 and not high_quality}}
     report['texture_quality']=texture_report
     report['photo_face_fit']=json.loads(bpy.context.scene.get('photo_face_fit','{}'))
+    report['photo_projection']=projection
+    report['geometry_capabilities']={'revision':1,'freeform_surfaces':True,'arbitrary_photo_likeness_verified':False}
     if heads:
         from couture_qa import verify_export
         report['export_validation']=verify_export(output/'model.glb',objects)

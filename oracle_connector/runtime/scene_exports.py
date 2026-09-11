@@ -31,23 +31,32 @@ def _portable_uvs(bpy, report):
     try:
         for obj in bpy.context.scene.objects:
             if obj.type!='MESH' or len(obj.data.uv_layers)<2:continue
-            if len(obj.material_slots)!=1:
-                report['uv_binding_limitations'].append({'object':obj.name,
-                    'reason':'Multiple materials may require different UV sets; original order retained'})
-                continue
-            primary=None
+            default=next((uv.name for uv in obj.data.uv_layers if uv.active_render),obj.data.uv_layers.active.name)
+            bindings=[]
             for material in obj.data.materials:
-                if not material or not material.use_nodes:continue
-                shader=material.node_tree.nodes.get('Principled BSDF')
-                if shader:primary=colour_uv(shader.inputs['Base Color'])
-                if primary:break
-            primary=primary or next((uv.name for uv in obj.data.uv_layers if uv.active_render),obj.data.uv_layers.active.name)
-            if primary==obj.data.uv_layers[0].name or primary not in obj.data.uv_layers:continue
+                shader=material.node_tree.nodes.get('Principled BSDF') if material and material.use_nodes else None
+                name=colour_uv(shader.inputs['Base Color']) if shader else None
+                bindings.append(name if name and name in obj.data.uv_layers else default)
+            distinct=set(bindings)
+            combine=len(distinct)>1
+            primary='ExportColourUV' if combine else next(iter(distinct),default)
+            if not combine and primary==obj.data.uv_layers[0].name:continue
             original=obj.data;mesh=original.copy();meshes.append((obj,original,mesh));obj.data=mesh
             layers=[]
             for uv in mesh.uv_layers:
                 data=array('f',[0.])* (2*len(mesh.loops));uv.data.foreach_get('uv',data)
                 layers.append((uv.name,data))
+            if combine:
+                # FBX/OBJ use one primary colour UV channel. Consolidate each
+                # polygon's own colour UVs; retain originals for other maps.
+                maps=dict(layers);merged=array('f',[0.])*(2*len(mesh.loops))
+                for polygon in mesh.polygons:
+                    selected=bindings[polygon.material_index] if polygon.material_index<len(bindings) else default
+                    data=maps[selected]
+                    for loop in polygon.loop_indices:merged[2*loop:2*loop+2]=data[2*loop:2*loop+2]
+                primary='ExportColourUV'
+                while primary in maps:primary+='-export'
+                layers.append((primary,merged))
             # Removing a layer can invalidate the remaining RNA references.
             # Resolve each layer from the live collection before removing it.
             while mesh.uv_layers:mesh.uv_layers.remove(mesh.uv_layers[0])
@@ -55,6 +64,7 @@ def _portable_uvs(bpy, report):
                 uv=mesh.uv_layers.new(name=name);uv.data.foreach_set('uv',data)
             mesh.uv_layers.active_index=0;mesh.uv_layers[0].active_render=True
             report['uv_order_changes'].append({'object':obj.name,'primary':primary,
+                'per_face_colour_uvs_consolidated':combine,
                 'other_uv_channels_preserved':True,'all_shader_uv_bindings_verified':False})
         yield
     finally:
