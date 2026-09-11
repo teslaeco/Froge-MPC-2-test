@@ -16,7 +16,9 @@
   Source illumination remains. Other complex shaders and projected garment UVs
   are not declared equivalent; they need separate texture baking/unwrapping.
 - Actual FBX render exposed blank eyes despite correct texture bytes. Fixed native
-  FBX's missing UVSet bindings by temporarily placing the colour UV channel first.
+  FBX's missing UVSet bindings by temporarily placing the colour UV channel first
+  on single-material meshes. Actual render caught a fan regression when doing this
+  across multi-material meshes; those keep original UV order and report a limitation.
   Extended the packed-image native fixture with a decoy first UV layer; exact
   geometry/UV/texture/material comparisons, original-state restoration and STL
   millimetres pass. New reusable existing-asset reimport and rendering scripts added.

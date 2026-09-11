@@ -31,6 +31,10 @@ def _portable_uvs(bpy, report):
     try:
         for obj in bpy.context.scene.objects:
             if obj.type!='MESH' or len(obj.data.uv_layers)<2:continue
+            if len(obj.material_slots)!=1:
+                report['uv_binding_limitations'].append({'object':obj.name,
+                    'reason':'Multiple materials may require different UV sets; original order retained'})
+                continue
             primary=None
             for material in obj.data.materials:
                 if not material or not material.use_nodes:continue
@@ -203,7 +207,7 @@ def export_interchange(output, scene_source=None):
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     report = {
-        'revision': 2, 'formats': [], 'same_master_scene': True, 'textures': [], 'baked_base_colors': [], 'uv_order_changes': [],
+        'revision': 2, 'formats': [], 'same_master_scene': True, 'textures': [], 'baked_base_colors': [], 'uv_order_changes': [], 'uv_binding_limitations': [],
         'fbx': {'axis_forward': '-Z', 'axis_up': 'Y', 'textures_embedding_requested': True,
                 'reimport_verified': False,
                 'shader_boundary': 'FBX preserves supported image-based channels, not every Blender PBR shader',

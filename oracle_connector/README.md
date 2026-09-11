@@ -10,7 +10,7 @@ automatic print-readiness guarantee.
 Interchange export revision 2 materializes packed/generated PNG and JPEG images
 under unique content-addressed names in `textures/`, then temporarily binds ordinary
 file images for the native exporters. Original image nodes and master geometry are
-restored. The colour UV channel is temporarily placed first for native FBX,
+restored. On single-material meshes the colour UV channel is temporarily placed first for native FBX,
 which otherwise ignores named shader UV bindings; the original mesh is restored. Deliver OBJ together with its MTL and the entire `textures/` directory.
 A failed optional exporter is reported as `status: partial`; the completed GLB/BLEND
 remain available. `formats` includes only nonempty files produced successfully.
@@ -25,6 +25,8 @@ emission atlas (2048 px for the current fixture, capped at 4096). No scene light
 is added, but illumination already in the reference image remains. The original
 GLB/BLEND shader and geometry are restored. Projected garment UVs can overlap;
 those shaders and advanced PBR still require inspection in the target application.
+Multi-material UV order is retained and reported as a limitation: globally choosing
+one material's UV channel can corrupt the other material's appearance.
 
 Authenticated download endpoints: `GET /v1/jobs/{id}/exports` lists available
 formats; `/exports/fbx`, `/exports/obj`, `/exports/stl`, `/exports/blend` and
