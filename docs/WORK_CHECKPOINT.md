@@ -1,3 +1,7 @@
+# 2026-09-12 — face reconstruction and FBX stage IN PROGRESS; preserve accepted r6 hair
+
+User explicitly likes r6 hair and requests faithful facial geometry, roughly one million triangles, FBX and actual previews. The hair geometry hash is preserved exactly. Started real 37-landmark frontal correspondence warp across head/eye/lid/bone parts; source-photo texture is registered only on observed facial surfaces, with photographed lighting retained. Mouth is an actual cut opening with new curved dental arches. R7 preview exposed an eye UV-layer mismatch and duplicate brow overlay; r8 corrects those. This checkpoint does not claim acceptance. Dense final mesh, FBX export/reimport and previews remain in progress. No Oracle/Site changes or paid API/GPU changes.
+
 # 2026-09-12 — generator camera fix verified; r6 real model preview delivered, quality NOT accepted
 
 Source parent 8b7a6ab3b8083504a4545137535a474382498f80 adds geometry-based face framing, invalid-frame inspection rejection and a rooted closed-UV hair helper in the existing isolated bpy environment. Independent asset renderer now uses the same adaptive framing and works from an absolute script path. New module is included in the source dependency manifest. No installer ZIP, Oracle deployment, Site update, provider switch, GPU limit change or paid API call.
