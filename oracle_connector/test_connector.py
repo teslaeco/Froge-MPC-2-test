@@ -247,7 +247,7 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual(self.call('/v1/jobs/' + JOB)[1]['state'], 'cancelled')
         self.assertEqual(self.call('/v1/jobs', other)[0], 202)
 
-    def test_photo_queue_persists_bytes_and_forwards_them_to_the_scene_planner(self):
+    def test_photo_queue_persists_bytes_and_forwards_them_to_codex(self):
         # Structural JPEG transport fixture; this does not claim visual fidelity.
         image = bytes([255,216,255,192,0,11,8,0,1,0,1,1,1,17,0,255,218,0,2,0,255,217])
         photo = {'name': 'front.jpg', 'view': 'front', 'dataUrl': 'data:image/jpeg;base64,' + base64.b64encode(image).decode()}
@@ -262,23 +262,24 @@ class WorkerHTTPTests(unittest.TestCase):
         self.assertEqual((folder / 'reference-0.jpg').read_bytes(), image)
         self.assertEqual((folder / 'reference-0.jpg').stat().st_mode & 0o777, 0o600)
         self.assertNotIn('base64', (folder / 'reference-photos.json').read_text())
-        # The mocked Blender finish normally writes the structural report.
-        (folder / 'result.json').write_text('{}')
-        scene = json.loads((Path(__file__).parent / 'examples/rocket.scene.json').read_text())
-        scene['version']=2
-        scene['reference_views']=[{'photo_index':0,'position':[0,-3,1],'target':[0,0,1],'up':[0,0,1],
-            'projection':'orthographic','vertical_span':3,'fov':1,
-            'regions':[{'part':scene['parts'][0]['name'],'polygon':[[0,0],[1,0],[1,1],[0,1]]}]}]
-        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), patch.object(server, 'ai_settings', return_value={'provider': 'openai'}), patch.object(server, 'generate_code', return_value=json.dumps(scene)) as ai, patch.object(server, 'run_blender') as blender:
+        import codex_runner
+        def run_fixture(task_folder, prompt, instructions, key, cancelled, progress):
+            self.assertEqual(task_folder, folder)
+            self.assertEqual(prompt, data['prompt'])
+            self.assertEqual(server.photo_input.read_photos(task_folder)[0]['dataUrl'], photo['dataUrl'])
+            return {'accepted': False, 'blender_seconds': 0}
+        with patch.object(server, 'WAKE') as wake, patch.object(server, 'verify_runtime'), \
+             patch.object(server, 'ai_settings', return_value={'provider': 'openai', 'api_key': 'fixture'}), \
+             patch.object(codex_runner, 'executable', return_value=Path('/fixture/codex')), \
+             patch.object(codex_runner, 'run', side_effect=run_fixture) as run, \
+             patch.object(server, 'generate_code') as ai:
             wake.wait.side_effect = [None, StopIteration]
             with self.assertRaises(StopIteration):
                 server.worker()
-            blender.assert_called_once()
-            content = ai.call_args.args[0][1]['content']
-            self.assertEqual([item['image_url'] for item in content if item['type'] == 'input_image'], [photo['dataUrl']])
+            run.assert_called_once(); ai.assert_not_called()
         result = self.call('/v1/jobs/' + JOB)[1]
         self.assertEqual(result['state'], 'succeeded')
-        self.assertIn('1 zdjec', result['detail'])
+        self.assertIn('Wynik roboczy', result['detail'])
 
     def test_rejects_invalid_photos_before_creating_a_queue_entry(self):
         for value in [[{'name': 'a.jpg', 'view': 'front', 'dataUrl': 'https://example.test/a.jpg'}], [None] * 5, [{'name': 'x', 'view': 'front', 'dataUrl': 'data:image/jpeg;base64,YWJj'}]]:

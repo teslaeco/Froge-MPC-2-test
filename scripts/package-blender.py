@@ -37,7 +37,7 @@ print('Packaged Oracle connector')
 write_worker_archive('froge-oracle-update.zip',worker_files)
 print('Packaged Oracle worker update')
 # Preserve published v25/v26 installers; only rebuild the current release.
-runpy.run_path(str(root/'scripts/package-v30.py'),run_name='__main__')
+runpy.run_path(str(root/'scripts/package-v31.py'),run_name='__main__')
 
 # The Cloud Shell installer trusts the exact canonical payload, independent of
 # browser-renamed ZIP filenames or archive timestamps.

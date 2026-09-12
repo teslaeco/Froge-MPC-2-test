@@ -1,4 +1,5 @@
 import io
+from concurrent.futures import ThreadPoolExecutor
 import json
 from pathlib import Path
 import sqlite3
@@ -84,6 +85,39 @@ class PaidTrialPreparationTests(unittest.TestCase):
             self.assertEqual(first['agentInstructions'],'Original edited instructions')
             self.assertEqual(first['photos'][0]['textureMaxSize'],4096)
             self.assertEqual(first['photos'][0]['dataUrl'],'data:image/jpeg;base64,cmVmZXJlbmNlIGJ5dGVz')
+
+    def test_concurrent_preparation_never_reads_an_incomplete_receipt_or_changes_the_winning_id(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);source='cda58443-da3f-4010-96d7-88432fd3fb21'
+            folder=root/'state/jobs'/source;folder.mkdir(parents=True)
+            with sqlite3.connect(root/'state/jobs.sqlite') as db:
+                db.execute('CREATE TABLE jobs(id TEXT,prompt TEXT,state TEXT)')
+                db.execute('INSERT INTO jobs VALUES(?,?,?)',(source,'Original task','failed'))
+            receipt=folder/'v31-paid-trial.json'
+            writing=threading.Event();release=threading.Event();local=threading.local()
+            original_dump=json.dump
+            def partial_dump(value,out):
+                if not getattr(local,'slow',False):return original_dump(value,out)
+                encoded=json.dumps(value);out.write(encoded[:1]);out.flush();writing.set()
+                if not release.wait(3):raise RuntimeError('Concurrent receipt test timed out')
+                out.write(encoded[1:])
+            def slow_prepare():
+                local.slow=True
+                return prepare(root,source)
+            with patch('paid_trial.read_photos',return_value=[]),patch('paid_trial.json.dump',side_effect=partial_dump):
+                with ThreadPoolExecutor(max_workers=2) as workers:
+                    first=workers.submit(slow_prepare)
+                    try:
+                        self.assertTrue(writing.wait(3))
+                        self.assertFalse(receipt.exists())
+                        second=workers.submit(prepare,root,source).result(timeout=3)
+                        self.assertEqual(json.loads(receipt.read_text()),{'id':second['id'],'source_id':source})
+                    finally:release.set()
+                    completed=first.result(timeout=3)
+                self.assertEqual(completed['id'],second['id'])
+                self.assertEqual(prepare(root,source)['id'],second['id'])
+            self.assertEqual(receipt.stat().st_mode&0o777,0o600)
+            self.assertEqual(list(folder.glob('.paid-trial-*.tmp')),[])
 
 
 if __name__=='__main__':unittest.main()

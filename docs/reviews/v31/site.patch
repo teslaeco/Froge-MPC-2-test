@@ -1,0 +1,92 @@
+diff --git a/scripts/package-blender.py b/scripts/package-blender.py
+index d7193f8..796ce63 100644
+--- a/scripts/package-blender.py
++++ b/scripts/package-blender.py
+@@ -37,7 +37,7 @@ print('Packaged Oracle connector')
+ write_worker_archive('froge-oracle-update.zip',worker_files)
+ print('Packaged Oracle worker update')
+ # Preserve published v25/v26 installers; only rebuild the current release.
+-runpy.run_path(str(root/'scripts/package-v30.py'),run_name='__main__')
++runpy.run_path(str(root/'scripts/package-v31.py'),run_name='__main__')
+ 
+ # The Cloud Shell installer trusts the exact canonical payload, independent of
+ # browser-renamed ZIP filenames or archive timestamps.
+diff --git a/scripts/prepare-worker.mjs b/scripts/prepare-worker.mjs
+index 70430ad..9f31764 100644
+--- a/scripts/prepare-worker.mjs
++++ b/scripts/prepare-worker.mjs
+@@ -18,7 +18,7 @@ for (const name of downloadAliases) {
+ // Keep archived experiments in source control, outside the current Site bundle.
+ // Active gallery models and the current Oracle installers remain available.
+ const archivedAssets = [
+- 'downloads/froge-v25.py', 'downloads/froge-v26.py', 'downloads/froge-v27.py', 'downloads/froge-v28.py', 'downloads/froge-v29.py', 'downloads/froge-v30.py',
++ 'downloads/froge-v25.py', 'downloads/froge-v26.py', 'downloads/froge-v27.py', 'downloads/froge-v28.py', 'downloads/froge-v29.py', 'downloads/froge-v30.py', 'downloads/froge-v31.py',
+  'przeglad-v20.html', 'review-v20.html', 'przeglad-wlosy-v20-r3.html',
+  ...['stage1', 'color-r1', 'eyes-r1', 'face-r1', 'hair-r1', 'hair-r2', 'shoulder-r1'].map(name => `downloads/froge-v20-${name}.zip`),
+  ...['color-r1', 'eyes-r1', 'face-r1', 'hair-r1', 'hair-r2', 'shoulder-r1'].map(name => `models/couture-fan-v20-${name}.glb`),
+diff --git a/src/blender/OpenAISettings.tsx b/src/blender/OpenAISettings.tsx
+index 52a7826..921bd7b 100644
+--- a/src/blender/OpenAISettings.tsx
++++ b/src/blender/OpenAISettings.tsx
+@@ -7,16 +7,16 @@ ssh -T -o IdentitiesOnly=yes -o ConnectTimeout=20 -i "$HOME/ssh-key-2026-09-06.k
+ export const oracleRebuildUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-rebuild.zip').replaceAll('froge-openai-update', 'froge-rebuild-update')
+ export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-update.zip').replaceAll('froge-openai-update', 'froge-photos-v14-update')
+ export const oracleRepairCommand = 'python3 "$HOME/froge-napraw-oracle.py"'
+-export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v30.zip" "$HOME/froge-v30"\npython3 "$HOME/froge-v30/froge-v30.py"'
++export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v31.zip" "$HOME/froge-v31"\npython3 "$HOME/froge-v31/froge-v31.py"'
+ 
+ export function GeometryUpdate({ required = true }: { required?: boolean }) {
+   const [copyNote, setCopyNote] = useState('')
+   return <div className="blender-setup">
+-    <strong>{required ? 'Popraw generowanie ze zdjęć · v30' : 'Pełna aktualizacja generatora · v30'}</strong>
+-    <p>V30 naprawia kończenie zleceń, korekty materiałów i geometrii oraz rozróżnia szkic od ocenionego wyniku. Astra projektuje model, a Codex wykonuje jej instrukcje przez Blender MCP. Instalacja zachowuje klucz i modele; sama nie zamawia płatnej generacji.</p>
+-    <a href="/downloads/froge-v30.zip" download>Pobierz pełną paczkę · v30</a>
+-    <p><a href="/downloads/froge-v30-audit.html" target="_blank" rel="noreferrer">Dlaczego generowanie się zatrzymało i co zmienia v30</a></p>
+-    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza import oraz eksport GLB i FBX na pliku testowym bez zapytania do AI. Po FROGE_V30_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
++    <strong>{required ? 'Popraw generowanie ze zdjęć · v31' : 'Aktualizacja generatora · v31'}</strong>
++    <p>V31 dodaje kontrolę instalacji i zachowuje istniejące zasoby po sprawdzeniu ich zgodności. Naprawia kończenie zleceń, korekty materiałów i geometrii oraz rozróżnia szkic od ocenionego wyniku. Astra projektuje model, a Codex wykonuje jej instrukcje przez Blender MCP. Instalacja zachowuje klucz i modele; sama nie zamawia płatnej generacji.</p>
++    <a href="/downloads/froge-v31.zip" download>Pobierz poprawkę · v31</a>
++    <p><a href="/downloads/froge-v31-audit.html" target="_blank" rel="noreferrer">Dlaczego generowanie się zatrzymało i co zmienia v31</a></p>
++    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza import oraz eksport GLB i FBX na pliku testowym bez zapytania do AI. Po FROGE_V31_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
+   </div>
+ }
+ 
+diff --git a/src/blender/compatibility.ts b/src/blender/compatibility.ts
+index 007316c..4f3bcd0 100644
+--- a/src/blender/compatibility.ts
++++ b/src/blender/compatibility.ts
+@@ -3,7 +3,7 @@
+ // v7 fixed the profile regression and already uses the validated scene plan.
+ // v8–v11 change figure geometry; the prompt/job protocol remains compatible.
+ export const MINIMUM_CONNECTOR_VERSION = 7
+-export const RECOMMENDED_CONNECTOR_VERSION = 30
++export const RECOMMENDED_CONNECTOR_VERSION = 31
+ export const supportsCoutureQuality = (connection?: { connectorVersion?: number; coutureRevision?: number } | null) => (connection?.connectorVersion ?? 0) >= 19 && (connection?.coutureRevision ?? 0) >= 1
+ export const requiresCoutureQuality = (prompt: string) => /\b(couture|gown|sukni\w*|sukien\w*|wachlarz\w*)\b/i.test(prompt.normalize('NFKD'))
+ export const COUTURE_UPDATE_REASON = 'Ten strój wymaga generatora v19 na Oracle. Pobierz pełną paczkę i sprawdź serwer po instalacji. Zlecenie nie zostało wysłane do AI.'
+diff --git a/src/tests/blender-ui.test.tsx b/src/tests/blender-ui.test.tsx
+index ab4d2d5..b377035 100644
+--- a/src/tests/blender-ui.test.tsx
++++ b/src/tests/blender-ui.test.tsx
+@@ -216,7 +216,7 @@ it.each([7, 8, 9, 10, 11].flatMap(version => ['succeeded', 'failed'].map(state =
+   render(<RemoteGenerator prompt={prompt} onStart={() => 7} onResult={onResult}/>)
+   await screen.findByText('Opis → scena · lokalne AI')
+   expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeEnabled()
+-  if (version < 14) expect(screen.getByText(`Pełna aktualizacja generatora · v${RECOMMENDED_CONNECTOR_VERSION}`)).toBeInTheDocument()
++  if (version < 14) expect(screen.getByText(`Aktualizacja generatora · v${RECOMMENDED_CONNECTOR_VERSION}`)).toBeInTheDocument()
+   fireEvent.click(screen.getByRole('button', { name: 'Generuj model 3D' }))
+   await screen.findByText(state === 'succeeded' ? 'Nowy model w podglądzie' : 'Nie udało się wygenerować modelu')
+   const submitted = fetcher.mock.calls.find(([, init]) => init?.method === 'POST')!
+diff --git a/src/tests/new-photo-model.test.tsx b/src/tests/new-photo-model.test.tsx
+index 35e317b..7218cbd 100644
+--- a/src/tests/new-photo-model.test.tsx
++++ b/src/tests/new-photo-model.test.tsx
+@@ -40,7 +40,7 @@ it('starts a photo model with the entered instructions and clears the old result
+   expect(screen.queryByTestId('model-preview')).not.toBeInTheDocument()
+   expect(screen.queryByText('Zapisany model w podglądzie')).not.toBeInTheDocument()
+   expect(screen.getByRole('button', { name: 'Generuj model 3D ze zdjęć' })).toBeDisabled()
+-  const update = screen.getByRole('link', { name: /Pobierz pełną paczkę/ })
++  const update = screen.getByRole('link', { name: /Pobierz poprawkę/ })
+   expect(screen.getByRole('button', { name: 'Generuj model 3D ze zdjęć' }).compareDocumentPosition(update) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+   expect(fetcher.mock.calls.some(([, init]) => init?.method)).toBe(false)
+   fireEvent.click(screen.getByRole('button', { name: 'Nowy model · wyczyść formularz' }))

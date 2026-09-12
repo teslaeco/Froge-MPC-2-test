@@ -36,10 +36,15 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 30
+CONNECTOR_VERSION = 31
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
+SCENE_REPLAY_MAX_BYTES = 256000
+SCRIPT_REPLAY_MAX_BYTES = 60000
+CODEX_UNAVAILABLE = ('Astra wymaga sprawdzonego Codex + Blender MCP. '
+                     'Brak gotowego wykonawcy; uruchom aktualny instalator Oracle i sprawdz polaczenie. '
+                     'Nie wyslano platnego zapytania do AI.')
 OLLAMA = 'http://127.0.0.1:11434'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 LOCK = threading.RLock()
@@ -165,10 +170,15 @@ def health():
     state = _text_health()
     from codex_runner import executable
     from agent_limits import MAX_SECONDS, MAX_REQUESTS, MAX_OUTPUT_TOKENS, MAX_BUILDS
-    agent = state.get('provider')=='openai' and executable() is not None
+    is_openai = state.get('provider') == 'openai'
+    agent = is_openai and executable() is not None
+    if is_openai and not agent:
+        state = {**state, 'ready': False, 'photoInput': False,
+                 'detail': CODEX_UNAVAILABLE if state['ready'] else state['detail']}
     return {**state, 'textReady': state['ready'], 'astraPhotoRevision': 1,
             'photoEngine': 'astra-blender', 'photoReasoningEffort': 'high',
-            'instructionsRevision':1, 'executionEngine':'codex-mcp' if agent else 'astra-scene',
+            'instructionsRevision':1, 'executionEngine':'codex-mcp' if is_openai else 'astra-scene',
+            'codexReady': agent,
             'agentBudgetSeconds':MAX_SECONDS if agent else None,
             'agentRequestLimit':MAX_REQUESTS if agent else None,'agentOutputTokenLimit':MAX_OUTPUT_TOKENS if agent else None,'agentBuildLimit':MAX_BUILDS if agent else None,
             'freeformGeometryRevision':1,'photoProjectionRevision':1,
@@ -326,10 +336,16 @@ def worker():
             instructions = json.loads(instructions_path.read_text()).get('text','') if instructions_path.is_file() else ''
             task = job['prompt'] + ('\n\nDODATKOWE INSTRUKCJE WYKONANIA:\n' + instructions if instructions else '')
             messages[1]['content'] = photo_input.user_content(task, photos)
+            saved_script = folder / 'saved-script.py'
+            reuse = saved_script.is_file()
             from codex_runner import executable as codex_executable, run as run_codex
-            if is_openai and codex_executable():
+            if is_openai and not reuse:
                 phase='codex_mcp'
                 write_json(folder/'provider.json',{'provider':'openai','model':openai_provider.MODEL,'executor':'codex-mcp'})
+                if not codex_executable():
+                    raise ValueError(CODEX_UNAVAILABLE)
+                if not selected.get('api_key'):
+                    raise ValueError('Podlacz klucz OpenAI API w ustawieniach. Nie wyslano platnego zapytania do AI.')
                 try:
                     outcome=run_codex(folder,job['prompt'],instructions,selected['api_key'],cancelled,
                                       lambda detail:status(job['id'],'building',detail))
@@ -346,8 +362,6 @@ def worker():
                 detail+=('Ocena aktualnych renderow zakonczona; sprawdz podobienstwo w podgladzie.' if accepted else 'Wynik roboczy: ocena wskazuje bledy lub nie zostala ukonczona. Model wymaga poprawek; sprawdz raport.')
                 status(job['id'],'succeeded',detail)
                 continue
-            saved_script = folder / 'saved-script.py'
-            reuse = saved_script.is_file()
             if reuse and human_prompt(job['prompt']):
                 raise ValueError('Ten stary skrypt postaci nie zawiera kontroli anatomii. Uruchom nowe zlecenie z zachowanym opisem i zdjeciami z aktualna kontrola anatomii.')
             deadline = time.monotonic() + AI_TIME_LIMIT
@@ -514,7 +528,7 @@ def recoverable_review_scene(db, prompt, photos, instructions=''):
             [p['bytes'] for p in previous]!=[p['bytes'] for p in photos]:return None
     path=folder/'scene.json'
     if timeout and not path.is_file():return None
-    if path.is_symlink() or not path.is_file() or path.stat().st_size>256000:
+    if path.is_symlink() or not path.is_file() or path.stat().st_size>SCENE_REPLAY_MAX_BYTES:
         raise ValueError('Brak poprawnego zapisanego planu po bledzie podgladu. Nie zamowiono kolejnego planu AI.')
     saved=path.read_text(encoding='utf-8')
     parse_scene(saved,prompt)
@@ -620,10 +634,12 @@ class Handler(BaseHTTPRequestHandler):
                     if db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]:
                         return self.send_json({'error': 'Serwer wykonuje poprzedni model. Poczekaj na wynik lub anuluj tamto zlecenie.'}, 409)
                     recovery=recoverable_review_scene(db,prompt.strip(),photos,instructions) if source_id is None else None
-                    if source_id is None and not recovery and not health()['ready']:
-                        return self.send_json({'error': 'Wybrane AI nie jest jeszcze gotowe. Sprawdz ustawienia.'}, 409)
-                    if photos and not recovery and not health().get('photoInput'):
-                        return self.send_json({'error': 'Wybrane AI nie obsluguje zdjec. Wybierz OpenAI w ustawieniach.'}, 409)
+                    if source_id is None and not recovery:
+                        readiness = health()
+                        if not readiness['ready']:
+                            return self.send_json({'error': readiness.get('detail') or 'Wybrane AI nie jest jeszcze gotowe. Sprawdz ustawienia.'}, 409)
+                        if photos and not readiness.get('photoInput'):
+                            return self.send_json({'error': 'Wybrane AI nie obsluguje zdjec. Wybierz OpenAI w ustawieniach.'}, 409)
                     if shutil.disk_usage(STATE).free < 2 * 1024**3:
                         return self.send_json({'error': 'Na serwerze zostalo mniej niz 2 GB wolnego miejsca.'}, 409)
                     if db.execute('SELECT COUNT(*) FROM jobs').fetchone()[0] >= 300:
@@ -645,8 +661,9 @@ class Handler(BaseHTTPRequestHandler):
                             source_path = source_folder / 'generate.py'
                         if not source or source['state'] != 'failed' or source['prompt'] != prompt.strip() or not source_path.is_file():
                             return self.send_json({'error': 'Brak zapisanego planu dla tego nieudanego zlecenia.'}, 409)
-                        if source_path.stat().st_size > 60000:
-                            return self.send_json({'error': 'Zapisany skrypt przekracza limit rozmiaru.'}, 409)
+                        replay_limit = SCENE_REPLAY_MAX_BYTES if scene_replay else SCRIPT_REPLAY_MAX_BYTES
+                        if source_path.stat().st_size > replay_limit:
+                            return self.send_json({'error': 'Zapisana scena przekracza limit 256000 bajtow.' if scene_replay else 'Zapisany skrypt przekracza limit 60000 bajtow.'}, 409)
                         saved_code = source_path.read_text(encoding='utf-8')
                         try:
                             if scene_replay:

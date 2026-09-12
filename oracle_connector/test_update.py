@@ -1,8 +1,10 @@
 import io
 import json
+import os
 from pathlib import Path
 import sqlite3
 import shutil
+import stat
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -60,6 +62,31 @@ class UpdateTests(unittest.TestCase):
         self.runtime_check.stop()
         self.codex_install.stop()
         self.temp.cleanup()
+
+    def installed_tools(self):
+        folder = self.target / 'tools' / 'codex'
+        folder.mkdir(parents=True, exist_ok=True)
+        result = {}
+        for index, name in enumerate(apply_update.CODEX_FILES):
+            path = folder / name
+            path.write_bytes(('old-' + name).encode())
+            mode = (0o750 if index else 0o700) if index < 2 else 0o600
+            os.chmod(path, mode)
+            result[name] = (path.read_bytes(), mode)
+        return result
+
+    def assert_tools_unchanged(self, expected):
+        for name, (content, mode) in expected.items():
+            path = self.target / 'tools' / 'codex' / name
+            self.assertEqual(path.read_bytes(), content, name)
+            self.assertEqual(stat.S_IMODE(path.stat().st_mode), mode, name)
+
+    def stage_tools(self, folder):
+        self.assertNotEqual(folder, self.target / 'tools' / 'codex')
+        for name in apply_update.CODEX_FILES:
+            path = folder / name
+            path.write_bytes(('new-' + name).encode())
+            os.chmod(path, 0o700 if name in ('codex', 'codex-code-mode-host') else 0o600)
 
     def test_export_check_failure_restores_code_and_preserves_state(self):
         original = (self.target / 'runtime/run.py').read_bytes()
@@ -147,6 +174,84 @@ class UpdateTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'Kontener Blendera'):
                 apply_update.update(self.source, self.target)
             service.assert_not_called()
+        self.assertEqual((self.target / 'server.py').read_text(), 'version = 1\n')
+        self.assertEqual(self.config.read_bytes(), self.original_config)
+
+    def test_partial_cli_or_host_install_failure_never_replaces_active_tools(self):
+        original = self.installed_tools()
+        for failed_phase in ('CLI', 'Code Mode host'):
+            with self.subTest(failed_phase=failed_phase):
+                def fail(folder):
+                    self.stage_tools(folder)
+                    raise RuntimeError(failed_phase + ' download failed')
+                with patch('install_codex.install', side_effect=fail), patch.object(apply_update.subprocess, 'run') as service:
+                    with self.assertRaisesRegex(RuntimeError, 'download failed'):
+                        apply_update.update(self.source, self.target)
+                    service.assert_not_called()
+                self.assert_tools_unchanged(original)
+                self.assertEqual((self.target / 'server.py').read_text(), 'version = 1\n')
+                self.assertFalse(list(self.target.parent.glob('.froge-update-*')))
+                self.assertEqual(self.config.read_bytes(), self.original_config)
+
+    def test_fresh_cli_install_then_host_failure_leaves_no_active_codex(self):
+        def fail(folder):
+            (folder / 'codex').write_bytes(b'new CLI before host failure')
+            os.chmod(folder / 'codex', 0o700)
+            raise RuntimeError('Code Mode host download failed')
+        with patch('install_codex.install', side_effect=fail), patch.object(apply_update.subprocess, 'run') as service:
+            with self.assertRaisesRegex(RuntimeError, 'host download failed'):
+                apply_update.update(self.source, self.target)
+            service.assert_not_called()
+        self.assertFalse((self.target / 'tools' / 'codex').exists())
+        self.assertFalse(list(self.target.parent.glob('.froge-update-*')))
+        self.assertEqual(self.config.read_bytes(), self.original_config)
+
+    def test_failed_gate_restores_binaries_receipts_and_original_permissions(self):
+        original = self.installed_tools()
+        marker = self.target / 'tools' / 'codex' / 'existing-marker.txt'
+        marker.write_text('preserve the complete installed directory')
+        os.chmod(self.target / 'tools' / 'codex', 0o750)
+        os.chmod(self.target / 'server.py', 0o640)
+        os.chmod(self.target / 'runtime/run.py', 0o750)
+        def fail_gate(args, **kwargs):
+            if args[-2:] == [str(self.target / 'codex_smoke.py'), '--build']:
+                self.assertEqual((self.target / 'tools/codex/codex').read_bytes(), b'new-codex')
+                (self.target / 'tools/codex/verified.json').write_text('failed gate receipt')
+                raise RuntimeError('new model gate failed')
+        with patch('install_codex.install', side_effect=self.stage_tools), patch.object(apply_update.subprocess, 'run', side_effect=fail_gate):
+            with self.assertRaisesRegex(RuntimeError, 'new model gate failed'):
+                apply_update.update(self.source, self.target)
+        self.assert_tools_unchanged(original)
+        self.assertEqual(stat.S_IMODE((self.target / 'tools/codex').stat().st_mode), 0o750)
+        self.assertEqual(stat.S_IMODE((self.target / 'server.py').stat().st_mode), 0o640)
+        self.assertEqual(stat.S_IMODE((self.target / 'runtime/run.py').stat().st_mode), 0o750)
+        self.assertEqual(marker.read_text(), 'preserve the complete installed directory')
+        self.assertEqual(self.config.read_bytes(), self.original_config)
+
+    def test_failed_gate_removes_new_tools_when_previous_install_had_none(self):
+        def fail_gate(args, **kwargs):
+            if args[-2:] == [str(self.target / 'codex_smoke.py'), '--build']:
+                raise RuntimeError('fresh gate failed')
+        with patch('install_codex.install', side_effect=self.stage_tools), patch.object(apply_update.subprocess, 'run', side_effect=fail_gate):
+            with self.assertRaisesRegex(RuntimeError, 'fresh gate failed'):
+                apply_update.update(self.source, self.target)
+        self.assertFalse((self.target / 'tools/codex').exists())
+        self.assertEqual((self.target / 'server.py').read_text(), 'version = 1\n')
+        self.assertEqual(self.config.read_bytes(), self.original_config)
+
+    def test_job_accepted_during_download_keeps_original_running_installation(self):
+        original = self.installed_tools()
+        def download(folder):
+            self.stage_tools(folder)
+            # This succeeds only if downloading does not hold a queue write lock.
+            with sqlite3.connect(self.target / 'state/jobs.sqlite', timeout=.1) as db:
+                db.execute('BEGIN IMMEDIATE')
+                db.execute("INSERT INTO jobs VALUES ('queued')")
+        with patch('install_codex.install', side_effect=download), patch.object(apply_update.subprocess, 'run') as service:
+            with self.assertRaisesRegex(RuntimeError, 'aktywne'):
+                apply_update.update(self.source, self.target)
+            service.assert_not_called()
+        self.assert_tools_unchanged(original)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 1\n')
         self.assertEqual(self.config.read_bytes(), self.original_config)
 

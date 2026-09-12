@@ -19,7 +19,7 @@ python3 "$base/runtime_check.py"
 mkdir -p "$base/state" "$base/ollama" "$base/bin" "$HOME/.config/systemd/user"
 chmod 700 "$base/state"
 python3 "$base/install_codex.py"
-python3 "$base/codex_smoke.py"
+python3 "$base/codex_smoke.py" --build
 if [ ! -x "$base/ollama/bin/ollama" ]; then
   echo "Pobieranie Ollama dla ARM64…"
   curl -fL --retry 2 --connect-timeout 20 -o "$base/ollama.tar.zst" https://ollama.com/download/ollama-linux-arm64.tar.zst

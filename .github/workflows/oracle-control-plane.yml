@@ -5,6 +5,8 @@ on:
       - 'oracle_connector/**'
       - 'scripts/package-v27.py'
       - 'scripts/cloud-shell-v27.template.py'
+      - 'scripts/package-v31.py'
+      - 'scripts/cloud-shell-v31.template.py'
       - 'scripts/package-v30.py'
       - 'scripts/cloud-shell-v30.template.py'
       - 'scripts/package-v29.py'
@@ -30,7 +32,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Unit and rollback regressions
         working-directory: oracle_connector
-        run: python -m unittest test_blender_mcp test_update test_agent_execution test_agent_lifecycle
+        run: python -m unittest test_blender_mcp test_update test_agent_execution test_agent_lifecycle test_codex_binary_integrity test_worker_handoff test_delta_update test_connector test_openai
       - name: Install checksum-pinned Codex and Code Mode host
         working-directory: oracle_connector
         run: python install_codex.py

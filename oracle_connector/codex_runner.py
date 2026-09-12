@@ -83,12 +83,13 @@ def code_errors(value, depth=0):
 
 
 def executable():
+    from install_codex import verified_runtime
     path=ROOT/'tools'/'codex'/'codex'
     receipt=path.parent/'verified.json'
     try:
         verified=json.loads(receipt.read_text())
         expected={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in ('codex_runner.py','blender_mcp.py')}
-        return path if (path.is_file() and os.access(path,os.X_OK) and verified.get('sources')==expected
+        return path if (verified_runtime(path.parent)==path and verified.get('sources')==expected
                         and verified.get('blender_build_roundtrip') is True) else None
     except (OSError,ValueError):return None
 
@@ -326,7 +327,7 @@ def command(binary,folder,port):
 
 def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
     folder=Path(folder);binary=binary or executable()
-    if binary is None:raise RuntimeError('Codex nie jest zainstalowany lub zweryfikowany. Uruchom instalator v30.')
+    if binary is None:raise RuntimeError('Codex nie jest zainstalowany lub zweryfikowany. Uruchom instalator v31.')
     execution_id=secrets.token_hex(16)
     write(folder/'agent-request.json',{'prompt':prompt,'instructions':instructions,'execution_id':execution_id})
     (folder/'agent-cancelled').unlink(missing_ok=True)
