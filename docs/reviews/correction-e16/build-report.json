@@ -3,6 +3,7 @@
   "changes": [],
   "likeness_accepted": false,
   "neck_vertices_aligned": 2790,
+  "nasal_patch_relaxation_steps": 65,
   "nasal_boundary_vertices": 538,
   "nasal_new_faces": 8609,
   "skeletal_mouth_vertices_refined": 27270,

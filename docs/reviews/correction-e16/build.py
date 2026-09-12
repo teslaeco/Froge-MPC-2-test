@@ -74,6 +74,10 @@ for k in range(1,9):
   n=(j+1)%len(ring);f=bm.faces.new((old[j],old[n],ring[n],ring[j]));f.material_index=ci;f.smooth=True;added.append(f)
  old=ring
 f=bm.faces.new(tuple(reversed(old)));f.material_index=ci;added.append(f);bmesh.ops.recalc_face_normals(bm,faces=added)
+patch={v for f in added for v in f.verts}
+for _ in range(4):patch |= {e.other_vert(v) for v in list(patch) for e in v.link_edges}
+for _ in range(65):bmesh.ops.smooth_vert(bm,verts=list(patch),factor=.55,use_axis_x=True,use_axis_y=True,use_axis_z=True)
+report['nasal_patch_relaxation_steps']=65
 report['nasal_boundary_vertices']=len(ordered);report['nasal_new_faces']=len(added)
 bm.to_mesh(head.data);bm.free();head.data.update()
 old=bpy.data.objects.get('Nasal_opening')
