@@ -1,10 +1,18 @@
-# 2026-09-12 — v32 resumed repair; deployment remains pending
+# 2026-09-12 — v32 repair tested and saved; installation and Site fix pending
 
-See docs/V32_RESUME_REPAIR.md for current live observations, 98 passing unique
-offline tests, recovered patches and remaining gates. Oracle observed v29; Site47.
-Canonical Site clone still fails HTTP500 (full and shallow). UI patch untested.
-Worker source v32 and installer prepared; native Blender/CLI CI pending.
-No Oracle install, new paid generation, Site deploy or access change occurred.
+Verified worker source: 2c4ca6e78b4f77a2011e6c7a3211caf923ca18f3.
+CI run34685206191 passed Python3.9 and3.12 (98 tests each), real pinned Codex
+roundtrip, delayed final MCP read, real Blender4.3 build/render/GLB/FBX,
+material edits and anatomy diagnostics. See docs/V32_RESUME_REPAIR.md.
+No paid generation or likeness approval. Oracle live v29; Site47 unchanged.
+Canonical Site clone fails HTTP500; its UI race patch/tests remain unapplied.
+Oracle console navigation and refresh timed out; no terminal session obtained.
+Saved download froge-v32.zip (366626bytes), Library libfile_5c8bbf0e8f7c819190baf5788d6a05d1 v0.
+Saved FORGE-v32-instrukcja.md, Library libfile_579ab5195a508191b2705d47db36ada8 v0.
+Both saves succeeded, local identity applied. Package is NOT installed on Oracle.
+Next: restore Site source/apply UI tests/deploy; install v32 on existing Oracle;
+restore intended brief from its original source; test distinct paid generations
+only within approved budget. Current saved job prompt contains a status message.
 
 ## 2026-09-11 — v24 timeout recovery fix packaged
 
