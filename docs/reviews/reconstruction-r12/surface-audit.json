@@ -1,0 +1,44 @@
+{
+  "comparison": "R11 head against original 1M head surface",
+  "sampling": "every Nth vertex, front y<.04 z>1.44; not area-weighted",
+  "overall": {
+    "samples": 6858,
+    "unchanged_within_1e-5": 4800,
+    "mean_distance_scene_units": 0.0003403000301094897,
+    "max_distance_scene_units": 0.038964346051216125
+  },
+  "regions": {
+    "forehead": {
+      "samples": 622,
+      "unchanged_within_1e-5": 622,
+      "mean_distance_scene_units": 1.18028906712506e-08,
+      "max_distance_scene_units": 1.220601149043432e-07
+    },
+    "eye_cheek": {
+      "samples": 3170,
+      "unchanged_within_1e-5": 2646,
+      "mean_distance_scene_units": 0.0002422461935462019,
+      "max_distance_scene_units": 0.038964346051216125
+    },
+    "nose": {
+      "samples": 1611,
+      "unchanged_within_1e-5": 902,
+      "mean_distance_scene_units": 0.00047258890413230827,
+      "max_distance_scene_units": 0.015997689217329025
+    },
+    "mouth_chin": {
+      "samples": 1455,
+      "unchanged_within_1e-5": 630,
+      "mean_distance_scene_units": 0.0005529272213019061,
+      "max_distance_scene_units": 0.011242018081247807
+    }
+  },
+  "root_cause": "density subdivision preserves existing piecewise surface; material changes cannot repair silhouette or anatomical continuity",
+  "visible_failures": [
+    "symmetric triangular scalp panel with transverse rails",
+    "oversized angular nasal opening",
+    "double skeletal jaw overlay and regular tooth rows",
+    "detached head-neck transition",
+    "bodice and sleeves remain simplified"
+  ]
+}
