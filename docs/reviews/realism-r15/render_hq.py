@@ -45,6 +45,6 @@ for ob in scene.objects:
  if ob.type=='LIGHT':
   if ob.location.x<0:ob.data.color=(1,.91,.79)
   elif ob.location.y>0:ob.data.color=(.78,.87,1)
-camera.location=Vector((.07,-3,1.23));target=Vector((.004,.018,1.14));camera.rotation_euler=(target-camera.location).to_track_quat('-Z','Y').to_euler();camera.data.ortho_scale=1.30
+camera.location=Vector((.055,-3,1.35));target=Vector((.004,.018,1.285));camera.rotation_euler=(target-camera.location).to_track_quat('-Z','Y').to_euler();camera.data.ortho_scale=.93
 scene.render.filepath=str(OUT/'FORGE-r15-render-HQ.png');bpy.ops.render.render(write_still=True)
 (OUT/'hq-render-report.json').write_text(json.dumps({'source_fbx_sha256':hashlib.sha256(asset.read_bytes()).hexdigest(),'resolution':[2048,2560],'samples':128,'engine':'Cycles CPU','generated_illustration':False,'same_geometry_as_reviews':True},indent=2));print('HQ_RENDER_READY',flush=True)
