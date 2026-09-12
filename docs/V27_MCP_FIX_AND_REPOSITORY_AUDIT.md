@@ -4,12 +4,20 @@ Zgłoszenie 2026-09-12: Oracle, Python 3.9, `MCP tool not advertised: []`,
 jedno żądanie do lokalnej atrapy odpowiedzi, `turn.failed`, `FROGE_V26_ERROR`.
 To awaria testu instalacyjnego, nie dowód błędu modelu 3D ani opłaty API.
 
-## Potwierdzone błędy kodu v26
+## Dokładna przyczyna komunikatu ze zrzutu
+
+Niezależne CI odtworzyło problem. Oficjalny klient dla Astry używa
+Responses Lite: katalog znajduje się w `input[].additional_tools`, a pole
+`tools` na głównym poziomie jest celowo pomijane. Test v26 błędnie uznawał
+brak tego pola za brak MCP. Proxy dodatkowo gubiło nagłówek
+`x-openai-internal-codex-responses-lite` potrzebny do interpretacji formatu.
+V27 odczytuje oba formaty i zachowuje ten nagłówek oraz oryginalny katalog.
+
+## Dodatkowe potwierdzone błędy kodu v26
 
 - Uruchamianie wyłączało `code_mode_host`, choć oficjalny katalog CLI
   0.154.0 dla `gpt-6-astra` definiuje `tool_mode: code_mode_only`.
-  Pusta odpowiedź lokalnego `/models` dodatkowo nie powinna decydować o
-  dostępności podstawowego narzędzia przy nowej instalacji i pustym cache.
+  V27 jawnie utrzymuje tryb kodowy i instaluje jego osobny host.
 - Instalator pobierał tylko `codex`, bez osobnego `codex-code-mode-host`.
 - Test szukał bezpośredniej funkcji w płaskim `tools`; Code Mode używa
   `custom_tool_call` do `exec`, a funkcje MCP są dostępne wewnątrz niego.
@@ -18,9 +26,8 @@ To awaria testu instalacyjnego, nie dowód błędu modelu 3D ani opłaty API.
 - Wycofanie kodu po błędzie eksportu nie przywracało poprzedniego
   `verified.json`, co mogło wyłączyć wcześniej sprawdzony silnik.
 
-Samo zdjęcie nie rozstrzyga wszystkich wewnętrznych przyczyn pustego katalogu;
-szczegóły błędu startowego były usuwane przez stary filtr. Poprawka usuwa
-potwierdzone braki i wymaga sprawdzenia całego połączenia przed akceptacją.
+Szczegóły błędu startowego były usuwane przez stary filtr. Poprawka wymaga
+sprawdzenia całego połączenia przed akceptacją; nie pomija nieudanego testu.
 
 ## Zmiany
 
@@ -59,6 +66,11 @@ Host Code Mode pobrano, zweryfikowano i uruchomiono lokalnie (`--help`).
 Pełny CLI w zagnieżdżonym środowisku nadal zatrzymuje się przed pierwszym
 żądaniem i nie ukończył testu. Nie obchodzono izolacji. Ten sam test na Oracle
 pozostaje obowiązkowy; wymagane `CODEX_MCP_REAL_CLI_ROUNDTRIP_OK` i `FROGE_V27_OK`.
+Niezależny [test GitHub CI](https://github.com/teslaeco/Froge-MPC-2-test/actions/runs/34661987718)
+przeszedł na Pythonie 3.9 i 3.12: po 21 testów regresji oraz rzeczywisty obieg
+Codex -> Code Mode -> Blender MCP -> wynik. Potwierdzono sześć narzędzi i
+odpowiedź get_current_model. Testowany kod: `3ca6201b4c357ddb4b01e6c0516305f58cc1164a`.
+Dodatkowo 65 testów UI/API/promptów strony i kontrola typów przeszły.
 Nie wykonano nowej płatnej generacji ani pomiaru podobieństwa/szybkości.
 
 ## Źródła

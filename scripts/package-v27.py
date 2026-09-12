@@ -29,7 +29,9 @@ Wymagane potwierdzenia:
 CODEX_MCP_REAL_CLI_ROUNDTRIP_OK
 FROGE_V27_OK
 
-Poprzedni test v26 oczekiwal bezposrednich funkcji. Astra w Codex
+Poprzedni test v26 szukal narzedzi w zlym polu: tools zamiast
+input[].additional_tools (Responses Lite). Proxy gubilo tez naglowek
+tego formatu. V27 zachowuje katalog i naglowek. Astra w Codex
 korzysta z Code Mode; v26 wylaczalo host i nie instalowalo jego pliku.
 V27 pobiera osobno oficjalny codex-code-mode-host 0.154.0,
 sprawdza SHA256, wlacza wlasciwy tryb i sprawdza rzeczywisty wynik MCP

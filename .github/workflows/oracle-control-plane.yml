@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'oracle_connector/**'
+      - 'scripts/package-v27.py'
+      - 'scripts/cloud-shell-v27.template.py'
       - '.github/workflows/oracle-control-plane.yml'
   workflow_dispatch:
 permissions:
