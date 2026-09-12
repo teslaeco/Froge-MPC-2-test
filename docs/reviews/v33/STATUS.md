@@ -17,11 +17,24 @@ not certify likeness. Added detailed reference repair prompt and regression test
 113 selected local Python tests passed before adding the socket acceptance gate.
 Earlier broader legacy suite had two outdated assertions (unrelated reference_views
 normalization and prompt wording) and one missing historical ZIP fixture. They
-were not disguised as successes or rewritten to pass. Final focused tests and
-native Blender CI are pending at this checkpoint. No new paid API generation.
+were not disguised as successes or rewritten to pass. Final focused suite: 114 tests passed locally and on Python 3.9/3.12.
+Native Blender 4.3.0 passed Codex->MCP->GLB/texture/3renders/FBX, edit-palette
+regressions, legitimate missing-eye/lash export, wrong-side/deleted living-eye
+rejections and actual rays rejecting an untagged filler globe. The open test orbit
+also passes the rays. Full ordinary-person material grouping now preserves lash
+identity and passes anatomy verification. These are authored tests, not likeness.
+Verified final runtime source: 3475ebac088c8c658508fbfaf9c99b810d2b6f20.
+CI run: 34691768540, both jobs succeeded. No new paid API generation.
 
 Site47 is unchanged. No Oracle SSH session is available here; v33 is not installed.
 The submitted bad model has not yet been geometrically repaired or visually
-accepted. Finish native checks and save v33 installer/instructions. After installation,
+accepted. Package: 376816 bytes; SHA256
+2edee904365b9f88e000dc6e2a0eb88ae828c50f25f3313966d215a0ecbd6938.
+ZIP integrity and all 60 source payloads match local source; 5 base assets are
+SHA-pinned. POLECENIE-CODEX.txt is included in the ZIP. After installation,
 apply the prompt to the original reference, inspect actual renders, and retain draft
 status until the remaining visual defects are corrected.
+
+Saved deliverables: froge-v33.zip Library libfile_a73a1702d70c819197915524cd3130ef v0;
+FORGE-v33-instrukcja.md Library libfile_2bd151e4bcc48191be248ec6655bd52b v0.
+Both saves succeeded and local identity metadata applied. Source saved, not deployed.
