@@ -20,11 +20,9 @@ import urllib.error
 import urllib.request
 from blender_mcp import retain_candidate, write
 from ai_stream import openai_error
+from agent_limits import MAX_REQUESTS, MAX_OUTPUT_TOKENS, MAX_SECONDS, MAX_BUILDS
 
 ROOT=Path(__file__).resolve().parent
-MAX_OUTPUT_TOKENS=36000
-MAX_REQUESTS=12
-MAX_SECONDS=900
 MODEL='gpt-6-astra'
 LITE_HEADER='x-openai-internal-codex-responses-lite'
 
@@ -59,6 +57,31 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs):return None
 
 
+def code_errors(value, depth=0):
+    """Read tool execution errors only, never assistant analysis or reasoning."""
+    if depth > 10:return []
+    if isinstance(value, str):
+        if len(value)>200000:return []
+        try:return code_errors(json.loads(value),depth+1)
+        except (ValueError,TypeError):
+            # Code Mode often returns a plain text wrapper around a JS error.
+            return [match.group(0)[:1200] for line in value.splitlines()
+                    for match in [re.search(r'\b(?:ReferenceError|TypeError|SyntaxError|RangeError|Error):.*',line)] if match][:3]
+    if isinstance(value,list):
+        return [error for item in value[:30] for error in code_errors(item,depth+1)][:3]
+    if isinstance(value,dict):
+        if value.get('type') in ('image','input_image','reasoning'):return []
+        errors=[]
+        if isinstance(value.get('error'),str):errors.append(value['error'][:1200])
+        elif isinstance(value.get('error'),dict):
+            message=value['error'].get('message')
+            if isinstance(message,str):errors.append(message[:1200])
+        for name in ('output','content','text','result'):
+            if name in value:errors.extend(code_errors(value[name],depth+1))
+        return errors[:3]
+    return []
+
+
 def executable():
     path=ROOT/'tools'/'codex'/'codex'
     receipt=path.parent/'verified.json'
@@ -76,6 +99,7 @@ class Gateway:
         self.token=secrets.token_urlsafe(32);self.requests=0;self.output=0;self.input=0
         self.unknown_usage=False;self.lock=threading.Lock();self.active=False;self.error=None
         self.error_code=None;self.error_source=None;self.upstream_status=None;self.retry_after=None
+        self.execution_calls=[];self.execution_ids=set()
         outer=self
         class Handler(BaseHTTPRequestHandler):
             def log_message(self,*_):pass
@@ -102,6 +126,12 @@ class Gateway:
                     if not any(t.get('name')=='exec' and t.get('type')=='custom' for _,t in entries):
                         outer.stop('CODEX_TOOLS_MISSING','CODEX_TOOLS_MISSING: Astra nie otrzymala narzedzia exec. Sprawdz instalacje trybu kodowego i Blender MCP; nie wyslano zapytania do OpenAI.')
                         return self.reject(422,outer.error)
+                    outer.observe_execution(payload)
+                    if len(outer.execution_calls)>=3:
+                        recent=outer.execution_calls[-3:]
+                        if all(v.get('errors') and v['errors']==recent[0].get('errors') for v in recent):
+                            outer.stop('FORGE_REPEATED_CODE_ERROR','Trzy takie same bledy wykonania kodu przed MCP: '+recent[-1]['errors'][0]+'. Zachowano diagnostyke; przerwano petle.')
+                            return self.reject(422,outer.error,outer.error_code)
                     trace=outer.folder/'agent-tools.json'
                     if trace.is_file() and trace.stat().st_size<200000:
                         history=json.loads(trace.read_text()).get('calls',[])
@@ -126,6 +156,11 @@ class Gateway:
                     payload['max_output_tokens']=allowance
                     payload['store']=False;payload['stream']=True
                     payload['reasoning']={**payload.get('reasoning',{}),'effort':'high'}
+                    # Actual state and execution recipe accompany every turn.
+                    # This does not synthesize tool results or model decisions.
+                    if isinstance(payload.get('input'),list):
+                        payload['input'].append({'type':'message','role':'developer','content':[{
+                            'type':'input_text','text':outer.execution_guidance()}]})
                     headers={'Authorization':'Bearer '+outer.key,'Content-Type':'application/json'}
                     # Preserve the official CLI's wire protocol marker. No
                     # caller credentials or arbitrary headers are forwarded.
@@ -197,8 +232,44 @@ class Gateway:
     def save(self):
         write(self.folder/'agent-usage.json',{'model':MODEL,'requests':self.requests,'input_tokens':self.input,
               'output_tokens':self.output,'output_token_limit':MAX_OUTPUT_TOKENS,'request_limit':MAX_REQUESTS,
+              'seconds_limit':MAX_SECONDS,'build_limit':MAX_BUILDS,
               'unknown_usage':self.unknown_usage,'last_error':self.error,'error_code':self.error_code,
               'error_source':self.error_source,'upstream_status':self.upstream_status,'retry_after':self.retry_after})
+    def observe_execution(self,payload):
+        for item in payload.get('input',[]) if isinstance(payload.get('input'),list) else []:
+            if not isinstance(item,dict) or item.get('type') not in ('custom_tool_call_output','function_call_output'):continue
+            call_id=item.get('call_id')
+            if not isinstance(call_id,str) or call_id in self.execution_ids:continue
+            self.execution_ids.add(call_id)
+            errors=[safe_message(error,(self.key,self.token)) for error in code_errors(item.get('output'))]
+            self.execution_calls.append({'call_id':call_id[:120],'request':self.requests,'errors':errors})
+        if self.execution_calls:
+            write(self.folder/'agent-execution.json',{'calls':self.execution_calls[-40:],
+                  'failed_calls':sum(bool(v['errors']) for v in self.execution_calls)})
+    def execution_guidance(self):
+        candidate={}
+        path=self.folder/'agent-candidate.json'
+        if path.is_file() and path.stat().st_size<10000:
+            try:candidate=json.loads(path.read_text())
+            except (ValueError,OSError):pass
+        revision=candidate.get('revision',0)
+        text=('FORGE execution state: current revision=%s; has_model=%s; model requests remaining=%d. '
+              'You are GPT-6 Astra, the model designer. Codex executes your calls and Blender creates the geometry. '
+              'Use the registered tools via Code Mode, always await the result. Each exec is a FRESH JavaScript isolate: '
+              'local const/let values do not survive into the next exec. Use store(key, JSON-serializable value) and load(key), '
+              'or define the complete scene inside the same exec that calls build_model. '
+              'MCP returns {content:[{type:"text",text:"JSON"}],isError}. Parse the text, not the wrapper object. '
+              'For a build: const scene = /* your complete scene */; '
+              'text(await tools.mcp__blender__build_model({scene_json:JSON.stringify(scene),expected_revision:%s})); '
+              'Use // @exec: {"yield_time_ms":120000,"max_output_tokens":16000} before long build/render calls. '
+              'Only wait when exec actually returns a running cell identifier. Await that same cell instead of starting a duplicate build. '
+              'Return render image blocks using image(block); preserve original references. '
+              )%(revision,str(bool(revision)).lower(),max(0,MAX_REQUESTS-self.requests),revision)
+        if not revision:
+            text+='No model has been built. After reading the contract once, your next substantive action must be build_model with a complete scene, not further empty state reads or announcements. '
+        if self.execution_calls and self.execution_calls[-1]['errors']:
+            text+='The last Code Mode call failed before or during MCP. Correct this exact error: '+self.execution_calls[-1]['errors'][0]
+        return text
     def stop(self,code,message,source='forge'):
         self.error_code=code;self.error_source=source;self.error=safe_message(message,(self.key,self.token));self.save()
     def __enter__(self):self.thread.start();return self
@@ -245,7 +316,7 @@ def command(binary,folder,port):
 
 def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
     folder=Path(folder);binary=binary or executable()
-    if binary is None:raise RuntimeError('Codex nie jest zainstalowany lub zweryfikowany. Uruchom instalator v28.')
+    if binary is None:raise RuntimeError('Codex nie jest zainstalowany lub zweryfikowany. Uruchom instalator v29.')
     write(folder/'agent-request.json',{'prompt':prompt,'instructions':instructions})
     (folder/'agent-cancelled').unlink(missing_ok=True)
     task=('Complete the user 3D task using the attached original images and the Blender MCP tools. '
@@ -253,19 +324,21 @@ def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
           'inspect exported renders, and edit specific faults with edit_model. Available bpy edits allow '
           'custom geometry beyond scene presets. Match reference silhouette and proportions; avoid generic '
           'placeholder balls for hair and face. Keep hair attached and correctly scaled, no duplicate eye textures. '
-          'There are at most 3 builds and a bounded API/time budget: produce compact tool calls promptly, '
+          'There are at most 5 builds and a bounded API/time budget: produce compact tool calls promptly, '
           'spend time correcting observed defects. Full format exports happen once at finish_model. '
           'Inspect front, side, back, and face for people on the FINAL revision. '
           'Finish with accepted=false and specific issues if quality is insufficient. '
           'No shell, external generators, network tools or shop publication are authorized in this job. '
           'MCP tools are called INSIDE Code Mode exec using their exact fully qualified names. '
           'Do not call an unqualified tools.get_modeling_contract or invent shell tools. '
-          'For your first exec use: const r = await tools.mcp__blender__get_modeling_contract({}); text(r); '
+          'For your first exec use: const r = await tools.mcp__blender__get_modeling_contract({}); '
+          'const c = JSON.parse(r.content.find(b=>b.type==="text").text); store("contract",c); text(c); '
           'The MCP response contains content text blocks: parse their text as JSON when using scene_schema. '
           'Then call tools.mcp__blender__build_model({scene_json: JSON.stringify(scene), expected_revision: 0}). '
           'Always await calls and print their results with text; do not merely describe them. '
           'After each isError result, correct the exact reported argument, do not repeat the same call. '
-          'There are 12 model turns total; use one exec to inspect multiple render views sequentially, '
+          'There are 32 model turns total. Each exec has fresh variables; use store/load for cross-call state. '
+          'Define scene and call build_model together. Use one exec to inspect multiple render views sequentially, '
           'returning image blocks with image(block) so you can actually see them. '
           'The latest user brief below and attached images define the task; supplementary instructions follow.\n\n'
           'USER BRIEF:\n'+prompt+'\n\nEXECUTION INSTRUCTIONS:\n'+instructions)

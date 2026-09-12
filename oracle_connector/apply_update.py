@@ -22,8 +22,8 @@ FILES += ('image3d_fixture.py', 'runtime/imported_asset.py')
 FILES += ('generation_budget.py','quality_report.py','v23_fixture.py',
           'runtime/freeform_geometry.py','runtime/projection_math.py','runtime/photo_projection.py')
 FILES += ('runtime/model_checkpoint.py','scene_repair.py',)
-FILES += ('blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py','runtime/finalize.py',)
-EXPECTED_VERSION = 28
+FILES += ('agent_limits.py','paid_trial.py','blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py','runtime/finalize.py',)
+EXPECTED_VERSION = 29
 EXPECTED_RENDERER_REVISION = 3
 
 
@@ -89,7 +89,7 @@ def update(source, target, verify=None):
                     health = json.loads(response.read(10000))
                     if health.get('connectorVersion') == EXPECTED_VERSION and health.get('executionEngine') == 'codex-mcp' and health.get('freeformGeometryRevision') == 1 and health.get('photoProjectionRevision') == 1 and health.get('instructionsRevision') == 1 and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
                         print('FROGE_UPDATE_OK')
-                        print('Froge v28: sprawdzono Codex, argumenty MCP, rzeczywista budowe i eksport. Rozroznione limity zlecenia i OpenAI. Modele i klucz zachowane.')
+                        print('Froge v29: sprawdzono Codex, argumenty MCP, rzeczywista budowe i eksport. Rozroznione limity zlecenia i OpenAI. Modele i klucz zachowane.')
                         return
             except (OSError, ValueError):
                 pass

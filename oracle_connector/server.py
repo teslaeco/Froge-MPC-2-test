@@ -36,7 +36,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 28
+CONNECTOR_VERSION = 29
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
@@ -164,11 +164,13 @@ def ai_settings():
 def health():
     state = _text_health()
     from codex_runner import executable
+    from agent_limits import MAX_SECONDS, MAX_REQUESTS, MAX_OUTPUT_TOKENS, MAX_BUILDS
     agent = state.get('provider')=='openai' and executable() is not None
     return {**state, 'textReady': state['ready'], 'astraPhotoRevision': 1,
             'photoEngine': 'astra-blender', 'photoReasoningEffort': 'high',
             'instructionsRevision':1, 'executionEngine':'codex-mcp' if agent else 'astra-scene',
-            'agentBudgetSeconds':900 if agent else None,
+            'agentBudgetSeconds':MAX_SECONDS if agent else None,
+            'agentRequestLimit':MAX_REQUESTS if agent else None,'agentOutputTokenLimit':MAX_OUTPUT_TOKENS if agent else None,'agentBuildLimit':MAX_BUILDS if agent else None,
             'freeformGeometryRevision':1,'photoProjectionRevision':1,
             'planningBudgetSeconds':600,'photoPlanningBudgetSeconds':900,'photoReviewReservedSeconds':240,'timeoutRecoveryRevision':1,'targetedRepairRevision':1,'photoSchemaRevision':2,
             'photoAiBudgetSeconds':total_ai_limit(True),'qualityReports':True,

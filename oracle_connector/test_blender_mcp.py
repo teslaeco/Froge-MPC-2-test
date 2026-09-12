@@ -120,7 +120,7 @@ class GatewayTests(unittest.TestCase):
         class Opener:
             def open(self,request,timeout):
                 captured.append(request)
-                return io.BytesIO(b'data: {"type":"response.completed","response":{"usage":{"input_tokens":100,"output_tokens":36000}}}\n\n')
+                return io.BytesIO(b'data: {"type":"response.completed","response":{"usage":{"input_tokens":100,"output_tokens":96000}}}\n\n')
         with tempfile.TemporaryDirectory() as temp, patch('codex_runner.urllib.request.build_opener',return_value=Opener()):
             with Gateway('sk-private-fixture',Path(temp),threading.Event()) as gateway:
                 # urllib's default opener is independent of the patched trusted
@@ -209,7 +209,8 @@ class AstraCodeModeTests(unittest.TestCase):
                 headers={k.lower():v for k,v in captured[0].header_items()}
                 self.assertEqual(headers[LITE_HEADER],'true');self.assertNotIn('x-unrelated',headers)
                 self.assertNotIn('tools',json.loads(captured[0].data))
-                self.assertEqual(json.loads(captured[0].data)['input'],payload['input'])
+                self.assertEqual(json.loads(captured[0].data)['input'][:-1],payload['input'])
+                self.assertIn('GPT-6 Astra',json.loads(captured[0].data)['input'][-1]['content'][0]['text'])
                 self.assertEqual(gateway.requests,1)
 
     def test_empty_direct_only_catalog_is_rejected_by_smoke(self):

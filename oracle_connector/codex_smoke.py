@@ -86,8 +86,10 @@ class BuildFixture:
             "let bad;try{bad=await tools.mcp__blender__build_model({scene_json:'{}'});}catch(e){bad={isError:true};} "
             "const r=await tools.mcp__blender__get_modeling_contract({}); "
             "const c=JSON.parse(r.content.find(x=>x.type==='text').text); "
+            "store('forge_contract',c); "
             "text({forge_contract:"+json.dumps(self.token)+",validated_error:bad.isError===true,"
             "complete_schema:!!c.scene_schema.properties.parts && !!c.coordinate_and_geometry_guide && Array.isArray(c.references)});",
+            "if(!load('forge_contract')?.scene_schema)throw new Error('CONTRACT_STATE_LOST'); "
             "const r=await tools.mcp__blender__build_model({scene_json:"+json.dumps(json.dumps(cube))+",expected_revision:0});text(r);",
             "let n=0; for(const view of ['front','side','back']) { const r=await tools.mcp__blender__inspect_render({view,expected_revision:1}); "
             "for(const b of r.content||[]) {if(b.type==='image'){image(b);n++;} else if(b.type==='text')text(b.text);}} "
@@ -114,9 +116,38 @@ class BuildFixture:
         return io.BytesIO(''.join('data: '+json.dumps(e)+'\n\n' for e in events).encode())
 
 
+class RecoveringBuildFixture(BuildFixture):
+    """Require a real Code Mode ReferenceError to reach the repair guidance."""
+    def __init__(self,token):
+        super().__init__(token);self.failed_exec_sent=False;self.error_received=False
+    def open(self,request,timeout):
+        payload=json.loads(request.data)
+        if not self.failed_exec_sent:
+            self.failed_exec_sent=True
+            namespace=next(ns for ns,t in codex_runner.request_tools(payload) if t.get('name')=='exec')
+            item={'id':'ctc_execution_error','type':'custom_tool_call','status':'completed',
+                  'call_id':'execution_error','name':'exec','input':"throw new ReferenceError('FORGE_FIXTURE_SCENE_UNDEFINED');"}
+            if namespace:item['namespace']=namespace
+            response={'id':'resp_execution_error','object':'response','created_at':1789170000,
+                      'status':'completed','model':codex_runner.MODEL,'output':[item],
+                      'usage':{'input_tokens':100,'output_tokens':20,'total_tokens':120}}
+            events=[{'type':'response.created','response':{**response,'status':'in_progress','output':[]}},
+                    {'type':'response.output_item.done','output_index':0,'item':item},
+                    {'type':'response.completed','response':response}]
+            return io.BytesIO(''.join('data: '+json.dumps(e)+'\n\n' for e in events).encode())
+        if not self.error_received:
+            outputs=[v.get('output') for v in payload.get('input',[]) if v.get('call_id')=='execution_error' and v.get('type')=='custom_tool_call_output']
+            if not any('FORGE_FIXTURE_SCENE_UNDEFINED' in error for v in outputs for error in codex_runner.code_errors(v)):
+                raise ValueError('REAL_EXECUTION_ERROR_MISSING: '+repr(outputs)[:1200])
+            if 'Correct this exact error: ReferenceError: FORGE_FIXTURE_SCENE_UNDEFINED' not in json.dumps(payload.get('input',[])):
+                raise ValueError('REAL_EXECUTION_REPAIR_GUIDANCE_MISSING')
+            self.error_received=True
+        return super().open(request,timeout)
+
+
 def main(binary=None, build=False, test_blender=None):
     folder = codex_runner.ROOT/'state/jobs'/str(uuid.uuid4()); folder.mkdir(parents=True)
-    fixture = BuildFixture(uuid.uuid4().hex) if build else Fixture(uuid.uuid4().hex)
+    fixture = RecoveringBuildFixture(uuid.uuid4().hex) if build else Fixture(uuid.uuid4().hex)
     passed = False
     try:
         original_command=codex_runner.command
@@ -138,6 +169,10 @@ def main(binary=None, build=False, test_blender=None):
             report=json.loads((folder/'result.json').read_text())
             if report.get('triangles',0)<=0 or not (folder/'model.fbx').is_file():
                 raise RuntimeError('Brak rzeczywistego modelu/FBX z testu.')
+            execution=json.loads((folder/'agent-execution.json').read_text())
+            if not fixture.error_received or execution.get('failed_calls')!=1:
+                raise RuntimeError('Brak zapisanego rzeczywistego bledu Code Mode i jego naprawy.')
+            print('CODEX_EXECUTION_ERROR_RECOVERY_OK; real ReferenceError, store/load, then Blender build',flush=True)
             print('CODEX_MCP_BLENDER_BUILD_OK; real GLB, texture, 3 renders and FBX; fixture model responses; no paid API',flush=True)
         elif len(fixture.seen) != 2 or not result_verified(fixture.seen[-1], fixture.token):
             raise RuntimeError('Nie przeszedl test Codex -> Code Mode -> Blender MCP -> odpowiedz. Platne API nie bylo wywolywane.')
@@ -149,7 +184,7 @@ def main(binary=None, build=False, test_blender=None):
         # Keep only safe execution metadata after the updater restores old code.
         destination = codex_runner.ROOT/'state/diagnostics'/('codex-'+folder.name)
         destination.mkdir(parents=True, exist_ok=True, mode=0o700)
-        for name in ('codex-events.jsonl','agent-usage.json','agent-tools.json'):
+        for name in ('codex-events.jsonl','agent-usage.json','agent-tools.json','agent-execution.json'):
             if (folder/name).is_file(): shutil.copy2(folder/name,destination/name)
         print('Diagnostyka:',destination,flush=True)
         if (folder/'codex-events.jsonl').is_file(): print((folder/'codex-events.jsonl').read_text()[-6000:],flush=True)

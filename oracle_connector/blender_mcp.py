@@ -12,6 +12,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from code_policy import prepare_code
+from agent_limits import MAX_BUILDS, BUILD_DEADLINE
 from runtime.scene_contract import PROMPT, parse_scene
 from scene_repair import photo_schema
 from photo_input import read_photos, validate_photo_plan
@@ -34,7 +35,7 @@ def schema(properties):
 
 TOOLS = [
     {'name':'get_modeling_contract','description':'Read supported scene operations, coordinate conventions, limits and current job. Call once before modeling.', 'inputSchema':schema({})},
-    {'name':'build_model','description':'Build a complete scene JSON in real Blender and produce GLB plus preview renders. Replaces the candidate, preserving earlier attempts. At most three successful or failed builds per job.',
+    {'name':'build_model','description':'Build a complete scene JSON in real Blender and produce GLB plus preview renders. Replaces the candidate, preserving earlier attempts. At most five successful or failed builds per job.',
      'inputSchema':schema({'scene_json':{'type':'string','maxLength':256000},'expected_revision':{'type':'integer','minimum':0}})},
     {'name':'edit_model','description':'Apply a short Python geometry/material edit to the current scene using bpy and existing helpers. Edits accumulate. No file/network access. Runs in isolated Blender and generates new renders. Use actual object names from get_current_model.',
      'inputSchema':schema({'code':{'type':'string','maxLength':20000},'expected_revision':{'type':'integer','minimum':1}})},
@@ -85,23 +86,23 @@ class JobTools:
 
     def check(self, revision=None):
         if (self.folder/'agent-cancelled').exists(): raise InterruptedError('Zlecenie anulowane.')
-        if time.monotonic()-self.started > 840: raise TimeoutError('Wykorzystano czas zlecenia Codexa.')
+        if time.monotonic()-self.started > BUILD_DEADLINE: raise TimeoutError('Wykorzystano czas zlecenia Codexa.')
         if revision is not None and revision != self.revision: raise ValueError('CONFLICT: odczytaj aktualna rewizje modelu.')
 
     def progress(self, detail):
         write(self.folder/'agent-progress.json', {'detail':detail,'revision':self.revision,'blender_seconds':round(self.blender_seconds,2)})
 
     def snapshot(self):
-        if self.current is None: return {'revision':0,'has_model':False,'builds_remaining':3-self.attempts}
+        if self.current is None: return {'revision':0,'has_model':False,'builds_remaining':MAX_BUILDS-self.attempts}
         report = json.loads((self.current/'result.json').read_text())
-        return {'revision':self.revision,'has_model':True,'builds_remaining':3-self.attempts,
+        return {'revision':self.revision,'has_model':True,'builds_remaining':MAX_BUILDS-self.attempts,
                 'scene':json.loads((self.current/'scene.json').read_text()),
                 'edits':(self.current/'edits.py').read_text() if (self.current/'edits.py').exists() else '',
                 'report':report,'inspected_views':sorted(self.seen)}
 
     def build(self, scene, edits=''):
         self.check()
-        if self.attempts >= 3: raise ValueError('Wykorzystano trzy proby budowy. Zachowaj najlepszy istniejacy model i opisz wady.')
+        if self.attempts >= MAX_BUILDS: raise ValueError('Wykorzystano piec prob budowy. Zachowaj najlepszy istniejacy model i opisz wady.')
         validate_photo_plan(scene, self.photos)
         self.attempts += 1
         candidate = self.folder/'candidates'/str(self.attempts)
@@ -112,7 +113,7 @@ class JobTools:
             path=self.folder/name
             if path.is_file(): shutil.copy2(path,candidate/name)
         write(candidate/'review-request.json',{'enabled':True,'preview_only':True})
-        self.progress('Codex przekazal model do Blendera. Budowa i rendery proby %d/3.'%self.attempts)
+        self.progress('Codex przekazal model do Blendera. Budowa i rendery proby %d/%d.'%(self.attempts,MAX_BUILDS))
         started=time.monotonic()
         try:
             if self.build_callback: self.build_callback(candidate)
@@ -121,7 +122,7 @@ class JobTools:
                 event = threading.Event()
                 # Parent terminates the process group on cancellation. No user
                 # API key or worker state is mounted in this Blender container.
-                server.run_blender(self.folder.name,candidate,event,timeout=min(420,840-(time.monotonic()-self.started)))
+                server.run_blender(self.folder.name,candidate,event,timeout=min(420,BUILD_DEADLINE-(time.monotonic()-self.started)))
         finally:
             self.blender_seconds+=time.monotonic()-started
             self.progress('Blender zakonczyl probe. Codex sprawdza geometrie i rendery.')
@@ -206,7 +207,7 @@ def serve(job, incoming=sys.stdin, outgoing=sys.stdout):
             request=json.loads(raw);method=request.get('method');rid=request.get('id')
             if rid is None:continue
             if method=='initialize':
-                result={'protocolVersion':'2025-03-26','capabilities':{'tools':{}},'serverInfo':{'name':'forge-blender','version':'28'}}
+                result={'protocolVersion':'2025-03-26','capabilities':{'tools':{}},'serverInfo':{'name':'forge-blender','version':'29'}}
             elif method=='ping':result={}
             elif method=='tools/list':result={'tools':TOOLS}
             elif method=='tools/call':
