@@ -16,7 +16,7 @@ def bind(m,im,socket):
   if l.to_node==bs and l.to_socket.name==socket:nt.links.remove(l)
  t=nt.nodes.new('ShaderNodeTexImage');t.image=im;t.interpolation='Linear'
  if socket=='Normal':
-  n=nt.nodes.new('ShaderNodeNormalMap');n.inputs['Strength'].default_value=.32;nt.links.new(t.outputs['Color'],n.inputs['Color']);nt.links.new(n.outputs['Normal'],bs.inputs[socket])
+  n=nt.nodes.new('ShaderNodeNormalMap');n.inputs['Strength'].default_value=.58;nt.links.new(t.outputs['Color'],n.inputs['Color']);nt.links.new(n.outputs['Normal'],bs.inputs[socket])
  else:nt.links.new(t.outputs['Color'],bs.inputs[socket])
 def mat(name):
  m=bpy.data.materials.new(name);m.use_nodes=True;return m
@@ -24,10 +24,10 @@ def mat(name):
 warp=np.cos(math.tau*u*250);weft=np.cos(math.tau*v*250);over=np.sin(math.tau*u*125)*np.sin(math.tau*v*125)
 height=(warp+weft+.5*over).astype(np.float32)
 thread=(1+.025*warp+.025*weft+.008*np.sin(u*math.tau*41)+.006*np.sin(v*math.tau*37)).astype(np.float32)
-rng=np.random.default_rng(913);fine=rng.standard_normal((N,N),dtype=np.float32);thread+=.004*fine
+rng=np.random.default_rng(913);fine=rng.standard_normal((N,N),dtype=np.float32);freq=np.fft.fftfreq(N).astype(np.float32);filter=np.exp(-2*math.pi**2*28**2*(freq[:,None]**2+freq[None,:]**2));grain=np.fft.ifft2(np.fft.fft2(fine)*filter).real.astype(np.float32);grain/=grain.std();thread+=.012*fine+.027*grain
 fabrics=[]
-for name,col,rough in [('R13 ivory linen silk',(.69,.655,.555),.70),('R13 black fine twill',(.032,.035,.030),.78)]:
- m=mat(name);bs=m.node_tree.nodes.get('Principled BSDF');bs.inputs['Specular IOR Level'].default_value=.28;bs.inputs['Sheen Weight'].default_value=.12;bs.inputs['Sheen Roughness'].default_value=.65
+for name,col,rough in [('R13 ivory linen silk',(.69,.655,.555),.84),('R13 black fine twill',(.032,.035,.030),.88)]:
+ m=mat(name);bs=m.node_tree.nodes.get('Principled BSDF');bs.inputs['Specular IOR Level'].default_value=.28;bs.inputs['Roughness'].default_value=rough;bs.inputs['Sheen Weight'].default_value=.06;bs.inputs['Sheen Roughness'].default_value=.65
  bind(m,image(name+' colour',np.clip(thread[:,:,None]*np.array(col)[None,None,:],0,1)),'Base Color')
  bind(m,image(name+' roughness',np.clip(rough+.035*over+.012*fine,.35,.95),True),'Roughness');bind(m,normal(name+' tangent weave',height,.25),'Normal');fabrics.append(m)
 # UV repeat calibrated to approximate circumference and measured vertical extent.
@@ -45,7 +45,8 @@ for ob in bpy.context.scene.objects:
 # Preserve observed features in the existing registered photo; separate surface response.
 base=bpy.data.materials['Reference_observed_face'];skin=base.copy();skin.name='R13 observed living face';bone=base.copy();bone.name='R13 observed skeletal face'
 # Roughness map registered to the original 899x2048 reference coordinates.
-x=u*899;y=(1-v)*2048
+registration=json.loads((OUT/'reference-registration.json').read_text());sc=registration['scale'];tx=registration['translate_x'];ty=registration['translate_y']
+x=(u*899-tx)/sc;y=((1-v)*2048-ty)/sc
 lip=np.exp(-((x-425)/49)**4-((y-660)/23)**4);nose=np.exp(-((x-446)/24)**2-((y-584)/49)**2);cheek=np.exp(-((x-358)/45)**2-((y-575)/60)**2)
 rough=np.clip(.52-.23*lip-.12*nose-.06*cheek,.27,.58)
 bind(skin,image('R13 face feature roughness',rough,True),'Roughness')
@@ -63,6 +64,17 @@ for p in head.data.polygons:
  if m and m.name.startswith('Reference_observed_face'):
   if p.center.x<0:p.material_index=si;counts['skin']+=1
   else:p.material_index=bi;counts['bone']+=1
+# Register latest supplied reference via measured image alignment, then move UV coordinates.
+photo=bpy.data.images.load(str(ROOT/'upload/Screenshot_20260912-170529.png'),check_existing=True);photo.name='R13 latest supplied reference';photo.pack()
+for m in (skin,bone):
+ bs=m.node_tree.nodes.get('Principled BSDF')
+ for l in bs.inputs['Base Color'].links:
+  if l.from_node.type=='TEX_IMAGE':l.from_node.image=photo
+uv=head.data.uv_layers[0]
+for p in head.data.polygons:
+ if p.material_index in (si,bi):
+  for li in p.loop_indices:
+   a,b=uv.data[li].uv;uv.data[li].uv=((a*899*sc+tx)/899,1-((1-b)*2048*sc+ty)/2048)
 # Tone down uniform chalkiness of enamel; keep actual tooth shape intact.
 for m in bpy.data.materials:
  if 'tooth' in m.name.lower() or 'teeth' in m.name.lower():
@@ -93,5 +105,5 @@ bpy.ops.export_scene.gltf(filepath=str(OUT/'FORGE-model-r13.glb'),export_format=
 report={'textures':[],'uv_order_changes':[],'baked_base_colors':[],'uv_binding_limitations':[]}
 with _portable_uvs(bpy,report),_portable_images(bpy,OUT,report):
  bpy.ops.object.select_all(action='SELECT');bpy.ops.export_scene.fbx(filepath=str(OUT/'FORGE-model-r13.fbx'),use_selection=True,object_types={'MESH'},apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',axis_forward='-Z',axis_up='Y',add_leaf_bones=False,bake_anim=False,path_mode='COPY',embed_textures=True)
-report.update(triangles=tri,maps=maps,cloth_uv=uv_report,face_region_polygons=counts,geometry_changed=False,wave_guides_retained=True,likeness_accepted=False,reference_lighting_removed=False)
+report.update(triangles=tri,maps=maps,cloth_uv=uv_report,face_region_polygons=counts,reference_registration=registration,geometry_changed=False,wave_guides_retained=True,likeness_accepted=False,reference_lighting_removed=False)
 (OUT/'export-report.json').write_text(json.dumps(report,indent=2));print('R13_SAVED',tri,counts,flush=True)

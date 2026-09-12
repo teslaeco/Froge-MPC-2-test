@@ -39,10 +39,5 @@ for name,target,frame,angle in views:
  camera.location=target+Vector((-3*math.sin(angle),-3*math.cos(angle),0 if name in ('face','face-angle') else .06));camera.rotation_euler=(target-camera.location).to_track_quat('-Z','Y').to_euler();camera.data.ortho_scale=frame
  scene.render.filepath=str(OUT/('FBX-'+name+'.png'));bpy.ops.render.render(write_still=True)
  print('FBX_RENDER_READY',name,flush=True)
-# Neutral material exposes geometry without reference photo colours.
-clay=bpy.data.materials.new('Geometry only clay');clay.use_nodes=True;bs=clay.node_tree.nodes.get('Principled BSDF');bs.inputs['Base Color'].default_value=(.38,.38,.38,1);bs.inputs['Roughness'].default_value=.8
-scene.view_layers[0].material_override=clay
-camera.location=face+Vector((0,-3,0));camera.rotation_euler=(face-camera.location).to_track_quat('-Z','Y').to_euler();camera.data.ortho_scale=scale
-scene.render.filepath=str(OUT/'FBX-face-clay.png');bpy.ops.render.render(write_still=True)
 report={'fbx_reimport_verified':True,'triangles':triangles,'mesh_objects':len(meshes),'bounds':[list(low),list(high)],'missing_textures':missing,'meshes_with_uv':sum(bool(o.data.uv_layers) for o in meshes),'renders':'actual reimported FBX','wave_guides_retained':source['wave_guides_retained'],'likeness_accepted':False,'print_ready':False}
 (OUT/'fbx-reimport-report.json').write_text(json.dumps(report,indent=2));print('FBX_REIMPORT_PASS',json.dumps(report),flush=True)

@@ -1,0 +1,30 @@
+{
+  "FORGE-r13-twarz-porownanie.png": {
+    "bytes": 1754851,
+    "sha256": "445d014477b1335fb7601af730598a8c408a776feedd83fcd892613ea24ac74c"
+  },
+  "FORGE-r13-stroj-porownanie.png": {
+    "bytes": 1307821,
+    "sha256": "adae22aa57ae8cebce661d847d393db773b83dc6c50feb058b220ef89319a3cd"
+  },
+  "FORGE-r13-trzy-widoki.png": {
+    "bytes": 1093772,
+    "sha256": "f3edaae2b922f2b44fc0252b319548347a881d9b07ff61e4ed512b37e861be29"
+  },
+  "FORGE-model-r13.blend": {
+    "bytes": 210846652,
+    "sha256": "fbc183a33a7c9bfe8eccfcdf47e8d00445f1010173f5c5e38cee1a3c8848b81e"
+  },
+  "FORGE-model-r13.fbx": {
+    "bytes": 183753532,
+    "sha256": "75f37d56f5932547abba6b2f6d942a90083dc6e178654c43036af19b7c958ab8"
+  },
+  "FORGE-model-r13.glb": {
+    "bytes": 119309820,
+    "sha256": "ef91aee6f9be982c4adf84d1d2442698c9a1db0c393e876cce5cd8cbf252ba27"
+  },
+  "FORGE-kontrola-materialow-r13.md": {
+    "bytes": 4002,
+    "sha256": "ad935ef5ada72c4e620d17da321616c1c8a1fcfe34f10920d788fa51ed3e8c80"
+  }
+}
