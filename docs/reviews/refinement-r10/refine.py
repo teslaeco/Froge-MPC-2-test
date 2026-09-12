@@ -124,18 +124,42 @@ assert hair_before==long_hash()
 def count(o):
  ev=o.evaluated_get(bpy.context.evaluated_depsgraph_get());me=ev.to_mesh();me.calc_loop_triangles();n=len(me.loop_triangles);ev.to_mesh_clear();return n
 others=sum(count(o) for o in bpy.context.scene.objects if o.type=='MESH' and o!=head)
-bpy.ops.object.select_all(action='DESELECT');head.select_set(True);bpy.context.view_layer.objects.active=head
-sub=head.modifiers.new('Fine facial density','SUBSURF');sub.levels=1;sub.render_levels=1;bpy.ops.object.modifier_apply(modifier=sub.name)
-dense=count(head);target=1500000-others
-mod=head.modifiers.new('Exact 1.5M scene budget','DECIMATE');mod.ratio=target/dense;mod.use_collapse_triangulate=True
-# Adjust ratio against evaluated counts before applying, avoiding repeated destructive decimation.
-for _ in range(8):
- actual=count(head)
- if actual==target:break
- mod.ratio+=(target-actual)/dense
-bpy.ops.object.modifier_apply(modifier=mod.name)
-triangles=others+count(head)
-assert abs(triangles-1500000)<=2,(triangles,target)
+# Barycentric triangle subdivision avoids a multi-million-face temporary Subsurf.
+# It adds density without claiming extra observed detail. Preserve per-corner UVs.
+old=head.data;old.calc_loop_triangles();base=len(old.loop_triangles);need=1500000-others-base
+assert need>=0,(others,base)
+vertices=[tuple(v.co) for v in old.vertices];faces=[];uvvalues=[];materials=[]
+uv=old.uv_layers[0]
+count_split=need//2
+candidates=[t.index for t in old.loop_triangles if sum(old.vertices[k].co.y for k in t.vertices)/3<.04]
+if len(candidates)<count_split:candidates=list(range(base))
+chosen=set(candidates[int(i)] for i in np.linspace(0,len(candidates)-1,count_split,dtype=int)) if count_split else set()
+assert len(chosen)==count_split
+odd=need%2;boundary_triangle=None;boundary_pair=None
+if odd:
+ bm=bmesh.new();bm.from_mesh(old);bm.verts.ensure_lookup_table()
+ edge=next(e for e in bm.edges if e.is_boundary)
+ boundary_pair={v.index for v in edge.verts};bm.free()
+ boundary_triangle=next(t.index for t in old.loop_triangles if boundary_pair.issubset(t.vertices))
+ if boundary_triangle in chosen:
+  chosen.remove(boundary_triangle);chosen.add(next(i for i in range(base) if i not in chosen and i!=boundary_triangle))
+for t in old.loop_triangles:
+ ids=list(t.vertices);coords=[tuple(uv.data[i].uv) for i in t.loops];mi=old.polygons[t.polygon_index].material_index
+ if t.index in chosen:
+  center=tuple(sum(vertices[k][d] for k in ids)/3 for d in range(3));uid=tuple(sum(c[d] for c in coords)/3 for d in range(2));vi=len(vertices);vertices.append(center)
+  for j in range(3):faces.append((ids[j],ids[(j+1)%3],vi));uvvalues.extend((coords[j],coords[(j+1)%3],uid));materials.append(mi)
+ elif t.index==boundary_triangle:
+  j=next(j for j in range(3) if {ids[j],ids[(j+1)%3]}==boundary_pair);ids=ids[j:]+ids[:j];coords=coords[j:]+coords[:j]
+  vi=len(vertices);vertices.append(tuple((vertices[ids[0]][d]+vertices[ids[1]][d])/2 for d in range(3)));uid=tuple((coords[0][d]+coords[1][d])/2 for d in range(2))
+  faces.extend(((ids[0],vi,ids[2]),(vi,ids[1],ids[2])));uvvalues.extend((coords[0],uid,coords[2],uid,coords[1],coords[2]));materials.extend((mi,mi))
+ else:faces.append(tuple(ids));uvvalues.extend(coords);materials.append(mi)
+new=bpy.data.meshes.new('R10 exact-density face');new.from_pydata(vertices,[],faces);new.update()
+for m in old.materials:new.materials.append(m)
+layer=new.uv_layers.new(name=uv.name);layer.data.foreach_set('uv',np.asarray(uvvalues,np.float32).ravel());new.polygons.foreach_set('material_index',materials);new.polygons.foreach_set('use_smooth',[True]*len(faces))
+head.data=new
+triangles=others+count(head);assert triangles==1500000,triangles
+print('EXACT_TRIANGLES',triangles,flush=True)
+del vertices,faces,uvvalues,materials
 for im in bpy.data.images:
  if im.has_data and not im.packed_file:im.pack()
 bpy.context.scene['repair_revision']='r10-1.5M';bpy.context.scene['reference_likeness_accepted']=False
