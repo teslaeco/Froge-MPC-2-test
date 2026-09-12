@@ -1,0 +1,37 @@
+[
+  {
+    "name": "FORGE-model-r15.blend",
+    "bytes": 211173933,
+    "sha256": "f2e48e5018044d7318361d09437bebd463a7119bdff4435365ef5b03956eb01e"
+  },
+  {
+    "name": "FORGE-model-r15.fbx",
+    "bytes": 260785612,
+    "sha256": "9a3d7c8b94987b8fa9f2c8cc75c6daaf2ce09c98f848a0cca0617ea5fd4efcd8"
+  },
+  {
+    "name": "FORGE-model-r15.glb",
+    "bytes": 186331080,
+    "sha256": "7a4106f995f7510dfc782fd0c8e8d41d52fb4b37f585e549b1c5d59583e05488"
+  },
+  {
+    "name": "FORGE-r15-twarz-porownanie.png",
+    "bytes": 1838699,
+    "sha256": "b0b50e0f154b992941f40f5e66f04c54e3e587c5be44c9aa658047e7b4a5237c"
+  },
+  {
+    "name": "FORGE-r15-trzy-widoki.png",
+    "bytes": 1029887,
+    "sha256": "166d9518bf1ff1dbce491c4709f7c77f72304ab66caab896c3018a9a15cfd1fb"
+  },
+  {
+    "name": "FORGE-r15-geometria.png",
+    "bytes": 1093129,
+    "sha256": "d334cc0f1bb41c9e639d8fd966e01b266f68e1e0efe4dfe1f747a8b8afa7f5d6"
+  },
+  {
+    "name": "FORGE-r15-render-HQ.png",
+    "bytes": 7195140,
+    "sha256": "a31d9367f6564a9c4ccca1d446180f9bf1352c87fd4e42764d9a8453b54aac99"
+  }
+]

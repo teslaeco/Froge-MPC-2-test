@@ -1,0 +1,11 @@
+{
+  "source_fbx_sha256": "9a3d7c8b94987b8fa9f2c8cc75c6daaf2ce09c98f848a0cca0617ea5fd4efcd8",
+  "resolution": [
+    2048,
+    2560
+  ],
+  "samples": 128,
+  "engine": "Cycles CPU",
+  "generated_illustration": false,
+  "same_geometry_as_reviews": true
+}

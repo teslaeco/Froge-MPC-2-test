@@ -22,3 +22,7 @@ Widok z tyłu i fragmenty niewidoczne na referencji są interpretacją. Model ko
 Porównanie R14/R15 ma tę samą kamerę, rozdzielczość i oświetlenie. Przód, lewy bok, tył i widok geometrii pochodzą z ponownie zaimportowanego FBX. Dodatkowy render HQ ma 2048 × 2560 px i wykorzystuje ten sam FBX, Cycles, limit 128 próbek z adaptacyjnym próbkowaniem i odszumianiem. Nie użyto generatora ilustracji ani retuszu do udawania lepszego modelu. Render HQ jest innym kadrem i oświetleniem, nie osobną bardziej szczegółową siatką.
 
 Kontrola techniczna i sumy SHA-256 znajdują się w zapisanych raportach projektu. Brak akceptacji podobieństwa nie blokuje pobrania wersji roboczej.
+
+## Wynik ponownego importu FBX
+
+Potwierdzono 6 419 299 trójkątów, 686 obiektów siatki, UV na wszystkich 686 siatkach, dwie gałki oczne i brak brakujących danych obrazów tekstur. SHA-256 FBX: `9a3d7c8b94987b8fa9f2c8cc75c6daaf2ce09c98f848a0cca0617ea5fd4efcd8`. Te kontrole potwierdzają integralność eksportu, nie podobieństwo do referencji.
