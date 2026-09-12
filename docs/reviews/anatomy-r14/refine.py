@@ -1,5 +1,5 @@
 """R14 anatomical local changes: crowns, recessed orbital eye, neck proportions."""
-import bpy,math,json,sys,hashlib
+import bpy,bmesh,math,json,sys,hashlib
 import numpy as np
 from pathlib import Path
 from mathutils import Vector
@@ -10,7 +10,7 @@ def material(name,c,rough=.4):
  m=bpy.data.materials.new(name);m.use_nodes=True;bs=m.node_tree.nodes.get('Principled BSDF');bs.inputs['Base Color'].default_value=(*c,1);bs.inputs['Roughness'].default_value=rough;return m
 crown=material('R14 warm natural enamel',(.64,.56,.40),.27);crown.node_tree.nodes.get('Principled BSDF').inputs['Specular IOR Level'].default_value=.32
 # Cervical shade to lighter incisal edge, packed colour data for portable exports.
-N=512;v=np.arange(N,dtype=np.float32)[:,None]/(N-1);a=np.ones((N,N,4),np.float32);a[:,:,:3]=np.array([.64,.56,.40])[None,None,:]*(.91+.09*np.cos(v*math.pi/2))[:,:,None]
+N=512;v=np.arange(N,dtype=np.float32)[:,None]/(N-1);a=np.ones((N,N,4),np.float32);a[:,:,:3]=np.array([.73,.68,.58])[None,None,:]*(.91+.09*np.cos(v*math.pi/2))[:,:,None]
 im=bpy.data.images.new('R14 enamel cervical shade',width=N,height=N,alpha=False);im.pixels.foreach_set(a.ravel());im.update();im.pack();t=crown.node_tree.nodes.new('ShaderNodeTexImage');t.image=im;crown.node_tree.links.new(t.outputs['Color'],crown.node_tree.nodes.get('Principled BSDF').inputs['Base Color'])
 changed=[]
 for ob in list(bpy.context.scene.objects):
@@ -24,7 +24,7 @@ for ob in list(bpy.context.scene.objects):
   phi=math.pi*(i+.0001)/(rings+.0002);z=math.cos(phi);rad=math.sin(phi);taper=1-.15*max(z,0)
   for k in range(cols):
    th=math.tau*k/cols;cs=math.cos(th);sn=math.sin(th)
-   x=width*.5*math.copysign(abs(cs)**.75,cs)*rad**.55*taper
+   x=width*.5*math.copysign(abs(cs)**.75,cs)*rad**.28*taper
    y=depth*.5*sn*rad**.65
    zz=height*.5*z
    # Canine incisal tip, softly blended rather than cuboid crown.
@@ -33,7 +33,7 @@ for ob in list(bpy.context.scene.objects):
    vs.append((center[0]+x*math.cos(angle)-zz*math.sin(angle),center[1]+y,center[2]+zz*math.cos(angle)+x*math.sin(angle)));uv.append((k/cols,i/rings))
    if i:fs.append(((i-1)*cols+k,(i-1)*cols+(k+1)%cols,i*cols+(k+1)%cols,i*cols+k))
  fs.append(tuple(reversed(range(cols))));fs.append(tuple(rings*cols+k for k in range(cols)))
- name=ob.name;bpy.data.objects.remove(ob,do_unlink=True);me=bpy.data.meshes.new(name+' rounded crown');me.from_pydata(vs,[],fs);me.update();obj=bpy.data.objects.new(name,me);bpy.context.collection.objects.link(obj);me.materials.append(crown);layer=me.uv_layers.new(name='CrownUV')
+ name=ob.name;bpy.data.objects.remove(ob,do_unlink=True);me=bpy.data.meshes.new(name+' rounded crown');me.from_pydata(vs,[],fs);me.update();bm=bmesh.new();bm.from_mesh(me);bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces));assert bm.calc_volume(signed=True)>0;bm.to_mesh(me);bm.free();obj=bpy.data.objects.new(name,me);bpy.context.collection.objects.link(obj);me.materials.append(crown);layer=me.uv_layers.new(name='CrownUV')
  for p in me.polygons:
   p.use_smooth=True
   for li in p.loop_indices:layer.data[li].uv=uv[me.loops[li].vertex_index]
@@ -47,10 +47,10 @@ def sphere(name,loc,scale,mat):
  bpy.ops.mesh.primitive_uv_sphere_add(segments=64,ring_count=32,location=loc);o=bpy.context.object;o.name=name;o.scale=scale;bpy.ops.object.transform_apply(location=False,rotation=False,scale=True);o.data.materials.append(mat)
  for p in o.data.polygons:p.use_smooth=True
  return o
-sclera=material('R14 shaded orbital sclera',(.105,.082,.054),.34);iris=material('R14 dark brown recessed iris',(.033,.014,.006),.23);pupil=material('R14 recessed pupil',(.0015,.0012,.001),.16)
-sphere('anatomical-eye-l',(.0423,.036,1.5842),(.020,.020,.020),sclera)
-sphere('R14 recessed brown iris',(.0423,.0161,1.5842),(.0086,.0014,.0086),iris)
-sphere('R14 recessed pupil',(.0423,.0148,1.5842),(.0041,.0007,.0041),pupil)
+sclera=material('R14 shaded orbital sclera',(.032,.026,.018),.40);iris=material('R14 dark brown recessed iris',(.033,.014,.006),.23);pupil=material('R14 recessed pupil',(.0015,.0012,.001),.16)
+sphere('anatomical-eye-l',(.0423,.045,1.5842),(.020,.020,.020),sclera)
+sphere('R14 recessed brown iris',(.0423,.0251,1.5842),(.0102,.0014,.0102),iris)
+sphere('R14 recessed pupil',(.0423,.0238,1.5842),(.0041,.0007,.0041),pupil)
 # Reduce the hidden overlapping neck stump gradually; no deletion of head faces.
 head=bpy.data.objects['anatomical-head'];chest=bpy.data.objects['R9_continuous_shoulders_neck'];neck_adjusted=0
 for vert in head.data.vertices:
@@ -76,7 +76,11 @@ for m in bpy.data.materials:
   bs=m.node_tree.nodes.get('Principled BSDF')
   for l in list(m.node_tree.links):
    if l.to_node==bs and l.to_socket.name=='Base Color':m.node_tree.links.remove(l)
-  bs.inputs['Base Color'].default_value=(.44,.305,.185,1);bs.inputs['Specular IOR Level'].default_value=.27;bs.inputs['Subsurface Weight'].default_value=.045;skin_materials.append(m.name)
+  bs.inputs['Base Color'].default_value=(.296,.166,.073,1);bs.inputs['Specular IOR Level'].default_value=.27;bs.inputs['Subsurface Weight'].default_value=.045;skin_materials.append(m.name)
+for m in bpy.data.materials:
+ if m.name.startswith('Mouth interior') and m.use_nodes:m.node_tree.nodes.get('Principled BSDF').inputs['Base Color'].default_value=(.008,.002,.001,1)
+bpy.data.objects['anatomical-eye-l']['anatomical_eye']=True
+bpy.data.objects['anatomical-eye-l']['anatomical_side']='left'
 # Drier dark garment response, avoiding glossy latex-like broad highlights.
 for m in bpy.data.materials:
  if m.name=='R13 black fine twill':m.node_tree.nodes.get('Principled BSDF').inputs['Specular IOR Level'].default_value=.19
@@ -91,5 +95,5 @@ bpy.ops.export_scene.gltf(filepath=str(OUT/'FORGE-model-r14.glb'),export_format=
 report={'textures':[],'uv_order_changes':[],'baked_base_colors':[],'uv_binding_limitations':[]}
 with _portable_uvs(bpy,report),_portable_images(bpy,OUT,report):
  bpy.ops.object.select_all(action='SELECT');bpy.ops.export_scene.fbx(filepath=str(OUT/'FORGE-model-r14.fbx'),use_selection=True,object_types={'MESH'},apply_unit_scale=True,apply_scale_options='FBX_SCALE_UNITS',axis_forward='-Z',axis_up='Y',add_leaf_bones=False,bake_anim=False,path_mode='COPY',embed_textures=True)
-report.update(triangles=tri,teeth_rebuilt=changed,neck_shift_source_units=neck_shift,neck_vertices_tapered=neck_adjusted,eye_added='recessed skeletal socket eye explicitly requested by user',living_eye_recess=.0012,skin_materials=skin_materials,wave_guides_retained=True,likeness_accepted=False,print_ready=False)
+report.update(triangles=tri,teeth_rebuilt=changed,crown_outward_normals_and_positive_volume_verified=True,neck_shift_source_units=neck_shift,neck_vertices_tapered=neck_adjusted,eye_added='recessed skeletal socket eye explicitly requested by user',living_eye_recess=.0012,recessed_eye_center_source=[.0423,.045,1.5842],skin_linear_rgb=[.296,.166,.073],skin_materials=skin_materials,wave_guides_retained=True,likeness_accepted=False,print_ready=False)
 (OUT/'export-report.json').write_text(json.dumps(report,indent=2));print('R14_SAVED',tri,len(changed),neck_adjusted,flush=True)

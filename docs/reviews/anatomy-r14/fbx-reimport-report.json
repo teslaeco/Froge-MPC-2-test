@@ -1,0 +1,25 @@
+{
+  "fbx_reimport_verified": true,
+  "triangles": 1990254,
+  "mesh_objects": 420,
+  "bounds": [
+    [
+      -0.35902881622314453,
+      -0.1666141152381897,
+      0.5252182483673096
+    ],
+    [
+      0.35902881622314453,
+      0.28600096702575684,
+      1.7136309146881104
+    ]
+  ],
+  "missing_textures": [],
+  "meshes_with_uv": 420,
+  "renders": "actual reimported FBX",
+  "wave_guides_retained": true,
+  "likeness_accepted": false,
+  "print_ready": false,
+  "anatomical_eyes": 2,
+  "teeth_rebuilt": 18
+}

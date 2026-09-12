@@ -342,9 +342,9 @@
       "pixels_resampled": false
     },
     {
-      "path": "textures/31-R14-enamel-cervical-shade-34ec8221e2f3.png",
-      "bytes": 4942,
-      "sha256": "34ec8221e2f38e1bd644d4a8d53d91c2d42b4b49e65bcf6e6e6250997956763d",
+      "path": "textures/31-R14-enamel-cervical-shade-ec0ccd40eafb.png",
+      "bytes": 4975,
+      "sha256": "ec0ccd40eafba74fad26f11b0810a3d4bb0beb8aa4f2bfc3cbeb79fb13e52478",
       "image": "R14 enamel cervical shade",
       "size": [
         512,
@@ -544,6 +544,16 @@
   "neck_vertices_tapered": 35949,
   "eye_added": "recessed skeletal socket eye explicitly requested by user",
   "living_eye_recess": 0.0012,
+  "recessed_eye_center_source": [
+    0.0423,
+    0.045,
+    1.5842
+  ],
+  "skin_linear_rgb": [
+    0.296,
+    0.166,
+    0.073
+  ],
   "skin_materials": [
     "R11 warm skin",
     "R11 warm skin.001",
@@ -551,5 +561,6 @@
   ],
   "wave_guides_retained": true,
   "likeness_accepted": false,
-  "print_ready": false
+  "print_ready": false,
+  "crown_outward_normals_and_positive_volume_verified": true
 }
