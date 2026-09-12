@@ -1,0 +1,6 @@
+{
+  "samples": 4331,
+  "min_frontal_warp_jacobian": 0.35975453586209316,
+  "folded_samples": 0,
+  "limitation": "2D sampled reference-region warp only; not whole-model self-intersection or watertightness proof"
+}

@@ -1,6 +1,19 @@
-# 2026-09-12 — face reconstruction and FBX stage IN PROGRESS; preserve accepted r6 hair
+# 2026-09-12 — real 1,000,000-triangle FBX prepared and saved for review; r6 hair explicitly accepted by user and preserved
 
-User explicitly likes r6 hair and requests faithful facial geometry, roughly one million triangles, FBX and actual previews. The hair geometry hash is preserved exactly. Started real 37-landmark frontal correspondence warp across head/eye/lid/bone parts; source-photo texture is registered only on observed facial surfaces, with photographed lighting retained. Mouth is an actual cut opening with new curved dental arches. R7 preview exposed an eye UV-layer mismatch and duplicate brow overlay; r8 corrects those. This checkpoint does not claim acceptance. Dense final mesh, FBX export/reimport and previews remain in progress. No Oracle/Site changes or paid API/GPU changes.
+LATEST USER FEEDBACK supersedes previous negative hair assessment: Sebastian explicitly likes r6 hair. Preserve it. Request: precise facial features/geometry, about one million triangles and FBX. Do not confuse structural tests with perfect likeness.
+
+Completed direct model work: 37 manually observed frontal landmark correspondences; smooth thin-plate deformation of head, living eye/lids and skull components; original source-image pixels registered only to observed front-facing facial surfaces. Photo lighting remains in the texture; hidden depth/back are inferred. Actual mouth opening cut in the dense head, new differentiated rounded upper/lower dental arches. R7 eye UV mismatch fixed in r8 by writing the exported primary UV; duplicate old brow overlay removed. R6 hair positions/identity hash preserved exactly: 2f6df94e292337d1bf66bcf1f90fe96d42ed2d2bc3451e4aeb61a04b9a808291.
+
+Final dense master and export: exactly 1,000,000 triangles (681843 head + 318157 other evaluated geometry). Files FORGE-model-1M.blend, FORGE-model-1M.glb, FORGE-model-1M.fbx. Native Blender 4.3 FBX reimport confirms exactly 1,000,000 triangles, 151 mesh objects, 151 with UVs, no missing images. A separate test copied only the FBX to a fresh /tmp directory and confirmed all 11 used image datablocks were extracted from its embedded data. Colour/material differences from unsupported FBX shader features remain possible in other software.
+
+Front-face colour, front-face clay, front/left/back images rendered from actual reimported FBX at 640x800, Cycles CPU32 samples. Hair preserved in master, source image is not pasted onto the rendered preview. Sampled frontal deformation check: 4331 points, minimum Jacobian .35975, no sampled folds; not a whole-model self-intersection/manifold/print-ready test. SELF-ASSESSMENT: closer visible face appearance, still needs work on mouth/jaw connection, tooth realism, sculpted skeletal boundaries and unseen anatomy. NOT marked ideal, likeness accepted or print-ready.
+
+Saved and verified deliverables: FORGE-twarz-1M.png (colour and clay), FORGE-trzy-widoki-1M.png, three model formats, five individual FBX renders. Code and machine-readable export/portability/landmark/hash reports in docs/reviews/face-fbx-stage. No paid API call, provider switch, GPU quota change, Oracle installation or Site deployment. These are direct model repairs, not proof of autonomous generator performance.
+
+
+Artifact persistence: all ten model/preview files saved successfully with local metadata applied. Earlier preparation errors were resolved after rebuilding a zero-byte three-view PNG; all PNGs then passed decode verification. No model binaries committed to source repository.
+
+---
 
 # 2026-09-12 — generator camera fix verified; r6 real model preview delivered, quality NOT accepted
 

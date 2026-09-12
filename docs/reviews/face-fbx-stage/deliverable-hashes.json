@@ -1,0 +1,14 @@
+{
+  "FORGE-model-1M.fbx": {
+    "bytes": 37867564,
+    "sha256": "020cd65991b8cbf7274c67a1fec9b2440affeff0156254f410715179a44f91c7"
+  },
+  "FORGE-model-1M.blend": {
+    "bytes": 79456292,
+    "sha256": "ce25edc3530695edb71f7cbee06932169479129dbd637664615a48bb926c208e"
+  },
+  "FORGE-model-1M.glb": {
+    "bytes": 35187196,
+    "sha256": "e100dd79aed1f925fdb6504d58f84dfdc17fb927c4701a98a9e3e4e565dbac8f"
+  }
+}

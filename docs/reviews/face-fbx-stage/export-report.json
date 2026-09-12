@@ -1,0 +1,121 @@
+{
+  "uv_order_changes": [
+    {
+      "object": "anatomical-eye-r",
+      "primary": "ExportColourUV",
+      "per_face_colour_uvs_consolidated": true,
+      "other_uv_channels_preserved": true,
+      "all_shader_uv_bindings_verified": false
+    }
+  ],
+  "baked_base_colors": [],
+  "textures": [
+    {
+      "path": "textures/00-Black-UV-5704c7fee9b9.png",
+      "bytes": 103264,
+      "sha256": "5704c7fee9b96ee26df7b71d7d9111406a5737f68b562487bf747379274b0452",
+      "image": "Black-UV",
+      "size": [
+        512,
+        512
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/01-Bone-UV-5e0d78e6ab97.png",
+      "bytes": 328906,
+      "sha256": "5e0d78e6ab976838c2ef05a40acdc1f9eb8bf49d3c25c60e4ca3c3e17e7f1a25",
+      "image": "Bone-UV",
+      "size": [
+        512,
+        512
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/02-Chestnut_fine_strands_1024-dfd48e787a94.png",
+      "bytes": 1020246,
+      "sha256": "dfd48e787a94da3b0134552a879bb4bd5171f7006a3e8a6f864b702674fbf107",
+      "image": "Chestnut_fine_strands_1024",
+      "size": [
+        1024,
+        1024
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/03-Fine_strand_normal_1024-663d4317eb38.png",
+      "bytes": 304916,
+      "sha256": "663d4317eb384f4df5aebaa27f2bbc20bb554d0445c765be35c1e2f6e0a073bd",
+      "image": "Fine_strand_normal_1024",
+      "size": [
+        1024,
+        1024
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/04-Ivory-UV-30b9da40a8b3.png",
+      "bytes": 253842,
+      "sha256": "30b9da40a8b3fd68d2256ef0c42bae0b5dcc9cbbe746e191494d849bc67a5265",
+      "image": "Ivory-UV",
+      "size": [
+        512,
+        512
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/05-Living_skin_clean-UV-01d02bb7af99.png",
+      "bytes": 265652,
+      "sha256": "01d02bb7af996b3f1eabc6c70a28bca0413a921a164c119a414f88a67248d888",
+      "image": "Living_skin_clean-UV",
+      "size": [
+        512,
+        512
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/06-Observed_original_face-ab38445e406a.png",
+      "bytes": 2812287,
+      "sha256": "ab38445e406ac6e97fa41fe818e2e8c8eb80ba301aa1d0986ecd44330691bd2c",
+      "image": "Observed_original_face",
+      "size": [
+        899,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/07-anatomical-dedicated-iris-d08a5ec559c1.png",
+      "bytes": 45594,
+      "sha256": "d08a5ec559c1bc7ac6d5155bf2f9368e9b01eb38146ebd07f0b715f2b5f3b3b1",
+      "image": "anatomical-dedicated-iris",
+      "size": [
+        512,
+        512
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/08-female-skin-png-ca1b04d2320e.png",
+      "bytes": 4689440,
+      "sha256": "ca1b04d2320e41d71256e7c595526e250ef25a8387bcb9cdc0072040fcacd1ec",
+      "image": "female-skin.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    }
+  ],
+  "uv_binding_limitations": [],
+  "triangles": 1000000,
+  "head_triangles": 681843,
+  "other_triangles": 318157,
+  "hair_preserved": true,
+  "hair_sha256": "2f6df94e292337d1bf66bcf1f90fe96d42ed2d2bc3451e4aeb61a04b9a808291",
+  "reference_likeness_accepted": false,
+  "fbx_reimport_verified": false
+}

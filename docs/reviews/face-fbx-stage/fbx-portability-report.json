@@ -1,0 +1,104 @@
+{
+  "fbx_alone_portable": true,
+  "images": [
+    {
+      "name": "03-Fine_strand_normal_1024-663d4317eb38.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "00-Black-UV-5704c7fee9b9.png",
+      "size": [
+        512,
+        512
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "04-Ivory-UV-30b9da40a8b3.png",
+      "size": [
+        512,
+        512
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "06-Observed_original_face-ab38445e406a.png",
+      "size": [
+        899,
+        2048
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "06-Observed_original_face-ab38445e406a.png.002",
+      "size": [
+        899,
+        2048
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "06-Observed_original_face-ab38445e406a.png.001",
+      "size": [
+        899,
+        2048
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "08-female-skin-png-ca1b04d2320e.png",
+      "size": [
+        2048,
+        2048
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "07-anatomical-dedicated-iris-d08a5ec559c1.png",
+      "size": [
+        512,
+        512
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "01-Bone-UV-5e0d78e6ab97.png",
+      "size": [
+        512,
+        512
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "02-Chestnut_fine_strands_1024-dfd48e787a94.png",
+      "size": [
+        1024,
+        1024
+      ],
+      "embedded_extracted": true,
+      "available": true
+    },
+    {
+      "name": "05-Living_skin_clean-UV-01d02bb7af99.png",
+      "size": [
+        512,
+        512
+      ],
+      "embedded_extracted": true,
+      "available": true
+    }
+  ]
+}
