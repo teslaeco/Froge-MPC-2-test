@@ -1,0 +1,62 @@
+{
+  "revision": "r6",
+  "accepted": false,
+  "geometry_triangles": 350301,
+  "embedded_images": 8,
+  "mesh_objects": 151,
+  "renderer": "Blender 4.3.0, Cycles CPU, 640x800, 64 samples",
+  "source_kind": "reimported actual exported GLB",
+  "automated_tests": "52 Python tests + native camera and closed/UV hair regression passed",
+  "camera_incident": {
+    "eye_origins": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ]
+    ],
+    "eye_geometry_bounds": [
+      [
+        [
+          -0.06113717332482338,
+          -0.015200013294816017,
+          1.5606213808059692
+        ],
+        [
+          -0.022931847721338272,
+          0.015200000256299973,
+          1.597778558731079
+        ]
+      ]
+    ],
+    "correct_face_target": [
+      0.0,
+      0.06132059544324875,
+      1.5462641716003418
+    ],
+    "face_scale": 0.4484900951385498,
+    "source": "actual exported r4 GLB",
+    "likeness_accepted": false
+  },
+  "generator_source_commit": "8b7a6ab3b8083504a4545137535a474382498f80",
+  "oracle_deployed": false,
+  "gpu_limits_changed": false,
+  "paid_api_calls": 0,
+  "assets": {
+    "FORGE-model-poprawka-r6.blend": {
+      "bytes": 26587260,
+      "sha256": "dbfaba4e571d7d07aad4bebc8385e9d2083a34159fb202dd7323329789d7e0e8"
+    },
+    "FORGE-model-poprawka-r6.glb": {
+      "bytes": 13786600,
+      "sha256": "9e5ea7b838eba7e735a920568921460f8e3140acd273683061092e22688967f1"
+    }
+  },
+  "remaining": [
+    "reference face likeness and accurate smile",
+    "hair remains too rope-like",
+    "skull dental structure",
+    "garment construction and folds",
+    "unseen back inferred"
+  ]
+}

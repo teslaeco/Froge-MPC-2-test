@@ -1,0 +1,26 @@
+{
+  "changed_face_objects": [
+    "anatomical-head",
+    "anatomical-eye-r",
+    "eyebrow-fibres",
+    "anatomical-lash-fibres",
+    "anatomical-upper-eyeliner",
+    "Living_smile_tooth_0",
+    "Living_smile_tooth_1",
+    "Living_smile_tooth_2",
+    "Living_smile_tooth_3"
+  ],
+  "likeness_accepted": false,
+  "source": "r5 .blend",
+  "changes": [
+    "living eye/lid geometry moved together",
+    "human mouth corner lifted; lips separated",
+    "portable tangent strand texture"
+  ],
+  "remaining": [
+    "likeness",
+    "hair realism",
+    "dental anatomy",
+    "garment construction"
+  ]
+}
