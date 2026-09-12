@@ -87,13 +87,13 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(backups[0].read_text(), 'version = 1\n')
         self.assertEqual((backups[0].parent / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')
         self.assertEqual([call.args[0][-1] for call in service.call_args_list if call.args[0][0]=='systemctl'], ['froge-worker.service'] * 2)
-        self.assertTrue(any(call.args[0][-1]==str(self.target/'codex_smoke.py') for call in service.call_args_list))
+        self.assertTrue(any(call.args[0][-2:]==[str(self.target/'codex_smoke.py'),'--build'] for call in service.call_args_list))
 
     def test_failed_mcp_gate_restores_previous_verification_and_code(self):
         receipt=self.target/'tools/codex/verified.json';receipt.parent.mkdir(parents=True)
         receipt.write_text('{"old":"verified"}')
         def fail(args,**kwargs):
-            if args[-1]==str(self.target/'codex_smoke.py'):
+            if args[-2:]==[str(self.target/'codex_smoke.py'),'--build']:
                 receipt.write_text('{"new":"invalid"}')
                 raise RuntimeError('MCP gate failed')
         with patch.object(apply_update.subprocess,'run',side_effect=fail):

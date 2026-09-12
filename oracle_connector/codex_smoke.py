@@ -63,19 +63,85 @@ class Fixture:
         return io.BytesIO(''.join('data: '+json.dumps(e)+'\n\n' for e in events).encode())
 
 
-def main(binary=None):
+class BuildFixture:
+    """Real CLI + MCP + Blender build/review/export, scripted model decisions."""
+    def __init__(self, token): self.token=token;self.seen=[]
+
+    def open(self, request, timeout):
+        payload=json.loads(request.data);step=len(self.seen);self.seen.append(payload)
+        if step:
+            outputs=[v.get('output') for v in payload.get('input',[]) if isinstance(v,dict)
+                     and v.get('type')=='custom_tool_call_output' and v.get('call_id')=='workflow_'+str(step-1)]
+            checks=[lambda v:v.get('forge_contract')==self.token and v.get('validated_error') is True and v.get('complete_schema') is True,
+                    lambda v:v.get('has_model') is True and v.get('revision')==1,
+                    lambda v:v.get('forge_views')==self.token and v.get('images')==3,
+                    lambda v:v.get('assessment_completed') is True and v.get('accepted') is True]
+            if not any(has_value(v,checks[step-1]) for v in outputs):
+                raise ValueError('REAL_WORKFLOW_MISSING: step '+str(step))
+        cube={'version':1,'name':'MCP export fixture','materials':[{'name':'blue','rgb':[.02,.2,.7],
+              'pattern':'metal','roughness':.35,'metallic':.2,'emission':0}],
+              'parts':[{'kind':'box','name':'body','material':'blue','center':[0,0,1],
+                        'size':[1,1,2],'rotation':[0,0,0]}]}
+        programs=[
+            "let bad;try{bad=await tools.mcp__blender__build_model({scene_json:'{}'});}catch(e){bad={isError:true};} "
+            "const r=await tools.mcp__blender__get_modeling_contract({}); "
+            "const c=JSON.parse(r.content.find(x=>x.type==='text').text); "
+            "text({forge_contract:"+json.dumps(self.token)+",validated_error:bad.isError===true,"
+            "complete_schema:!!c.scene_schema.properties.parts && !!c.coordinate_and_geometry_guide && Array.isArray(c.references)});",
+            "const r=await tools.mcp__blender__build_model({scene_json:"+json.dumps(json.dumps(cube))+",expected_revision:0});text(r);",
+            "let n=0; for(const view of ['front','side','back']) { const r=await tools.mcp__blender__inspect_render({view,expected_revision:1}); "
+            "for(const b of r.content||[]) {if(b.type==='image'){image(b);n++;} else if(b.type==='text')text(b.text);}} "
+            "text({forge_views:"+json.dumps(self.token)+",images:n});",
+            "text(await tools.mcp__blender__finish_model({expected_revision:1,accepted:true,issues:[],summary:'Offline export fixture; no AI likeness evaluation.'}));"
+        ]
+        if step < len(programs):
+            namespace=next(ns for ns,t in codex_runner.request_tools(payload) if t.get('name')=='exec')
+            # exec timeout covers actual CPU Blender work, not a fake callback.
+            program='// @exec: {"yield_time_ms": 120000, "max_output_tokens": 12000}\n'+programs[step]
+            item={'id':'ctc_workflow_'+str(step),'type':'custom_tool_call','status':'completed',
+                  'call_id':'workflow_'+str(step),'name':'exec','input':program}
+            if namespace:item['namespace']=namespace
+        elif step==4:
+            item={'id':'msg_done','type':'message','status':'completed','role':'assistant',
+                  'content':[{'type':'output_text','text':'Offline Blender workflow complete.','annotations':[]}]}
+        else:raise ValueError('Unexpected extra request in offline workflow')
+        response={'id':'resp_workflow_'+str(step),'object':'response','created_at':1789170000,
+                  'status':'completed','model':codex_runner.MODEL,'output':[item],
+                  'usage':{'input_tokens':100,'output_tokens':20,'total_tokens':120}}
+        events=[{'type':'response.created','response':{**response,'status':'in_progress','output':[]}},
+                {'type':'response.output_item.done','output_index':0,'item':item},
+                {'type':'response.completed','response':response}]
+        return io.BytesIO(''.join('data: '+json.dumps(e)+'\n\n' for e in events).encode())
+
+
+def main(binary=None, build=False, test_blender=None):
     folder = codex_runner.ROOT/'state/jobs'/str(uuid.uuid4()); folder.mkdir(parents=True)
-    fixture = Fixture(uuid.uuid4().hex)
+    fixture = BuildFixture(uuid.uuid4().hex) if build else Fixture(uuid.uuid4().hex)
     passed = False
     try:
-        with patch('codex_runner.urllib.request.build_opener', return_value=fixture), patch.object(codex_runner,'MAX_SECONDS',50):
+        original_command=codex_runner.command
+        def fixture_command(*args):
+            command=original_command(*args)
+            if test_blender:
+                for i,value in enumerate(command):
+                    if value.startswith('mcp_servers.blender.args='):
+                        command[i]='mcp_servers.blender.args='+json.dumps([str(Path(__file__).with_name('test_mcp_blender_bridge.py')),str(folder),str(Path(test_blender).resolve())])
+            return command
+        with patch('codex_runner.urllib.request.build_opener', return_value=fixture), patch.object(codex_runner,'MAX_SECONDS',220 if build else 50), patch.object(codex_runner,'command',fixture_command):
             try:
                 codex_runner.run(folder,'Offline connection test','Read get_current_model; do not build.', 'offline-unused-key', threading.Event(), print, binary=binary or codex_runner.ROOT/'tools/codex/codex')
             except RuntimeError as error:
                 print('Kontrola braku modelu:', str(error), flush=True)
-        if len(fixture.seen) != 2 or not result_verified(fixture.seen[-1], fixture.token):
+        if build:
+            if len(fixture.seen)!=5 or not (folder/'agent-outcome.json').is_file():
+                raise RuntimeError('Codex nie ukonczyl rzeczywistej budowy, renderow i eksportow przez MCP.')
+            report=json.loads((folder/'result.json').read_text())
+            if report.get('triangles',0)<=0 or not (folder/'model.fbx').is_file():
+                raise RuntimeError('Brak rzeczywistego modelu/FBX z testu.')
+            print('CODEX_MCP_BLENDER_BUILD_OK; real GLB, texture, 3 renders and FBX; fixture model responses; no paid API',flush=True)
+        elif len(fixture.seen) != 2 or not result_verified(fixture.seen[-1], fixture.token):
             raise RuntimeError('Nie przeszedl test Codex -> Code Mode -> Blender MCP -> odpowiedz. Platne API nie bylo wywolywane.')
-        if (folder/'model.glb').exists(): raise RuntimeError('Test polaczenia nie powinien tworzyc modelu.')
+        if not build and (folder/'model.glb').exists(): raise RuntimeError('Test polaczenia nie powinien tworzyc modelu.')
         codex_runner.write(codex_runner.ROOT/'tools/codex/verified.json', {'sources':{name:hashlib.sha256((codex_runner.ROOT/name).read_bytes()).hexdigest() for name in ('codex_runner.py','blender_mcp.py')}, 'cli_mcp_roundtrip':True, 'code_mode_roundtrip':True})
         passed = True
         print('CODEX_MCP_REAL_CLI_ROUNDTRIP_OK; 6 narzedzi, rzeczywisty wynik MCP; bez platnego API', flush=True)
@@ -83,7 +149,7 @@ def main(binary=None):
         # Keep only safe execution metadata after the updater restores old code.
         destination = codex_runner.ROOT/'state/diagnostics'/('codex-'+folder.name)
         destination.mkdir(parents=True, exist_ok=True, mode=0o700)
-        for name in ('codex-events.jsonl','agent-usage.json'):
+        for name in ('codex-events.jsonl','agent-usage.json','agent-tools.json'):
             if (folder/name).is_file(): shutil.copy2(folder/name,destination/name)
         print('Diagnostyka:',destination,flush=True)
         if (folder/'codex-events.jsonl').is_file(): print((folder/'codex-events.jsonl').read_text()[-6000:],flush=True)
@@ -94,4 +160,7 @@ def main(binary=None):
     return passed
 
 
-if __name__ == '__main__': main()
+if __name__ == '__main__':
+    import argparse
+    parser=argparse.ArgumentParser();parser.add_argument('--build',action='store_true');parser.add_argument('--test-blender')
+    args=parser.parse_args();main(build=args.build,test_blender=args.test_blender)

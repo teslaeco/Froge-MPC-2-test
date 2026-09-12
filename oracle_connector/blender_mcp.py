@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import re
 import sys
 import threading
 import time
@@ -41,8 +42,15 @@ TOOLS = [
     {'name':'inspect_render','description':'Return a real image rendered from the CURRENT exported GLB. Inspect front, side, back and face for a portrait before finalizing.',
      'inputSchema':schema({'view':{'type':'string','enum':list(VIEWS)},'expected_revision':{'type':'integer','minimum':1}})},
     {'name':'finish_model','description':'Record visual verdict for the inspected current revision and prepare downloadable formats. Report unresolved faults honestly; accepted=false preserves a draft. Does not publish to the shop.',
-     'inputSchema':schema({'expected_revision':{'type':'integer','minimum':1},'accepted':{'type':'boolean'},'issues':{'type':'array','items':{'type':'string','maxLength':400},'maxItems':12},'summary':{'type':'string','maxLength':1200}})},
+     'inputSchema':schema({'expected_revision':{'type':'integer','minimum':1},'accepted':{'type':'boolean'},'issues':{'type':'array','items':{'type':'string','maxLength':400},'minItems':0,'maxItems':12},'summary':{'type':'string','maxLength':1200}})},
 ]
+
+
+def tool_error(error):
+    value = str(error)
+    value = re.sub(r'(?i)Bearer\s+\S+|\bsk-[A-Za-z0-9_-]+', '[redacted]', value)
+    value = re.sub(r'data:image/[^\s]+', '[image omitted]', value)
+    return value[-1800:]
 
 
 class JobTools:
@@ -53,6 +61,18 @@ class JobTools:
         self.revision = 0; self.attempts = 0; self.current = None; self.seen = set()
         self.build_callback = build; self.finalize_callback = finalize
         self.started = time.monotonic(); self.blender_seconds = 0.; self.finished = False
+        self.calls = []; self.tool_failures = 0
+
+    def record(self, name, status, error=None):
+        entry = {'tool':name,'status':status,'revision':self.revision,
+                 'elapsed_seconds':round(time.monotonic()-self.started,2)}
+        if error: entry['error'] = tool_error(error)
+        if status == 'failed': self.tool_failures += 1
+        self.calls.append(entry)
+        # No prompt, tool arguments, generated code, images or reasoning.
+        write(self.folder/'agent-tools.json', {'calls':self.calls[-40:],
+              'total_calls':sum(c['status'] != 'started' for c in self.calls),'failures':self.tool_failures,
+              'build_attempts':self.attempts,'revision':self.revision})
 
     def check(self, revision=None):
         if (self.folder/'agent-cancelled').exists(): raise InterruptedError('Zlecenie anulowane.')
@@ -172,30 +192,36 @@ def retain_candidate(folder,candidate):
 def serve(job, incoming=sys.stdin, outgoing=sys.stdout):
     for raw in incoming:
         if len(raw)>600000:break
+        rid = None
         try:
             request=json.loads(raw);method=request.get('method');rid=request.get('id')
             if rid is None:continue
             if method=='initialize':
-                result={'protocolVersion':'2025-03-26','capabilities':{'tools':{}},'serverInfo':{'name':'forge-blender','version':'27'}}
+                result={'protocolVersion':'2025-03-26','capabilities':{'tools':{}},'serverInfo':{'name':'forge-blender','version':'28'}}
             elif method=='ping':result={}
             elif method=='tools/list':result={'tools':TOOLS}
             elif method=='tools/call':
                 params=request.get('params',{});name=params.get('name');arguments=params.get('arguments',{})
-                tool=next((t for t in TOOLS if t['name']==name),None)
-                if tool is None:raise ValueError('Nieznane narzedzie MCP.')
-                from runtime.scene_contract import check
-                check(arguments,tool['inputSchema'])
                 try:
+                    tool=next((t for t in TOOLS if t['name']==name),None)
+                    if tool is None:raise ValueError('Nieznane narzedzie MCP.')
+                    from runtime.scene_contract import check
+                    check(arguments,tool['inputSchema'])
+                    job.record(name,'started')
                     value=job.call(name,arguments)
                     content=value if isinstance(value,list) else [{'type':'text','text':json.dumps(value,ensure_ascii=False)}]
                     result={'content':content,'isError':False}
-                except (ValueError,RuntimeError,OSError,TimeoutError) as error:
-                    result={'content':[{'type':'text','text':str(error)[-1800:]}],'isError':True}
+                    job.record(name,'completed')
+                except (ValueError,RuntimeError,OSError,TimeoutError,KeyError,TypeError) as error:
+                    job.record(name if isinstance(name,str) else 'invalid_tool','failed',error)
+                    # An execution/argument error belongs to this tool call.
+                    # Keep its request ID so Codex can read and repair it.
+                    result={'content':[{'type':'text','text':tool_error(error)}],'isError':True}
             else:
                 outgoing.write(json.dumps({'jsonrpc':'2.0','id':rid,'error':{'code':-32601,'message':'Method not found'}})+'\n');outgoing.flush();continue
             outgoing.write(json.dumps({'jsonrpc':'2.0','id':rid,'result':result})+'\n');outgoing.flush()
         except (ValueError,TypeError,KeyError):
-            outgoing.write(json.dumps({'jsonrpc':'2.0','id':None,'error':{'code':-32600,'message':'Invalid request'}})+'\n');outgoing.flush()
+            outgoing.write(json.dumps({'jsonrpc':'2.0','id':rid,'error':{'code':-32600,'message':'Invalid request'}})+'\n');outgoing.flush()
 
 
 if __name__=='__main__':

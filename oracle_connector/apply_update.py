@@ -23,7 +23,7 @@ FILES += ('generation_budget.py','quality_report.py','v23_fixture.py',
           'runtime/freeform_geometry.py','runtime/projection_math.py','runtime/photo_projection.py')
 FILES += ('runtime/model_checkpoint.py','scene_repair.py',)
 FILES += ('blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py','runtime/finalize.py',)
-EXPECTED_VERSION = 27
+EXPECTED_VERSION = 28
 EXPECTED_RENDERER_REVISION = 3
 
 
@@ -76,7 +76,7 @@ def update(source, target, verify=None):
         for name, data in incoming.items():
             replace(target / name, data)
         print('Sprawdzam Codex i Blender MCP przed przyjeciem aktualizacji. Bez platnego API.',flush=True)
-        subprocess.run([sys.executable,str(target/'codex_smoke.py')],check=True,timeout=65)
+        subprocess.run([sys.executable,str(target/'codex_smoke.py'),'--build'],check=True,timeout=240)
         if verify is not None:
             verify(target)
         subprocess.run(command + ['start', 'froge-worker.service'], check=True, timeout=30)
@@ -89,7 +89,7 @@ def update(source, target, verify=None):
                     health = json.loads(response.read(10000))
                     if health.get('connectorVersion') == EXPECTED_VERSION and health.get('executionEngine') == 'codex-mcp' and health.get('freeformGeometryRevision') == 1 and health.get('photoProjectionRevision') == 1 and health.get('instructionsRevision') == 1 and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
                         print('FROGE_UPDATE_OK')
-                        print('Froge v27: rzeczywisty Codex + Blender MCP, wykonywanie instrukcji i kontrola renderow. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Froge v28: sprawdzono Codex, argumenty MCP, rzeczywista budowe i eksport. Rozroznione limity zlecenia i OpenAI. Modele i klucz zachowane.')
                         return
             except (OSError, ValueError):
                 pass
