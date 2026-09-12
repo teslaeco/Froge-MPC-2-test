@@ -24,7 +24,7 @@ from runtime.model_checkpoint import NAME as MODEL_CHECKPOINT, recover_ready
 import openai_provider
 import photo_input
 from generation_budget import initial_ai_remaining, total_ai_limit, initial_blender_remaining
-from quality_report import quality_report
+from quality_report import quality_report, model_status
 from scene_repair import photo_schema, REPAIR_SCHEMA, REPAIR_INSTRUCTIONS, repairable_scene, apply_replacements
 from ai_stream import OpenAIServiceError
 from runtime_check import IMAGE, sandbox_options, verify_runtime, job_memory_gib
@@ -36,7 +36,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 29
+CONNECTOR_VERSION = 30
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
@@ -748,7 +748,7 @@ class Handler(BaseHTTPRequestHandler):
                 return
             if action:
                 return self.send_json({'error': 'Nie znaleziono funkcji.'}, 404)
-            return self.send_json(dict(row))
+            return self.send_json({**dict(row),**model_status(JOBS/job_id,row['state'])})
         except OpenAIServiceError as error:
             self.send_json({'error': str(error)}, 422)
         except (ValueError, TypeError, KeyError):

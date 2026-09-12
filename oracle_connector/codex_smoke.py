@@ -94,7 +94,8 @@ class BuildFixture:
             "let n=0; for(const view of ['front','side','back']) { const r=await tools.mcp__blender__inspect_render({view,expected_revision:1}); "
             "for(const b of r.content||[]) {if(b.type==='image'){image(b);n++;} else if(b.type==='text')text(b.text);}} "
             "text({forge_views:"+json.dumps(self.token)+",images:n});",
-            "text(await tools.mcp__blender__finish_model({expected_revision:1,accepted:true,issues:[],summary:'Offline export fixture; no AI likeness evaluation.'}));"
+            "text(await tools.mcp__blender__finish_model({expected_revision:1,accepted:true,issues:[],summary:'Offline export fixture; no AI likeness evaluation.'})); "
+            "text(await tools.mcp__blender__get_current_model({}));"
         ]
         if step < len(programs):
             namespace=next(ns for ns,t in codex_runner.request_tools(payload) if t.get('name')=='exec')
@@ -164,7 +165,7 @@ def main(binary=None, build=False, test_blender=None):
             except RuntimeError as error:
                 print('Kontrola braku modelu:', str(error), flush=True)
         if build:
-            if len(fixture.seen)!=5 or not (folder/'agent-outcome.json').is_file():
+            if len(fixture.seen)!=4 or codex_runner.completed_outcome(folder) is None:
                 raise RuntimeError('Codex nie ukonczyl rzeczywistej budowy, renderow i eksportow przez MCP.')
             report=json.loads((folder/'result.json').read_text())
             if report.get('triangles',0)<=0 or not (folder/'model.fbx').is_file():
@@ -172,7 +173,12 @@ def main(binary=None, build=False, test_blender=None):
             execution=json.loads((folder/'agent-execution.json').read_text())
             if not fixture.error_received or execution.get('failed_calls')!=1:
                 raise RuntimeError('Brak zapisanego rzeczywistego bledu Code Mode i jego naprawy.')
+            trace=json.loads((folder/'agent-tools.json').read_text())['calls']
+            finished=next((i for i,v in enumerate(trace) if v.get('tool')=='finish_model' and v.get('status')=='completed'),None)
+            if finished is None or not any(v.get('tool')=='get_current_model' and v.get('status')=='completed' for v in trace[finished+1:]):
+                raise RuntimeError('Nie przeszedl odczyt modelu po finalizacji.')
             print('CODEX_EXECUTION_ERROR_RECOVERY_OK; real ReferenceError, store/load, then Blender build',flush=True)
+            print('CODEX_FINISHED_READ_OK; actual saved outcome, read after finish, no extra model response',flush=True)
             print('CODEX_MCP_BLENDER_BUILD_OK; real GLB, texture, 3 renders and FBX; fixture model responses; no paid API',flush=True)
         elif len(fixture.seen) != 2 or not result_verified(fixture.seen[-1], fixture.token):
             raise RuntimeError('Nie przeszedl test Codex -> Code Mode -> Blender MCP -> odpowiedz. Platne API nie bylo wywolywane.')

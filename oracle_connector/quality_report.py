@@ -2,6 +2,16 @@
 import json
 
 
+def model_status(folder,state):
+    """Only a verified current execution can promote a model for auto-preview."""
+    if state != 'succeeded':return {'modelStatus':'none'}
+    from blender_mcp import completed_outcome
+    outcome=completed_outcome(folder)
+    if outcome and outcome.get('accepted') is True:
+        return {'modelStatus':'reviewed','modelSha256':outcome['model_sha256']}
+    return {'modelStatus':'draft'}
+
+
 def quality_report(folder,state):
     if folder.is_symlink():raise ValueError('Nieprawidlowy katalog zlecenia.')
     def read(name):
@@ -16,7 +26,8 @@ def quality_report(folder,state):
             for attempt in (1,2) if read('attempt-%d-error.json'%attempt)]
     model=folder/'model.glb'
     has_model=model.is_file() and not model.is_symlink() and model.stat().st_size>=20 and bool(result)
-    return {'revision':4,'state':state,'hasModel':has_model,'likenessVerified':False,
+    final=model_status(folder,state) if has_model else {'modelStatus':'none'}
+    return {'revision':5,'state':state,'hasModel':has_model,'likenessVerified':False,**final,
         'geometry':{k:result[k] for k in ('vertices','triangles','objects') if k in result},
         'textures':result.get('texture_quality',{}),'projection':result.get('photo_projection',{}),
         'faceFit':result.get('photo_face_fit',{}),'timing':read('timing.json'),
@@ -25,4 +36,4 @@ def quality_report(folder,state):
         'agent':read('agent-outcome.json'),'agentUsage':read('agent-usage.json'),
         'agentTools':read('agent-tools.json'),'agentExecution':read('agent-execution.json'),
         'executor':read('provider.json').get('executor','astra-scene'),
-        'automaticQualityAccepted':review.get('accepted') is True and review.get('assessment_completed') is True}
+        'automaticQualityAccepted':final['modelStatus']=='reviewed'}

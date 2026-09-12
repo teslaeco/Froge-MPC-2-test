@@ -1,0 +1,18 @@
+{
+  "blender": "4.3.0",
+  "initial_used_materials": 16,
+  "new_edit_materials": 8,
+  "ninth_edit_material_rejected": true,
+  "untracked_export_material_rejected": true,
+  "ellipsoid_positional_scale_and_radii_verified": true,
+  "production_edit_scope_and_traceback_verified": true,
+  "glb_and_fbx_reimport_preserve_edit_materials": true,
+  "edit_palette": {
+    "new_material_limit": 8,
+    "created": 8,
+    "used_materials": 8,
+    "used_images": 10
+  },
+  "triangles": 348,
+  "scope": "Runtime and exports only; not a new AI likeness result."
+}

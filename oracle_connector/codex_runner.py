@@ -18,7 +18,7 @@ import threading
 import time
 import urllib.error
 import urllib.request
-from blender_mcp import retain_candidate, write
+from blender_mcp import completed_outcome, current_candidate, retain_candidate, write
 from ai_stream import openai_error
 from agent_limits import MAX_REQUESTS, MAX_OUTPUT_TOKENS, MAX_SECONDS, MAX_BUILDS
 
@@ -97,9 +97,9 @@ class Gateway:
     def __init__(self,key,folder,cancelled):
         self.key=key;self.folder=folder;self.cancelled=cancelled
         self.token=secrets.token_urlsafe(32);self.requests=0;self.output=0;self.input=0
-        self.unknown_usage=False;self.lock=threading.Lock();self.active=False;self.error=None
+        self.unknown_usage=False;self.lock=threading.Lock();self.save_lock=threading.Lock();self.active=False;self.error=None
         self.error_code=None;self.error_source=None;self.upstream_status=None;self.retry_after=None
-        self.execution_calls=[];self.execution_ids=set()
+        self.execution_calls=[];self.execution_ids=set();self.completed=False
         outer=self
         class Handler(BaseHTTPRequestHandler):
             def log_message(self,*_):pass
@@ -122,6 +122,11 @@ class Gateway:
                     if not 1<=size<=32*1024**2:return self.reject(413,'Request too large')
                     payload=json.loads(self.rfile.read(size))
                     if not isinstance(payload,dict) or payload.get('model')!=MODEL:return self.reject(400,'Only the configured Astra model is available')
+                    # finish_model is the terminal operation. Do not buy another
+                    # Astra turn solely to announce already verified artifacts.
+                    if completed_outcome(outer.folder) is not None:
+                        outer.completed=True;outer.save()
+                        return self.reject(422,'Model i ocena zostaly zapisane. Zlecenie zakonczone.', 'FORGE_JOB_FINISHED')
                     entries=list(request_tools(payload))
                     if not any(t.get('name')=='exec' and t.get('type')=='custom' for _,t in entries):
                         outer.stop('CODEX_TOOLS_MISSING','CODEX_TOOLS_MISSING: Astra nie otrzymala narzedzia exec. Sprawdz instalacje trybu kodowego i Blender MCP; nie wyslano zapytania do OpenAI.')
@@ -230,11 +235,14 @@ class Gateway:
         self.server.daemon_threads=True
         self.thread=threading.Thread(target=self.server.serve_forever,daemon=True)
     def save(self):
-        write(self.folder/'agent-usage.json',{'model':MODEL,'requests':self.requests,'input_tokens':self.input,
-              'output_tokens':self.output,'output_token_limit':MAX_OUTPUT_TOKENS,'request_limit':MAX_REQUESTS,
-              'seconds_limit':MAX_SECONDS,'build_limit':MAX_BUILDS,
-              'unknown_usage':self.unknown_usage,'last_error':self.error,'error_code':self.error_code,
-              'error_source':self.error_source,'upstream_status':self.upstream_status,'retry_after':self.retry_after})
+        # The HTTP thread and completed-job supervisor may finish together.
+        # Serialize writes using their shared atomic temporary-file name.
+        with self.save_lock:
+            write(self.folder/'agent-usage.json',{'model':MODEL,'requests':self.requests,'input_tokens':self.input,
+                  'output_tokens':self.output,'output_token_limit':MAX_OUTPUT_TOKENS,'request_limit':MAX_REQUESTS,
+                  'seconds_limit':MAX_SECONDS,'build_limit':MAX_BUILDS,
+                  'unknown_usage':self.unknown_usage,'completed':self.completed,'last_error':self.error,'error_code':self.error_code,
+                  'error_source':self.error_source,'upstream_status':self.upstream_status,'retry_after':self.retry_after})
     def observe_execution(self,payload):
         for item in payload.get('input',[]) if isinstance(payload.get('input'),list) else []:
             if not isinstance(item,dict) or item.get('type') not in ('custom_tool_call_output','function_call_output'):continue
@@ -264,6 +272,8 @@ class Gateway:
               'Use // @exec: {"yield_time_ms":120000,"max_output_tokens":16000} before long build/render calls. '
               'Only wait when exec actually returns a running cell identifier. Await that same cell instead of starting a duplicate build. '
               'Return render image blocks using image(block); preserve original references. '
+              'A successful finish_model is terminal: artifacts and verdict are saved. Do not start another model turn, '
+              'repeat exports or continue editing after it; the supervisor delivers the saved result. '
               )%(revision,str(bool(revision)).lower(),max(0,MAX_REQUESTS-self.requests),revision)
         if not revision:
             text+='No model has been built. After reading the contract once, your next substantive action must be build_model with a complete scene, not further empty state reads or announcements. '
@@ -316,8 +326,9 @@ def command(binary,folder,port):
 
 def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
     folder=Path(folder);binary=binary or executable()
-    if binary is None:raise RuntimeError('Codex nie jest zainstalowany lub zweryfikowany. Uruchom instalator v29.')
-    write(folder/'agent-request.json',{'prompt':prompt,'instructions':instructions})
+    if binary is None:raise RuntimeError('Codex nie jest zainstalowany lub zweryfikowany. Uruchom instalator v30.')
+    execution_id=secrets.token_hex(16)
+    write(folder/'agent-request.json',{'prompt':prompt,'instructions':instructions,'execution_id':execution_id})
     (folder/'agent-cancelled').unlink(missing_ok=True)
     task=('Complete the user 3D task using the attached original images and the Blender MCP tools. '
           'A prompt or plan alone is not completion. Read get_modeling_contract once, build real geometry, '
@@ -328,6 +339,7 @@ def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
           'spend time correcting observed defects. Full format exports happen once at finish_model. '
           'Inspect front, side, back, and face for people on the FINAL revision. '
           'Finish with accepted=false and specific issues if quality is insufficient. '
+          'After finish_model succeeds, the job is complete. Do not make further tool calls or request further work. '
           'No shell, external generators, network tools or shop publication are authorized in this job. '
           'MCP tools are called INSIDE Code Mode exec using their exact fully qualified names. '
           'Do not call an unqualified tools.get_modeling_contract or invent shell tools. '
@@ -373,14 +385,28 @@ def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
                         diagnostics.append(safe['message'])
                     events.write(json.dumps(safe)+'\n');events.flush()
             reader=threading.Thread(target=consume,daemon=True);reader.start()
-            last=None
+            last=None;finished_at=None
+            def terminate():
+                if process.poll() is not None:return
+                try:os.killpg(process.pid,signal.SIGTERM)
+                except ProcessLookupError:return
+                try:process.wait(timeout=8)
+                except subprocess.TimeoutExpired:
+                    try:os.killpg(process.pid,signal.SIGKILL)
+                    except ProcessLookupError:pass
+                    process.wait(timeout=5)
             while process.poll() is None:
+                if completed_outcome(folder) is not None:
+                    if finished_at is None:finished_at=time.monotonic()
+                    # A brief drain lets the final MCP response finish. The
+                    # gateway already refuses another paid request after this
+                    # atomic outcome, so a lingering CLI cannot spend more.
+                    if gateway.completed or time.monotonic()-finished_at>=2:
+                        gateway.completed=True;gateway.save();terminate();break
                 startup_stalled=gateway.requests==0 and time.monotonic()-started>60
                 if cancelled.wait(1) or startup_stalled or time.monotonic()-started>MAX_SECONDS:
                     (folder/'agent-cancelled').touch()
-                    os.killpg(process.pid,signal.SIGTERM)
-                    try:process.wait(timeout=8)
-                    except subprocess.TimeoutExpired:os.killpg(process.pid,signal.SIGKILL);process.wait(timeout=5)
+                    terminate()
                     # Rootless container may outlive the supervising process.
                     try:subprocess.run(['podman','rm','--force','froge-job-'+folder.name],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20)
                     except (OSError,subprocess.TimeoutExpired):pass
@@ -393,14 +419,18 @@ def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
                 else:detail='Codex laczy Astre z Blender MCP i analizuje zalaczone zdjecia.'
                 if detail!=last:progress(detail);last=detail
             reader.join(timeout=3)
-            if process.returncode and not failure:failure=gateway.error or ('Codex: '+diagnostics[-1] if diagnostics else 'Codex zakonczyl prace bledem. Zachowano diagnostyke i gotowy model, jezeli powstal.')
-    outcome=folder/'agent-outcome.json'
-    if outcome.is_file():return json.loads(outcome.read_text())
+            if not reader.is_alive():process.stdout.close()
+            if completed_outcome(folder) is not None:
+                gateway.completed=True;gateway.save()
+            if process.returncode and not failure and not gateway.completed:failure=gateway.error or ('Codex: '+diagnostics[-1] if diagnostics else 'Codex zakonczyl prace bledem. Zachowano diagnostyke i gotowy model, jezeli powstal.')
+    outcome=completed_outcome(folder)
+    if outcome is not None:return outcome
     candidate=folder/'agent-candidate.json'
     if candidate.is_file():
-        info=json.loads(candidate.read_text());path=(folder/info['path']).resolve()
-        if path.parent!=folder.resolve()/'candidates':raise ValueError('Nieprawidlowy katalog wyniku Codexa.')
-        retain_candidate(folder,path)
+        current=current_candidate(folder,execution_id)
+        if current is None:
+            raise RuntimeError(failure or 'Brak poprawnego modelu z aktualnego uruchomienia. Zachowany starszy lub niekompletny model nie jest nowym wynikiem.')
+        info=current['info'];retain_candidate(folder,current['path'])
         write(folder/'visual-review.json',{'status':'not_completed','assessment_completed':False,'accepted':False,'executor':'codex-mcp','issues':[failure or 'Codex nie zakonczyl oceny aktualnego eksportu.']})
         return {'finished':False,'accepted':False,'blender_seconds':info.get('blender_seconds',0)}
     raise RuntimeError(failure or 'Codex nie wykonal modelu. Sam tekst polecenia nie jest wynikiem; nie uruchomiono innego platnego generatora.')

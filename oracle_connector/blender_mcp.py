@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import shutil
 import re
+import secrets
 import sys
 import threading
 import time
@@ -16,6 +17,7 @@ from agent_limits import MAX_BUILDS, BUILD_DEADLINE
 from runtime.scene_contract import PROMPT, parse_scene
 from scene_repair import photo_schema
 from photo_input import read_photos, validate_photo_plan
+from runtime.model_checkpoint import model_digest
 
 VIEWS = ('front', 'three-quarter', 'face', 'side', 'back')
 ASSETS = ('model.glb', 'model.blend', 'scene.json', 'model.froge-scene.json',
@@ -51,18 +53,92 @@ def tool_error(error):
     value = str(error)
     value = re.sub(r'(?i)Bearer\s+\S+|\bsk-[A-Za-z0-9_-]+', '[redacted]', value)
     value = re.sub(r'data:image/[^\s]+', '[image omitted]', value)
+    # Blender adds a traceback and export/log lines. Put the actual exception
+    # first, so the job card's short preview does not hide it behind stack frames.
+    causes = [line.strip() for line in value.splitlines() if re.match(
+        r'^\s*(?:[\w.]+\.)?[A-Za-z_][\w]*(?:Error|Exception):', line)]
+    if causes:return causes[-1][:1400]
+    if isinstance(error, (KeyError, TypeError, AttributeError, SyntaxError)):
+        value = type(error).__name__+': '+value
     return value[-1800:]
+
+
+def read_record(path, limit=2*1024**2):
+    if path.is_symlink() or not path.is_file() or path.stat().st_size > limit:
+        raise ValueError('Nieprawidlowy zapis wyniku.')
+    value=json.loads(path.read_text())
+    if not isinstance(value,dict):raise ValueError('Nieprawidlowy zapis wyniku.')
+    return value
+
+
+def current_candidate(folder, execution_id=None):
+    """Return only the current run's complete, renderer-checked GLB candidate."""
+    folder=Path(folder)
+    try:
+        request=read_record(folder/'agent-request.json',100000)
+        current_id=request.get('execution_id')
+        info=read_record(folder/'agent-candidate.json',10000)
+        if (not isinstance(current_id,str) or not current_id or info.get('execution_id')!=current_id or
+                (execution_id is not None and current_id!=execution_id) or
+                type(info.get('revision')) is not int or info['revision']<1):return None
+        relative=info.get('path')
+        if not isinstance(relative,str) or not re.fullmatch(r'candidates/[1-9][0-9]*',relative):return None
+        candidate=folder/relative
+        if ((folder/'candidates').is_symlink() or candidate.is_symlink() or
+                candidate.resolve().parent!=(folder/'candidates').resolve()):return None
+        identity=model_digest(candidate)
+        if identity is None:return None
+        ready=read_record(candidate/'model-ready.json')
+        result=read_record(candidate/'result.json')
+        if (ready.get('revision')!=1 or (ready.get('bytes'),ready.get('sha256'))!=identity or
+                ready.get('phase') not in ('core_export','interchange_exports') or
+                type(result.get('triangles')) is not int or result['triangles']<1 or
+                ready.get('result',{}).get('triangles')!=result['triangles']):return None
+        return {'path':candidate,'info':info,'identity':identity,'result':result}
+    except (OSError,ValueError,KeyError,TypeError,AttributeError):return None
+
+
+def completed_outcome(folder):
+    """Read-only completion check bound to THIS run and its renderer artifacts.
+
+    A lone outcome, a previous job's GLB or an unfinished candidate cannot end
+    the runner. Only finish_model writes the atomic outcome after all copies.
+    """
+    folder=Path(folder)
+    try:
+        outcome=read_record(folder/'agent-outcome.json',10000)
+        current=current_candidate(folder)
+        if current is None:return None
+        info=current['info'];execution_id=info['execution_id']
+        revision=outcome.get('revision')
+        if (not isinstance(execution_id,str) or not execution_id or
+                outcome.get('execution_id')!=execution_id or info.get('execution_id')!=execution_id or
+                outcome.get('finished') is not True or type(revision) is not int or revision<1 or
+                info.get('revision')!=revision or type(outcome.get('accepted')) is not bool):return None
+        identity=current['identity'];result=current['result']
+        if (identity!=model_digest(folder) or outcome.get('model_sha256')!=identity[1] or
+                read_record(folder/'result.json')!=result):return None
+        review=read_record(folder/'visual-review.json',10000)
+        if (review.get('model_revision')!=revision or review.get('accepted') is not outcome['accepted'] or
+                (outcome['accepted'] and (review.get('assessment_completed') is not True or review.get('issues')))):
+            return None
+        return outcome
+    except (OSError,ValueError,KeyError,TypeError,AttributeError):return None
 
 
 class JobTools:
     def __init__(self, folder, build=None, finalize=None):
         self.folder = Path(folder)
         self.request = json.loads((self.folder/'agent-request.json').read_text())
+        self.execution_id = self.request.get('execution_id') or secrets.token_hex(16)
+        if not self.request.get('execution_id'):
+            self.request['execution_id']=self.execution_id
+            write(self.folder/'agent-request.json',self.request)
         self.photos = read_photos(self.folder)
         self.revision = 0; self.attempts = 0; self.current = None; self.seen = set()
         self.build_callback = build; self.finalize_callback = finalize
         self.started = time.monotonic(); self.blender_seconds = 0.; self.finished = False
-        self.calls = []; self.tool_failures = 0
+        self.calls = []; self.tool_failures = 0; self.final_report = None
 
     def record(self, name, status, error=None):
         entry = {'tool':name,'status':status,'revision':self.revision,
@@ -93,9 +169,10 @@ class JobTools:
         write(self.folder/'agent-progress.json', {'detail':detail,'revision':self.revision,'blender_seconds':round(self.blender_seconds,2)})
 
     def snapshot(self):
-        if self.current is None: return {'revision':0,'has_model':False,'builds_remaining':MAX_BUILDS-self.attempts}
+        if self.current is None: return {'revision':0,'has_model':False,'finished':False,'builds_remaining':MAX_BUILDS-self.attempts}
         report = json.loads((self.current/'result.json').read_text())
-        return {'revision':self.revision,'has_model':True,'builds_remaining':MAX_BUILDS-self.attempts,
+        return {'revision':self.revision,'has_model':True,'finished':self.finished,'visual_review':self.final_report,
+                'builds_remaining':0 if self.finished else MAX_BUILDS-self.attempts,
                 'scene':json.loads((self.current/'scene.json').read_text()),
                 'edits':(self.current/'edits.py').read_text() if (self.current/'edits.py').exists() else '',
                 'report':report,'inspected_views':sorted(self.seen)}
@@ -129,17 +206,26 @@ class JobTools:
         if not (candidate/'result.json').is_file() or not (candidate/'model.glb').is_file():
             raise ValueError('Brak poprawnego eksportu; poprzedni model pozostaje zachowany.')
         self.current=candidate; self.revision+=1; self.seen=set()
-        write(self.folder/'agent-candidate.json',{'path':str(candidate.relative_to(self.folder)),'revision':self.revision,'blender_seconds':self.blender_seconds})
+        write(self.folder/'agent-candidate.json',{'path':str(candidate.relative_to(self.folder)),'revision':self.revision,
+              'execution_id':self.execution_id,'blender_seconds':self.blender_seconds})
         return self.snapshot()
 
     def call(self, name, arguments):
-        self.check(arguments.get('expected_revision'))
-        if self.finished: raise ValueError('To zlecenie jest zakonczone.')
+        if self.finished:
+            if arguments.get('expected_revision',self.revision)!=self.revision:
+                raise ValueError('CONFLICT: odczytaj aktualna rewizje modelu.')
+            if name=='finish_model':
+                if any(arguments.get(key)!=self.final_report.get(key) for key in ('accepted','issues','summary')):
+                    raise ValueError('Model juz zakonczony. Odczytaj get_current_model; zmiana oceny wymaga nowego zlecenia.')
+                return self.final_report
+            if name in ('build_model','edit_model'):
+                raise ValueError('Model juz zakonczony. Odczytaj get_current_model; nowa budowa wymaga nowego zlecenia.')
+        else:self.check(arguments.get('expected_revision'))
         if name=='get_modeling_contract':
             return {'job_id':self.folder.name,'prompt':self.request['prompt'],
                     'instructions':self.request['instructions'],'scene_schema':photo_schema(len(self.photos)),
                     'coordinate_and_geometry_guide':PROMPT,
-                    'edit_helpers':'bpy, math, random, Vector, make_material(name,rgb,pattern,roughness,metallic), mesh_object(name,vertices,faces,material), tube(name,points,radii,material,sides), ellipsoid(name,center,radii,material), join_meshes(objects,name). No imports except bpy/math/random/mathutils. No files, shell or network.',
+                    'edit_helpers':'bpy, math, random, Vector. make_material(name,rgb,pattern="plain",roughness=0.7,metallic=0.0) returns a bpy.types.Material. At most 8 NEW materials across all accumulated edits; reuse existing materials with bpy.data.materials.get(name). mesh_object(name,vertices,faces,material), tube(name,points,radii,material,sides=12), ellipsoid(name,center,scale=None,material=None,subdivisions=4,*,radii=None), join_meshes(objects,name) each return one bpy.types.Object, not a tuple. ellipsoid radii is a compatibility alias for scale; provide only one. No imports except bpy/math/random/mathutils. No files, shell or network.',
                     'references':[{'index':i,'view':p.get('view'),'name':p.get('name')} for i,p in enumerate(self.photos)],'revision':self.revision}
         if name=='get_current_model': return self.snapshot()
         if name=='build_model':
@@ -157,7 +243,7 @@ class JobTools:
             if view not in VIEWS: raise ValueError('Nieprawidlowy widok.')
             path=self.current/'review'/(view+'.png')
             if not path.is_file() or not 24<=path.stat().st_size<=2*1024**2: raise ValueError('Ten render nie zostal ukonczony.')
-            self.seen.add(view)
+            if not self.finished:self.seen.add(view)
             return [{'type':'text','text':'Rzeczywisty GLB; rewizja %d; widok %s.'%(self.revision,view)},
                     {'type':'image','mimeType':'image/png','data':base64.b64encode(path.read_bytes()).decode()}]
         if name=='finish_model':
@@ -182,8 +268,12 @@ class JobTools:
                     'summary':arguments['summary'],'model_revision':self.revision,'inspected_views':sorted(self.seen),
                     'executor':'codex-mcp','likeness_verified':False}
             write(self.folder/'visual-review.json',report)
-            write(self.folder/'agent-outcome.json',{'finished':True,'revision':self.revision,'accepted':accepted,'blender_seconds':self.blender_seconds,'builds':self.attempts})
-            self.finished=True
+            identity=model_digest(self.folder)
+            write(self.folder/'agent-outcome.json',{'finished':True,'revision':self.revision,'accepted':accepted,
+                  'execution_id':self.execution_id,'model_sha256':identity[1] if identity else None,
+                  'blender_seconds':self.blender_seconds,'builds':self.attempts})
+            self.finished=True;self.final_report=report
+            self.progress('Model i ocena zapisane. Zlecenie zakonczone; przygotowano wynik do odebrania.')
             return report
         raise ValueError('Nieznane narzedzie MCP.')
 
@@ -222,7 +312,7 @@ def serve(job, incoming=sys.stdin, outgoing=sys.stdout):
                     content=value if isinstance(value,list) else [{'type':'text','text':json.dumps(value,ensure_ascii=False)}]
                     result={'content':content,'isError':False}
                     job.record(name,'completed')
-                except (ValueError,RuntimeError,OSError,TimeoutError,KeyError,TypeError) as error:
+                except (ValueError,RuntimeError,OSError,TimeoutError,KeyError,TypeError,SyntaxError,AttributeError) as error:
                     job.record(name if isinstance(name,str) else 'invalid_tool','failed',error)
                     # An execution/argument error belongs to this tool call.
                     # Keep its request ID so Codex can read and repair it.

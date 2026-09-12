@@ -30,7 +30,7 @@ def prepare(root,source_id):
         row=db.execute('SELECT prompt,state FROM jobs WHERE id=?',(source_id,)).fetchone()
     if not row or row[1] not in ('succeeded','failed','cancelled'):
         raise ValueError('Zlecenie zrodlowe nie istnieje lub nadal pracuje.')
-    receipt=source/'v29-paid-trial.json'
+    receipt=source/'v30-paid-trial.json'
     if receipt.exists():
         saved=json.loads(receipt.read_text());job_id=saved['id']
         if not UUID.fullmatch(job_id):raise ValueError('Nieprawidlowy zapis proby.')
@@ -61,8 +61,8 @@ def run(source_id, root=ROOT, progress=print):
               headers={'Authorization':'Bearer '+token,'Content-Type':'application/json'})
         with opener.open(req,timeout=30) as response:return json.loads(response.read(2*1024**2))
     health=request('health')
-    if health.get('connectorVersion')!=29 or health.get('executionEngine')!='codex-mcp' or not health.get('ready'):
-        raise RuntimeError('Proba wymaga gotowej Astry i zweryfikowanego Codex/MCP v29. Nie wyslano zlecenia.')
+    if health.get('connectorVersion')!=30 or health.get('executionEngine')!='codex-mcp' or not health.get('ready'):
+        raise RuntimeError('Proba wymaga gotowej Astry i zweryfikowanego Codex/MCP v30. Nie wyslano zlecenia.')
     jid=payload['id']
     progress('FROGE_PAID_TRIAL_ID: '+jid,flush=True)
     try:state=request('jobs/'+jid)

@@ -1,0 +1,659 @@
+diff --git a/src/blender/OpenAISettings.tsx b/src/blender/OpenAISettings.tsx
+index 05dacf1..52a7826 100644
+--- a/src/blender/OpenAISettings.tsx
++++ b/src/blender/OpenAISettings.tsx
+@@ -7,16 +7,16 @@ ssh -T -o IdentitiesOnly=yes -o ConnectTimeout=20 -i "$HOME/ssh-key-2026-09-06.k
+ export const oracleRebuildUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-rebuild.zip').replaceAll('froge-openai-update', 'froge-rebuild-update')
+ export const oracleGeometryUpdateCommand = oracleOpenAIUpdateCommand.replaceAll('froge-oracle-openai.zip', 'froge-oracle-update.zip').replaceAll('froge-openai-update', 'froge-photos-v14-update')
+ export const oracleRepairCommand = 'python3 "$HOME/froge-napraw-oracle.py"'
+-export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v29.zip" "$HOME/froge-v29"\npython3 "$HOME/froge-v29/froge-v29.py"'
++export const portraitUpdateCommand = 'python3 -m zipfile -e "$HOME/froge-v30.zip" "$HOME/froge-v30"\npython3 "$HOME/froge-v30/froge-v30.py"'
+ 
+ export function GeometryUpdate({ required = true }: { required?: boolean }) {
+   const [copyNote, setCopyNote] = useState('')
+   return <div className="blender-setup">
+-    <strong>{required ? 'Popraw generowanie ze zdjęć · v29' : 'Pełna aktualizacja generatora · v29'}</strong>
+-    <p>V29 daje Astrze do 32 zapytań, 96 tys. tokenów odpowiedzi i rozumowania oraz 5 prób budowy i korekty. Zapisuje również błędy wykonania instrukcji przed Blenderem. Większy budżet może zwiększyć koszt API. Instalacja zachowuje klucz i modele; sama nie zamawia płatnej generacji.</p>
+-    <a href="/downloads/froge-v29.zip" download>Pobierz pełną paczkę · v29</a>
+-    <p><a href="/downloads/froge-v29-audit.html" target="_blank" rel="noreferrer">Dlaczego generowanie się zatrzymało i co zmienia v29</a></p>
+-    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza import oraz eksport GLB i FBX na pliku testowym bez zapytania do AI. Po FROGE_V29_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
++    <strong>{required ? 'Popraw generowanie ze zdjęć · v30' : 'Pełna aktualizacja generatora · v30'}</strong>
++    <p>V30 naprawia kończenie zleceń, korekty materiałów i geometrii oraz rozróżnia szkic od ocenionego wyniku. Astra projektuje model, a Codex wykonuje jej instrukcje przez Blender MCP. Instalacja zachowuje klucz i modele; sama nie zamawia płatnej generacji.</p>
++    <a href="/downloads/froge-v30.zip" download>Pobierz pełną paczkę · v30</a>
++    <p><a href="/downloads/froge-v30-audit.html" target="_blank" rel="noreferrer">Dlaczego generowanie się zatrzymało i co zmienia v30</a></p>
++    <details open={required}><summary>Jak włączyć standard?</summary><p>Prześlij ZIP do Oracle Cloud Shell przez Menu → Upload. Po Completed wklej:</p><pre tabIndex={0}>{portraitUpdateCommand}</pre><button onClick={() => { if (!navigator.clipboard) { setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.'); return } void navigator.clipboard.writeText(portraitUpdateCommand).then(() => setCopyNote('Skopiowano polecenie aktualizacji.'), () => setCopyNote('Zaznacz polecenie powyżej i skopiuj ręcznie.')) }}>Kopiuj polecenie aktualizacji</button>{copyNote && <p role="status">{copyNote}</p>}<p>Instalator zachowuje połączenie i modele, tworzy kopię programu i sprawdza import oraz eksport GLB i FBX na pliku testowym bez zapytania do AI. Po FROGE_V30_OK kliknij „Sprawdź serwer po aktualizacji”.</p></details>
+   </div>
+ }
+ 
+diff --git a/src/blender/RemoteGenerator.tsx b/src/blender/RemoteGenerator.tsx
+index 73ea896..eac5fda 100644
+--- a/src/blender/RemoteGenerator.tsx
++++ b/src/blender/RemoteGenerator.tsx
+@@ -7,13 +7,13 @@ import { GenerationReport } from './GenerationReport'
+ import { supportsGeneration, supportsPhotoGeneration, RECOMMENDED_CONNECTOR_VERSION, supportsPortraitQuality, requiresPortraitQuality, PORTRAIT_UPDATE_REASON, supportsCoutureQuality, requiresCoutureQuality, COUTURE_UPDATE_REASON } from './compatibility'
+ import { PhotoReferences } from './PhotoReferences'
+ import { DEFAULT_PHOTO_PROMPT, PHOTO_VIEWS, type PhotoInput } from './photoReferences'
+-import { connectCodexExecutor, instructionsForGeneration, setCodexExecution, updateCodexContext } from '../studio/codexDraft'
++import { connectCodexExecutor, instructionsForGeneration, regenerateCodexDraft, setCodexAvailability, setCodexExecution, updateCodexContext } from '../studio/codexDraft'
+ 
+ export const oracleInstallCommand = `scp -o IdentitiesOnly=yes -i "$HOME/ssh-key-2026-09-06.key" "$HOME/froge-oracle-connector.zip" opc@141.148.242.30:/home/opc/froge-oracle-connector.zip &&
+ ssh -T -o IdentitiesOnly=yes -o ServerAliveInterval=30 -i "$HOME/ssh-key-2026-09-06.key" opc@141.148.242.30 'mkdir -p "$HOME/froge-connector" && python3 -m zipfile -e "$HOME/froge-oracle-connector.zip" "$HOME/froge-connector" && bash "$HOME/froge-connector/install.sh"'`
+ 
+-type Props = { prompt: string; onStart: () => number; onResult: (bytes: ArrayBuffer, job: GenerationJob, revision: number) => Promise<boolean>; canAutoRestore?: () => boolean; onRestorePrompt?: (prompt:string)=>void; onReusePrompt?: (prompt:string)=>void; onNewModel?: (preservePrompt: boolean) => void }
+-export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel }: Props) {
++type Props = { prompt: string; onStart: () => number; onResult: (bytes: ArrayBuffer, job: GenerationJob, revision: number) => Promise<boolean>; canAutoRestore?: () => boolean; onRestorePrompt?: (prompt:string)=>void; onReusePrompt?: (prompt:string)=>void; onNewModel?: (preservePrompt: boolean) => void; onJobChange?: (job: GenerationJob | null) => void }
++export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel, onJobChange }: Props) {
+   const [connection, setConnection] = useState<BlenderConnection | null>(null)
+   const [endpoint, setEndpoint] = useState(''), [code, setCode] = useState('')
+   const [connecting, setConnecting] = useState(false), [submitting, setSubmitting] = useState(false)
+@@ -24,8 +24,8 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+   const [displayed, setDisplayed] = useState(false), [fromHistory, setFromHistory] = useState(false)
+   const [photos, setPhotos] = useState<PhotoInput[]>([]), [preparingPhotos, setPreparingPhotos] = useState(false)
+   useEffect(() => { updateCodexContext({ photos: photos.map(({ name, view, subject }) => ({ name, view: PHOTO_VIEWS[view], ...(subject ? { subject } : {}) })), workerVersion: connection?.connectorVersion }) }, [photos, connection?.connectorVersion])
+-  const callbacks = useRef({ onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel }); callbacks.current = { onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel }
+-  const revision = useRef(0), serial = useRef(0), loaded = useRef(''), mounted = useRef(true)
++  const callbacks = useRef({ onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel, onJobChange }); callbacks.current = { onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel, onJobChange }
++  const revision = useRef(0), serial = useRef(0), loaded = useRef(''), mounted = useRef(true), statusSerial = useRef(0)
+   const retryPoll = useRef<() => void>(() => {})
+   const connectionRequest = useRef<AbortController | null>(null), connectionSerial = useRef(0), submissionLock = useRef(false)
+   // Keep the same identifier after a lost acknowledgement. A second click must
+@@ -36,21 +36,25 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+   generationCallback.current = () => generate()
+   useEffect(() => connectCodexExecutor(() => generationCallback.current()), [])
+   useEffect(() => {
++    callbacks.current.onJobChange?.(active)
+     if (active) setCodexExecution({ state: finished(active) ? active.state === 'succeeded' ? 'finished' : 'failed' : 'running', detail: active.detail, jobId: active.id, engine: active.executionEngine })
++    else if (!submitting) setCodexExecution({ state: 'idle', detail: '' })
+   }, [active])
+   const textureLimitFailure = active?.state === 'failed' && active.detail.includes('Use at most 8 materials and 8 images')
+   const currentWorker = supportsGeneration(connection?.connectorVersion)
+   const canGenerate = !!connection?.connected && !!connection.ready && currentWorker && !connectionError && (photos.length > 0 || connection.textReady !== false)
+   const photosSupported = supportsPhotoGeneration(connection)
+-  const photoBlockedReason = connection?.connectorVersion === 21 ? 'Zainstaluj v26 na Oracle, aby zdjęcia ponownie obsługiwała Astra.' : connection?.provider !== 'openai' ? 'Wybierz OpenAI · Astra w ustawieniach serwera.' : 'Sprawdź połączenie Astry i zaktualizuj generator na Oracle.'
++  const photoBlockedReason = connection?.connectorVersion === 21 ? `Zainstaluj v${RECOMMENDED_CONNECTOR_VERSION} na Oracle, aby zdjęcia ponownie obsługiwała Astra.` : connection?.provider !== 'openai' ? 'Wybierz OpenAI · Astra w ustawieniach serwera.' : 'Sprawdź połączenie Astry i zaktualizuj generator na Oracle.'
+   const coutureBlocked= requiresCoutureQuality(prompt) && !supportsCoutureQuality(connection)
+   const longPromptBlocked=prompt.length>2000 && connection?.promptMaxLength!==5000
+   const referenceQualityBlocked = photos.some(photo => (photo.textureMaxSize ?? 2048) > 2048) && (connection?.referenceQualityRevision !== 1 || connection?.materialQualityRevision !== 2)
+   const portraitBlocked=(requiresPortraitQuality(prompt, photos.length) && !supportsPortraitQuality(connection)) || coutureBlocked || longPromptBlocked || referenceQualityBlocked
+   const updateAvailable = !!connection?.connected && connection.connectorVersion !== undefined && connection.connectorVersion < RECOMMENDED_CONNECTOR_VERSION
+-  const oldWorkerReason = `Oracle zgłasza generator v${connection?.connectorVersion}. Zainstaluj aktualizację v26 na serwerze. Samo przesłanie ZIP-a nie uruchamia aktualizacji.`
++  const oldWorkerReason = `Oracle zgłasza generator v${connection?.connectorVersion}. Zainstaluj aktualizację v${RECOMMENDED_CONNECTOR_VERSION} na serwerze. Samo przesłanie ZIP-a nie uruchamia aktualizacji.`
+   const connectionDetail = photos.length && !photosSupported ? photoBlockedReason : connection?.ready && !currentWorker ? oldWorkerReason : connection?.detail || 'Odczytuję zapisane połączenie.'
+-  const blockedReason = busy ? '' : preparingPhotos ? 'Przygotowuję zdjęcia…' : connectionError ? connectionError : !connection ? 'Sprawdzam, czy serwer może przyjąć zlecenie…' : !connection.connected ? 'Połącz serwer Blendera w ustawieniach powyżej.' : updateAvailable && !currentWorker ? 'Generowanie nie zostało uruchomione. ' + oldWorkerReason : !connection.ready ? 'Generowanie nie zostało uruchomione. ' + connectionDetail : photos.length && !photosSupported ? photoBlockedReason : portraitBlocked ? (referenceQualityBlocked ? 'Referencje 4K/8K wymagają aktualizacji generatora z obsługą jakości referencji.' : coutureBlocked ? COUTURE_UPDATE_REASON : longPromptBlocked ? 'Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v20.' : PORTRAIT_UPDATE_REASON) : !prompt.trim() && !photos.length ? 'Wpisz opis albo dodaj zdjęcia.' : ''
++  const blockedReason = busy ? 'Trwa bieżące zlecenie. Nowy opis możesz przygotować teraz; uruchomisz go po zakończeniu lub anulowaniu tego zlecenia.' : preparingPhotos ? 'Przygotowuję zdjęcia…' : connectionError ? connectionError : !connection ? 'Sprawdzam, czy serwer może przyjąć zlecenie…' : !connection.connected ? 'Połącz serwer Blendera w ustawieniach powyżej.' : updateAvailable && !currentWorker ? 'Generowanie nie zostało uruchomione. ' + oldWorkerReason : !connection.ready ? 'Generowanie nie zostało uruchomione. ' + connectionDetail : photos.length && !photosSupported ? photoBlockedReason : portraitBlocked ? (referenceQualityBlocked ? 'Referencje 4K/8K wymagają aktualizacji generatora z obsługą jakości referencji.' : coutureBlocked ? COUTURE_UPDATE_REASON : longPromptBlocked ? 'Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v20.' : PORTRAIT_UPDATE_REASON) : !photos.length && connection.textReady === false ? 'Generator nie potwierdził gotowości do pracy z opisem. Sprawdź Astrę w ustawieniach serwera.' : connection.instructionsRevision !== 1 ? `Zainstaluj v${RECOMMENDED_CONNECTOR_VERSION} na Oracle, aby opis i edytowane polecenie wykonywały się razem.` : !prompt.trim() && !photos.length ? 'Wpisz opis albo dodaj zdjęcia.' : ''
++  const submitEnabled = !busy && !preparingPhotos && canGenerate && !!(prompt.trim() || photos.length) && !(photos.length > 0 && !photosSupported) && !portraitBlocked && connection?.instructionsRevision === 1
++  useEffect(() => { setCodexAvailability({ enabled: submitEnabled, reason: blockedReason }) }, [submitEnabled, blockedReason])
+ 
+   async function refreshConnection() {
+     const requestSerial = ++connectionSerial.current
+@@ -84,7 +88,8 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+     serial.current++
+     loaded.current = ''
+     setActive(null); setDisplayed(false); setFromHistory(false); setError(''); setJobError(null)
+-    if (!preservePrompt) setPhotos([])
++    setCodexExecution({ state: 'idle', detail: '' })
++    if (!preservePrompt) { setPhotos([]); updateCodexContext({prompt:'',photos:[]}); regenerateCodexDraft() }
+     callbacks.current.onNewModel?.(preservePrompt)
+   }
+   function changePhotos(next: PhotoInput[]) {
+@@ -114,15 +119,17 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+       if (stopped || inFlight) return
+       if (timer) window.clearTimeout(timer)
+       inFlight = true
++      const requestSerial = statusSerial.current
+       let nextPoll: number | undefined
+       try {
+         const { job } = await blenderRequest<{ job: GenerationJob }>('jobs/' + jobId, { signal: controller.signal })
+-        if (stopped) return
++        if (stopped || requestSerial !== statusSerial.current) return
++        if (!job || job.id !== jobId) throw new BlenderRequestError('Serwer zwrócił status innego zlecenia. Poprzedni model pozostał bez zmian.', true)
+         setActive(job)
+         setRecent(items => [job, ...items.filter(item => item.id !== job.id)].slice(0, 10))
+-        if (job.state === 'succeeded' && loaded.current !== jobId) {
++        if (job.state === 'succeeded' && job.hasModel && job.modelStatus === 'reviewed' && loaded.current !== jobId) {
+           const bytes = await generatedModel(jobId, { signal: controller.signal })
+-          if (stopped) return
++          if (stopped || requestSerial !== statusSerial.current) return
+           const shown = await callbacks.current.onResult(bytes, job, visualRevision)
+           if (stopped) return
+           loaded.current = jobId; setDisplayed(shown)
+@@ -175,7 +182,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+     if (!withPhotos && !resumeImage3d && requiresCoutureQuality(description) && !supportsCoutureQuality(connection)) { setError(COUTURE_UPDATE_REASON); return }
+     if (description.length>2000 && connection?.promptMaxLength!==5000) { setError('Opis powyżej 2000 znaków wymaga aktualizacji Oracle do v20.'); return }
+     if (!sourceJobId && connection?.instructionsRevision !== 1) {
+-      const message = 'Zainstaluj v26 na Oracle, aby opis, edytowane polecenie i wykonanie działały razem.'
++      const message = `Zainstaluj v${RECOMMENDED_CONNECTOR_VERSION} na Oracle, aby opis, edytowane polecenie i wykonanie działały razem.`
+       setError(message); setCodexExecution({ state: 'failed', detail: message }); return
+     }
+     submissionLock.current = true
+@@ -213,19 +220,27 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+   }
+   async function cancel() {
+     if (!active || finished(active)) return
++    const jobId = active.id, requestSerial = ++statusSerial.current
+     try {
+-      await blenderRequest('jobs/' + active.id + '/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+-      setActive({ ...active, state: 'cancelled', detail: 'Zlecenie anulowane.' })
+-    } catch (e) { setError((e as Error).message) }
++      await blenderRequest('jobs/' + jobId + '/cancel', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
++      const { job } = await blenderRequest<{ job: GenerationJob }>('jobs/' + jobId)
++      if (!mounted.current || requestSerial !== statusSerial.current) return
++      if (!job || job.id !== jobId) throw new Error('Nie udało się potwierdzić stanu anulowanego zlecenia. Sprawdź status ponownie.')
++      setActive(job); setJobError(null)
++      setRecent(items => [job, ...items.filter(item => item.id !== job.id)].slice(0, 10))
++      if (!finished(job)) retryPoll.current()
++    } catch (e) { setError((e as Error).message); retryPoll.current() }
+   }
+   async function openModel(job: GenerationJob) {
++    if (!job.hasModel || !finished(job)) return
+     const requestSerial = ++serial.current
++    setError('')
+     try {
+       const nextRevision = callbacks.current.onStart()
+       const bytes = await generatedModel(job.id)
+       if (!mounted.current || serial.current !== requestSerial) return
+       const shown = await callbacks.current.onResult(bytes, job, nextRevision)
+-      if (mounted.current && serial.current === requestSerial) setDisplayed(shown)
++      if (mounted.current && serial.current === requestSerial) { loaded.current = shown ? job.id : ''; setDisplayed(shown); setJobError(null) }
+     } catch (e) { setError((e as Error).message) }
+   }
+   return <div className="remote-generator">
+@@ -261,7 +276,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+       <p>Połączenie korzysta z tunelu testowego. Po jego restarcie adres może się zmienić.</p>
+     </details>}
+     <PhotoReferences photos={photos} onChange={changePhotos} disabled={busy} onPreparing={setPreparingPhotos}/>
+-    <button className="studio-primary" aria-describedby="generation-blocked-reason" disabled={busy || preparingPhotos || !canGenerate || (!prompt.trim() && !photos.length) || (photos.length > 0 && !photosSupported) || portraitBlocked} onClick={() => void generate()}>{submitting ? 'Wysyłam zlecenie…' : busy ? 'Generowanie w toku…' : photos.length ? 'Generuj model 3D ze zdjęć' : 'Generuj model 3D'}</button>
++    <button className="studio-primary" aria-describedby="generation-blocked-reason" disabled={!submitEnabled} onClick={() => void generate()}>{submitting ? 'Wysyłam zlecenie…' : busy ? 'Generowanie w toku…' : photos.length ? 'Generuj model 3D ze zdjęć' : 'Generuj model 3D'}</button>
+     <p id="generation-blocked-reason" className="studio-helper" role="status">{submitting ? 'Czekam na potwierdzenie przyjęcia zlecenia. Generowanie jeszcze nie zostało potwierdzone.' : blockedReason}</p>
+     {connection?.connected && (portraitBlocked || updateAvailable) && <GeometryUpdate required={portraitBlocked || !currentWorker}/>}
+     {supportsPortraitQuality(connection) && <p className="studio-helper">Standard postaci aktywny: anatomiczna twarz i dłonie, paznokcie oraz kontrola eksportu. Podobieństwo do zdjęcia oceniasz w podglądzie.</p>}
+@@ -269,7 +284,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+     {!prompt.trim() && !photos.length && recent[0] && onReusePrompt && <button onClick={()=>onReusePrompt(recent[0].prompt)}>Przywróć ostatni opis</button>}
+     <p className="studio-helper">{connection?.provider === 'openai' ? 'Astra analizuje zdjęcia i opis. Blender buduje geometrię oraz tekstury; Astra porównuje rendery z referencją. Generowanie korzysta z Twojego OpenAI API. Dodanie zdjęć niczego nie uruchamia.' : 'Lokalne AI obsługuje opis sceny. Do pracy ze zdjęciami wybierz OpenAI · Astra.'}</p>
+     {active && !submitting && <div className={'generation-job state-' + (active.state === 'succeeded' && active.referencePhotos?.length ? 'review' : active.state)} role="status">
+-      <strong>{jobError && !finished(active) ? 'Postęp chwilowo niedostępny' : active.state === 'succeeded' ? displayed ? fromHistory ? 'Zapisany model w podglądzie' : 'Nowy model w podglądzie' : 'Model gotowy' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
++      <strong>{jobError && !finished(active) ? 'Postęp chwilowo niedostępny' : active.state === 'succeeded' ? !active.hasModel ? 'Brak modelu do podglądu' : active.modelStatus !== 'reviewed' ? displayed ? 'Wynik roboczy w podglądzie' : 'Wynik roboczy zapisany do oceny' : displayed ? fromHistory ? 'Zapisany model w podglądzie' : 'Nowy model w podglądzie' : 'Model po ocenie Astry' : active.state === 'failed' ? 'Nie udało się wygenerować modelu' : active.state === 'cancelled' ? 'Zlecenie anulowane' : 'Pracuję nad modelem'}</strong>
+       {finished(active) ? <details className="saved-job-prompt"><summary>Opis tego zlecenia</summary><p className="generation-prompt">{active.prompt}</p>{active.agentInstructions && <details><summary>Wykonane instrukcje</summary><pre>{active.agentInstructions}</pre></details>}</details> : <p className="generation-prompt">{active.prompt}</p>}
+       {!!active.referencePhotos?.length && <div className="photo-reference-grid job-photos" aria-label="Zdjęcia tego zlecenia">{active.referencePhotos.map((photo, index) => <a href={photo.url} target="_blank" rel="noreferrer" key={photo.url}><img src={photo.url} alt={`Referencja ${index + 1}: ${photo.name}`} loading="lazy"/><span>{PHOTO_VIEWS[photo.view]}</span></a>)}</div>}
+       {jobError && !finished(active) ? <>
+@@ -296,8 +311,10 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
+       </> : <p>{active.detail === 'timed out' ? 'AI nie odpowiedziało w limicie czasu. Model nie został zapisany.' : active.detail}</p>}
+       {['failed', 'cancelled'].includes(active.state) && !textureLimitFailure && <button disabled={busy || (active.referencePhotos?.length ? !photosSupported : !canGenerate)} onClick={() => void generate(active.prompt, undefined, active.referencePhotos?.length ? active.id : undefined, false)}>{active.referencePhotos?.length ? 'Generuj ponownie z tych zdjęć · OpenAI API' : 'Ponów ten opis'}</button>}
+       {!finished(active) && <button onClick={() => void cancel()}>Anuluj zlecenie</button>}
+-      {active.state === 'succeeded' && !displayed && <button onClick={() => void openModel(active)}>Wczytaj wynik do podglądu</button>}
+-      {active.state === 'succeeded' && <GenerationExports jobId={active.id}/>}
++      {finished(active) && active.hasModel && active.modelStatus !== 'reviewed' && <p>Plik zachowano jako wynik testowy do obejrzenia. Nie został dodany do katalogu ani zatwierdzony pod względem wyglądu.</p>}
++      {active.state === 'succeeded' && !active.hasModel && <p role="alert">Zlecenie zakończone, ale plik modelu nie jest dostępny. Poprzedni podgląd nie jest wynikiem tego zlecenia.</p>}
++      {finished(active) && active.hasModel && !displayed && <button onClick={() => void openModel(active)}>{active.modelStatus === 'reviewed' ? 'Wczytaj wynik do podglądu' : 'Obejrzyj zapisany wynik roboczy'}</button>}
++      {active.state === 'succeeded' && active.hasModel && <GenerationExports jobId={active.id}/>}
+       {connection?.qualityReports && finished(active) && <GenerationReport jobId={active.id}/>}
+       {active.state === 'succeeded' && onReusePrompt && <button onClick={()=>onReusePrompt(active.prompt)}>Edytuj opis tego modelu</button>}
+       {jobError && <div className="studio-error" role="alert">
+diff --git a/src/blender/client.ts b/src/blender/client.ts
+index 66b73e7..f6812ab 100644
+--- a/src/blender/client.ts
++++ b/src/blender/client.ts
+@@ -1,5 +1,5 @@
+ import type { JobPhoto } from './photoReferences'
+-export type GenerationJob = { id: string; prompt: string; state: string; detail: string; created: string; updated: string; hasModel: boolean; referencePhotos?: JobPhoto[]; executionEngine?: string; agentInstructions?: string }
++export type GenerationJob = { id: string; prompt: string; state: string; detail: string; created: string; updated: string; hasModel: boolean; modelStatus?: 'none' | 'draft' | 'reviewed'; referencePhotos?: JobPhoto[]; executionEngine?: string; agentInstructions?: string }
+ export type Image3DCapabilities = { textReady?: boolean; astraPhotoRevision?: number; photoEngine?: string; photoReasoningEffort?: string; targetedRepairRevision?: number; photoPlanningBudgetSeconds?: number; agentBudgetSeconds?: number; agentRequestLimit?: number; agentOutputTokenLimit?: number; agentBuildLimit?: number; photoReviewReservedSeconds?: number; qualityReports?: boolean; photoProjectionRevision?: number; freeformGeometryRevision?: number; instructionsRevision?: number; executionEngine?: string }
+ export type BlenderConnection = Image3DCapabilities & { connected: boolean; ready: boolean; endpoint?: string; model?: string; detail: string; provider?: 'ollama' | 'openai'; connectorVersion?: number; photoInput?: boolean; sceneReplay?: boolean; rendererRevision?: number; portraitRevision?: number; characterStandard?: number; coutureRevision?: number; promptMaxLength?: number; referenceQualityRevision?: number; materialQualityRevision?: number }
+ export const finished = (job: GenerationJob) => ['succeeded', 'failed', 'cancelled'].includes(job.state)
+diff --git a/src/blender/compatibility.ts b/src/blender/compatibility.ts
+index f0aa23c..007316c 100644
+--- a/src/blender/compatibility.ts
++++ b/src/blender/compatibility.ts
+@@ -3,7 +3,7 @@
+ // v7 fixed the profile regression and already uses the validated scene plan.
+ // v8–v11 change figure geometry; the prompt/job protocol remains compatible.
+ export const MINIMUM_CONNECTOR_VERSION = 7
+-export const RECOMMENDED_CONNECTOR_VERSION = 29
++export const RECOMMENDED_CONNECTOR_VERSION = 30
+ export const supportsCoutureQuality = (connection?: { connectorVersion?: number; coutureRevision?: number } | null) => (connection?.connectorVersion ?? 0) >= 19 && (connection?.coutureRevision ?? 0) >= 1
+ export const requiresCoutureQuality = (prompt: string) => /\b(couture|gown|sukni\w*|sukien\w*|wachlarz\w*)\b/i.test(prompt.normalize('NFKD'))
+ export const COUTURE_UPDATE_REASON = 'Ten strój wymaga generatora v19 na Oracle. Pobierz pełną paczkę i sprawdź serwer po instalacji. Zlecenie nie zostało wysłane do AI.'
+diff --git a/src/blender/server.ts b/src/blender/server.ts
+index 332c419..e3258cd 100644
+--- a/src/blender/server.ts
++++ b/src/blender/server.ts
+@@ -89,7 +89,11 @@ async function remote(endpoint: string, credential: string, path: string, option
+   return response
+ }
+ const photoMetadata = (j: Job): PhotoMetadata[] => JSON.parse(j.reference_photos || '[]')
+-const publicJob = (j: Job) => ({ id: j.id, prompt: j.prompt, state: j.state, detail: j.detail, created: j.created, updated: j.updated, hasModel: !!j.artifact, agentInstructions: j.agent_instructions || undefined, executionEngine: j.execution_engine || undefined,
++// The reviewed suffix is written only after verifying Oracle's current final
++// model digest. Existing artifacts remain unreviewed; no schema/data migration
++// can accidentally promote an older sample or interrupted candidate.
++const publicJob = (j: Job) => ({ id: j.id, prompt: j.prompt, state: j.state, detail: j.detail, created: j.created, updated: j.updated, hasModel: !!j.artifact,
++  modelStatus: !j.artifact ? 'none' : j.state === 'succeeded' && j.artifact === `${j.id}.reviewed.glb` ? 'reviewed' : 'draft', agentInstructions: j.agent_instructions || undefined, executionEngine: j.execution_engine || undefined,
+   referencePhotos: photoMetadata(j).map((photo, index) => ({ name: photo.name, view: photo.view, ...(photo.subject ? { subject: photo.subject } : {}), ...(photo.textureMaxSize ? { textureMaxSize: photo.textureMaxSize } : {}), url: `/api/blender/jobs/${j.id}/photos/${index}` })) })
+ function imageCapabilities(state: Image3DCapabilities) {
+   return { textReady: state.textReady, instructionsRevision: state.instructionsRevision === 1 ? 1 : 0, executionEngine: state.executionEngine === 'codex-mcp' ? 'codex-mcp' : 'astra-scene', astraPhotoRevision: state.astraPhotoRevision, targetedRepairRevision: state.targetedRepairRevision, photoPlanningBudgetSeconds: state.photoPlanningBudgetSeconds, agentBudgetSeconds: state.agentBudgetSeconds, agentRequestLimit: state.agentRequestLimit, agentOutputTokenLimit: state.agentOutputTokenLimit, agentBuildLimit: state.agentBuildLimit, photoReviewReservedSeconds: state.photoReviewReservedSeconds, qualityReports: state.qualityReports === true, photoProjectionRevision: state.photoProjectionRevision, freeformGeometryRevision: state.freeformGeometryRevision,
+@@ -300,7 +304,8 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
+       }
+       throw error
+     }
+-    const state = await response.json() as { state?: string; detail?: string }
++    const state = await response.json() as { id?: string; state?: string; detail?: string; modelStatus?: string; modelSha256?: string }
++    if (state.id !== undefined && state.id !== job.id) throw new ApiError('Serwer zwrócił stan innego zlecenia. Nie wczytano modelu.', 502)
+     if (!state.state || !['queued', 'generating', 'building', 'retrying', 'succeeded', 'failed', 'cancelled'].includes(state.state)) throw new ApiError('Nieprawidłowy status z serwera.', 502)
+     let artifact = job.artifact
+     if (state.state === 'succeeded' && !artifact) {
+@@ -311,7 +316,14 @@ export async function blenderApi(request: Request, env: BlenderEnv): Promise<Res
+         const bytes = await boundedBody(model.body, maxGlb, Number(model.headers.get('content-length')))
+         const h = new DataView(bytes)
+         if (bytes.byteLength < 20 || h.getUint32(0, true) !== 0x46546c67 || h.getUint32(4, true) !== 2 || h.getUint32(8, true) !== bytes.byteLength) throw new ApiError('Serwer zwrócił nieprawidłowy plik GLB.', 422)
+-        artifact = `${job.id}.glb`
++        let reviewed = false
++        if (state.modelStatus === 'reviewed') {
++          if (state.id !== job.id || !/^[a-f0-9]{64}$/.test(state.modelSha256 || '')) throw new ApiError('Brakuje potwierdzenia pochodzenia ocenionego modelu.', 422)
++          const digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), b => b.toString(16).padStart(2, '0')).join('')
++          if (digest !== state.modelSha256) throw new ApiError('Plik różni się od modelu ocenionego przez Astrę. Nie wczytano innego wyniku.', 422)
++          reviewed = true
++        }
++        artifact = reviewed ? `${job.id}.reviewed.glb` : `${job.id}.glb`
+         await env.BUCKET.put(`${owner}/${artifact}`, bytes)
+       } catch (error) {
+         if (!(error instanceof ApiError) || ![413, 422].includes(error.status)) throw error
+diff --git a/src/components/CodexPromptEditor.tsx b/src/components/CodexPromptEditor.tsx
+index e7b3dbc..25dce88 100644
+--- a/src/components/CodexPromptEditor.tsx
++++ b/src/components/CodexPromptEditor.tsx
+@@ -27,7 +27,8 @@ export function CodexPromptEditor() {
+     <textarea id="codex-prompt" rows={8} maxLength={12000} value={draft.text} onChange={e => { editCodexDraft(e.target.value); setNotice('') }} placeholder="Wpisz zadanie w polu „Co mam stworzyć?” u góry." />
+     <small>{draft.text.length}/12 000 znaków</small>
+     {draft.stale && <p role="status">Opis lub referencje się zmieniły. Twoje poprawki zostaną wysłane razem z aktualnym opisem i zdjęciami. Sprawdź, czy nadal pasują.</p>}
+-    <button type="button" className="studio-primary" disabled={!draft.text.trim() || ['submitting','running'].includes(draft.execution?.state ?? '')} onClick={() => void executeCodexDraft().catch(e => setNotice(e.message))}>Uruchom model z tym poleceniem</button>
++    <button type="button" className="studio-primary" aria-describedby="codex-execution-availability" disabled={!draft.text.trim() || draft.availability?.enabled === false || ['submitting','running'].includes(draft.execution?.state ?? '')} onClick={() => void executeCodexDraft().catch(e => setNotice(e.message))}>Uruchom model z tym poleceniem</button>
++    {draft.availability?.reason && <p id="codex-execution-availability" className="studio-helper" role="status">{draft.availability.reason}</p>}
+     {draft.execution && <p role="status">{draft.execution.detail}{draft.execution.jobId && <small>Zlecenie: {draft.execution.jobId}{draft.execution.engine ? ` · ${draft.execution.engine}` : ''}</small>}</p>}
+     <div className="codex-actions"><button type="button" disabled={!draft.text.trim()} onClick={() => void copy()}>Kopiuj polecenie do Codexa</button><button type="button" disabled={!draft.text.trim()} onClick={download}>Pobierz TXT</button></div>
+     <p className="studio-helper">Pisanie i edycja nie uruchamiają API. Jeden przycisk uruchamia cały proces; kolejne etapy zobaczysz przy tym samym numerze zlecenia. Wykonawca jest podany w stanie połączenia.</p>
+diff --git a/src/components/ModelStudio.tsx b/src/components/ModelStudio.tsx
+index 37627fc..ef44aea 100644
+--- a/src/components/ModelStudio.tsx
++++ b/src/components/ModelStudio.tsx
+@@ -1,4 +1,4 @@
+-import { lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore } from 'react'
++import { Component, lazy, Suspense, useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from 'react'
+ import { Link, useLocation, useNavigate } from 'react-router-dom'
+ import { ORIGINAL_CHARACTERS } from '../studio/originalCharacters'
+ import { ReferenceCharacterGuide } from './ReferenceCharacterGuide'
+@@ -21,6 +21,18 @@ import '../studio/aiStudio.css'
+ const Viewer = lazy(() => import('./AiModelViewer'))
+ type Engine = typeof import('../studio/aiModel')
+ const defaults: Adjustments = { dimensions: ['', '', ''], angles: ['', '', ''] }
++type ModelProvenance = { kind: 'job' | 'example' | 'import' | 'agent'; jobId?: string; prompt?: string; reviewedByAstra?: boolean }
++function modelLoadError(error: unknown) {
++  const message = error instanceof Error ? error.message : String(error)
++  return /dynamically imported module|loading chunk|chunkloaderror|module script|error loading dynamically/i.test(message)
++    ? 'Ta karta ma starszą wersję podglądu po aktualizacji strony. Zachowaj opis i wybrane zdjęcia, potem odśwież Studio. Zapisany model pozostaje w historii.'
++    : message
++}
++class ViewerBoundary extends Component<{ children: ReactNode }, { error: string }> {
++  state = { error: '' }
++  static getDerivedStateFromError(error: unknown) { return { error: modelLoadError(error) } }
++  render() { return this.state.error ? <p role="alert" className="studio-error">{this.state.error}</p> : this.props.children }
++}
+ export function ModelStudio() {
+   const navigate=useNavigate()
+   const location=useLocation()
+@@ -28,6 +40,7 @@ export function ModelStudio() {
+   const [prompt,setPrompt]=useState(''),[name,setName]=useState(''),[sceneData,setSceneData]=useState<ModelScene|null>(null)
+   const [busy,setBusy]=useState(false),[note,setNote]=useState(''),[error,setError]=useState('')
+   const [source,setSource]=useState<Group|null>(null),[model,setModel]=useState<Group|null>(null),[size,setSize]=useState<number[]>([])
++  const [provenance,setProvenance]=useState<ModelProvenance|null>(null),[currentJob,setCurrentJob]=useState<GenerationJob|null>(null),[reviewed,setReviewed]=useState(false)
+   const [adjustments,setAdjustments]=useState<Adjustments>(defaults),[adjustmentError,setAdjustmentError]=useState(''),[exporting,setExporting]=useState(false)
+   const engine=useRef<Engine|null>(null),sourceRef=useRef<Group|null>(null),loadRevision=useRef(0)
+   const explicitView=useRef(false),promptEdited=useRef(false)
+@@ -40,6 +53,7 @@ export function ModelStudio() {
+     if(sourceRef.current)engine.current?.disposeModel(sourceRef.current)
+     sourceRef.current=null
+     setSource(null);setModel(null);setSceneData(null);setName('');setSize([])
++    setProvenance(null);setReviewed(false)
+     setAdjustments(defaults);setAdjustmentError('');setBusy(false);setError('');setNote('')
+   }
+   const agent=useSyncExternalStore(subscribeAgentScene,getAgentScene)
+@@ -56,29 +70,34 @@ export function ModelStudio() {
+     return ++loadRevision.current
+   }
+   async function receiveRemote(bytes: ArrayBuffer, job: GenerationJob, revision: number): Promise<boolean> {
+-    return loadGlb(bytes, job.prompt.slice(0,120), 'Wczytano model utworzony przez Blender na Twoim serwerze. Możesz go obracać, pobrać lub dodać do katalogu.', revision)
++    if (!job.hasModel || !['succeeded','failed','cancelled'].includes(job.state)) return false
++    return loadGlb(bytes, job.prompt.slice(0,120), 'Wczytano wynik z tego zlecenia. Porównaj geometrię i tekstury ze zdjęciami przed dodaniem do katalogu.', revision, { kind: 'job', jobId: job.id, prompt: job.prompt, reviewedByAstra: job.modelStatus === 'reviewed' })
+   }
+-  async function loadGlb(bytes: ArrayBuffer, label: string, message: string, revision: number): Promise<boolean> {
++  async function loadGlb(bytes: ArrayBuffer, label: string, message: string, revision: number, origin: ModelProvenance): Promise<boolean> {
+     if (revision !== loadRevision.current) return false
+     setBusy(true)
+     let loaded: Group | null = null
+     try {
+       engine.current ??= await import('../studio/aiModel')
+       loaded = await engine.current.loadModel(bytes)
+-      engine.current.transformModel(loaded, defaults)
++      const nextModel = engine.current.transformModel(loaded, defaults)
++      const nextSize = engine.current.modelSize(nextModel)
+       if (revision !== loadRevision.current) { engine.current.disposeModel(loaded); return false }
+       if (sourceRef.current) engine.current.disposeModel(sourceRef.current)
+       sourceRef.current = loaded
+       setSource(loaded); setSceneData(null); setAdjustments(defaults)
++      setModel(nextModel); setSize(nextSize); setAdjustmentError('')
++      setProvenance(origin); setReviewed(false)
+       setName(label); setNote(message)
+       return true
+     } catch (e) {
+       if (loaded && loaded !== sourceRef.current) engine.current?.disposeModel(loaded)
+-      if (revision === loadRevision.current) setError((e as Error).message)
+-      throw e
++      const message = modelLoadError(e)
++      if (revision === loadRevision.current) setError(message)
++      throw new Error(message)
+     } finally { if (revision === loadRevision.current) setBusy(false) }
+   }
+-  async function showScene(value: unknown, label: string) {
++  async function showScene(value: unknown, label: string, origin: ModelProvenance = { kind: 'agent' }) {
+     explicitView.current=true
+     const revision=++loadRevision.current
+     setBusy(true); setError('')
+@@ -86,18 +105,20 @@ export function ModelStudio() {
+       const scene = sceneSchema.parse(value)
+       engine.current ??= await import('../studio/aiModel')
+       const loaded = sceneModel(scene)
+-      try {engine.current.transformModel(loaded, defaults)}catch(e){engine.current.disposeModel(loaded);throw e}
++      let nextModel: Group
++      try {nextModel=engine.current.transformModel(loaded, defaults)}catch(e){engine.current.disposeModel(loaded);throw e}
+       if(revision!==loadRevision.current){engine.current.disposeModel(loaded);return}
+       if (sourceRef.current) engine.current.disposeModel(sourceRef.current)
+       sourceRef.current = loaded; setSource(loaded); setSceneData(scene); setName(scene.name); setNote(label)
+-    } catch (e) { setError('Nie udało się wczytać sceny: ' + (e as Error).message) } finally { setBusy(false) }
++      setModel(nextModel);setSize(engine.current.modelSize(nextModel));setAdjustments(defaults);setAdjustmentError('');setProvenance(origin);setReviewed(false)
++    } catch (e) { if(revision===loadRevision.current)setError('Nie udało się wczytać sceny: ' + modelLoadError(e)) } finally { if(revision===loadRevision.current)setBusy(false) }
+   }
+   async function example() {
+     explicitView.current=true
+     ++loadRevision.current
+     invalidateAgentRequest()
+     setBusy(true);setError('')
+-    try { const response = await fetch('/models/codex-dragon.froge.json'); if (!response.ok) throw new Error('Plik modelu niedostępny.'); await showScene(await response.json(), 'Gotowy projekt smoka przygotowany przez Codexa. To przykład, nie wynik wpisanego właśnie opisu.') } catch (e) { setError((e as Error).message); setBusy(false) }
++    try { const response = await fetch('/models/codex-dragon.froge.json'); if (!response.ok) throw new Error('Plik modelu niedostępny.'); await showScene(await response.json(), 'Gotowy projekt smoka przygotowany przez Codexa. To przykład, nie wynik wpisanego właśnie opisu.', { kind: 'example' }) } catch (e) { setError((e as Error).message); setBusy(false) }
+   }
+   async function personExample(kind: 'rapper' | 'woman' | 'singer' | 'silhouette' | 'cardi' | 'seated' | 'couture-fan' | 'couture-silhouette' | 'fashion-1-v20' = 'rapper') {
+     explicitView.current=true
+@@ -124,7 +145,7 @@ export function ModelStudio() {
+         ? 'Poprawiona figurka: anatomiczna twarz i dłonie, dziesięć paznokci, makijaż oraz falowane włosy. Model jest zapisany na stronie. Podobieństwo do zdjęcia pozostaje przybliżone; obejrzyj twarz i dłonie z kilku stron.'
+         : kind==='cardi'
+         ? 'Studium inspirowane Cardi B: smuklejsza sylwetka, mniejszy nos, łagodniejsze usta, cieplejsza brązowa skóra, drobniejsze pasma włosów i fioletowe szpilki pasujące do sukienki. Podobieństwo pozostaje stylizowane. Obracaj model, pobierz GLB lub rozwiń gotowe prompty do dalszej pracy.'
+-        : 'Przykład wykonany w Blenderze. Postać stylizowana, z ogólną twarzą; nie przedstawia konkretnej artystki ani artysty.',revision)
++        : 'Przykład wykonany w Blenderze. Postać stylizowana, z ogólną twarzą; nie przedstawia konkretnej artystki ani artysty.',revision,{kind:'example'})
+     } catch(e) { if(revision===loadRevision.current)setError((e as Error).message) }
+     finally { if(revision===loadRevision.current)setBusy(false) }
+   }
+@@ -134,9 +155,9 @@ export function ModelStudio() {
+     const revision = ++loadRevision.current
+     invalidateAgentRequest()
+     if (file.size > 64 * 1024 * 1024) {setError('Maksymalny rozmiar pliku to 64 MB.');return}
+-    if (file.name.toLowerCase().endsWith('.json')) {try {if(file.size>16*1024*1024)throw new Error('Limit sceny JSON to 16 MB.');await showScene(JSON.parse(await file.text()),'Wczytano scenę do dalszej edycji.')}catch(e){setError((e as Error).message)};return}
++    if (file.name.toLowerCase().endsWith('.json')) {try {if(file.size>16*1024*1024)throw new Error('Limit sceny JSON to 16 MB.');await showScene(JSON.parse(await file.text()),'Wczytano scenę do dalszej edycji.',{kind:'import'})}catch(e){setError((e as Error).message)};return}
+     setBusy(true);setError('')
+-    try {engine.current ??= await import('../studio/aiModel');const loaded=await engine.current.loadModel(await file.arrayBuffer());engine.current.transformModel(loaded,defaults);if(revision!==loadRevision.current){engine.current.disposeModel(loaded);return}if(sourceRef.current)engine.current.disposeModel(sourceRef.current);sourceRef.current=loaded;setSource(loaded);setSceneData(null);setName(file.name);setNote('Wczytano model GLB. Możesz go skalować i eksportować.')}catch(e){if(revision===loadRevision.current)setError((e as Error).message)}finally{if(revision===loadRevision.current)setBusy(false)}
++    try {await loadGlb(await file.arrayBuffer(),file.name,'Wczytano model GLB. Możesz go skalować i eksportować.',revision,{kind:'import'})}catch(e){if(revision===loadRevision.current)setError((e as Error).message)}finally{if(revision===loadRevision.current)setBusy(false)}
+   }
+   function saveJson(filename: string, value: unknown) {
+     const url=URL.createObjectURL(new Blob([JSON.stringify(value)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)
+@@ -150,10 +171,12 @@ export function ModelStudio() {
+     } catch { setError('Nie udało się wyeksportować modelu. Spróbuj ponownie.') } finally { setExporting(false) }
+   }
+   function field(group: 'dimensions' | 'angles', index: number, value: string) {
++    setReviewed(false)
+     setAdjustments(previous => { const next = { ...previous, [group]: [...previous[group]] as [string,string,string] }; next[group][index] = value; return next })
+   }
+   async function saveProduct() {
+     if(!model||!engine.current||exporting)return
++    if(provenance?.kind==='job'&&!reviewed){setError('Porównaj ten model ze zdjęciami i potwierdź ocenę przed dodaniem do katalogu.');return}
+     setExporting(true);setError('')
+     try {
+       const blob=await engine.current.exportModel(model,'glb')
+@@ -164,6 +187,8 @@ export function ModelStudio() {
+       navigate('/shop?product='+product.id)
+     }catch(e){setError((e as Error).message)}finally{setExporting(false)}
+   }
++  const previousResult = !!model && !!currentJob && currentJob.id !== provenance?.jobId
++  const sourceLabel = provenance?.kind === 'example' ? 'ZAPISANY PRZYKŁAD' : provenance?.kind === 'import' ? 'WCZYTANY PLIK' : provenance?.kind === 'agent' ? 'MODEL OD AGENTA' : provenance?.kind === 'job' ? provenance.reviewedByAstra ? 'MODEL PO OCENIE ASTRY' : 'WYNIK ROBOCZY ZLECENIA' : 'OBSZAR ROBOCZY'
+   const tabs = <div className="ai-mode"><button aria-pressed={mode === 'ai'} onClick={() => setMode('ai')}>AI + Blender</button><button aria-pressed={mode === 'local'} onClick={() => setMode('local')}>Bryły parametryczne</button></div>
+   if (mode === 'local') return <>{tabs}<ParametricModelStudio /></>
+   return <div className="model-studio ai-studio">
+@@ -177,7 +202,7 @@ export function ModelStudio() {
+         <div className="ai-prompt-meta"><span>Bez wymaganych wymiarów</span><span>{prompt.length}/5000</span></div>
+         <button type="button" className="codex-jump" disabled={!prompt.trim()} onClick={()=>{document.getElementById('codex-prompt')?.scrollIntoView({block:'center',behavior:'smooth'});document.getElementById('codex-prompt')?.focus({preventScroll:true})}}>Otwórz polecenie Codexa z tego opisu</button>
+         <p className="studio-helper">Możesz użyć opisu lub dołączyć zdjęcia poniżej. Powstaje przybliżona geometria; podobieństwo twarzy wymaga dalszego dopracowania.</p>
+-        <RemoteGenerator prompt={prompt} onStart={startRemote} onResult={receiveRemote} canAutoRestore={()=>!explicitView.current&&!promptEdited.current&&!new URLSearchParams(location.search).has('example')} onRestorePrompt={restorePrompt} onReusePrompt={editPrompt} onNewModel={newModel}/>
++        <RemoteGenerator prompt={prompt} onStart={startRemote} onResult={receiveRemote} canAutoRestore={()=>!explicitView.current&&!promptEdited.current&&!new URLSearchParams(location.search).has('example')} onRestorePrompt={restorePrompt} onReusePrompt={editPrompt} onNewModel={newModel} onJobChange={setCurrentJob}/>
+         <CodexPromptEditor />
+         <button className={speech.listening?'studio-mic is-listening':'studio-mic'} aria-pressed={speech.listening} disabled={!speech.supported} onClick={speech.listening?speech.stop:speech.start}>{speech.listening?'Zatrzymaj dyktowanie':'Dyktuj opis'}</button>
+         <small className="studio-helper">{speech.supported?'Dyktowanie wpisuje tekst. Mikrofon włącza się po kliknięciu i korzysta z usługi przeglądarki.':'Możesz użyć mikrofonu klawiatury telefonu.'}</small>
+@@ -187,13 +212,17 @@ export function ModelStudio() {
+         {error && <p role="alert" className="studio-error">{error}</p>}
+       </section>
+       <section className="studio-canvas-panel" aria-label="Wynik generowania">
+-        <div className="original-character-start"><strong>Nowa figurka · studio beauty</strong><p>Anatomiczne dłonie, manicure i makijaż. Model zapisany na stronie, gotowy do obejrzenia i pobrania.</p><button disabled={busy} onClick={()=>void personExample('seated')}>Otwórz poprawioną dziewczynę</button></div>
+         <ReferenceCharacterGuide busy={busy} onUsePrompt={text=>{editPrompt(text);document.getElementById('ai-prompt')?.focus()}}/>
+-        <div className="studio-canvas-heading"><div><small>{model?'TWÓJ MODEL':'OBSZAR ROBOCZY'}</small><h2>{name||'Twój model 3D'}</h2></div></div>
+-        {model?<Suspense fallback={<p className="ai-empty">Ładuję podgląd…</p>}><Viewer model={model}/></Suspense>:<div className="ai-empty"><b>{busy?'Wczytuję geometrię…':'Tutaj pojawi się Twój model'}</b><p>Połącz serwer, opisz obiekt i kliknij „Generuj model 3D”. Gotowy wynik pojawi się tutaj automatycznie.</p><button disabled={busy} onClick={()=>void example()}>Obejrzyj przykład · smok</button></div>}
+-        <div className="studio-export"><div className="studio-export-buttons"><button disabled={busy} onClick={()=>void personExample('couture-fan')}>Suknia · wachlarz v20</button><button disabled={busy} onClick={()=>void personExample('couture-silhouette')}>Suknia · sylwetka v20</button><button disabled={busy} onClick={()=>void personExample('fashion-1-v20')}>Kucyk · v20</button><button disabled={busy} onClick={()=>void personExample('seated')}>Dziewczyna · makijaż i manicure</button><button disabled={busy} onClick={()=>void personExample('cardi')}>Cardi B · studium</button><button disabled={busy} onClick={()=>void personExample('silhouette')}>Przykład · sylwetka v13</button><button disabled={busy} onClick={()=>void personExample('singer')}>Przykład · wokalistka v12</button><button disabled={busy} onClick={()=>void personExample()}>Przykład · raper LA</button><button disabled={busy} onClick={()=>void personExample('woman')}>Przykład · kobieta LA</button><button disabled={busy} onClick={()=>void example()}>Przykład · smok Codexa</button><label className="blender-import">Wczytaj GLB lub scenę JSON<input aria-label="Wczytaj model GLB lub JSON" type="file" accept=".glb,.json" disabled={busy} onChange={e=>{void importFile(e.target.files?.[0]);e.target.value=''}}/></label></div></div>
+-        {model && <><div className="studio-measures">{['SZEROKOŚĆ X','WYSOKOŚĆ Y','GŁĘBOKOŚĆ Z'].map((label,i)=><div key={label}><small>{label}</small><b>{size[i]?.toFixed(2)} <span>cm</span></b></div>)}</div><div className="studio-export"><p>GLB zachowuje materiały i tekstury. Eksport GLB/STL uwzględnia widoczną skalę i obrót.</p><div className="studio-export-buttons"><button disabled={busy} onClick={()=>void personExample('couture-fan')}>Suknia · wachlarz v20</button><button disabled={busy} onClick={()=>void personExample('couture-silhouette')}>Suknia · sylwetka v20</button><button disabled={busy} onClick={()=>void personExample('fashion-1-v20')}>Kucyk · v20</button><button disabled={exporting||busy||!!adjustmentError} onClick={()=>void saveProduct()}>Dodaj model do katalogu</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('glb')}>Pobierz GLB + tekstury</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('stl')}>Pobierz STL · mm</button>{sceneData && <button onClick={()=>saveJson('model-blender.froge.json',sceneData)}>Scena do dodatku Blender · JSON</button>}</div><p>JSON zachowuje części w źródłowej skali, przed zmianami wymiarów i obrotów. STL nie zawiera tekstur. Przed drukiem sprawdź siatkę i połącz przecinające się części.</p></div></>}
+-        <details className="ai-adjustments"><summary>Wymiary i kąty · opcjonalnie</summary><p>Zostaw puste, aby zachować proporcje. Domyślnie najdłuższy bok ma 10 cm. Jeden wymiar skaluje całość proporcjonalnie; kilka wymiarów może zmienić proporcje.</p><div className="ai-fields">{['Szerokość X', 'Wysokość Y', 'Głębokość Z'].map((label,i) => <label key={label}>{label} · cm<input type="number" min="0.1" max="1000" step="0.1" placeholder="Automatycznie" value={adjustments.dimensions[i]} onChange={e => field('dimensions', i, e.target.value)} /></label>)}</div><p>Kąty obrotu modelu (nie kąty konstrukcyjne). Wymiary powyżej dotyczą obiektu przed obrotem.</p><div className="ai-fields">{['X','Y','Z'].map((label,i) => <label key={label}>Obrót {label} · °<input type="number" min="-360" max="360" placeholder="0" value={adjustments.angles[i]} onChange={e => field('angles',i,e.target.value)} /></label>)}</div><button onClick={() => setAdjustments(defaults)}>Wyczyść ustawienia</button>{adjustmentError && <p role="alert" className="studio-error">{adjustmentError} Podgląd zachowuje ostatnią poprawną skalę.</p>}</details>
++        <div className="studio-canvas-heading"><div><small>{sourceLabel}</small><h2>{name||'Twój model 3D'}</h2>{provenance?.jobId && <small>Źródło podglądu: zlecenie {provenance.jobId}</small>}</div></div>
++        {model && <div className="studio-helper model-provenance" role="status" aria-label="Pochodzenie modelu w podglądzie">
++          {provenance?.kind==='example' && <p>Oglądasz wcześniej zapisany przykład. Nowe generowanie nie wybiera go automatycznie.</p>}
++          {previousResult && <p>Ten podgląd pochodzi z wcześniejszego modelu. Bieżące zlecenie {currentJob.id} nie zostało wczytane do podglądu.</p>}
++          {provenance?.kind==='job' && <p>{provenance.reviewedByAstra ? 'Astra oceniła tę wersję modelu. Porównaj wynik ze zdjęciami przed własną akceptacją.' : 'Model jest zapisany jako wynik testowy. Wygląd i zgodność z referencjami wymagają oceny.'}</p>}
++        </div>}
++        {model?<ViewerBoundary key={provenance?.jobId||name}><Suspense fallback={<p className="ai-empty">Ładuję podgląd…</p>}><Viewer model={model}/></Suspense></ViewerBoundary>:<div className="ai-empty"><b>{busy?'Wczytuję geometrię…':'Tutaj pojawi się Twój model'}</b><p>Połącz serwer, opisz obiekt i kliknij „Generuj model 3D”. Model po ocenie Astry pojawi się tutaj; zapisany wynik roboczy możesz otworzyć przy swoim zleceniu.</p><button disabled={busy} onClick={()=>void example()}>Obejrzyj przykład · smok</button></div>}
++        <details className="studio-export model-examples"><summary>Zapisane przykłady · osobne od bieżącego zlecenia</summary><div className="studio-export-buttons"><button disabled={busy} onClick={()=>void personExample('couture-fan')}>Przykład · suknia z wachlarzem v20</button><button disabled={busy} onClick={()=>void personExample('couture-silhouette')}>Suknia · sylwetka v20</button><button disabled={busy} onClick={()=>void personExample('fashion-1-v20')}>Kucyk · v20</button><button disabled={busy} onClick={()=>void personExample('seated')}>Dziewczyna · makijaż i manicure</button><button disabled={busy} onClick={()=>void personExample('cardi')}>Cardi B · studium</button><button disabled={busy} onClick={()=>void personExample('silhouette')}>Przykład · sylwetka v13</button><button disabled={busy} onClick={()=>void personExample('singer')}>Przykład · wokalistka v12</button><button disabled={busy} onClick={()=>void personExample()}>Przykład · raper LA</button><button disabled={busy} onClick={()=>void personExample('woman')}>Przykład · kobieta LA</button><button disabled={busy} onClick={()=>void example()}>Przykład · smok Codexa</button><label className="blender-import">Wczytaj GLB lub scenę JSON<input aria-label="Wczytaj model GLB lub JSON" type="file" accept=".glb,.json" disabled={busy} onChange={e=>{void importFile(e.target.files?.[0]);e.target.value=''}}/></label></div></details>
++        {model && <><div className="studio-measures">{['SZEROKOŚĆ X','WYSOKOŚĆ Y','GŁĘBOKOŚĆ Z'].map((label,i)=><div key={label}><small>{label}</small><b>{size[i]?.toFixed(2)} <span>cm</span></b></div>)}</div><div className="studio-export"><p>GLB zachowuje materiały i tekstury. Eksport GLB/STL uwzględnia widoczną skalę i obrót.</p><div className="studio-export-buttons">{provenance?.kind==='job' && <label className="model-review"><input type="checkbox" checked={reviewed} onChange={e=>setReviewed(e.target.checked)}/>Sprawdziłem ten model i tekstury; akceptuję wygląd do katalogu</label>}<button disabled={exporting||busy||!!adjustmentError||(provenance?.kind==='job'&&!reviewed)} onClick={()=>void saveProduct()}>Dodaj model do katalogu</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('glb')}>Pobierz GLB + tekstury</button><button disabled={exporting||!!adjustmentError} onClick={()=>void download('stl')}>Pobierz STL · mm</button>{sceneData && <button onClick={()=>saveJson('model-blender.froge.json',sceneData)}>Scena do dodatku Blender · JSON</button>}</div><p>JSON zachowuje części w źródłowej skali, przed zmianami wymiarów i obrotów. STL nie zawiera tekstur. Przed drukiem sprawdź siatkę i połącz przecinające się części.</p></div></>}
++        <details className="ai-adjustments"><summary>Wymiary i kąty · opcjonalnie</summary><p>Zostaw puste, aby zachować proporcje. Domyślnie najdłuższy bok ma 10 cm. Jeden wymiar skaluje całość proporcjonalnie; kilka wymiarów może zmienić proporcje.</p><div className="ai-fields">{['Szerokość X', 'Wysokość Y', 'Głębokość Z'].map((label,i) => <label key={label}>{label} · cm<input type="number" min="0.1" max="1000" step="0.1" placeholder="Automatycznie" value={adjustments.dimensions[i]} onChange={e => field('dimensions', i, e.target.value)} /></label>)}</div><p>Kąty obrotu modelu (nie kąty konstrukcyjne). Wymiary powyżej dotyczą obiektu przed obrotem.</p><div className="ai-fields">{['X','Y','Z'].map((label,i) => <label key={label}>Obrót {label} · °<input type="number" min="-360" max="360" placeholder="0" value={adjustments.angles[i]} onChange={e => field('angles',i,e.target.value)} /></label>)}</div><button onClick={() => {setAdjustments(defaults);setReviewed(false)}}>Wyczyść ustawienia</button>{adjustmentError && <p role="alert" className="studio-error">{adjustmentError} Podgląd zachowuje ostatnią poprawną skalę.</p>}</details>
+       </section>
+     </div>
+     <PlannedMarketplaces />
+diff --git a/src/studio/aiStudio.css b/src/studio/aiStudio.css
+index b0c20cd..3c2fb18 100644
+--- a/src/studio/aiStudio.css
++++ b/src/studio/aiStudio.css
+@@ -12,3 +12,5 @@
+ @media(max-width:1050px){.ai-layout{grid-template-columns:minmax(0,1fr)}.ai-studio .studio-intro h1{font-size:32px}.codex-editor textarea{min-height:240px}}
+ 
+ .generation-report{margin-top:16px;padding:14px;border:1px solid #59616c;border-radius:10px;background:#101b28}.generation-report p{margin:8px 0;line-height:1.5}.generation-report ul{padding-left:20px}.state-review{border-color:#ad8059}.generation-report strong{color:#f1c18e}
++
++.model-provenance{margin:0;padding:12px 20px;border-bottom:1px solid #293448;background:#121e2c}.model-provenance p{margin:4px 0;overflow-wrap:anywhere}.ai-studio .studio-canvas-heading small{display:block;overflow-wrap:anywhere}.model-examples summary{cursor:pointer;line-height:1.5}.model-examples .studio-export-buttons button:first-child{border-color:#364358;color:#e4eaf1;background:#1a2737}.model-examples .studio-export-buttons button:hover{background:#293a4f;border-color:#7b8da2}.model-review{display:flex;align-items:flex-start;gap:10px;width:100%;line-height:1.5;margin:0 0 8px}.model-review input{flex-shrink:0;margin-top:3px!important}
+diff --git a/src/studio/codexDraft.ts b/src/studio/codexDraft.ts
+index afa8422..381b011 100644
+--- a/src/studio/codexDraft.ts
++++ b/src/studio/codexDraft.ts
+@@ -2,7 +2,8 @@ import { invalidateAgentRequest } from './agentSceneStore'
+ 
+ export type CodexContext = { prompt: string; photos: { name: string; view: string; subject?: string }[]; workerVersion?: number }
+ type Execution = { state: 'idle' | 'submitting' | 'running' | 'finished' | 'failed'; detail: string; jobId?: string; engine?: string }
+-type Draft = { context: CodexContext; text: string; edited: boolean; stale: boolean; revision: number; execution?: Execution }
++type Availability = { enabled: boolean; reason: string }
++type Draft = { context: CodexContext; text: string; edited: boolean; stale: boolean; revision: number; execution?: Execution; availability?: Availability }
+ let state: Draft = { context: { prompt: '', photos: [] }, text: '', edited: false, stale: false, revision: 1 }
+ const listeners = new Set<() => void>()
+ export const getCodexDraft = () => state
+@@ -11,7 +12,12 @@ function emit() { listeners.forEach(fn => fn()) }
+ let executor: (() => Promise<void>) | undefined
+ export function connectCodexExecutor(run: () => Promise<void>) {
+   executor = run
+-  return () => { if (executor === run) executor = undefined }
++  return () => {
++    if (executor !== run) return
++    executor = undefined
++    state = { ...state, execution: undefined, availability: { enabled: false, reason: 'Otwórz generator i sprawdź połączenie.' } }
++    emit()
++  }
+ }
+ export async function executeCodexDraft() {
+   if (!executor) throw new Error('Poczekaj na połączenie generatora.')
+@@ -21,6 +27,10 @@ export function setCodexExecution(execution: Execution) {
+   if (JSON.stringify(state.execution) === JSON.stringify(execution)) return
+   state = { ...state, execution }; emit()
+ }
++export function setCodexAvailability(availability: Availability) {
++  if (JSON.stringify(state.availability) === JSON.stringify(availability)) return
++  state = { ...state, availability }; emit()
++}
+ export function instructionsForGeneration(prompt: string, photos: CodexContext['photos']) {
+   updateCodexContext({ prompt, photos })
+   if (!state.text.trim()) regenerateCodexDraft()
+diff --git a/src/tests/blender-api.test.ts b/src/tests/blender-api.test.ts
+index d776cda..aff1c51 100644
+--- a/src/tests/blender-api.test.ts
++++ b/src/tests/blender-api.test.ts
+@@ -348,6 +348,37 @@ describe('private Blender request lifecycle with real SQLite', () => {
+     }))
+     expect(await (await request('jobs/' + id)).json()).toMatchObject({ job: { state: 'cancelled', hasModel: false } })
+   })
++  it('keeps legacy and interrupted candidates as drafts without promoting them in history', async () => {
++    await pair(); await submit()
++    vi.stubGlobal('fetch', vi.fn(async url => String(url).endsWith('/model') ? new Response(minimalGlb()) : Response.json({ id, state: 'succeeded', modelStatus: 'draft' })))
++    expect(await (await request('jobs/' + id)).json()).toMatchObject({ job: { hasModel: true, modelStatus: 'draft' } })
++    vi.stubGlobal('fetch', vi.fn(() => { throw new Error('History must remain available offline') }))
++    expect((await (await request('jobs')).json()).jobs[0].modelStatus).toBe('draft')
++    expect(await (await request('jobs/' + id + '/model')).arrayBuffer()).toEqual(minimalGlb())
++  })
++  it('persists reviewed status only for the current job and the exact reviewed GLB', async () => {
++    await pair(); await submit()
++    const bytes = minimalGlb(), modelSha256 = Buffer.from(await crypto.subtle.digest('SHA-256', bytes)).toString('hex')
++    vi.stubGlobal('fetch', vi.fn(async url => String(url).endsWith('/model') ? new Response(bytes) : Response.json({ id, state: 'succeeded', modelStatus: 'reviewed', modelSha256 })))
++    expect(await (await request('jobs/' + id)).json()).toMatchObject({ job: { hasModel: true, modelStatus: 'reviewed' } })
++    expect(files.get(`owner-a/${id}.reviewed.glb`)).toEqual(bytes)
++    expect((await (await request('jobs')).json()).jobs[0].modelStatus).toBe('reviewed')
++    expect(await (await request('jobs/' + id + '/model')).arrayBuffer()).toEqual(bytes)
++  })
++  it('does not save or load a stale model with a mismatched review digest', async () => {
++    await pair(); await submit()
++    vi.stubGlobal('fetch', vi.fn(async url => String(url).endsWith('/model') ? new Response(minimalGlb()) : Response.json({ id, state: 'succeeded', modelStatus: 'reviewed', modelSha256: 'a'.repeat(64) })))
++    expect(await (await request('jobs/' + id)).json()).toMatchObject({ job: { state: 'failed', hasModel: false, modelStatus: 'none' } })
++    expect(files.size).toBe(0)
++  })
++  it('rejects another job status before requesting its model', async () => {
++    await pair(); await submit()
++    const upstream = vi.fn(async () => Response.json({ id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', state: 'succeeded' }))
++    vi.stubGlobal('fetch', upstream)
++    expect((await request('jobs/' + id)).status).toBe(502)
++    expect(upstream).toHaveBeenCalledTimes(1)
++    expect(files.size).toBe(0)
++  })
+   it('marks a missing remote job or invalid artifact as failed without substituting a sample', async () => {
+     await pair(); await submit()
+     vi.stubGlobal('fetch', vi.fn(async url => String(url).endsWith('/model') ? new Response('bad glb') : Response.json({ state: 'succeeded' })))
+diff --git a/src/tests/blender-ui.test.tsx b/src/tests/blender-ui.test.tsx
+index dc0b12b..ab4d2d5 100644
+--- a/src/tests/blender-ui.test.tsx
++++ b/src/tests/blender-ui.test.tsx
+@@ -2,6 +2,7 @@ import { afterEach, expect, it, vi } from 'vitest'
+ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+ import { RemoteGenerator } from '../blender/RemoteGenerator'
+ import { blenderRequest } from '../blender/client'
++import { RECOMMENDED_CONNECTOR_VERSION } from '../blender/compatibility'
+ afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers() })
+ 
+ it('recovers a texture failure only after the worker confirms the patch and submits a saved plan without photos or AI', async () => {
+@@ -78,7 +79,7 @@ it('releases the Generate button after a preparation exception and shows sending
+ })
+ 
+ it('keeps a completed model in history without filling the new prompt or submitting a job',async()=>{
+- const job={id:'12345678-1234-4234-8234-123456789abc',prompt:'Wokalistka Nova',state:'succeeded',detail:'Gotowy w 29.4 s',hasModel:true}
++ const job={id:'12345678-1234-4234-8234-123456789abc',prompt:'Wokalistka Nova',state:'succeeded',detail:'Gotowy w 29.4 s',hasModel:true,modelStatus:'reviewed'}
+  const restore=vi.fn(),reuse=vi.fn(),onResult=vi.fn(async()=>true)
+  const remote=vi.fn(async(url)=>String(url).endsWith('/connection')?Response.json({instructionsRevision:1,connected:true,ready:true,connectorVersion:13}):String(url).endsWith('/jobs')?Response.json({jobs:[job]}):String(url).endsWith('/model')?new Response(new Uint8Array([1,2,3]),{headers:{'Content-Type':'model/gltf-binary'}}):Response.json({job}))
+  vi.stubGlobal('fetch',remote)
+@@ -93,7 +94,7 @@ it('keeps a completed model in history without filling the new prompt or submitt
+ })
+ 
+ it('does not replace an explicitly selected example with a late history response',async()=>{
+- const job={id:'12345678-1234-4234-8234-123456789abc',prompt:'Poprzednia Nova',state:'succeeded',detail:'Gotowy',hasModel:true}
++ const job={id:'12345678-1234-4234-8234-123456789abc',prompt:'Poprzednia Nova',state:'succeeded',detail:'Gotowy',hasModel:true,modelStatus:'reviewed'}
+  let finishHistory:(response:Response)=>void=()=>{},explicit=false
+  const start=vi.fn(()=>1),result=vi.fn(async()=>true),restore=vi.fn()
+  const remote=vi.fn((url)=>String(url).endsWith('/connection')?Promise.resolve(Response.json({instructionsRevision:1,connected:true,ready:true,connectorVersion:13})):new Promise<Response>(resolve=>{finishHistory=resolve}))
+@@ -116,7 +117,7 @@ it('recovers the same job after a lost mobile connection without starting anothe
+     if (path.endsWith('/jobs')) return Response.json({ jobs: [job] })
+     if (!reachable) throw new TypeError('Failed to fetch')
+     if (path.endsWith('/model')) return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'model/gltf-binary' } })
+-    return Response.json({ job: { ...job, state: 'succeeded', detail: 'Model gotowy', hasModel: true } })
++    return Response.json({ job: { ...job, state: 'succeeded', detail: 'Model gotowy', hasModel: true, modelStatus: 'reviewed' } })
+   })
+   vi.stubGlobal('fetch', fetcher)
+   render(<RemoteGenerator prompt={job.prompt} onStart={() => 8} onResult={onResult}/>)
+@@ -156,7 +157,7 @@ it.each([5, 6])('requires the geometry update on worker v%i', async version => {
+   const job = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dąb', state: 'failed', detail: '/work/generate.py cannot unpack non-iterable Object object', hasModel: false }
+   vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { instructionsRevision: 1, connected: true, ready: true, connectorVersion: version } : String(url).endsWith('/jobs') ? { jobs: [job] } : { job })))
+   render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)
+-  await screen.findByText('Popraw generowanie ze zdjęć · v29')
++  await screen.findByText(`Popraw generowanie ze zdjęć · v${RECOMMENDED_CONNECTOR_VERSION}`)
+   await screen.findByText('Nie udało się wygenerować modelu')
+   expect(screen.queryByRole('button', { name: 'Wykonaj zapisany skrypt' })).not.toBeInTheDocument()
+   expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeDisabled()
+@@ -196,7 +197,7 @@ it('does not mistake an unreachable worker for an outdated worker', async () =>
+   vi.stubGlobal('fetch', vi.fn(async url => Response.json(String(url).endsWith('/connection') ? { connected: true, ready: false, detail: 'Brak łączności z serwerem.' } : { jobs: [] })))
+   render(<RemoteGenerator prompt="Dąb" onStart={() => 1} onResult={vi.fn()}/>)
+   await screen.findByText('Brak łączności z serwerem.')
+-  expect(screen.queryByText('Popraw generowanie ze zdjęć · v29')).not.toBeInTheDocument()
++  expect(screen.queryByText(`Popraw generowanie ze zdjęć · v${RECOMMENDED_CONNECTOR_VERSION}`)).not.toBeInTheDocument()
+   expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeDisabled()
+ })
+ 
+@@ -209,13 +210,13 @@ it.each([7, 8, 9, 10, 11].flatMap(version => ['succeeded', 'failed'].map(state =
+     if (path.endsWith('/model')) return new Response(new Uint8Array([1, 2, 3]), { headers: { 'Content-Type': 'model/gltf-binary' } })
+     if (path.endsWith('/jobs') && init?.method === 'POST') return Response.json({ job })
+     if (path.endsWith('/jobs')) return Response.json({ jobs: [] })
+-    return Response.json({ job: { ...job, state, detail: state === 'failed' ? 'AI nie ukończyło modelu' : 'ready', hasModel: state === 'succeeded' } })
++    return Response.json({ job: { ...job, state, detail: state === 'failed' ? 'AI nie ukończyło modelu' : 'ready', hasModel: state === 'succeeded', modelStatus: state === 'succeeded' ? 'reviewed' : 'none' } })
+   })
+   vi.stubGlobal('fetch', fetcher)
+   render(<RemoteGenerator prompt={prompt} onStart={() => 7} onResult={onResult}/>)
+   await screen.findByText('Opis → scena · lokalne AI')
+   expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeEnabled()
+-  if (version < 14) expect(screen.getByText('Pełna aktualizacja generatora · v29')).toBeInTheDocument()
++  if (version < 14) expect(screen.getByText(`Pełna aktualizacja generatora · v${RECOMMENDED_CONNECTOR_VERSION}`)).toBeInTheDocument()
+   fireEvent.click(screen.getByRole('button', { name: 'Generuj model 3D' }))
+   await screen.findByText(state === 'succeeded' ? 'Nowy model w podglądzie' : 'Nie udało się wygenerować modelu')
+   const submitted = fetcher.mock.calls.find(([, init]) => init?.method === 'POST')!
+diff --git a/src/tests/new-photo-model.test.tsx b/src/tests/new-photo-model.test.tsx
+index 0348f6f..35e317b 100644
+--- a/src/tests/new-photo-model.test.tsx
++++ b/src/tests/new-photo-model.test.tsx
+@@ -9,8 +9,8 @@ vi.mock('../components/AiModelViewer', () => ({ default: () => <div data-testid=
+ vi.mock('../studio/aiModel', () => ({ loadModel: vi.fn(async () => ({})), transformModel: (source: object) => source, modelSize: () => [1, 2, 1], disposeModel: vi.fn() }))
+ vi.mock('../blender/photoReferences', async importOriginal => ({ ...await importOriginal<object>(), prepareReferencePhoto: vi.fn(async (file: File) => ({ name: file.name, view: 'other', dataUrl: 'data:image/jpeg;base64,fixture' })) }))
+ afterEach(() => { cleanup(); vi.unstubAllGlobals(); invalidateAgentRequest() })
+-const old = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Poprzednia figurka Cardi B', state: 'succeeded', detail: 'Model gotowy', hasModel: true }
+-const connection = { connected: true, ready: true, connectorVersion: 13, provider: 'openai' }
++const old = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Poprzednia figurka Cardi B', state: 'succeeded', detail: 'Model gotowy', hasModel: true, modelStatus: 'reviewed' }
++const connection = { connected: true, ready: true, connectorVersion: 13, instructionsRevision: 1, provider: 'openai' }
+ function choose() { fireEvent.change(screen.getByLabelText('Dodaj zdjęcia · JPG, PNG, WebP'), { target: { files: [new File(['fixture'], '40145.png', { type: 'image/png' })] } }) }
+ 
+ it.each([
+@@ -40,7 +40,7 @@ it('starts a photo model with the entered instructions and clears the old result
+   expect(screen.queryByTestId('model-preview')).not.toBeInTheDocument()
+   expect(screen.queryByText('Zapisany model w podglądzie')).not.toBeInTheDocument()
+   expect(screen.getByRole('button', { name: 'Generuj model 3D ze zdjęć' })).toBeDisabled()
+-  const update = screen.getByRole('link', { name: 'Pobierz pełną paczkę · v25' })
++  const update = screen.getByRole('link', { name: /Pobierz pełną paczkę/ })
+   expect(screen.getByRole('button', { name: 'Generuj model 3D ze zdjęć' }).compareDocumentPosition(update) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+   expect(fetcher.mock.calls.some(([, init]) => init?.method)).toBe(false)
+   fireEvent.click(screen.getByRole('button', { name: 'Nowy model · wyczyść formularz' }))
+diff --git a/src/tests/photo-generation-ui.test.tsx b/src/tests/photo-generation-ui.test.tsx
+index 8d879b3..cd6a68d 100644
+--- a/src/tests/photo-generation-ui.test.tsx
++++ b/src/tests/photo-generation-ui.test.tsx
+@@ -13,7 +13,7 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals() })
+ function mount(version = 15, provider = 'openai', history: object[] = []) {
+   const fetcher = vi.fn(async (url, init) => {
+     const path = String(url)
+-    if (path.endsWith('/connection')) return Response.json({ connected: true, ready: true, connectorVersion: version, portraitRevision: version>=15 ? 1 : 0, provider, photoInput: true })
++    if (path.endsWith('/connection')) return Response.json({ instructionsRevision: 1, connected: true, ready: true, connectorVersion: version, portraitRevision: version>=15 ? 1 : 0, provider, photoInput: true })
+     if (init?.method === 'POST') return Response.json({ job: { ...JSON.parse(init.body), state: 'failed', detail: 'Test completed', hasModel: false } })
+     return Response.json(path.endsWith('/jobs') ? { jobs: history } : { job: history[0] })
+   })
