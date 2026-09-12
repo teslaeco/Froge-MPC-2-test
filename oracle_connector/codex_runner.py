@@ -26,6 +26,16 @@ MAX_OUTPUT_TOKENS=36000
 MAX_REQUESTS=12
 MAX_SECONDS=900
 MODEL='gpt-6-astra'
+LITE_HEADER='x-openai-internal-codex-responses-lite'
+
+
+def request_tools(payload):
+    """Codex 0.154 Astra puts schemas in developer additional_tools items."""
+    catalog=list(payload.get('tools') or [])
+    for item in payload.get('input',[]) if isinstance(payload.get('input'),list) else []:
+        if isinstance(item,dict) and item.get('type')=='additional_tools' and item.get('role')=='developer':
+            catalog.extend(item.get('tools') or [])
+    return tool_entries(catalog)
 
 
 def tool_entries(tools, namespace=None):
@@ -86,7 +96,7 @@ class Gateway:
                     if not 1<=size<=32*1024**2:return self.reject(413,'Request too large')
                     payload=json.loads(self.rfile.read(size))
                     if not isinstance(payload,dict) or payload.get('model')!=MODEL:return self.reject(400,'Only the configured Astra model is available')
-                    entries=list(tool_entries(payload.get('tools',[])))
+                    entries=list(request_tools(payload))
                     if not any(t.get('name')=='exec' and t.get('type')=='custom' for _,t in entries):
                         outer.error='CODEX_TOOLS_MISSING: Astra nie otrzymala narzedzia exec. Sprawdz instalacje trybu kodowego i Blender MCP; nie wyslano zapytania do OpenAI.'
                         outer.save()
@@ -101,8 +111,11 @@ class Gateway:
                     payload['max_output_tokens']=allowance
                     payload['store']=False;payload['stream']=True
                     payload['reasoning']={**payload.get('reasoning',{}),'effort':'high'}
-                    request=urllib.request.Request('https://api.openai.com/v1/responses',data=json.dumps(payload).encode(),
-                        headers={'Authorization':'Bearer '+outer.key,'Content-Type':'application/json'})
+                    headers={'Authorization':'Bearer '+outer.key,'Content-Type':'application/json'}
+                    # Preserve the official CLI's wire protocol marker. No
+                    # caller credentials or arbitrary headers are forwarded.
+                    if self.headers.get(LITE_HEADER)=='true':headers[LITE_HEADER]='true'
+                    request=urllib.request.Request('https://api.openai.com/v1/responses',data=json.dumps(payload).encode(),headers=headers)
                     opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),NoRedirect())
                     with opener.open(request,timeout=180) as response:
                         self.send_response(200);self.send_header('Content-Type','text/event-stream');self.send_header('Cache-Control','no-store');self.end_headers()

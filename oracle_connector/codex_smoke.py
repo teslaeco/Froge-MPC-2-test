@@ -49,7 +49,7 @@ class Fixture:
     def open(self, request, timeout):
         payload = json.loads(request.data); self.seen.append(payload)
         if len(self.seen) == 1:
-            entry = next(((ns,t) for ns,t in codex_runner.tool_entries(payload.get('tools', [])) if t.get('name') == 'exec' and t.get('type') == 'custom'), None)
+            entry = next(((ns,t) for ns,t in codex_runner.request_tools(payload) if t.get('name') == 'exec' and t.get('type') == 'custom'), None)
             if entry is None: raise ValueError('CODEX_EXEC_MISSING')
             namespace, _ = entry
             item = {'id':'ctc_fixture','type':'custom_tool_call','status':'completed','call_id':'call_fixture','name':'exec','input':PROBE.replace('TOKEN',self.token)}

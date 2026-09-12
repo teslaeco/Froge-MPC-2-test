@@ -9,7 +9,7 @@ from unittest.mock import patch
 import urllib.request
 import urllib.error
 from blender_mcp import JobTools, serve, write
-from codex_runner import Gateway, command, safe_message
+from codex_runner import Gateway, command, safe_message, LITE_HEADER
 from codex_smoke import Fixture, result_verified
 
 class McpWorkflowTests(unittest.TestCase):
@@ -136,6 +136,25 @@ class AstraCodeModeTests(unittest.TestCase):
         call=events[1]['item']
         self.assertEqual((call['type'],call['name'],call['namespace']),('custom_tool_call','exec','functions'))
         self.assertIn('await tools[tool.name]',call['input'])
+    def test_actual_astra_lite_request_preserves_tools_and_protocol_header(self):
+        payload={'model':'gpt-6-astra','input':[{'type':'additional_tools','role':'developer','tools':[{'type':'namespace','name':'functions','tools':[{'type':'custom','name':'exec'}]}]}]}
+        fixture=Fixture('nonce'); captured=[]
+        class Opener:
+            def open(self,request,timeout):
+                captured.append(request)
+                return fixture.open(request,timeout)
+        client=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with tempfile.TemporaryDirectory() as temp, patch('codex_runner.urllib.request.build_opener',return_value=Opener()):
+            with Gateway('upstream-test-key',Path(temp),threading.Event()) as gateway:
+                request=urllib.request.Request('http://127.0.0.1:%d/v1/responses'%gateway.server.server_port,data=json.dumps(payload).encode(),
+                    headers={'Authorization':'Bearer '+gateway.token,LITE_HEADER:'true','X-Unrelated':'do-not-forward'})
+                with client.open(request,timeout=2) as response:self.assertIn(b'custom_tool_call',response.read())
+                headers={k.lower():v for k,v in captured[0].header_items()}
+                self.assertEqual(headers[LITE_HEADER],'true');self.assertNotIn('x-unrelated',headers)
+                self.assertNotIn('tools',json.loads(captured[0].data))
+                self.assertEqual(json.loads(captured[0].data)['input'],payload['input'])
+                self.assertEqual(gateway.requests,1)
+
     def test_empty_direct_only_catalog_is_rejected_by_smoke(self):
         for tools in ([],[{'type':'function','name':'mcp__blender__get_current_model'}]):
             with self.subTest(tools=tools),self.assertRaisesRegex(ValueError,'CODEX_EXEC_MISSING'):
