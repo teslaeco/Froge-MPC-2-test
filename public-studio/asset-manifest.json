@@ -1,0 +1,125 @@
+{
+  "origin": "https://forge-studio-public.terraformingplanet.chatgpt.site",
+  "files": [
+    {
+      "path": "assets/comparison.webp",
+      "bytes": 230534,
+      "sha256": "47525b74c4a96a80c794dbb4466c032f1c150076f0ba06ee232764f7b4c84845"
+    },
+    {
+      "path": "assets/model-back.webp",
+      "bytes": 38550,
+      "sha256": "5034ae241b4137cae5c4dd496f41ffdd0abdfead7717c6aa7429f4a95a3302f6"
+    },
+    {
+      "path": "assets/model-face.webp",
+      "bytes": 67520,
+      "sha256": "e99dd34d3dbd036fc16537de2c69de0604ec19259895d383f8423fa4e2c19d74"
+    },
+    {
+      "path": "assets/model-front.webp",
+      "bytes": 30098,
+      "sha256": "f4f5892c45e4f88872b6835bbadf50e74cb49dc2f1ee1a489b57e49e0325eaa4"
+    },
+    {
+      "path": "assets/model-left.webp",
+      "bytes": 29882,
+      "sha256": "609a356d092117904896b39391bf41ace1ba8b4413e764a157d418b816a5df0c"
+    },
+    {
+      "path": "assets/model.glb",
+      "bytes": 23161896,
+      "sha256": "adf3a18bcb69d1aa99efeba44c8b6d8d51ddbf9fcfa0af732d1d44bbe3e32ddf"
+    },
+    {
+      "path": "assets/queen.glb",
+      "bytes": 21998416,
+      "sha256": "067ebb9cb36cf5bf0191c8459c90f1755713785f89fd1c89d158454241cdd274"
+    },
+    {
+      "path": "assets/queen.webp",
+      "bytes": 55660,
+      "sha256": "0a883d193ab5e299f768e82b5d6910f8dbd2f4c4ea7cb05e01b10dd07f892335"
+    },
+    {
+      "path": "assets/release.json",
+      "bytes": 306,
+      "sha256": "75755969926e2d10fd20ddad90ddb285261f6fad766dbf83c6c1871c603c6dfb"
+    },
+    {
+      "path": "assets/trailer-poster.webp",
+      "bytes": 348814,
+      "sha256": "0abe4053f8f9a5dbd0d6eca81f9ccc5e719b1a0593bc6ab80855fa4c789b7b70"
+    },
+    {
+      "path": "assets/trailer.mp4",
+      "bytes": 2725213,
+      "sha256": "d830c96d3db2c75e800fdd45fad2054f79529c0cc0e7060ad4ea61c4217b66ae"
+    },
+    {
+      "path": "vendor/three/LICENSE",
+      "bytes": 1082,
+      "sha256": "97de7ac302052bcea7f20e5ae89635c10e049614f56409288d554d63fceb614f"
+    },
+    {
+      "path": "vendor/three/build/three.core.min.js",
+      "bytes": 385387,
+      "sha256": "e4d47577d74c8cefcc2bd9f90025a5ad125636675d08c9fabd2b3e0345cd1848"
+    },
+    {
+      "path": "vendor/three/build/three.module.min.js",
+      "bytes": 365553,
+      "sha256": "b282fbcc3b31d7b5aff8e7cb07bced920e14d2d8dcc56655a4a82de4be92dce8"
+    },
+    {
+      "path": "vendor/three/examples/jsm/controls/OrbitControls.js",
+      "bytes": 40505,
+      "sha256": "270b950ab99ba5a4c265443106cc507629d9a7170196d0f93cb39b8352e49025"
+    },
+    {
+      "path": "vendor/three/examples/jsm/libs/draco/LICENSE",
+      "bytes": 13899,
+      "sha256": "58738680341b408022157c34c95823fe803794b83b272a4904b7f86dfc4f2a6e"
+    },
+    {
+      "path": "vendor/three/examples/jsm/libs/draco/README.md",
+      "bytes": 1396,
+      "sha256": "65e224678b6ed450141d0861c884480434c170e736971cd9c9b62e22eb3647b8"
+    },
+    {
+      "path": "vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.js",
+      "bytes": 512466,
+      "sha256": "810b84f9df3b95b2a0a307b185bf45ef6fd76658dd54f50dde94fee04c379ad6"
+    },
+    {
+      "path": "vendor/three/examples/jsm/libs/draco/gltf/draco_decoder.wasm",
+      "bytes": 192420,
+      "sha256": "a680d927bed9cb864ddbd63521868891af2bfbe755092761b4837487618df8ac"
+    },
+    {
+      "path": "vendor/three/examples/jsm/libs/draco/gltf/draco_wasm_wrapper.js",
+      "bytes": 58457,
+      "sha256": "334750206a393449f9a9db6428c4f8662f12fab9ecc0516fc1eb6cbc96280350"
+    },
+    {
+      "path": "vendor/three/examples/jsm/loaders/DRACOLoader.js",
+      "bytes": 19031,
+      "sha256": "fc683467bad2936c717a24f65bb8ab5fc21d0894ebcbc7884d14b2c5d08c7fa0"
+    },
+    {
+      "path": "vendor/three/examples/jsm/loaders/GLTFLoader.js",
+      "bytes": 114960,
+      "sha256": "cd315b915c372fc01760f506a652a436fa980b415e21ef96a994912d168f4a89"
+    },
+    {
+      "path": "vendor/three/examples/jsm/utils/BufferGeometryUtils.js",
+      "bytes": 37622,
+      "sha256": "5b3b8ef8ae2b3d3ba3ac484144aeed26563e0e6c1943a7f546b9de4c7b2ea520"
+    },
+    {
+      "path": "vendor/three/examples/jsm/utils/SkeletonUtils.js",
+      "bytes": 11536,
+      "sha256": "7f1614747e11eb1985d07e9d93d62c95b51719a501649ee725b2d0ee3a177da1"
+    }
+  ]
+}

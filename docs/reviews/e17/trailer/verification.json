@@ -25,7 +25,7 @@
       "source": "queen",
       "start": 0,
       "duration": 1.6,
-      "output": "shot-2-queen.mp4"
+      "output": "shot-2-queen-6afabb7bc0.mp4"
     },
     {
       "name": "slingshot",
@@ -77,5 +77,23 @@
       "sha256": "6afabb7bc027c7f5a66b83be68bd6efd577ddd613707b8bc15e185fcef279e49"
     }
   ],
-  "output_sha256": "d830c96d3db2c75e800fdd45fad2054f79529c0cc0e7060ad4ea61c4217b66ae"
+  "output_sha256": "d830c96d3db2c75e800fdd45fad2054f79529c0cc0e7060ad4ea61c4217b66ae",
+  "full_decode_errors": [],
+  "decoded_video_frames": 450,
+  "video_duration_seconds": 15.0,
+  "audio_duration_seconds": 15.0,
+  "queen_render_verification": {
+    "render_source": "actual exported GLB reimport",
+    "triangles": 594200,
+    "mesh_objects": 103,
+    "missing_texture_images": [],
+    "model_sha256": "067ebb9cb36cf5bf0191c8459c90f1755713785f89fd1c89d158454241cdd274",
+    "views": [
+      "front",
+      "side",
+      "upper",
+      "back"
+    ],
+    "face_likeness_verified": false
+  }
 }

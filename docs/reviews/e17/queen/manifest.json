@@ -1,0 +1,38 @@
+{
+  "model.blend": {
+    "bytes": 41375896,
+    "sha256": "a09a0e8d062b18964c371ce0c7c87e94906460f2bb4d67b698b1a1667317b316"
+  },
+  "model.glb": {
+    "bytes": 21998416,
+    "sha256": "067ebb9cb36cf5bf0191c8459c90f1755713785f89fd1c89d158454241cdd274"
+  },
+  "model.fbx": {
+    "bytes": 18308668,
+    "sha256": "ad5e3db6d196443b67402c200b670ea0ef90e34d30dc872cfaac292a3ffb4dec"
+  },
+  "front.png": {
+    "bytes": 646434,
+    "sha256": "84114c963f7df40375e7f752737627bd2ed3ad4ebcc617c1d6cfeb8ee1a21c50"
+  },
+  "side.png": {
+    "bytes": 634183,
+    "sha256": "40dec924b4bc8639724ced7d99ece6f4da21f695f648943783e19761c0752750"
+  },
+  "upper.png": {
+    "bytes": 690111,
+    "sha256": "6afabb7bc027c7f5a66b83be68bd6efd577ddd613707b8bc15e185fcef279e49"
+  },
+  "back.png": {
+    "bytes": 549918,
+    "sha256": "a399784a015ee46ca1c3ab3ea27d4789a4d3028e0869ba0b522e13bf6d7126e9"
+  },
+  "QUEEN-NEPTUNE-WIDOKI.png": {
+    "bytes": 589717,
+    "sha256": "ab5d6845d0857a34300366758f48cf9b42ee6837a3e9c75d63d210c54b31b72f"
+  },
+  "QUEEN-NEPTUNE-E17.md": {
+    "bytes": 2829,
+    "sha256": "9dc200b4434144cbeb58877331cb5be0f2dd9236c3798d852d72dd9b4f57f9be"
+  }
+}

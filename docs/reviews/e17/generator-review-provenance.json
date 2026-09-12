@@ -1,0 +1,42 @@
+{
+  "review_scope": "Independent read-only source and reported evidence inspection, not a new training or production run",
+  "files": [
+    {
+      "path": "generator-upgrade/oracle_connector/runtime/reference_reconstruction.py",
+      "sha256": "a46eda474fa1336d57b27776cef0c65749757f95763d8765c9c283b4e6588256"
+    },
+    {
+      "path": "generator-upgrade/oracle_connector/runtime/run.py",
+      "sha256": "9b44d809329d3ae256966eda856adf9fd1b894cd964afa261fa580834ba067d4"
+    },
+    {
+      "path": "generator-upgrade/oracle_connector/runtime/scene_contract.py",
+      "sha256": "1a814893c23061c9b901b806bbb83d75e2e421fea349e5ca98a0965e10842dc8"
+    },
+    {
+      "path": "generator-upgrade/oracle_connector/REFERENCE-RECONSTRUCTION-E17.md",
+      "sha256": "793fd8bb354c0238eab8f7b1bd00761b87dee933b04c97f06cc7a6cb37e046f8"
+    },
+    {
+      "path": "generator-upgrade/change-manifest.json",
+      "sha256": "91ae8466b452eb36774cb0cccd4498c7f42a3cb8492694a80805030ba27fae1c"
+    },
+    {
+      "path": "generator-upgrade/oracle_connector/board-review-smoke.json",
+      "sha256": "bf0fdc2a8c0bb19549c3031c8e15c2fe304fd8146b673be2208d8952aa4153ec"
+    }
+  ],
+  "remaining_limitations": [
+    "Host/reviewer must produce visual evidence; refresh CLI updates its report only",
+    "Single-reference single-character anatomy gate",
+    "Texture pixel validation is outside flat material checker",
+    "No automatic likeness grader or Astra weight update"
+  ],
+  "resolved_review_findings": [
+    "Actual reference SHA binding added",
+    "Explicit review refresh CLI added",
+    "Strict integer board index typing",
+    "Single-character scope explicit"
+  ],
+  "reported_cpu_tests_passed": 16
+}

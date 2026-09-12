@@ -310,6 +310,13 @@ def finish(output=None, *, edit_budget=None, anatomy_before=None):
     if heads:
         from couture_qa import verify_export
         report['export_validation']=verify_export(output/'model.glb',objects)
+    from reference_reconstruction import board_review_report
+    report['board_review'] = board_review_report(output, objects)
+    (output/'board-review.json').write_text(json.dumps(report['board_review']), encoding='utf-8')
+    if heads:
+        from reference_reconstruction import review_report
+        report['reconstruction_review'] = review_report(output, report)
+        (output/'reconstruction-review.json').write_text(json.dumps(report['reconstruction_review']), encoding='utf-8')
     from model_checkpoint import save_ready
     save_ready(output,report,'core_export')
     review_request=output/'review-request.json'

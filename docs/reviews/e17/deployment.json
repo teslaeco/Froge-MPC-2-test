@@ -1,0 +1,10 @@
+{
+  "project_id": "appgprj_6aa5c12d4f4c81919545504d438b3ff3",
+  "version_id": "appgprj_6aa5c12d4f4c81919545504d438b3ff3~appgver_9c169d2716e88191b4ad4edde2dc4412",
+  "deployment_id": "appgdep_6aa5ca1d4fb08191a1c9db29cd585a58",
+  "status": "succeeded",
+  "url": "https://forge-studio-public.terraformingplanet.chatgpt.site",
+  "source_commit": "aed971eae22d1c98f9ce061fd1d9a0522c875fe4",
+  "access": "public",
+  "existing_private_studio_changed": false
+}

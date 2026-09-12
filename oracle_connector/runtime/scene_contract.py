@@ -7,6 +7,10 @@ import json
 import math
 import re
 import unicodedata
+try:
+    from .reference_reconstruction import POLICY as RECONSTRUCTION_POLICY
+except ImportError:  # Blender runs scripts with the renderer directory on sys.path.
+    from reference_reconstruction import POLICY as RECONSTRUCTION_POLICY
 from copy import deepcopy
 
 
@@ -311,6 +315,9 @@ just to minimize part count. Match every requested feature; never
 substitute an oak or example for a different requested object. Do not request input files.
 Materials are exported as PBR and packed UV textures; emission makes visible luminous
 surfaces, not physical illumination of other meshes in every viewer.'''
+
+
+PROMPT += RECONSTRUCTION_POLICY
 
 
 def check(value, schema, path='$'):
