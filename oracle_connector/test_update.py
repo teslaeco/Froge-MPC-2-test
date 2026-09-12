@@ -25,7 +25,7 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'image3d_fixture.py').write_text('offline_only = True\n')
         (self.source / 'face_measurement.py').write_text('measurement_revision = 1\n')
         (self.source / 'visual_review.py').write_text('max_refinements = 1\n')
-        for name in ('verify_edit_runtime.py','agent_limits.py','paid_trial.py','generation_budget.py','quality_report.py','v23_fixture.py','scene_repair.py','blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py'):
+        for name in ('verify_anatomy_edit.py','verify_edit_runtime.py','agent_limits.py','paid_trial.py','generation_budget.py','quality_report.py','v23_fixture.py','scene_repair.py','blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py'):
             (self.source/name).write_text('v23 = True\n')
         (self.source / 'runtime_check.py').write_text('cpu_limit = 2\n')
         (self.source / 'code_policy.py').write_text('policy = "strict-with-early-check"\n')

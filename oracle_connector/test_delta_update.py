@@ -12,7 +12,7 @@ class DeltaStagingTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name);self.target=self.root/'installed';self.staging=self.root/'incoming'
         self.staging.mkdir();self.target.mkdir()
-        self.stage=runpy.run_path(str(Path(__file__).parents[1]/'scripts/cloud-shell-v31.template.py'))['stage_update']
+        self.stage=runpy.run_path(str(Path(__file__).parents[1]/'scripts/cloud-shell-v32.template.py'))['stage_update']
         self.data={'files':{'server.py':base64.b64encode(b'new_code=True\n').decode()},'base_assets':{}}
         for name in ('anatomy.json.gz','male-skin.png','female-skin.png','cotton-jersey-albedo.png','indigo-denim-albedo.png'):
             key='runtime/assets/'+name;path=self.target/key;path.parent.mkdir(parents=True,exist_ok=True)

@@ -367,21 +367,94 @@ def build_portrait(p, materials, mesh_object, ellipsoid):
     return parts
 
 
-def verify_components(objects, expected_heads, expected_hands):
-    heads=[o for o in objects if o.get('anatomical_head')]
-    hands=[o for o in objects if o.get('anatomical_hand')]
-    eyes=[o for o in objects if o.get('anatomical_eye')]
-    nails=[o for o in objects if o.get('anatomical_nail')]
-    if len(heads)!=expected_heads or len(hands)!=expected_hands or len(eyes)!=2*expected_heads or len(nails)!=5*expected_hands:
-        raise ValueError('Standard postaci: brakuje anatomicznej twarzy, dwoch oczu, dloni lub paznokci. Wynik nie zostal zaakceptowany.')
-    for obj,minimum in [(o,12000) for o in heads]+[(o,4500) for o in hands]:
-        if len(obj.data.vertices)<minimum or not obj.data.uv_layers:
-            raise ValueError('Standard postaci: utracono anatomie lub UV podczas budowy.')
-    for obj in heads:
-        images=[n.image for m in obj.data.materials for n in m.node_tree.nodes if n.type=='TEX_IMAGE' and n.image]
-        if not any(min(im.size)>=2048 for im in images):raise ValueError('Standard postaci: skora wymaga atlasu 2048 px.')
-    detailed=sum(bool(o.get('lash_geometry_required')) for o in heads)
-    lashes=[o for o in objects if 'upper_lashes_per_eye' in o]
-    if len(lashes)!=detailed or any(len(o['upper_lashes_per_eye'])!=2 or min(o['upper_lashes_per_eye'])<16 for o in lashes):
-        raise ValueError('Standard portretu: brakuje rzes dopasowanych do obu powiek.')
-    return {'revision':2,'heads':len(heads),'eyes':len(eyes),'hands':len(hands),'nails':len(nails),'structural_checks_passed':True,'likeness_verified':False}
+COMPONENT_TAGS = {
+    'heads': 'anatomical_head', 'eyes': 'anatomical_eye',
+    'hands': 'anatomical_hand', 'nails': 'anatomical_nail',
+}
+
+
+class AnatomyValidationError(ValueError):
+    """A failed structural gate with diagnostics the agent can act on."""
+    def __init__(self, report):
+        self.report = report
+        names = {'heads': 'twarze', 'eyes': 'oczy', 'hands': 'dlonie', 'nails': 'paznokcie'}
+        counts = ', '.join('%s %d/%d' % (names[key], report['actual'][key],
+                                       report['expected'][key]) for key in COMPONENT_TAGS)
+        details = '; '.join(issue['message'] for issue in report['violations'])
+        super().__init__('Standard postaci: %s. %s Wynik nie zostal zaakceptowany.' % (counts, details))
+
+
+def component_snapshot(objects):
+    """Remember identities before an edit without retaining removed bpy objects."""
+    return {key: [{'name': obj.name, 'pointer': obj.as_pointer()}
+                  for obj in objects if obj.get(tag)]
+            for key, tag in COMPONENT_TAGS.items()}
+
+
+def verify_components(objects, expected_heads, expected_hands, before=None):
+    groups = {key: [obj for obj in objects if obj.get(tag)]
+              for key, tag in COMPONENT_TAGS.items()}
+    expected = {'heads': int(expected_heads), 'eyes': 2 * int(expected_heads),
+                'hands': int(expected_hands), 'nails': 5 * int(expected_hands)}
+    actual = {key: len(items) for key, items in groups.items()}
+    violations = []
+    report = {
+        'revision': 2, 'diagnostic_revision': 1, 'expected': expected, 'actual': actual,
+        'missing': {key: max(0, expected[key] - actual[key]) for key in COMPONENT_TAGS},
+        'excess': {key: max(0, actual[key] - expected[key]) for key in COMPONENT_TAGS},
+        'objects': {key: [obj.name for obj in items] for key, items in groups.items()},
+        'violations': violations, 'structural_checks_passed': False,
+        'likeness_verified': False,
+    }
+    if before:
+        present = {key: {obj.as_pointer() for obj in items} for key, items in groups.items()}
+        report['removed_or_untagged'] = {
+            key: [item['name'] for item in before.get(key, [])
+                  if item['pointer'] not in present[key]] for key in COMPONENT_TAGS
+        }
+    for key in COMPONENT_TAGS:
+        if actual[key] != expected[key]:
+            violations.append({'code': 'component_count', 'component': key,
+                               'expected': expected[key], 'actual': actual[key],
+                               'message': '%s: wymagane %d, znalezione %d.' %
+                                          (key, expected[key], actual[key])})
+    for key, minimum in (('heads', 12000), ('hands', 4500)):
+        for obj in groups[key]:
+            count = len(obj.data.vertices)
+            if count < minimum or not obj.data.uv_layers:
+                violations.append({'code': 'anatomy_topology_or_uv', 'object': obj.name,
+                                   'vertices': count, 'minimum_vertices': minimum,
+                                   'has_uv': bool(obj.data.uv_layers),
+                                   'message': '%s: wierzcholki %d/%d, UV %s.' %
+                                              (obj.name, count, minimum,
+                                               'zachowane' if obj.data.uv_layers else 'brak')})
+    for obj in groups['heads']:
+        images = [node.image for material in obj.data.materials
+                  if material and material.use_nodes and material.node_tree
+                  for node in material.node_tree.nodes
+                  if node.type == 'TEX_IMAGE' and node.image]
+        if not any(min(image.size) >= 2048 for image in images):
+            violations.append({'code': 'skin_atlas', 'object': obj.name,
+                               'minimum_edge': 2048,
+                               'message': '%s: brak atlasu skory co najmniej 2048 px.' % obj.name})
+    detailed = sum(bool(obj.get('lash_geometry_required')) for obj in groups['heads'])
+    lashes = [obj for obj in objects if 'upper_lashes_per_eye' in obj]
+    if len(lashes) != detailed:
+        violations.append({'code': 'lash_components', 'expected': detailed, 'actual': len(lashes),
+                           'message': 'Rzesy: wymagane %d par, znalezione %d.' % (detailed, len(lashes))})
+    for obj in lashes:
+        counts = list(obj['upper_lashes_per_eye'])
+        if len(counts) != 2 or min(counts) < 16:
+            violations.append({'code': 'lash_count', 'object': obj.name, 'actual': counts,
+                               'minimum_per_eye': 16,
+                               'message': '%s: rzesy %s; wymagane po 16 na kazde oko.' %
+                                          (obj.name, counts)})
+    if violations:
+        report['repair_hint'] = (
+            'Zachowaj osobne anatomiczne obiekty, ich znaczniki i UV. '
+            'Zmieniaj ich geometrie, transformacje lub materialy; nie usuwaj oka, '
+            'dloni ani paznokci podczas stylizacji. Laczenie akcesoriow wykonuj '
+            'osobno od anatomii. Napraw wymienione braki przed kolejna ocena renderow.')
+        raise AnatomyValidationError(report)
+    return {'revision': 2, 'diagnostic_revision': 1, **actual, 'expected': expected,
+            'structural_checks_passed': True, 'likeness_verified': False}

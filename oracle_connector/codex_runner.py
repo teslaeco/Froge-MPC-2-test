@@ -351,6 +351,7 @@ def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
           'Always await calls and print their results with text; do not merely describe them. '
           'After each isError result, correct the exact reported argument, do not repeat the same call. '
           'There are 32 model turns total. Each exec has fresh variables; use store/load for cross-call state. '
+          'For omitted snapshot sections, fetch only needed pages with tools.mcp__blender__get_current_model({section, offset, expected_revision, expected_sha256}), concatenate page.text using next_offset, then store/load the section instead of printing the entire model. '
           'Define scene and call build_model together. Use one exec to inspect multiple render views sequentially, '
           'returning image blocks with image(block) so you can actually see them. '
           'The latest user brief below and attached images define the task; supplementary instructions follow.\n\n'
@@ -364,7 +365,7 @@ def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
         env['CODEX_API_KEY']=gateway.token
         # Official Code Mode host is a sibling executable in the release bundle.
         env['PATH']=str(Path(binary).resolve().parent)+os.pathsep+env.get('PATH',os.defpath)
-        diagnostics=[]
+        diagnostics=[];terminal_ack=threading.Event()
         with (folder/'codex-events.jsonl').open('w') as events, (folder/'codex-stderr.log').open('w') as errors:
             process=subprocess.Popen(command(binary,folder,gateway.server.server_port),stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=errors,env=env,text=True,start_new_session=True)
             process.stdin.write(task);process.stdin.close()
@@ -385,8 +386,10 @@ def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
                         safe['message']=safe_message(message,(key,gateway.token))
                         diagnostics.append(safe['message'])
                     events.write(json.dumps(safe)+'\n');events.flush()
+                    if event.get('type')=='turn.started':terminal_ack.clear()
+                    elif event.get('type') in ('turn.completed','turn.failed'):terminal_ack.set()
             reader=threading.Thread(target=consume,daemon=True);reader.start()
-            last=None;finished_at=None
+            last=None
             def terminate():
                 if process.poll() is not None:return
                 try:os.killpg(process.pid,signal.SIGTERM)
@@ -397,15 +400,20 @@ def run(folder,prompt,instructions,key,cancelled,progress,binary=None):
                     except ProcessLookupError:pass
                     process.wait(timeout=5)
             while process.poll() is None:
-                if completed_outcome(folder) is not None:
-                    if finished_at is None:finished_at=time.monotonic()
-                    # A brief drain lets the final MCP response finish. The
-                    # gateway already refuses another paid request after this
-                    # atomic outcome, so a lingering CLI cannot spend more.
-                    if gateway.completed or time.monotonic()-finished_at>=2:
-                        gateway.completed=True;gateway.save();terminate();break
-                startup_stalled=gateway.requests==0 and time.monotonic()-started>60
+                outcome=completed_outcome(folder)
+                # Saving finish_model's receipt does not finish the enclosing
+                # Code Mode exec. Let its remaining reads and output drain until
+                # the CLI acknowledges the turn or exits. The gateway already
+                # blocks any further provider request after that receipt.
+                if outcome is not None and terminal_ack.is_set():
+                    gateway.completed=True;gateway.save();terminate();break
+                startup_stalled=outcome is None and gateway.requests==0 and time.monotonic()-started>60
                 if cancelled.wait(1) or startup_stalled or time.monotonic()-started>MAX_SECONDS:
+                    # A completed, verified model survives a CLI which never
+                    # acknowledges shutdown. Bound the drain by the job deadline
+                    # without marking the already-finished model as cancelled.
+                    if completed_outcome(folder) is not None:
+                        gateway.completed=True;gateway.save();terminate();break
                     (folder/'agent-cancelled').touch()
                     terminate()
                     # Rootless container may outlive the supervising process.

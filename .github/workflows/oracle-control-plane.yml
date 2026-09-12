@@ -5,6 +5,8 @@ on:
       - 'oracle_connector/**'
       - 'scripts/package-v27.py'
       - 'scripts/cloud-shell-v27.template.py'
+      - 'scripts/package-v32.py'
+      - 'scripts/cloud-shell-v32.template.py'
       - 'scripts/package-v31.py'
       - 'scripts/cloud-shell-v31.template.py'
       - 'scripts/package-v30.py'
@@ -32,7 +34,7 @@ jobs:
           python-version: ${{ matrix.python }}
       - name: Unit and rollback regressions
         working-directory: oracle_connector
-        run: python -m unittest test_blender_mcp test_update test_agent_execution test_agent_lifecycle test_codex_binary_integrity test_worker_handoff test_delta_update test_connector test_openai
+        run: python -m unittest test_blender_mcp test_update test_agent_execution test_agent_lifecycle test_mcp_snapshot test_codex_binary_integrity test_worker_handoff test_delta_update test_connector test_openai
       - name: Install checksum-pinned Codex and Code Mode host
         working-directory: oracle_connector
         run: python install_codex.py
@@ -55,6 +57,10 @@ jobs:
         if: matrix.python == '3.9'
         working-directory: oracle_connector
         run: /tmp/blender-4.3.0-linux-x64/blender --background --python-exit-code 1 --python verify_edit_runtime.py
+      - name: Real Blender anatomy edits and diagnostics
+        if: matrix.python == '3.9'
+        working-directory: oracle_connector
+        run: /tmp/blender-4.3.0-linux-x64/blender --background --python-exit-code 1 --python verify_anatomy_edit.py
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

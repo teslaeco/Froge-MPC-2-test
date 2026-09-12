@@ -187,6 +187,16 @@ def join_meshes(objects, name):
     objects = [o for o in objects if o and o.type == 'MESH']
     if not objects:
         raise ValueError('No meshes to join')
+    protected = [obj.name for obj in objects if any(obj.get(tag) for tag in
+                 ('anatomical_head', 'anatomical_eye', 'anatomical_hand', 'anatomical_nail'))
+                 or 'upper_lashes_per_eye' in obj]
+    if len(objects) > 1 and protected:
+        # Blender keeps only the active object's custom properties when joining.
+        # Joining eyes/nails silently loses required component identities even
+        # though the vertices remain. Keep these independently editable instead.
+        raise ValueError('join_meshes: zachowaj osobne obiekty anatomii: %s. '
+                         'Edytuj ich geometrie lub materialy; lacz tylko akcesoria.' %
+                         ', '.join(protected[:12]))
     bpy.ops.object.select_all(action='DESELECT')
     for obj in objects:
         obj.select_set(True)
@@ -195,8 +205,10 @@ def join_meshes(objects, name):
     bpy.context.object.name = name
     return bpy.context.object
 
-def finish(output=None, *, edit_budget=None):
+def finish(output=None, *, edit_budget=None, anatomy_before=None):
     output=Path('/work') if output is None else Path(output)
+    anatomy_failure = output / 'anatomy-failure.json'
+    anatomy_failure.unlink(missing_ok=True)
     # A material may have both an albedo and a normal map. Eight legitimate
     # textured materials therefore need more than eight image datablocks.
     # Replaced eyebrow meshes and temporary Boolean cutters can retain unused
@@ -229,8 +241,15 @@ def finish(output=None, *, edit_budget=None):
     objects = [o for o in bpy.context.scene.objects if o.type == 'MESH']
     if not objects or len(objects) > 256:
         raise ValueError('Scene needs 1-256 mesh objects; join repeated small details.')
-    from portrait import verify_components
-    quality=verify_components(objects,bpy.context.scene.get('expected_heads',0),bpy.context.scene.get('expected_hands',0))
+    from portrait import AnatomyValidationError, verify_components
+    try:
+        quality=verify_components(objects,bpy.context.scene.get('expected_heads',0),
+                                  bpy.context.scene.get('expected_hands',0), before=anatomy_before)
+    except AnatomyValidationError as error:
+        pending = anatomy_failure.with_suffix('.json.tmp')
+        pending.write_text(json.dumps(error.report, ensure_ascii=False), encoding='utf-8')
+        pending.replace(anatomy_failure)
+        raise
     for obj in objects:
         if any(m.type == 'SUBSURF' and m.levels > 2 for m in obj.modifiers):
             raise ValueError('Subdivision limit: 2.')
@@ -313,6 +332,8 @@ def finish(output=None, *, edit_budget=None):
 
 def execute_job(folder=Path('/work')):
     folder=Path(folder)
+    # A failed Python edit before finish must not reuse an earlier anatomy report.
+    (folder / 'anatomy-failure.json').unlink(missing_ok=True)
     bpy.ops.wm.read_factory_settings(use_empty=True)
     if (folder/'image3d-manifest.json').is_file():
         from imported_asset import import_and_export
@@ -341,11 +362,13 @@ def execute_job(folder=Path('/work')):
     scope = {'__builtins__': safe_builtins, 'bpy': bpy, 'math': math, 'random': random,
              'Vector': Vector, 'make_material': edit_material if has_scene else make_material, 'mesh_object': mesh_object,
              'tube': tube, 'ellipsoid': ellipsoid, 'join_meshes': join_meshes}
+    from portrait import component_snapshot
+    anatomy_before = component_snapshot([obj for obj in bpy.context.scene.objects if obj.type == 'MESH'])
     expected={key:bpy.context.scene.get(key,0) for key in ('expected_heads','expected_hands')}
     exec(compile(code, '/work/edits.py' if has_scene else '/work/generate.py', 'exec'), scope, scope)
     if has_scene:
         for key,value in expected.items():bpy.context.scene[key]=value
-    finish(folder, edit_budget=edit_budget)
+    finish(folder, edit_budget=edit_budget, anatomy_before=anatomy_before)
     print('FROGE_MODEL_READY')
 
 if __name__=='__main__':

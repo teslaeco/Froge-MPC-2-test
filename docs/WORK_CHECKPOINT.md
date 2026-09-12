@@ -1,3 +1,11 @@
+# 2026-09-12 — v32 resumed repair; deployment remains pending
+
+See docs/V32_RESUME_REPAIR.md for current live observations, 98 passing unique
+offline tests, recovered patches and remaining gates. Oracle observed v29; Site47.
+Canonical Site clone still fails HTTP500 (full and shallow). UI patch untested.
+Worker source v32 and installer prepared; native Blender/CLI CI pending.
+No Oracle install, new paid generation, Site deploy or access change occurred.
+
 ## 2026-09-11 — v24 timeout recovery fix packaged
 
 - User reported the generic timeout screenshot. Live Studio confirms Oracle v23.

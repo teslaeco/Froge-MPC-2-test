@@ -124,18 +124,53 @@ class FinalizedModelTests(unittest.TestCase):
                 self.assertTrue(gateway.completed);self.assertIsNone(gateway.error)
                 upstream.assert_not_called();self.assertEqual(gateway.requests,32)
 
-    def test_runner_stops_lingering_process_after_real_finish_receipt(self):
+    def test_runner_drains_delayed_read_before_terminal_failure_ack(self):
         script=('import sys,time; from pathlib import Path; sys.path.insert(0,'+repr(str(ROOT))+'); '
-                'from test_agent_lifecycle import finish_fixture; sys.stdin.read(); '
-                'finish_fixture(Path('+repr(str(self.folder))+')); '
+                'from test_agent_lifecycle import finish_fixture; from blender_mcp import write; sys.stdin.read(); '
+                'job=finish_fixture(Path('+repr(str(self.folder))+')); '
                 'print(\'{"type":"error","message":"Trailing CLI failure after saved finish"}\',flush=True); '
+                'time.sleep(3.5); '
+                'write(Path('+repr(str(self.folder))+')/"delayed-read.json",job.call("get_current_model",{})); '
+                'print(\'{"type":"turn.failed","error":{"message":"CLI finished after saved result"}}\',flush=True); '
                 'time.sleep(60)')
         started=time.monotonic()
         with patch('codex_runner.command',return_value=[sys.executable,'-c',script]), \
                 patch('codex_runner.urllib.request.build_opener') as upstream:
             result=run(self.folder,'Rocket model','Blue fins','unused-secret',threading.Event(),lambda _:None,binary=sys.executable)
         self.assertTrue(result['finished']);self.assertTrue(result['accepted'])
-        self.assertLess(time.monotonic()-started,10)
+        self.assertGreater(time.monotonic()-started,3.5)
+        self.assertLess(time.monotonic()-started,12)
+        self.assertTrue(json.loads((self.folder/'delayed-read.json').read_text())['finished'])
+        events=[json.loads(line) for line in (self.folder/'codex-events.jsonl').read_text().splitlines()]
+        self.assertTrue(any(event['type']=='turn.failed' for event in events))
+        self.assertFalse((self.folder/'agent-cancelled').exists())
+        self.assertTrue(json.loads((self.folder/'agent-usage.json').read_text())['completed'])
+        upstream.assert_not_called()
+
+    def test_runner_drains_delayed_read_until_natural_exit_without_ack(self):
+        script=('import sys,time; from pathlib import Path; sys.path.insert(0,'+repr(str(ROOT))+'); '
+                'from test_agent_lifecycle import finish_fixture; from blender_mcp import write; sys.stdin.read(); '
+                'job=finish_fixture(Path('+repr(str(self.folder))+')); time.sleep(3.5); '
+                'write(Path('+repr(str(self.folder))+')/"delayed-read.json",job.call("get_current_model",{}))')
+        with patch('codex_runner.command',return_value=[sys.executable,'-c',script]), \
+                patch('codex_runner.urllib.request.build_opener') as upstream:
+            result=run(self.folder,'Rocket model','Blue fins','unused-secret',threading.Event(),lambda _:None,binary=sys.executable)
+        self.assertTrue(result['accepted'])
+        self.assertTrue(json.loads((self.folder/'delayed-read.json').read_text())['finished'])
+        self.assertFalse((self.folder/'agent-cancelled').exists())
+        upstream.assert_not_called()
+
+    def test_runner_preserves_finished_model_when_cli_drain_hits_job_deadline(self):
+        script=('import sys,time; from pathlib import Path; sys.path.insert(0,'+repr(str(ROOT))+'); '
+                'from test_agent_lifecycle import finish_fixture; sys.stdin.read(); '
+                'finish_fixture(Path('+repr(str(self.folder))+')); time.sleep(60)')
+        started=time.monotonic()
+        with patch('codex_runner.command',return_value=[sys.executable,'-c',script]), \
+                patch('codex_runner.MAX_SECONDS',2), \
+                patch('codex_runner.urllib.request.build_opener') as upstream:
+            result=run(self.folder,'Rocket model','Blue fins','unused-secret',threading.Event(),lambda _:None,binary=sys.executable)
+        self.assertTrue(result['finished']);self.assertTrue(result['accepted'])
+        self.assertLess(time.monotonic()-started,8)
         self.assertFalse((self.folder/'agent-cancelled').exists())
         self.assertTrue(json.loads((self.folder/'agent-usage.json').read_text())['completed'])
         upstream.assert_not_called()

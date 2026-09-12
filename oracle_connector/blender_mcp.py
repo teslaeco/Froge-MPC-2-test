@@ -24,6 +24,78 @@ ASSETS = ('model.glb', 'model.blend', 'scene.json', 'model.froge-scene.json',
           'model.fbx', 'model.obj', 'model.mtl', 'model-mm.stl', 'result.json',
           'textures', 'review', 'edits.py', 'model-ready.json')
 
+# Count the actual nested JSON returned by MCP, including escaped Unicode and
+# quotes. Keep even adversarial names/history below the CodeMode tool budget.
+SNAPSHOT_MAX_BYTES = 12000
+SNAPSHOT_PAGE_CHARS = 8000
+SNAPSHOT_SECTIONS = ('scene', 'edits', 'report', 'visual_review')
+
+
+def snapshot_wire_size(value):
+    content = [{'type': 'text', 'text': json.dumps(value, ensure_ascii=False)}]
+    return len(json.dumps({'content': content, 'isError': False}).encode('utf-8'))
+
+
+def section_info(text, section):
+    raw = text.encode('utf-8')
+    return {'format': 'python' if section == 'edits' else 'json',
+            'characters': len(text), 'bytes': len(raw),
+            'sha256': hashlib.sha256(raw).hexdigest(), 'inline': False}
+
+
+class AnatomyBuildError(ValueError):
+    """A failed candidate's structural details, suitable for one repair call."""
+
+
+def anatomy_build_error(candidate, original):
+    try:
+        data = read_record(candidate/'anatomy-failure.json', 256*1024)
+        if data.get('structural_checks_passed') is not False:
+            return original
+        roles = ('heads','eyes','hands','nails')
+        detail = {'code':'ANATOMY_VALIDATION','structural_checks_passed':False}
+        for name in ('expected','actual','missing','excess'):
+            counts = data.get(name)
+            if not isinstance(counts, dict) or any(type(counts.get(role)) is not int or
+                    not 0 <= counts[role] <= 100000 for role in roles):
+                return original
+            detail[name] = {role:counts[role] for role in roles}
+        detail['repair_hint'] = str(data.get('repair_hint',''))[:320]
+        detail['objects'] = {}; detail['removed_or_untagged'] = {}
+        detail['violations'] = []; detail['omitted'] = {'objects':{},'removed_or_untagged':{},'violations':0}
+        # The fixed counts lead every error. Names and violations are optional
+        # and bounded by their serialized size, including Unicode escaping.
+        for group in ('removed_or_untagged','objects'):
+            values = data.get(group, {})
+            if not isinstance(values, dict): continue
+            for role in roles:
+                names = values.get(role, [])
+                if not isinstance(names, list): continue
+                detail[group][role] = []; detail['omitted'][group][role] = len(names)
+                for name in names[:8]:
+                    if not isinstance(name, str): continue
+                    detail[group][role].append(name[:80])
+                    detail['omitted'][group][role] -= 1
+                    if snapshot_wire_size(detail) > 6000:
+                        detail[group][role].pop(); detail['omitted'][group][role] += 1
+                        break
+        violations = data.get('violations', [])
+        if isinstance(violations, list):
+            detail['omitted']['violations'] = len(violations)
+            for entry in violations[:16]:
+                if not isinstance(entry, dict): continue
+                item = {key:value[:160] if isinstance(value, str) else value
+                        for key,value in entry.items()
+                        if key in ('code','component','object','expected','actual','vertices','minimum_vertices','has_uv','message')
+                        and (isinstance(value, str) or type(value) in (bool,int,float))}
+                detail['violations'].append(item); detail['omitted']['violations'] -= 1
+                if snapshot_wire_size(detail) > 6000:
+                    detail['violations'].pop(); detail['omitted']['violations'] += 1
+                    break
+        return AnatomyBuildError('ANATOMY_VALIDATION: '+json.dumps(detail, ensure_ascii=False))
+    except (OSError, ValueError, TypeError, AttributeError):
+        return original
+
 
 def write(path, value):
     pending = path.with_name(path.name + '.pending')
@@ -31,8 +103,19 @@ def write(path, value):
     os.chmod(pending, 0o600); pending.replace(path)
 
 
-def schema(properties):
-    return {'type':'object','properties':properties,'required':list(properties),'additionalProperties':False}
+def schema(properties, required=None):
+    return {'type':'object','properties':properties,'required':list(properties) if required is None else required,'additionalProperties':False}
+
+
+def check_tool_arguments(arguments, tool_schema):
+    # Scene records intentionally require an exact field set. MCP tools also
+    # have optional pagination arguments, so validate the tool envelope here.
+    if (not isinstance(arguments, dict) or not set(tool_schema['required']) <= set(arguments) or
+            not set(arguments) <= set(tool_schema['properties'])):
+        raise ValueError('Nieprawidlowe argumenty MCP; wymagane pola: '+', '.join(tool_schema['required']))
+    from runtime.scene_contract import check
+    for name, value in arguments.items():
+        check(value, tool_schema['properties'][name], name)
 
 
 TOOLS = [
@@ -41,7 +124,12 @@ TOOLS = [
      'inputSchema':schema({'scene_json':{'type':'string','maxLength':256000},'expected_revision':{'type':'integer','minimum':0}})},
     {'name':'edit_model','description':'Apply a short Python geometry/material edit to the current scene using bpy and existing helpers. Edits accumulate. No file/network access. Runs in isolated Blender and generates new renders. Use actual object names from get_current_model.',
      'inputSchema':schema({'code':{'type':'string','maxLength':20000},'expected_revision':{'type':'integer','minimum':1}})},
-    {'name':'get_current_model','description':'Read current revision, full scene, edit history, geometry/material report and mesh object names. Does not generate or buy another model.', 'inputSchema':schema({})},
+    {'name':'get_current_model','description':'Read a bounded current-model snapshot. Small scene/edit/report sections are inline; an oversized section is null with its SHA256 and length in sections. Read it using section, offset and expected_revision; concatenate page.text using next_offset until null. Offsets count Unicode code points, not bytes or JavaScript UTF-16 units. Pass the section SHA256 as expected_sha256 to prevent mixing changed pages. JSON.parse the concatenated scene/report text in CodeMode and store it; print only needed summaries or object names. Does not generate or buy another model.',
+     'inputSchema':schema({'section':{'type':'string','enum':['summary']+list(SNAPSHOT_SECTIONS)},
+                          'offset':{'type':'integer','minimum':0},
+                          'limit':{'type':'integer','minimum':1,'maximum':16000},
+                          'expected_revision':{'type':'integer','minimum':0},
+                          'expected_sha256':{'type':'string','pattern':'^[0-9a-f]{64}$'}}, required=[])},
     {'name':'inspect_render','description':'Return a real image rendered from the CURRENT exported GLB. Inspect front, side, back and face for a portrait before finalizing.',
      'inputSchema':schema({'view':{'type':'string','enum':list(VIEWS)},'expected_revision':{'type':'integer','minimum':1}})},
     {'name':'finish_model','description':'Record visual verdict for the inspected current revision and prepare downloadable formats. Report unresolved faults honestly; accepted=false preserves a draft. Does not publish to the shop.',
@@ -53,6 +141,7 @@ def tool_error(error):
     value = str(error)
     value = re.sub(r'(?i)Bearer\s+\S+|\bsk-[A-Za-z0-9_-]+', '[redacted]', value)
     value = re.sub(r'data:image/[^\s]+', '[image omitted]', value)
+    if isinstance(error, AnatomyBuildError): return value
     # Blender adds a traceback and export/log lines. Put the actual exception
     # first, so the job card's short preview does not hide it behind stack frames.
     causes = [line.strip() for line in value.splitlines() if re.match(
@@ -168,14 +257,85 @@ class JobTools:
     def progress(self, detail):
         write(self.folder/'agent-progress.json', {'detail':detail,'revision':self.revision,'blender_seconds':round(self.blender_seconds,2)})
 
-    def snapshot(self):
-        if self.current is None: return {'revision':0,'has_model':False,'finished':False,'builds_remaining':MAX_BUILDS-self.attempts}
-        report = json.loads((self.current/'result.json').read_text())
-        return {'revision':self.revision,'has_model':True,'finished':self.finished,'visual_review':self.final_report,
-                'builds_remaining':0 if self.finished else MAX_BUILDS-self.attempts,
-                'scene':json.loads((self.current/'scene.json').read_text()),
-                'edits':(self.current/'edits.py').read_text() if (self.current/'edits.py').exists() else '',
-                'report':report,'inspected_views':sorted(self.seen)}
+    def snapshot(self, section='summary', offset=0, limit=SNAPSHOT_PAGE_CHARS,
+                 expected_revision=None, expected_sha256=None):
+        if section not in ('summary',)+SNAPSHOT_SECTIONS:
+            raise ValueError('Nieprawidlowa sekcja modelu.')
+        if expected_revision is not None and (type(expected_revision) is not int or expected_revision != self.revision):
+            raise ValueError('CONFLICT: odczytaj aktualna rewizje modelu.')
+        if type(offset) is not int or offset < 0 or type(limit) is not int or not 1 <= limit <= 16000:
+            raise ValueError('Nieprawidlowy offset lub limit strony modelu.')
+        if section == 'summary' and (offset != 0 or expected_sha256 is not None):
+            raise ValueError('Offset i SHA256 wymagaja wskazania konkretnej sekcji modelu.')
+        if expected_sha256 is not None and (not isinstance(expected_sha256, str) or
+                re.fullmatch('[0-9a-f]{64}', expected_sha256) is None):
+            raise ValueError('Nieprawidlowy SHA256 sekcji modelu.')
+        if self.current is None:
+            if section != 'summary':
+                raise ValueError('Nie ma aktualnego modelu do odczytania.')
+            return {'revision':0,'has_model':False,'finished':False,
+                    'builds_remaining':MAX_BUILDS-self.attempts,'sections':{}}
+        # Pages use the original UTF-8 text, not a shortened or reformatted JSON
+        # object. Concatenation is lossless even across non-ASCII object names.
+        sections = {'scene':(self.current/'scene.json').read_text(encoding='utf-8'),
+                    'edits':(self.current/'edits.py').read_text(encoding='utf-8') if (self.current/'edits.py').exists() else '',
+                    'report':(self.current/'result.json').read_text(encoding='utf-8'),
+                    'visual_review':json.dumps(self.final_report, ensure_ascii=False)}
+        info = {name:section_info(text, name) for name,text in sections.items()}
+        if section != 'summary':
+            text = sections[section]; descriptor = info[section]
+            if offset > len(text):
+                raise ValueError('Offset wykracza poza sekcje modelu.')
+            if offset and expected_revision is None:
+                raise ValueError('Kolejna strona wymaga expected_revision z pierwszego odczytu.')
+            if expected_sha256 is not None and expected_sha256 != descriptor['sha256']:
+                raise ValueError('CONFLICT: sekcja modelu zmienila sie; odczytaj ja od poczatku.')
+            def page(end):
+                return {'revision':self.revision,'section':section,
+                        'sha256':descriptor['sha256'],'format':descriptor['format'],
+                        'total_characters':descriptor['characters'],'total_bytes':descriptor['bytes'],
+                        'offset_unit':'unicode_code_points','offset':offset,
+                        'next_offset':end if end < len(text) else None,
+                        'complete':end == len(text),'text':text[offset:end]}
+            end = min(len(text), offset+limit)
+            result = page(end)
+            if snapshot_wire_size(result) > SNAPSHOT_MAX_BYTES:
+                low, high = 0, end-offset-1
+                while low < high:
+                    middle = (low+high+1)//2
+                    if snapshot_wire_size(page(offset+middle)) <= SNAPSHOT_MAX_BYTES:
+                        low = middle
+                    else:
+                        high = middle-1
+                result = page(offset+low)
+            return result
+        result = {'revision':self.revision,'has_model':True,'finished':self.finished,
+                  'builds_remaining':0 if self.finished else MAX_BUILDS-self.attempts,
+                  'scene':None,'edits':None,'report':None,'visual_review':None,
+                  'inspected_views':sorted(self.seen),'sections':info}
+        # Keep small existing snapshots compatible, but never silently chop a
+        # scene, code history, object-name list, or visual-issues array.
+        for name in ('report','scene','edits','visual_review'):
+            if len(sections[name]) > SNAPSHOT_MAX_BYTES:
+                continue
+            value = sections[name] if name == 'edits' else json.loads(sections[name])
+            result[name] = value; info[name]['inline'] = True
+            if snapshot_wire_size(result) > SNAPSHOT_MAX_BYTES:
+                result[name] = None; info[name]['inline'] = False
+        return result
+
+    def review_result(self):
+        if snapshot_wire_size(self.final_report) <= SNAPSHOT_MAX_BYTES:
+            return self.final_report
+        # An allowed 12-issue verdict can still exceed the transport budget with
+        # Unicode. Completion and its saved evidence remain intact; only the
+        # response body switches to an explicit paginated-details reference.
+        result = {name:self.final_report[name] for name in
+                  ('revision','status','assessment_completed','accepted','model_revision',
+                   'inspected_views','executor','likeness_verified')}
+        result.update({'issues':None,'summary':None,'issues_count':len(self.final_report['issues']),
+                       'sections':{'visual_review':section_info(json.dumps(self.final_report,ensure_ascii=False),'visual_review')}})
+        return result
 
     def build(self, scene, edits=''):
         self.check()
@@ -200,6 +360,10 @@ class JobTools:
                 # Parent terminates the process group on cancellation. No user
                 # API key or worker state is mounted in this Blender container.
                 server.run_blender(self.folder.name,candidate,event,timeout=min(420,BUILD_DEADLINE-(time.monotonic()-self.started)))
+        except (ValueError, RuntimeError, OSError, TimeoutError) as error:
+            diagnostic = anatomy_build_error(candidate, error)
+            if diagnostic is error: raise
+            raise diagnostic from error
         finally:
             self.blender_seconds+=time.monotonic()-started
             self.progress('Blender zakonczyl probe. Codex sprawdza geometrie i rendery.')
@@ -217,7 +381,7 @@ class JobTools:
             if name=='finish_model':
                 if any(arguments.get(key)!=self.final_report.get(key) for key in ('accepted','issues','summary')):
                     raise ValueError('Model juz zakonczony. Odczytaj get_current_model; zmiana oceny wymaga nowego zlecenia.')
-                return self.final_report
+                return self.review_result()
             if name in ('build_model','edit_model'):
                 raise ValueError('Model juz zakonczony. Odczytaj get_current_model; nowa budowa wymaga nowego zlecenia.')
         else:self.check(arguments.get('expected_revision'))
@@ -227,7 +391,7 @@ class JobTools:
                     'coordinate_and_geometry_guide':PROMPT,
                     'edit_helpers':'bpy, math, random, Vector. make_material(name,rgb,pattern="plain",roughness=0.7,metallic=0.0) returns a bpy.types.Material. At most 8 NEW materials across all accumulated edits; reuse existing materials with bpy.data.materials.get(name). mesh_object(name,vertices,faces,material), tube(name,points,radii,material,sides=12), ellipsoid(name,center,scale=None,material=None,subdivisions=4,*,radii=None), join_meshes(objects,name) each return one bpy.types.Object, not a tuple. ellipsoid radii is a compatibility alias for scale; provide only one. No imports except bpy/math/random/mathutils. No files, shell or network.',
                     'references':[{'index':i,'view':p.get('view'),'name':p.get('name')} for i,p in enumerate(self.photos)],'revision':self.revision}
-        if name=='get_current_model': return self.snapshot()
+        if name=='get_current_model': return self.snapshot(**arguments)
         if name=='build_model':
             return self.build(parse_scene(arguments['scene_json'],self.request['prompt']))
         if name=='edit_model':
@@ -274,7 +438,7 @@ class JobTools:
                   'blender_seconds':self.blender_seconds,'builds':self.attempts})
             self.finished=True;self.final_report=report
             self.progress('Model i ocena zapisane. Zlecenie zakonczone; przygotowano wynik do odebrania.')
-            return report
+            return self.review_result()
         raise ValueError('Nieznane narzedzie MCP.')
 
 
@@ -305,8 +469,7 @@ def serve(job, incoming=sys.stdin, outgoing=sys.stdout):
                 try:
                     tool=next((t for t in TOOLS if t['name']==name),None)
                     if tool is None:raise ValueError('Nieznane narzedzie MCP.')
-                    from runtime.scene_contract import check
-                    check(arguments,tool['inputSchema'])
+                    check_tool_arguments(arguments,tool['inputSchema'])
                     job.record(name,'started')
                     value=job.call(name,arguments)
                     content=value if isinstance(value,list) else [{'type':'text','text':json.dumps(value,ensure_ascii=False)}]

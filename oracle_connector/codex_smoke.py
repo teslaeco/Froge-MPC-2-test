@@ -95,6 +95,7 @@ class BuildFixture:
             "for(const b of r.content||[]) {if(b.type==='image'){image(b);n++;} else if(b.type==='text')text(b.text);}} "
             "text({forge_views:"+json.dumps(self.token)+",images:n});",
             "text(await tools.mcp__blender__finish_model({expected_revision:1,accepted:true,issues:[],summary:'Offline export fixture; no AI likeness evaluation.'})); "
+            "await new Promise(resolve => setTimeout(resolve, 3500)); "
             "text(await tools.mcp__blender__get_current_model({}));"
         ]
         if step < len(programs):
@@ -178,7 +179,7 @@ def main(binary=None, build=False, test_blender=None):
             if finished is None or not any(v.get('tool')=='get_current_model' and v.get('status')=='completed' for v in trace[finished+1:]):
                 raise RuntimeError('Nie przeszedl odczyt modelu po finalizacji.')
             print('CODEX_EXECUTION_ERROR_RECOVERY_OK; real ReferenceError, store/load, then Blender build',flush=True)
-            print('CODEX_FINISHED_READ_OK; actual saved outcome, read after finish, no extra model response',flush=True)
+            print('CODEX_FINISHED_READ_OK; actual saved outcome, delayed read > 2 s after finish in same exec, no extra model response',flush=True)
             print('CODEX_MCP_BLENDER_BUILD_OK; real GLB, texture, 3 renders and FBX; fixture model responses; no paid API',flush=True)
         elif len(fixture.seen) != 2 or not result_verified(fixture.seen[-1], fixture.token):
             raise RuntimeError('Nie przeszedl test Codex -> Code Mode -> Blender MCP -> odpowiedz. Platne API nie bylo wywolywane.')
