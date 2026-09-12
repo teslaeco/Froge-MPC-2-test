@@ -73,6 +73,15 @@ class JobTools:
         write(self.folder/'agent-tools.json', {'calls':self.calls[-40:],
               'total_calls':sum(c['status'] != 'started' for c in self.calls),'failures':self.tool_failures,
               'build_attempts':self.attempts,'revision':self.revision})
+        if status=='failed': self.progress('Blad narzedzia '+name+': '+entry['error'][:400])
+        elif status=='started':
+            labels={'get_modeling_contract':'Astra odczytuje narzedzia geometrii i materialow.',
+                    'get_current_model':'Astra sprawdza aktualna geometrie i rewizje.',
+                    'build_model':'Astra przekazuje plan do walidacji i budowy w Blenderze.',
+                    'edit_model':'Astra przekazuje konkretne poprawki geometrii.',
+                    'inspect_render':'Astra pobiera rzeczywisty render do oceny.',
+                    'finish_model':'Astra konczy ocene; Blender przygotowuje eksporty.'}
+            self.progress(labels.get(name,'Codex wykonuje narzedzie Blender MCP.'))
 
     def check(self, revision=None):
         if (self.folder/'agent-cancelled').exists(): raise InterruptedError('Zlecenie anulowane.')

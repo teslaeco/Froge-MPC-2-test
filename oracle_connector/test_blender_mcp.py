@@ -163,6 +163,18 @@ class GatewayTests(unittest.TestCase):
                 self.assertEqual(receipt['error_source'],'openai');self.assertEqual(receipt['upstream_status'],429)
                 self.assertEqual(receipt['error_code'],'credit_balance_exhausted');self.assertEqual(receipt['retry_after'],'30')
 
+    def test_repeated_identical_tool_errors_stop_before_another_paid_request(self):
+        client=urllib.request.build_opener(urllib.request.ProxyHandler({}))
+        with tempfile.TemporaryDirectory() as temp,patch('codex_runner.urllib.request.build_opener') as upstream:
+            folder=Path(temp)
+            write(folder/'agent-tools.json',{'calls':[{'tool':'build_model','status':'failed','error':'invalid revision'}]*3})
+            with Gateway('unused-fixture-key',folder,threading.Event()) as gateway:
+                request=urllib.request.Request('http://127.0.0.1:%d/v1/responses'%gateway.server.server_port,
+                    data=b'{"model":"gpt-6-astra","tools":[{"type":"custom","name":"exec"}]}',headers={'Authorization':'Bearer '+gateway.token})
+                with self.assertRaises(urllib.error.HTTPError) as caught:client.open(request,timeout=2)
+                self.assertIn(b'FORGE_REPEATED_TOOL_ERROR',caught.exception.read())
+                self.assertEqual(gateway.requests,0);upstream.assert_not_called()
+
 class AstraCodeModeTests(unittest.TestCase):
     def test_empty_catalog_from_oracle_screenshot_cannot_spend_api_budget(self):
         client=urllib.request.build_opener(urllib.request.ProxyHandler({}))

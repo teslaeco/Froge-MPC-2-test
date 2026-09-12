@@ -142,7 +142,7 @@ def main(binary=None, build=False, test_blender=None):
         elif len(fixture.seen) != 2 or not result_verified(fixture.seen[-1], fixture.token):
             raise RuntimeError('Nie przeszedl test Codex -> Code Mode -> Blender MCP -> odpowiedz. Platne API nie bylo wywolywane.')
         if not build and (folder/'model.glb').exists(): raise RuntimeError('Test polaczenia nie powinien tworzyc modelu.')
-        codex_runner.write(codex_runner.ROOT/'tools/codex/verified.json', {'sources':{name:hashlib.sha256((codex_runner.ROOT/name).read_bytes()).hexdigest() for name in ('codex_runner.py','blender_mcp.py')}, 'cli_mcp_roundtrip':True, 'code_mode_roundtrip':True})
+        codex_runner.write(codex_runner.ROOT/'tools/codex/verified.json', {'sources':{name:hashlib.sha256((codex_runner.ROOT/name).read_bytes()).hexdigest() for name in ('codex_runner.py','blender_mcp.py')}, 'cli_mcp_roundtrip':True, 'code_mode_roundtrip':True, 'blender_build_roundtrip':build})
         passed = True
         print('CODEX_MCP_REAL_CLI_ROUNDTRIP_OK; 6 narzedzi, rzeczywisty wynik MCP; bez platnego API', flush=True)
     except Exception:

@@ -85,14 +85,22 @@ def install_on_oracle(data):
                 folder=target/'state/jobs'/jid
                 print('FROGE_V28_DIAGNOSTIC:',jid,state,'plan=',(folder/'scene.json').is_file(),
                       'GLB=',(folder/'model.glb').is_file(),flush=True)
-                for diagnostic in ('attempt-1-error.json','attempt-2-error.json','failure.json','timing.json'):
+                for diagnostic in ('attempt-1-error.json','attempt-2-error.json','failure.json','timing.json','agent-usage.json'):
                     path=folder/diagnostic
                     if path.is_file() and not path.is_symlink() and path.stat().st_size<16000:
                         try:
                             info=json.loads(path.read_text())
-                            fields={k:info[k] for k in ('error','kind','phase','detail','scene_saved','total_seconds','ai_seconds','blender_seconds','last_phase') if k in info}
+                            fields={k:info[k] for k in ('error','kind','phase','detail','scene_saved','total_seconds','ai_seconds','blender_seconds','last_phase','requests','output_tokens','unknown_usage','last_error','error_code','error_source','upstream_status') if k in info}
                             print('FROGE_V28_DIAGNOSTIC',diagnostic,json.dumps(fields,ensure_ascii=True)[:1800],flush=True)
                         except (OSError,ValueError):pass
+                events=folder/'codex-events.jsonl'
+                if events.is_file() and not events.is_symlink() and events.stat().st_size<120000:
+                    for line in events.read_text().splitlines()[-8:]:
+                        try:
+                            event=json.loads(line)
+                            summary={k:event[k] for k in ('type','item_type','tool','message') if k in event}
+                            print('FROGE_V28_CODEX_EVENT',json.dumps(summary,ensure_ascii=True)[:1800],flush=True)
+                        except (ValueError,TypeError):pass
     with tempfile.TemporaryDirectory(prefix='froge-v28-update-') as temporary:
         staging = Path(temporary)
         for name, encoded in data['files'].items():

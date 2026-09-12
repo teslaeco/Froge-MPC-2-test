@@ -65,7 +65,8 @@ def executable():
     try:
         verified=json.loads(receipt.read_text())
         expected={name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in ('codex_runner.py','blender_mcp.py')}
-        return path if path.is_file() and os.access(path,os.X_OK) and verified.get('sources')==expected else None
+        return path if (path.is_file() and os.access(path,os.X_OK) and verified.get('sources')==expected
+                        and verified.get('blender_build_roundtrip') is True) else None
     except (OSError,ValueError):return None
 
 
@@ -101,6 +102,14 @@ class Gateway:
                     if not any(t.get('name')=='exec' and t.get('type')=='custom' for _,t in entries):
                         outer.stop('CODEX_TOOLS_MISSING','CODEX_TOOLS_MISSING: Astra nie otrzymala narzedzia exec. Sprawdz instalacje trybu kodowego i Blender MCP; nie wyslano zapytania do OpenAI.')
                         return self.reject(422,outer.error)
+                    trace=outer.folder/'agent-tools.json'
+                    if trace.is_file() and trace.stat().st_size<200000:
+                        history=json.loads(trace.read_text()).get('calls',[])
+                        completed=[v for v in history if v.get('status')!='started'][-3:]
+                        if len(completed)==3 and all(v.get('status')=='failed' and
+                            (v.get('tool'),v.get('error'))==(completed[0].get('tool'),completed[0].get('error')) for v in completed):
+                            outer.stop('FORGE_REPEATED_TOOL_ERROR','Trzy takie same bledy narzedzia '+str(completed[-1].get('tool'))+'. Przerwano petle bez kolejnego zapytania API. Szczegoly sa w raporcie MCP.')
+                            return self.reject(422,outer.error,outer.error_code)
                     with outer.lock:
                         if outer.active:return self.reject(409,'A model request is already running')
                         if outer.error:
