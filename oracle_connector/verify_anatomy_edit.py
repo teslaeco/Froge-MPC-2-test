@@ -194,6 +194,20 @@ def verify(output):
     assert clearance['required'] is True and clearance['passed'] is False
     assert clearance['checks'][0]['clear_rays']==0
     bpy.data.objects.remove(filler,do_unlink=True)
+    # Prove the occupancy gate can also pass a real open volume. This removes
+    # foreground faces in the test orbit; it is NOT an authored skull model.
+    import bmesh
+    anchor=Vector(head['orbit_anchor_l'])
+    bm=bmesh.new();bm.from_mesh(head.data)
+    foreground=[]
+    for face in bm.faces:
+        c=face.calc_center_median()
+        if abs(c.x-anchor.x)<.019 and abs(c.z-anchor.z)<.018 and c.y<anchor.y+.012:
+            foreground.append(face)
+    bmesh.ops.delete(bm,geom=foreground,context='FACES')
+    bm.to_mesh(head.data);bm.free();head.data.update();bpy.context.view_layer.update()
+    clearance=socket_clearance_checks(meshes,intent)
+    assert clearance['passed'] is True,clearance
     # A duplicate of the wrong eye cannot satisfy the total count.
     living[0]['anatomy_eye_side']='l'
     try:
@@ -217,10 +231,30 @@ bpy.context.scene['expected_heads']=0
         assert error.report['actual']['eyes']==0
     assert not (invalid/'model.glb').exists()
 
+    # Ordinary full-person construction groups by material. Eyeliner and
+    # lashes share a material, but must not be joined and lose lash identity.
+    from run import make_material,mesh_object,tube,ellipsoid
+    from build_scene import build_scene
+    from scene_contract import validate_scene
+    ordinary=scene_fixture();p=ordinary['parts'][0]
+    p={k:v for k,v in p.items() if k not in ('scale','rotation')}
+    p.update(kind='person',center=[0,0,0],height=1.75,build='average',
+             body_shape='natural',clothing_fit='regular',outfit='tshirt',
+             top_material='hair',trouser_material='hair',shoe_material='hair',
+             accent_material='nail',nail_material='nail',shirt_graphic='none',
+             pose='standing',necklace=False,microphone=False)
+    ordinary['parts']=[p]
+    bpy.ops.wm.read_factory_settings(use_empty=True)
+    build_scene(validate_scene(ordinary),make_material,mesh_object,tube,ellipsoid,join_meshes)
+    meshes=[o for o in bpy.context.scene.objects if o.type=='MESH']
+    verify_components(meshes,1,2,intent=json.loads(bpy.context.scene['anatomy_intent']))
+
     return {'blender': bpy.app.version_string, 'actual_counts': expected,
             'declared_empty_socket_omits_only_its_eye_and_lashes':True,
             'wrong_sided_eye_rejected':True,
             'untagged_filler_globe_fails_actual_orbit_rays':True,
+            'open_test_orbit_passes_actual_rays':True,
+            'ordinary_person_keeps_separate_lashes_when_grouping_materials':True,
             'living_eye_cannot_be_removed_by_changing_intent_in_edit':True,
             'socket_sculpt_and_reference_likeness_not_claimed':True,
             'production_asymmetric_edit_exported': True,

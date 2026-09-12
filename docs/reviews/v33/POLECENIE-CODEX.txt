@@ -1,10 +1,10 @@
-Napraw generator FORGE MCP (Astra + Codex + Blender MCP) i rekonstrukcję referencji pół-kobieta / pół-czaszka. Zachowaj oryginalne pliki oraz nie zwiększaj budżetu ani nie zmieniaj dostawcy AI.
+Wykonaj poprawioną rekonstrukcję referencji pół-kobieta / pół-czaszka w FORGE MCP v33 (Astra + Codex + Blender MCP). Zachowaj poprzedni wynik. Nie zwiększaj budżetu ani nie zmieniaj dostawcy AI.
 
 REFERENCJA
-Zlecenie 49ac337d-0a00-4c94-96ef-d8dfa716d435, oryginalny opis: „Zrób mi zniej model 3D i teksturę wszystko wysoka jakość.” Użyj oryginalnego zdjęcia tego zlecenia. Cztery pozostałe zrzuty pokazują BŁĘDY, nie pożądany wygląd.
+Poprzednie wadliwe zlecenie: 49ac337d-0a00-4c94-96ef-d8dfa716d435, opis: „Zrób mi zniej model 3D i teksturę wszystko wysoka jakość.” Użyj dołączonej oryginalnej grafiki jako wzorca. Jeśli dołączono też zrzuty wadliwego modelu, pokazują BŁĘDY, nie pożądany wygląd. Nie próbuj pobierać starego zlecenia narzędziami, których nie udostępniono.
 Po LEWEJ stronie obrazu: żywa, uśmiechnięta twarz kobiety, brązowe oko, brwi i rzęsy, jasna skóra, długie falujące brązowe włosy i kremowa suknia z odkrytymi ramionami. Po PRAWEJ: połowa czaszki, pusty głęboki oczodół, otwór nosowy, kość policzkowa, szczęka i zęby, ciemna strona sukni. To jedna spójna głowa, a nie dwie nałożone maski. Plecy i niewidoczny dół są rekonstrukcją.
 
-NAPRAWA MECHANIZMU
+ZASADY BUDOWY W V33
 1. Zachowaj zwykłą kontrolę dwóch oczu i rzęs dla człowieka. Dla jawnie zamierzonej czaszki zastosuj portrait.eye_states: left=empty_socket, right=present, evidence opisujący prawą stronę obrazu. Są to strony ANATOMICZNE postaci. Nie obniżaj wymagań po błędzie i nie usuwaj żywego oka.
 2. Nie dopasowuj ludzkich landmarków powiek i tęczówek do części kostnej. Zachowaj oryginalne zdjęcie, UV i projekcję tekstury na widoczne powierzchnie.
 3. Baza z pominiętym okiem nie jest gotową czaszką. Wyrzeźbij oczodół i jego obrzeże; żadnej czarnej kuli, dysku ani wypukłej imitacji zagłębienia. Odczytaj report.reference_socket_checks. Nie zatwierdzaj wyniku, jeżeli kontrola promieni nadal wykrywa przesłonięcie.

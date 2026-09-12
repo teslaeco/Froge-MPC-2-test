@@ -68,7 +68,8 @@ folder = root / 'public/downloads'; folder.mkdir(parents=True, exist_ok=True)
 (folder / 'froge-v33.py').write_text(program)
 buffer = io.BytesIO()
 with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
-    for name, value in [('froge-v33.py', program), ('CZYTAJ.txt', readme)]:
+    for name, value in [('froge-v33.py', program), ('CZYTAJ.txt', readme),
+                        ('POLECENIE-CODEX.txt', (root/'docs/reviews/v33/POLECENIE-CODEX.txt').read_text())]:
         info = zipfile.ZipInfo(name, (2026,9,12,0,0,0)); info.compress_type = zipfile.ZIP_DEFLATED
         archive.writestr(info, value.encode())
 with tempfile.NamedTemporaryFile(dir=folder, delete=False) as pending:
