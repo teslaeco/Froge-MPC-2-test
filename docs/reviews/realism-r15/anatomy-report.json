@@ -31,5 +31,6 @@
   "temple_width_factor": 1.035,
   "bust_local_depth": 0.021,
   "living_eye_surface_y": 0.01575368642807007,
+  "living_eye_center_y": 0.01,
   "likeness_accepted": false
 }
