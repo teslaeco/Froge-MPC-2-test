@@ -1,0 +1,51 @@
+[
+  {
+    "file_name": "FORGE-model-E15.blend",
+    "file_id": "file_00000000f280822fac0c5c0d57c972a2",
+    "library_file_id": "libfile_c250f38b3a888191b034288c37bcde27",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  },
+  {
+    "file_name": "FORGE-model-E15.fbx",
+    "file_id": "file_000000000acc822f8d1314e30b2d7724",
+    "library_file_id": "libfile_80a731269bcc819197228e8290146419",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  },
+  {
+    "file_name": "FORGE-model-E15.glb",
+    "file_id": "file_00000000f5a8822f8acd8819a7ca9955",
+    "library_file_id": "libfile_2249432c004081919ee087452041d8d8",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  },
+  {
+    "file_name": "FORGE-R14-R15-E15.png",
+    "file_id": "file_000000006700822f86cb7f1daae59857",
+    "library_file_id": "libfile_ac7b8b2df0948191a4d0e8006f260c5e",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  },
+  {
+    "file_name": "FORGE-E15-trzy-widoki.png",
+    "file_id": "file_0000000039a8822f8db71b4c9d3de422",
+    "library_file_id": "libfile_daa8e0a320dc8191b46bd14c48e554ba",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  },
+  {
+    "file_name": "FORGE-E15-vs-Meshy.png",
+    "file_id": "file_00000000678c822f86a2ec68bd6ab638",
+    "library_file_id": "libfile_cf00cd44d1bc8191bdd1849a78f45ef4",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  },
+  {
+    "file_name": "POROWNANIE-E15-Meshy.md",
+    "file_id": "file_00000000e998822fb12df97b1c63e931",
+    "library_file_id": "libfile_f21ccab8ab548191a56ea8272eeff139",
+    "status": "succeeded",
+    "local_metadata_applied": true
+  }
+]

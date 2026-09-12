@@ -16,7 +16,7 @@ items=[('Screenshot_20260912-190442.png',(375,920,707,1335),'MESHY — SCREEN U�
 canvas=Image.new('RGB',(1600,655),(17,24,31));d=ImageDraw.Draw(canvas)
 for i,(src,box,label) in enumerate(items):
  if src:im=Image.open(ROOT/'upload'/src).convert('RGB').crop(box)
- else:im=Image.open(P/('FBX-face.png' if i==1 else 'FBX-face-clay.png')).convert('RGB').crop((95,145,555,720))
+ else:im=Image.open(P/('FBX-face.png' if i==1 else 'FBX-face-clay.png')).convert('RGB').crop((70,90,570,790))
  im=ImageOps.contain(im,(390,570),Image.Resampling.LANCZOS);canvas.paste(im,(i*400+(400-im.width)//2,55+(570-im.height)//2));d.text((i*400+9,12),label,font=small,fill='white')
 d.text((12,631),'Porównanie wizualne: różne kamery, światło i skala. Meshy ocenione ze screenów; nie badano jego pliku 3D.',font=small,fill=(190,206,218));canvas.save(P/'FORGE-E15-vs-Meshy.png')
 print('Comparison sheets ready')

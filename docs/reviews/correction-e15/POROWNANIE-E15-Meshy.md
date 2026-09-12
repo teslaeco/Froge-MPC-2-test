@@ -25,6 +25,8 @@ Porównanie opiera się na dwóch screenach użytkownika: Screenshot_20260912-19
 | Detale sceny | Widoczne elementy taśmy filmowej i otoczenia | Brak ich w naszym modelu |
 | Liczba trójkątów | 3 057 126 według interfejsu na screenie | 1 990 254, sprawdzone po imporcie FBX |
 
+Widok bez tekstur pokazuje, że podobieństwo naszego żywego oka i mimiki w dużym stopniu zależy od tekstury. Sama powierzchnia nie odtwarza tych cech wystarczająco. To istotniejszy problem niż liczba wielokątów.
+
 **W tej konkretnej próbie Meshy wygrywa podobieństwem i spójnością geometrii.** Większa liczba trójkątów R15 nie pomogła, ponieważ problem dotyczył podstawowego kształtu i połączeń powierzchni. E15 przywraca preferowaną bazę R14, ale nie dorównuje jeszcze wynikowi Meshy.
 
 Nie oceniono pliku Meshy pod względem UV, liczby oddzielnych obiektów, szczelności siatki, jakości eksportu, czasu ani kosztu generacji. Zielony znacznik drukowalności na screenie nie jest przeprowadzonym przez nas testem.

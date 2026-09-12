@@ -1,0 +1,26 @@
+{
+  "fbx_sha256": "639eb17dfb2835467eac1d13ef6f50c6b1599ee34ffb72d5be09078f3e49c5c1",
+  "fbx_reimport_verified": true,
+  "triangles": 1990254,
+  "mesh_objects": 420,
+  "bounds": [
+    [
+      -0.35902881622314453,
+      -0.1666141152381897,
+      0.5252182483673096
+    ],
+    [
+      0.35902881622314453,
+      0.28510919213294983,
+      1.7127569913864136
+    ]
+  ],
+  "missing_textures": [],
+  "meshes_with_uv": 420,
+  "renders": "actual reimported FBX",
+  "wave_guides_retained": true,
+  "likeness_accepted": false,
+  "print_ready": false,
+  "anatomical_eyes": 2,
+  "fine_hair_fibres": 0
+}

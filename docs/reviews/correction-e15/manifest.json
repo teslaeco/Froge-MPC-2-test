@@ -1,0 +1,37 @@
+[
+  {
+    "file": "FORGE-model-E15.blend",
+    "bytes": 182788273,
+    "sha256": "e980950e7e8a13370d525a900270f731bb58b57d0ffcbf0c995dfda9f9907f68"
+  },
+  {
+    "file": "FORGE-model-E15.fbx",
+    "bytes": 174359612,
+    "sha256": "639eb17dfb2835467eac1d13ef6f50c6b1599ee34ffb72d5be09078f3e49c5c1"
+  },
+  {
+    "file": "FORGE-model-E15.glb",
+    "bytes": 116630712,
+    "sha256": "d876636973ad98216042a4a161ff4f92de617475015eac794743983a2852f97c"
+  },
+  {
+    "file": "FORGE-R14-R15-E15.png",
+    "bytes": 1687383,
+    "sha256": "3d8fe322d6c84984ca932a91a33118624e69ee9e0e2d392800a0264c538b70db"
+  },
+  {
+    "file": "FORGE-E15-trzy-widoki.png",
+    "bytes": 1068801,
+    "sha256": "32db27f935beb1d9aca0d02af8f2048874151c0127d365547fca2437f3ff4917"
+  },
+  {
+    "file": "FORGE-E15-vs-Meshy.png",
+    "bytes": 988837,
+    "sha256": "82d29c97be88c398c9b7a7be13e0d78583d219357f6a98a3023ff9fb730b051a"
+  },
+  {
+    "file": "POROWNANIE-E15-Meshy.md",
+    "bytes": 3824,
+    "sha256": "975fab7825cda1db44113abd1003239d02194b0d9a93caeaa19cbffcc98de95b"
+  }
+]
