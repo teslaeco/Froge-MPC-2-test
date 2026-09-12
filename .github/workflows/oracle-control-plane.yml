@@ -1,0 +1,37 @@
+name: Oracle Codex MCP (no paid API)
+on:
+  pull_request:
+    paths:
+      - 'oracle_connector/**'
+      - '.github/workflows/oracle-control-plane.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ['3.9', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Unit and rollback regressions
+        working-directory: oracle_connector
+        run: python -m unittest test_blender_mcp test_update
+      - name: Install checksum-pinned Codex and Code Mode host
+        working-directory: oracle_connector
+        run: python install_codex.py
+      - name: Actual Codex to MCP round-trip with fixture Responses
+        working-directory: oracle_connector
+        run: python codex_smoke.py
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: codex-diagnostics-py-${{ matrix.python }}
+          path: oracle_connector/state/diagnostics/
+          if-no-files-found: ignore

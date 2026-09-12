@@ -17,7 +17,7 @@ def configure_review(scene, allow_denoising=True):
     enabled=available and allow_denoising
     scene.render.engine='CYCLES';scene.cycles.device='CPU'
     scene.cycles.use_denoising=enabled
-    scene.cycles.samples=12 if enabled else 64
+    scene.cycles.samples=12 if enabled else 24
     if enabled:
         scene.cycles.denoiser='OPENIMAGEDENOISE'
         if hasattr(scene.cycles,'denoising_use_gpu'):scene.cycles.denoising_use_gpu=False

@@ -23,14 +23,14 @@ class UpdateTests(unittest.TestCase):
         (self.source / 'image3d_fixture.py').write_text('offline_only = True\n')
         (self.source / 'face_measurement.py').write_text('measurement_revision = 1\n')
         (self.source / 'visual_review.py').write_text('max_refinements = 1\n')
-        for name in ('generation_budget.py','quality_report.py','v23_fixture.py'):
+        for name in ('generation_budget.py','quality_report.py','v23_fixture.py','scene_repair.py','blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py'):
             (self.source/name).write_text('v23 = True\n')
         (self.source / 'runtime_check.py').write_text('cpu_limit = 2\n')
         (self.source / 'code_policy.py').write_text('policy = "strict-with-early-check"\n')
         (self.target / 'code_policy.py').write_text('policy = "strict"\n')
         (self.target / 'server.py').write_text('version = 1\n')
         (self.source / 'runtime').mkdir()
-        for name in ('freeform_geometry.py','projection_math.py','photo_projection.py','model_checkpoint.py'):
+        for name in ('freeform_geometry.py','projection_math.py','photo_projection.py','model_checkpoint.py','finalize.py'):
             (self.source/'runtime'/name).write_text('v23 = True\n')
         (self.target / 'runtime').mkdir()
         (self.source / 'runtime/run.py').write_text('preserve_packed_images = True\n')
@@ -53,9 +53,12 @@ class UpdateTests(unittest.TestCase):
             db.execute('CREATE TABLE jobs(state TEXT)')
         self.runtime_check = patch.object(apply_update, 'setup_runtime')
         self.runtime_check.start()
+        self.codex_install=patch('install_codex.install')
+        self.codex_install.start()
 
     def tearDown(self):
         self.runtime_check.stop()
+        self.codex_install.stop()
         self.temp.cleanup()
 
     def test_export_check_failure_restores_code_and_preserves_state(self):
@@ -70,7 +73,7 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(service.call_args.args[0][-2:], ['start', 'froge-worker.service'])
 
     def test_update_preserves_pairing_and_keeps_backup(self):
-        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'connectorVersion': apply_update.EXPECTED_VERSION, 'freeformGeometryRevision':1, 'photoProjectionRevision':1, 'photoReviewReservedSeconds':240, 'astraPhotoRevision': 1, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'portraitGeometryRevision': 2, 'registeredReferenceRevision': 1}).encode())):
+        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'executionEngine':'codex-mcp', 'connectorVersion': apply_update.EXPECTED_VERSION, 'instructionsRevision':1, 'freeformGeometryRevision':1, 'photoProjectionRevision':1, 'photoReviewReservedSeconds':240, 'astraPhotoRevision': 1, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'portraitGeometryRevision': 2, 'registeredReferenceRevision': 1}).encode())):
             apply_update.update(self.source, self.target)
         self.assertEqual(self.config.read_bytes(), self.original_config)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 2\n')
@@ -83,7 +86,22 @@ class UpdateTests(unittest.TestCase):
         backups = list((self.target / 'state/code-backups').glob('*/server.py'))
         self.assertEqual(backups[0].read_text(), 'version = 1\n')
         self.assertEqual((backups[0].parent / 'runtime/run.py').read_text(), 'preserve_packed_images = False\n')
-        self.assertEqual([call.args[0][-1] for call in service.call_args_list], ['froge-worker.service'] * 2)
+        self.assertEqual([call.args[0][-1] for call in service.call_args_list if call.args[0][0]=='systemctl'], ['froge-worker.service'] * 2)
+        self.assertTrue(any(call.args[0][-1]==str(self.target/'codex_smoke.py') for call in service.call_args_list))
+
+    def test_failed_mcp_gate_restores_previous_verification_and_code(self):
+        receipt=self.target/'tools/codex/verified.json';receipt.parent.mkdir(parents=True)
+        receipt.write_text('{"old":"verified"}')
+        def fail(args,**kwargs):
+            if args[-1]==str(self.target/'codex_smoke.py'):
+                receipt.write_text('{"new":"invalid"}')
+                raise RuntimeError('MCP gate failed')
+        with patch.object(apply_update.subprocess,'run',side_effect=fail):
+            with self.assertRaisesRegex(RuntimeError,'MCP gate failed'):
+                apply_update.update(self.source,self.target)
+        self.assertEqual(receipt.read_text(),'{"old":"verified"}')
+        self.assertEqual((self.target/'server.py').read_text(),'version = 1\n')
+        self.assertEqual(self.config.read_bytes(),self.original_config)
 
     def test_active_job_prevents_service_stop_and_code_replacement(self):
         with sqlite3.connect(self.target / 'state/jobs.sqlite') as db:

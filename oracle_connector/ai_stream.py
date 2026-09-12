@@ -146,8 +146,8 @@ def stream_chat(url, payload, cancelled, progress, timeout=1800, interval=8, val
                             pieces.append(content)
                             characters += len(content)
                             size += len(content.encode())
-                        if size > 80000:
-                            raise ValueError('AI zwrocilo zbyt dlugi skrypt.')
+                        if size > 256000:
+                            raise ValueError('Plan AI przekracza limit 256 kB. Podziel scene na mniej czesci.')
                         if content and validate_chunk is not None:
                             validate_chunk(content)
                         if not is_openai and item.get('done'):

@@ -144,7 +144,7 @@ class ResponsesTests(unittest.TestCase):
         messages = [{'role': 'user', 'content': photo_input.user_content('Model this object', [{'view': 'front', 'dataUrl': image_url}])}]
         with patch.object(openai_provider,'stream_chat',return_value='{}') as request:
             openai_provider.generate(messages,FAKE_KEY,threading.Event(),lambda *_:None,600,None,lambda *_:None,schema=SCHEMA)
-        self.assertEqual(request.call_args.args[1]['reasoning'],{'effort':'max'})
+        self.assertEqual(request.call_args.args[1]['reasoning'],{'effort':'high'})
         # Preserve provider payload creation, redirect only the network target to the local fixture.
         def local_transport(_url, *args, **kwargs):
             return stream_chat(self.url, *args, **kwargs)

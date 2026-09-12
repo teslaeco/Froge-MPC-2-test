@@ -235,12 +235,22 @@ def finish(output=None):
     report['texture_quality']=texture_report
     report['photo_face_fit']=json.loads(bpy.context.scene.get('photo_face_fit','{}'))
     report['photo_projection']=projection
+    report['mesh_objects']=[{'name':o.name,'dimensions':list(o.dimensions),'location':list(o.matrix_world.translation)} for o in objects]
     report['geometry_capabilities']={'revision':1,'freeform_surfaces':True,'arbitrary_photo_likeness_verified':False}
     if heads:
         from couture_qa import verify_export
         report['export_validation']=verify_export(output/'model.glb',objects)
     from model_checkpoint import save_ready
     save_ready(output,report,'core_export')
+    review_request=output/'review-request.json'
+    request=json.loads(review_request.read_text()) if review_request.is_file() else {}
+    if request.get('preview_only') is True:
+        # Review the exported GLB before spending time exporting every format.
+        from review_views import render_review_checked
+        report['review_render']=render_review_checked(output/'model.glb',output/'review')
+        report['interchange_exports']={'status':'pending_visual_review','formats':['glb','blend']}
+        (output/'result.json').write_text(json.dumps(report))
+        return
     from scene_exports import export_interchange
     report['interchange_exports']=export_interchange(
         output, output/'scene.json' if (output/'scene.json').is_file() else None)
@@ -253,22 +263,23 @@ def finish(output=None):
         report['review_render']=render_review_checked(output/'model.glb',output/'review')
         (output/'result.json').write_text(json.dumps(report))
 
-if __name__ == '__main__':
+def execute_job(folder=Path('/work')):
+    folder=Path(folder)
     bpy.ops.wm.read_factory_settings(use_empty=True)
-    if Path('/work/image3d-manifest.json').is_file():
+    if (folder/'image3d-manifest.json').is_file():
         from imported_asset import import_and_export
-        import_and_export(Path('/work'))
+        import_and_export(folder)
         print('FROGE_IMAGE3D_READY')
         raise SystemExit(0)
-    if Path('/work/scene.json').is_file():
+    if (folder/'scene.json').is_file():
         from scene_contract import parse_scene
         from build_scene import build_scene
-        scene = parse_scene(Path('/work/scene.json').read_text(encoding='utf-8'))
-        build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes, reference_folder=Path('/work'))
-        finish()
-        print('FROGE_MODEL_READY')
-        raise SystemExit(0)
-    code = Path('/work/generate.py').read_text(encoding='utf-8')
+        scene = parse_scene((folder/'scene.json').read_text(encoding='utf-8'))
+        build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes, reference_folder=folder)
+        edits=(folder/'edits.py')
+        code=edits.read_text(encoding='utf-8') if edits.is_file() else ''
+    else:
+        code = (folder/'generate.py').read_text(encoding='utf-8')
     # Validation is also done on the host. Secrets and the host filesystem are never mounted.
     allowed = {'abs', 'all', 'any', 'bool', 'dict', 'enumerate', 'float', 'int', 'isinstance', 'len', 'list', 'max', 'min', 'pow', 'print', 'range', 'reversed', 'round', 'set', 'sorted', 'str', 'sum', 'tuple', 'zip', 'Exception', 'ValueError'}
     safe_builtins = {name: getattr(builtins, name) for name in allowed}
@@ -280,6 +291,12 @@ if __name__ == '__main__':
     scope = {'__builtins__': safe_builtins, 'bpy': bpy, 'math': math, 'random': random,
              'Vector': Vector, 'make_material': make_material, 'mesh_object': mesh_object,
              'tube': tube, 'ellipsoid': ellipsoid, 'join_meshes': join_meshes}
+    expected={key:bpy.context.scene.get(key,0) for key in ('expected_heads','expected_hands')}
     exec(compile(code, '/work/generate.py', 'exec'), scope, scope)
-    finish()
+    if (folder/'scene.json').is_file():
+        for key,value in expected.items():bpy.context.scene[key]=value
+    finish(folder)
     print('FROGE_MODEL_READY')
+
+if __name__=='__main__':
+    execute_job()

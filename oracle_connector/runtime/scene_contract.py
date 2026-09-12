@@ -589,8 +589,8 @@ def apply_person_intent(scene, prompt):
 
 
 def load_scene_json(text):
-    if not isinstance(text, str) or not text.strip() or len(text.encode()) > 60000:
-        raise ValueError('Oczekiwano kompletnego planu JSON do 60 KB.')
+    if not isinstance(text, str) or not text.strip() or len(text.encode()) > 256000:
+        raise ValueError('Oczekiwano kompletnego planu JSON do 256 kB.')
     def unique(pairs):
         result = {}
         for k, v in pairs:

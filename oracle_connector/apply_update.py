@@ -6,6 +6,7 @@ from pathlib import Path
 import pwd
 import sqlite3
 import subprocess
+import sys
 import time
 import urllib.request
 from runtime_check import RuntimeUnavailable, setup_runtime
@@ -20,8 +21,9 @@ FILES += tuple('runtime/'+name for name in ('portrait.py','portrait_eyes.py','po
 FILES += ('image3d_fixture.py', 'runtime/imported_asset.py')
 FILES += ('generation_budget.py','quality_report.py','v23_fixture.py',
           'runtime/freeform_geometry.py','runtime/projection_math.py','runtime/photo_projection.py')
-FILES += ('runtime/model_checkpoint.py',)
-EXPECTED_VERSION = 24
+FILES += ('runtime/model_checkpoint.py','scene_repair.py',)
+FILES += ('blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py','runtime/finalize.py',)
+EXPECTED_VERSION = 27
 EXPECTED_RENDERER_REVISION = 3
 
 
@@ -45,19 +47,25 @@ def update(source, target, verify=None):
     manifest=json.loads(incoming['runtime/assets/manifest.json'])
     if set(manifest) != {'anatomy.json.gz','male-skin.png','female-skin.png','cotton-jersey-albedo.png','indigo-denim-albedo.png'} or any(hashlib.sha256(incoming['runtime/assets/'+name]).hexdigest()!=digest for name,digest in manifest.items()):
         raise RuntimeError('Niekompletne lub uszkodzone dane anatomii. Pobierz ZIP ponownie. Nie zmieniono instalacji.')
-    original = {name: (target / name).read_bytes() if (target / name).exists() else None for name in FILES}
+    original = {name: (target / name).read_bytes() if (target / name).exists() else None for name in (*FILES,'tools/codex/verified.json')}
     command = ['systemctl', '--user']
-    # Hold the queue lock until the HTTP worker stops, preventing a new job from
-    # being accepted between checking the queue and replacing its running code.
+    # Check before downloads, then recheck under the write lock immediately
+    # before stopping the worker. A download must not block job polling.
+    with sqlite3.connect(db_path, timeout=15) as db:
+        if db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]:
+            raise RuntimeError('Zlecenie jest jeszcze aktywne. Poczekaj na wynik lub anuluj je na stronie, potem ponow aktualizacje.')
+    from install_codex import install as install_codex
+    install_codex(target/'tools'/'codex')
+    try:
+        setup_runtime()
+    except RuntimeUnavailable as error:
+        raise RuntimeError('Kontener Blendera nadal nie startuje. Nie zmieniono programu. Pokaz ten komunikat: ' + error.detail) from None
+    # Hold the queue lock until the HTTP worker stops.
     with sqlite3.connect(db_path, timeout=15) as db:
         db.execute('BEGIN IMMEDIATE')
         busy = db.execute("SELECT COUNT(*) FROM jobs WHERE state NOT IN ('succeeded','failed','cancelled')").fetchone()[0]
         if busy:
             raise RuntimeError('Zlecenie jest jeszcze aktywne. Poczekaj na wynik lub anuluj je na stronie, potem ponow aktualizacje.')
-        try:
-            setup_runtime()
-        except RuntimeUnavailable as error:
-            raise RuntimeError('Kontener Blendera nadal nie startuje. Nie zmieniono programu. Pokaz ten komunikat: ' + error.detail) from None
         subprocess.run(command + ['stop', 'froge-worker.service'], check=True, timeout=30)
     try:
         backup = state / 'code-backups' / str(time.time_ns())
@@ -67,6 +75,8 @@ def update(source, target, verify=None):
                 replace(backup / name, data)
         for name, data in incoming.items():
             replace(target / name, data)
+        print('Sprawdzam Codex i Blender MCP przed przyjeciem aktualizacji. Bez platnego API.',flush=True)
+        subprocess.run([sys.executable,str(target/'codex_smoke.py')],check=True,timeout=65)
         if verify is not None:
             verify(target)
         subprocess.run(command + ['start', 'froge-worker.service'], check=True, timeout=30)
@@ -77,9 +87,9 @@ def update(source, target, verify=None):
             try:
                 with urllib.request.urlopen(request, timeout=2) as response:
                     health = json.loads(response.read(10000))
-                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('freeformGeometryRevision') == 1 and health.get('photoProjectionRevision') == 1 and health.get('photoReviewReservedSeconds') == 240 and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
+                    if health.get('connectorVersion') == EXPECTED_VERSION and health.get('executionEngine') == 'codex-mcp' and health.get('freeformGeometryRevision') == 1 and health.get('photoProjectionRevision') == 1 and health.get('instructionsRevision') == 1 and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
                         print('FROGE_UPDATE_OK')
-                        print('Froge v24: naprawa timeoutu, zachowanie modelu i ponowienie zapisanego planu bez AI. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
+                        print('Froge v27: rzeczywisty Codex + Blender MCP, wykonywanie instrukcji i kontrola renderow. Klucz OpenAI, polaczenie i poprzednie modele zachowane.')
                         return
             except (OSError, ValueError):
                 pass
@@ -93,6 +103,7 @@ def update(source, target, verify=None):
             else:
                 replace(target / name, data)
         subprocess.run(command + ['start', 'froge-worker.service'], check=False, timeout=30)
+        print('FROGE_ROLLBACK_CODE_RESTORED: przywrocono poprzedni kod i zapis weryfikacji; pliki modeli i polaczenie zachowane.',flush=True)
         raise
 
 

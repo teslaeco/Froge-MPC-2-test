@@ -27,7 +27,7 @@ class ReviewViewTests(unittest.TestCase):
             with self.subTest(available=available),patch.dict(sys.modules,{'_cycles':SimpleNamespace(with_openimagedenoise=available)}):
                 settings=self.module.configure_review(self.scene)
                 self.assertEqual(self.scene.cycles.use_denoising,available)
-                self.assertEqual(self.scene.cycles.samples,12 if available else 64)
+                self.assertEqual(self.scene.cycles.samples,12 if available else 24)
                 self.assertEqual(settings['device'],'CPU')
                 if available:self.assertFalse(self.scene.cycles.denoising_use_gpu)
         with patch.dict(sys.modules,{'_cycles':None}):

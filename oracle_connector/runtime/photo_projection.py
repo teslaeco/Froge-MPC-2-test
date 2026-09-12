@@ -11,7 +11,7 @@ from projection_math import camera_basis, project, inside
 
 
 def apply_projections(views, parts, folder):
-    report={'revision':1,'status':'not_requested','mapped_faces':0,'unmapped_faces':0,
+    report={'revision':2,'status':'not_requested','mapped_faces':0,'unmapped_faces':0,
             'source_images':[],'regions':[],'camera_estimates_verified':False,
             'photographed_lighting_removed':False,'likeness_verified':False}
     if not views:return report
@@ -54,9 +54,16 @@ def apply_projections(views, parts, folder):
         basis=camera_basis(view);forward=Vector(basis[0]);position=Vector(view['position'])
         for region in view['regions']:
             stats={'part':region['part'],'photo_index':view['photo_index'],'eligible_faces':0,
+                   'protected_anatomy_faces':0,
                    'outside_mask':0,'back_facing':0,'occluded':0}
             for obj in parts[region['part']]:
                 if obj.type!='MESH':continue
+                # A fitted head already uses landmark-aligned colour and UVs.
+                # A guessed whole-body camera must not overwrite those surfaces:
+                # it paints a second pair of eyes/mouth onto the actual anatomy.
+                if obj.get('anatomical_head') or obj.get('anatomical_eye') or obj.get('photo_fit_rigid_eye'):
+                    stats['protected_anatomy_faces']+=len(obj.data.polygons)
+                    continue
                 target_objects.add(obj)
                 normal_matrix=obj.matrix_world.to_3x3().inverted().transposed()
                 for face in obj.data.polygons:
