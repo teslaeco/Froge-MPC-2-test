@@ -9,6 +9,10 @@
 - Skorygowano nos, kącik uśmiechu, obrys po stronie czaszki, ułożenie tułowia i objętość biustu pod suknią. Zmiana objęła ubranie razem z ciałem.
 - Grube prowadnice fryzury zmniejszono do 43% promienia i przyciemniono. Dodano 4992 drobne, zwężające się włókna długich włosów oraz osobną geometrię nasady. Zachowano falisty kierunek pasm.
 
+Końcowa siatka: **6 419 299 trójkątów**, w tym geometria drobnych włosów. To przekracza wcześniejszy cel 2 mln; nie jest to wariant zoptymalizowany do telefonu. Rzeczywista liczba jest podana w raporcie eksportu, zamiast nazywania modelu „2M”.
+
+Dodatkowo lokalnie wygładzono wierzchołki nosa, kącika ust i brzegu powieki, zachowując połączenia siatki oraz UV. Widok neutralnego materiału ujawnia, że drobne załamania przy otworze nosowym i nierówna krawędź ust nie zostały całkowicie usunięte.
+
 ## Ocena wizualna i ograniczenia
 To rzeczywisty edytowalny model, ale NIE potwierdzono wiernego, fotorealistycznego odwzorowania całej referencji. Rysy, powieki, przejście głowy w szyję i układ nasady włosów wciąż odbiegają od zdjęcia. Delikatny uśmiech oryginału nie jest odtworzony w pełni. Materiał twarzy korzysta z wcześniejszej projekcji referencji; część cieni pozostaje zapisana w kolorze i może wyglądać inaczej w nowym oświetleniu. Tkanina i ułożenie włosów pozostają bardziej regularne niż w oryginale. Większa liczba trójkątów nie jest dowodem podobieństwa.
 

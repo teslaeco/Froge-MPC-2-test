@@ -1,0 +1,10 @@
+{
+  "vertices": {
+    "nose": 39054,
+    "skeletal_mouth_corner": 14644,
+    "living_eyelid": 389
+  },
+  "mouth_boundary_vertices": 1227,
+  "topology_preserved": true,
+  "uv_preserved": true
+}
