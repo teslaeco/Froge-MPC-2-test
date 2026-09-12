@@ -362,9 +362,10 @@ def execute_job(folder=Path('/work')):
         return builtins.__import__(name, globals, locals, fromlist, level)
     safe_builtins['__import__'] = restricted_import
     edit_material, edit_budget = edit_material_factory()
+    from rooted_hair import hair_lock
     scope = {'__builtins__': safe_builtins, 'bpy': bpy, 'math': math, 'random': random,
              'Vector': Vector, 'make_material': edit_material if has_scene else make_material, 'mesh_object': mesh_object,
-             'tube': tube, 'ellipsoid': ellipsoid, 'join_meshes': join_meshes}
+             'tube': tube, 'ellipsoid': ellipsoid, 'join_meshes': join_meshes, 'hair_lock':hair_lock}
     from portrait import component_snapshot
     anatomy_before = component_snapshot([obj for obj in bpy.context.scene.objects if obj.type == 'MESH'])
     expected={key:bpy.context.scene.get(key,0) for key in ('expected_heads','expected_hands')}

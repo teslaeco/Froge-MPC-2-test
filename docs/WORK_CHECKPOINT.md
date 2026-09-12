@@ -1,3 +1,11 @@
+# 2026-09-12 — real camera-origin defect fixed; rooted hair geometry under visual review
+
+The user rejected r3 as poor and requests generator quality work, not another installer. Source review found runtime/review_views.py and render_asset_review.py targeted anatomical eye object origins. In the real edited GLB these origins are zero while the eye vertices are near head height, producing the reported blank face view. Camera framing now uses evaluated world-space head bounds (fallback eye geometry); frustum evidence rejects empty framing and MCP does not count explicitly invalid frames as reviewed. This does not certify visible face anatomy or likeness.
+
+Added hair_lock geometry helper: authored world-space guides, actual scalp root fitting, local crown clearance, closed spatial volumes and UVs, exposed in the existing isolated edit environment. Included its dependency in source installer manifest, but NO update package or deployment. Original r3 rejected hair sheets replaced in a local r4 experiment; real GLB renders under review. No paid API generation, no GPU quota changes. Limits remain 32 requests / 96k output tokens / 1800 s / 5 builds. CPU review settings were confirmed in source; no nvidia-smi executable locally.
+
+Native Blender4.3 tests passed: geometry-based camera invariant under origin movement, missing-eye case, deliberately blank old frame rejected, rooted hair closed/manifold and UV-mapped. Initial38 focused Python tests passed; expanded tests and actual-model framing proof are being recorded. The face/smile, hair realism and garment construction remain unaccepted. Source checkpoint only; Oracle and Site unchanged.
+
 # 2026-09-12 — v33 tested, packaged and saved; Oracle installation still required
 
 # v33 — deliberate skeletal anatomy, 2026-09-12

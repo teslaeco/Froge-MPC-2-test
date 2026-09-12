@@ -53,6 +53,14 @@ class McpWorkflowTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'CONFLICT'):
             self.job.call('edit_model',{'code':'x = 1','expected_revision':0})
 
+    def test_invalid_frame_is_not_counted_as_visual_inspection(self):
+        self.build()
+        write(self.job.current/'review'/'render-settings.json',
+              {'views_completed':[{'label':'face','framing_valid':False}]})
+        with self.assertRaisesRegex(ValueError,'nieprawidlowy kadr'):
+            self.job.call('inspect_render',{'view':'face','expected_revision':1})
+        self.assertNotIn('face',self.job.seen)
+
     def test_hybrid_cannot_be_accepted_with_blocked_or_unchecked_socket(self):
         self.scene=json.loads((Path(__file__).parent/'examples/portrait-floor-components.scene.json').read_text())
         self.scene['parts'][0]['eye_states']={'left':'empty_socket','right':'present',

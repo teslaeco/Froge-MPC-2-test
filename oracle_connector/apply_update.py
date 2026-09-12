@@ -26,6 +26,7 @@ FILES += ('generation_budget.py','quality_report.py','v23_fixture.py',
           'runtime/freeform_geometry.py','runtime/projection_math.py','runtime/photo_projection.py')
 FILES += ('runtime/model_checkpoint.py','scene_repair.py',)
 FILES += ('verify_anatomy_edit.py','verify_edit_runtime.py','agent_limits.py','paid_trial.py','blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py','runtime/finalize.py',)
+FILES += ('runtime/rooted_hair.py',)
 EXPECTED_VERSION = 33
 EXPECTED_RENDERER_REVISION = 3
 CODEX_FILES = ('codex', 'codex-code-mode-host', 'codex-binary.json',

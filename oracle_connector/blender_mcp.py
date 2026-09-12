@@ -389,7 +389,7 @@ class JobTools:
             return {'job_id':self.folder.name,'prompt':self.request['prompt'],
                     'instructions':self.request['instructions'],'scene_schema':photo_schema(len(self.photos)),
                     'coordinate_and_geometry_guide':PROMPT,
-                    'edit_helpers':'bpy, math, random, Vector. make_material(name,rgb,pattern="plain",roughness=0.7,metallic=0.0) returns a bpy.types.Material. At most 8 NEW materials across all accumulated edits; reuse existing materials with bpy.data.materials.get(name). mesh_object(name,vertices,faces,material), tube(name,points,radii,material,sides=12), ellipsoid(name,center,scale=None,material=None,subdivisions=4,*,radii=None), join_meshes(objects,name) each return one bpy.types.Object, not a tuple. ellipsoid radii is a compatibility alias for scale; provide only one. No imports except bpy/math/random/mathutils. No files, shell or network.',
+                    'edit_helpers':'bpy, math, random, Vector. make_material(name,rgb,pattern="plain",roughness=0.7,metallic=0.0) returns a bpy.types.Material. At most 8 NEW materials across all accumulated edits; reuse existing materials with bpy.data.materials.get(name). mesh_object(name,vertices,faces,material), tube(name,points,radii,material,sides=12), ellipsoid(name,center,scale=None,material=None,subdivisions=4,*,radii=None), join_meshes(objects,name) each return one bpy.types.Object, not a tuple. ellipsoid radii is a compatibility alias for scale; provide only one. hair_lock(name,head,points,material,width=0.012,depth=0.010,wave=0.012,turns=2.0,seed=0,steps=80,sides=12) returns one closed UV hair volume. Supply 3-32 world-space guide points and the actual scalp/head mesh; the root is fitted to its geometry. Width/depth are radii in scene units; use varied reference-specific curves, lengths and depth instead of broad sheets or identical tubes. The helper does not infer hairstyle or likeness. No imports except bpy/math/random/mathutils. No files, shell or network.',
                     'references':[{'index':i,'view':p.get('view'),'name':p.get('name')} for i,p in enumerate(self.photos)],'revision':self.revision}
         if name=='get_current_model': return self.snapshot(**arguments)
         if name=='build_model':
@@ -407,6 +407,12 @@ class JobTools:
             if view not in VIEWS: raise ValueError('Nieprawidlowy widok.')
             path=self.current/'review'/(view+'.png')
             if not path.is_file() or not 24<=path.stat().st_size<=2*1024**2: raise ValueError('Ten render nie zostal ukonczony.')
+            framing=self.current/'review'/'render-settings.json'
+            if framing.is_file():
+                entries=read_record(framing,100000).get('views_completed',[])
+                entry=next((v for v in entries if v.get('label')==view),{})
+                if entry.get('framing_valid') is False:
+                    raise ValueError('Ten render ma nieprawidlowy kadr; nie moze stanowic oceny modelu.')
             if not self.finished:self.seen.add(view)
             return [{'type':'text','text':'Rzeczywisty GLB; rewizja %d; widok %s.'%(self.revision,view)},
                     {'type':'image','mimeType':'image/png','data':base64.b64encode(path.read_bytes()).decode()}]

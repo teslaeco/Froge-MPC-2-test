@@ -5,7 +5,7 @@ import re
 import tokenize
 
 IMPORTS = {'bpy', 'math', 'random', 'mathutils'}
-HELPERS = {'make_material', 'mesh_object', 'tube', 'ellipsoid', 'join_meshes'}
+HELPERS = {'make_material', 'mesh_object', 'tube', 'ellipsoid', 'join_meshes', 'hair_lock'}
 BLOCKED = {'open', 'exec', 'eval', 'compile', '__import__', 'globals', 'locals', 'vars',
            'getattr', 'setattr', 'delattr', 'breakpoint', 'input', 'help', 'dir', 'type',
            'object', 'memoryview', 'classmethod', 'staticmethod', 'property'}
