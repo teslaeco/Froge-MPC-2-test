@@ -1,0 +1,81 @@
+{
+  "duration_seconds": 15.0,
+  "resolution": [
+    720,
+    1280
+  ],
+  "fps": 30,
+  "shots": [
+    {
+      "name": "meteor",
+      "source": 0,
+      "start": 0.0,
+      "duration": 2.2,
+      "output": "shot-0.mp4"
+    },
+    {
+      "name": "girls",
+      "source": 0,
+      "start": 3.5,
+      "duration": 1.6,
+      "output": "shot-1.mp4"
+    },
+    {
+      "name": "queen_model",
+      "source": "queen",
+      "start": 0,
+      "duration": 1.6,
+      "output": "shot-2-queen.mp4"
+    },
+    {
+      "name": "slingshot",
+      "source": 1,
+      "start": 0.25,
+      "duration": 4.6,
+      "output": "shot-3.mp4"
+    },
+    {
+      "name": "cosmic_cube",
+      "source": 1,
+      "start": 5.0,
+      "duration": 1.2,
+      "output": "shot-4.mp4"
+    },
+    {
+      "name": "title",
+      "source": "poster",
+      "start": 0,
+      "duration": 3.8,
+      "output": "shot-5.mp4"
+    }
+  ],
+  "voice": "Local Flite RMS synthetic English narration",
+  "subtitles": "Polish, burned in and SRT",
+  "music": "Procedural original synthesized score",
+  "source_audio_used": false,
+  "source_watermarks": "Retained within full source frame",
+  "new_queen_mesh_still_render_included": true,
+  "main_E17_character_mesh_included": false,
+  "capsule_boarding_depicted": false,
+  "mountain_scale_verified": false,
+  "video_generation_performed": false,
+  "sources": [
+    {
+      "name": "user-63blo9IrD4YObhLfFPoz40ei_gen_01k8df9hhzftvr7g42hk0n3t0s_watermarked_md.mp4",
+      "sha256": "1b28e76d0646cad78ceabb3fbff4107e7a1f60554f6deb4390373e58a1c18658"
+    },
+    {
+      "name": "d5cec0351489d0188772836c306aae01.mp4",
+      "sha256": "94189569e24c784e5b075d997df69d97342fc4ffd2c117724eb8e38635bd4dde"
+    },
+    {
+      "name": "file_00000000bcc0822f93205b7413a8e206.png",
+      "sha256": "acf9554ed3be1f71d2b84008dbf3294b82ef6def7c11f976149ffc4daf58fa70"
+    },
+    {
+      "name": "upper.png",
+      "sha256": "6afabb7bc027c7f5a66b83be68bd6efd577ddd613707b8bc15e185fcef279e49"
+    }
+  ],
+  "output_sha256": "d830c96d3db2c75e800fdd45fad2054f79529c0cc0e7060ad4ea61c4217b66ae"
+}
