@@ -52,6 +52,21 @@ class McpWorkflowTests(unittest.TestCase):
         self.assertEqual(self.job.seen,{'front'})
         with self.assertRaisesRegex(ValueError,'CONFLICT'):
             self.job.call('edit_model',{'code':'x = 1','expected_revision':0})
+
+    def test_hybrid_cannot_be_accepted_with_blocked_or_unchecked_socket(self):
+        self.scene=json.loads((Path(__file__).parent/'examples/portrait-floor-components.scene.json').read_text())
+        self.scene['parts'][0]['eye_states']={'left':'empty_socket','right':'present',
+                                             'evidence':'The image shows an empty skull orbit on viewer right.'}
+        self.build()
+        for view in ('front','side','back','face'):
+            self.job.call('inspect_render',{'view':view,'expected_revision':1})
+        for clearance in ({},{'required':True,'passed':False}):
+            write(self.job.current/'result.json',{'reference_socket_checks':clearance})
+            with self.assertRaisesRegex(ValueError,'Pusty oczodol'):
+                self.job.call('finish_model',{'expected_revision':1,'accepted':True,'issues':[],'summary':'done'})
+        result=self.job.call('finish_model',{'expected_revision':1,'accepted':False,
+                                            'issues':['Socket still needs sculpting.'],'summary':'Draft.'})
+        self.assertFalse(result['accepted'])
     def test_mcp_cannot_run_file_network_or_host_code(self):
         self.build()
         for code in ('import os\nos.system("true")','open("/etc/passwd").read()','bpy.data.images.load("secret.png")'):

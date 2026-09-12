@@ -416,6 +416,14 @@ class JobTools:
             required={'front','side','back'} | ({'face'} if scene['subject_type'] in ('person','portrait') else set())
             reviewed=required<=self.seen
             accepted=arguments['accepted'] is True and reviewed and not arguments['issues']
+            sockets=any('empty_socket' in (p.get('eye_states',{}).get('left'),p.get('eye_states',{}).get('right'))
+                        for p in scene['parts'])
+            if accepted and sockets:
+                clearance=read_record(self.current/'result.json').get('reference_socket_checks',{})
+                if clearance.get('required') is not True or clearance.get('passed') is not True:
+                    raise ValueError('Pusty oczodol nadal jest zasloniety geometria lub nie zostal sprawdzony. '
+                                     'Odczytaj report.reference_socket_checks, usun wypelnienie/powieki i wyrzezb wglebienie. '
+                                     'Samo usuniecie znacznika oka nie naprawia czaszki. Do poprawy zachowaj accepted=false.')
             if arguments['accepted'] and not accepted:
                 raise ValueError('Akceptacja wymaga obejrzenia aktualnych renderow i braku nierozwiazanych bledow. W przeciwnym razie zachowaj szkic: accepted=false.')
             self.progress('Codex zakonczyl ocene. Blender przygotowuje formaty do pobrania.')

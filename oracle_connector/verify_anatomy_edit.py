@@ -17,7 +17,7 @@ RUNTIME = ROOT / 'runtime'
 if not RUNTIME.is_dir():
     RUNTIME = Path('/runner')
 sys.path.insert(0, str(RUNTIME))
-from portrait import AnatomyValidationError, component_snapshot, verify_components
+from portrait import AnatomyValidationError, component_snapshot, verify_components, socket_clearance_checks
 from run import execute_job, join_meshes
 
 
@@ -68,9 +68,9 @@ bpy.data.objects.remove(nails[0], do_unlink=True)
 """
 
 
-def prepare(folder, edit):
+def prepare(folder, edit, scene=None):
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / 'scene.json').write_text(json.dumps(scene_fixture()), encoding='utf-8')
+    (folder / 'scene.json').write_text(json.dumps(scene or scene_fixture()), encoding='utf-8')
     (folder / 'edits.py').write_text(edit, encoding='utf-8')
 
 
@@ -163,7 +163,66 @@ def verify(output):
                  if item['code'] == 'anatomy_topology_or_uv'][0]
         assert issue['object'] == head.name and issue['has_uv'] is False
 
+    hybrid=scene_fixture()
+    hybrid['parts'][0]['eye_states']={'left':'empty_socket','right':'present',
+                                     'evidence':'Viewer-right half is a skull with an empty orbit.'}
+    hybrid_folder=output/'declared-hybrid'
+    prepare(hybrid_folder,'',hybrid)
+    execute_job(hybrid_folder)
+    result=json.loads((hybrid_folder/'result.json').read_text())
+    assert result['portrait_quality']['eyes']==1
+    assert result['portrait_quality']['expected']['eyes']==1
+    assert result['portrait_quality']['socket_shape_verified'] is False
+    assert result['portrait_quality']['likeness_verified'] is False
+    meshes=[o for o in bpy.context.scene.objects if o.type=='MESH']
+    intent={'fixture-head':hybrid['parts'][0]['eye_states']}
+    living=[o for o in meshes if o.get('anatomical_eye')]
+    assert len(living)==1 and living[0]['anatomy_eye_side']=='r'
+    lashes=[o for o in meshes if 'upper_lashes_per_eye' in o]
+    assert len(lashes)==1
+    assert list(lashes[0]['upper_lashes_per_eye'])[0]==0
+    assert list(lashes[0]['upper_lashes_per_eye'])[1]>=16
+    # An untagged black filler globe still obstructs the actual rays, even
+    # though eye counts alone are correct. This is the reported visual failure.
+    head=[o for o in meshes if o.get('anatomical_head')][0]
+    from mathutils import Vector
+    bpy.ops.mesh.primitive_uv_sphere_add(segments=32,ring_count=16,
+        radius=.016,location=head.matrix_world@Vector(head['orbit_anchor_l']))
+    filler=bpy.context.object
+    bpy.context.view_layer.update()
+    clearance=socket_clearance_checks(meshes+[filler],intent)
+    assert clearance['required'] is True and clearance['passed'] is False
+    assert clearance['checks'][0]['clear_rays']==0
+    bpy.data.objects.remove(filler,do_unlink=True)
+    # A duplicate of the wrong eye cannot satisfy the total count.
+    living[0]['anatomy_eye_side']='l'
+    try:
+        verify_components(meshes,1,2,intent=intent)
+        raise AssertionError('Wrong-sided eye passed the declared reference contract.')
+    except AnatomyValidationError as error:
+        assert any(v['code']=='eye_identity' for v in error.report['violations'])
+
+    invalid=output/'deleted-living-eye'
+    prepare(invalid,"""
+eyes=[o for o in bpy.context.scene.objects if o.get('anatomical_eye')]
+bpy.data.objects.remove(eyes[0],do_unlink=True)
+bpy.context.scene['anatomy_intent']='{}'
+bpy.context.scene['expected_heads']=0
+""",hybrid)
+    try:
+        execute_job(invalid)
+        raise AssertionError('Removing the living eye passed by changing intent after build.')
+    except AnatomyValidationError as error:
+        assert error.report['expected']['eyes']==1
+        assert error.report['actual']['eyes']==0
+    assert not (invalid/'model.glb').exists()
+
     return {'blender': bpy.app.version_string, 'actual_counts': expected,
+            'declared_empty_socket_omits_only_its_eye_and_lashes':True,
+            'wrong_sided_eye_rejected':True,
+            'untagged_filler_globe_fails_actual_orbit_rays':True,
+            'living_eye_cannot_be_removed_by_changing_intent_in_edit':True,
+            'socket_sculpt_and_reference_likeness_not_claimed':True,
             'production_asymmetric_edit_exported': True,
             'protected_join_rejected_before_mutation': True,
             'raw_join_tag_loss_reproduced_and_rejected': True,

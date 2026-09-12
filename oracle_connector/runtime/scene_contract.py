@@ -44,6 +44,9 @@ def round_sides(sides):
 
 
 FACE = record({key:number(-1,1) for key in ('nose_width','nose_projection','mouth_width','lip_fullness','jaw_width','chin_height','cheek_fullness')})
+EYE_STATES = record({'left':choice('present','empty_socket'),
+                     'right':choice('present','empty_socket'),
+                     'evidence':{'type':'string','minLength':0,'maxLength':400}})
 PORTRAIT_FIELDS = {'presentation':choice('masculine','feminine','androgynous'),
                    'hair_style':choice('short','buzz','bald','shoulder_length','long_wavy','straight_bob','curly','ponytail'),
                    'headwear':choice('none','cap','beanie'), 'face':FACE,
@@ -76,7 +79,8 @@ PARTS = [
     part('radial_copies',{'source':NAME,'center':VEC,'count':{'type':'integer','minimum':2,'maximum':32},
                          'radius':number(.001,20),'start_angle':number(-6.284,6.284),'arc_angle':number(-6.284,6.284)}),
     part('portrait', {'center':VEC,'scale':number(.5,2),'rotation':VEC,
-                      'skin_material':NAME,'hair_material':NAME,'eye_material':NAME,**PORTRAIT_FIELDS}),
+                      'skin_material':NAME,'hair_material':NAME,'eye_material':NAME,
+                      'eye_states':EYE_STATES,**PORTRAIT_FIELDS}),
     part('anatomical_hand', {'wrist':VEC,'direction':VEC,'palm_normal':VEC,
                             'side':choice('left','right'),'presentation':PORTRAIT_FIELDS['presentation'],
                             'scale':number(.5,2),'curl':number(0,1.8),'nail_length':number(0,.004),
@@ -142,6 +146,19 @@ SCHEMA = record({
 })
 
 PROMPT = '''Design the user's requested 3D asset as a compact Froge scene JSON, version 2.
+REFERENCE ANATOMY: for deliberately skeletal or hybrid faces use portrait with
+eye_states {left: present|empty_socket, right: present|empty_socket, evidence: text}.
+Sides are the CHARACTER'S anatomical sides, NOT the viewer's: in a frontal image
+viewer-right is anatomical left. Default both present, evidence empty string.
+Declare an empty_socket only when explicitly visible or requested and describe
+that evidence. Occlusion, closed eyelids or failed edits are NOT missing eyes.
+The base omits ONLY the declared globe, brow and lashes. It does NOT reconstruct
+a skull: sculpt the orbital cavity, bone, nose, dental arches and continuous seam
+with edit_model after the base build. An empty socket is recessed space, never
+a black eyeball. Ordinary faces retain two eyes and lashes on both sides.
+Human face-landmark warping is disabled for this explicit nonhuman anatomy;
+reference texture projection remains available. Fit silhouette and each living
+feature from the actual image; do not force human eyelids/iris landmarks onto bone.
 REFERENCE-CONDITIONED CONSTRUCTION: identify each visible component and its silhouette,
 depth, orientation and material from the actual uploaded images. Choose tools that
 match that evidence. The presence of a human does not imply a preset outfit.
@@ -434,12 +451,18 @@ def validate_scene(value):
         value.setdefault('reference_views',[])
         value.setdefault('subject_type','person' if any(isinstance(p,dict) and p.get('kind') in ('person','reference_character') for p in value['parts']) else 'object')
         for p in value['parts']:
+            if isinstance(p,dict) and p.get('kind')=='portrait':
+                p.setdefault('eye_states',{'left':'present','right':'present','evidence':''})
             if isinstance(p,dict) and p.get('kind') in ('person','portrait'):p.setdefault('eyewear','none')
             if isinstance(p,dict) and p.get('kind')=='person':
                 p.setdefault('hair_style','shoulder_length' if p.get('presentation')=='feminine' else 'short');p.setdefault('shirt_graphic','none')
                 p.setdefault('body_shape','natural');p.setdefault('clothing_fit','regular')
                 p.setdefault('face',{key:0. for key in FACE['properties']});p.setdefault('makeup','none');p.setdefault('nail_material',p.get('skin_material'))
     check(value, SCHEMA)
+    for p in value['parts']:
+        states=p.get('eye_states',{})
+        if 'empty_socket' in (states.get('left'),states.get('right')) and len(states.get('evidence','').strip()) < 16:
+            raise ValueError('Pusty oczodol wymaga opisu celowej anatomii z referencji (eye_states.evidence, co najmniej 16 znakow).')
     mats = [m['name'] for m in value['materials']]
     if len(set(mats)) != len(mats):
         raise ValueError('Powtorzona nazwa materialu.')

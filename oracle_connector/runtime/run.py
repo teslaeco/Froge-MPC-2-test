@@ -244,7 +244,8 @@ def finish(output=None, *, edit_budget=None, anatomy_before=None):
     from portrait import AnatomyValidationError, verify_components
     try:
         quality=verify_components(objects,bpy.context.scene.get('expected_heads',0),
-                                  bpy.context.scene.get('expected_hands',0), before=anatomy_before)
+                                  bpy.context.scene.get('expected_hands',0), before=anatomy_before,
+                                  intent=json.loads(bpy.context.scene['anatomy_intent']) if 'anatomy_intent' in bpy.context.scene else None)
     except AnatomyValidationError as error:
         pending = anatomy_failure.with_suffix('.json.tmp')
         pending.write_text(json.dumps(error.report, ensure_ascii=False), encoding='utf-8')
@@ -297,6 +298,8 @@ def finish(output=None, *, edit_budget=None, anatomy_before=None):
             'characterStandard':20,'reference_likeness_verified':False,
             'master_export':{'formats':['blend','glb'],'decimation_applied':False,
                              'position_quantization_applied':heads>1 and not high_quality}}
+    from portrait import socket_clearance_checks
+    report['reference_socket_checks']=socket_clearance_checks(objects,quality.get('reference_anatomy'))
     report['texture_quality']=texture_report
     report['edit_palette']={'new_material_limit':8,'created':edit_budget['created'],
                             'used_materials':edit_materials,'used_images':edit_images}
@@ -365,9 +368,11 @@ def execute_job(folder=Path('/work')):
     from portrait import component_snapshot
     anatomy_before = component_snapshot([obj for obj in bpy.context.scene.objects if obj.type == 'MESH'])
     expected={key:bpy.context.scene.get(key,0) for key in ('expected_heads','expected_hands')}
+    intent=bpy.context.scene.get('anatomy_intent','{}')
     exec(compile(code, '/work/edits.py' if has_scene else '/work/generate.py', 'exec'), scope, scope)
     if has_scene:
         for key,value in expected.items():bpy.context.scene[key]=value
+        bpy.context.scene['anatomy_intent']=intent
     finish(folder, edit_budget=edit_budget, anatomy_before=anatomy_before)
     print('FROGE_MODEL_READY')
 

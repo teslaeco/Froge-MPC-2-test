@@ -1,3 +1,7 @@
+# 2026-09-12 — v33 reference anatomy correction in native verification
+
+Live Oracle is v32 (confirmed in Studio), not v29. Incident job 49ac337d-0a00-4c94-96ef-d8dfa716d435 is the half-living/half-skull photo with the correct brief. Added explicit sided eye intent, living-eye preservation, human-landmark fitting exclusion for declared nonhuman face, and actual orbit ray checks before acceptance. See docs/reviews/v33/STATUS.md and POLECENIE-CODEX.txt. Package built; native CI pending. No paid generation, completed skull reconstruction or Oracle v33 installation claimed. Site47 unchanged.
+
 # 2026-09-12 — v32 repair tested and saved; installation and Site fix pending
 
 Verified worker source: 2c4ca6e78b4f77a2011e6c7a3211caf923ca18f3.

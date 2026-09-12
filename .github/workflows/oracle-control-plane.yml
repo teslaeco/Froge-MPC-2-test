@@ -5,6 +5,8 @@ on:
       - 'oracle_connector/**'
       - 'scripts/package-v27.py'
       - 'scripts/cloud-shell-v27.template.py'
+      - 'scripts/package-v33.py'
+      - 'scripts/cloud-shell-v33.template.py'
       - 'scripts/package-v32.py'
       - 'scripts/cloud-shell-v32.template.py'
       - 'scripts/package-v31.py'
@@ -32,9 +34,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
+      - name: Install numerical dependency for reference fitting tests
+        run: python -m pip install numpy==1.26.4
       - name: Unit and rollback regressions
         working-directory: oracle_connector
-        run: python -m unittest test_blender_mcp test_update test_agent_execution test_agent_lifecycle test_mcp_snapshot test_codex_binary_integrity test_worker_handoff test_delta_update test_connector test_openai
+        run: python -m unittest test_reference_anatomy test_portrait_quality test_blender_mcp test_update test_agent_execution test_agent_lifecycle test_mcp_snapshot test_codex_binary_integrity test_worker_handoff test_delta_update test_connector test_openai
       - name: Install checksum-pinned Codex and Code Mode host
         working-directory: oracle_connector
         run: python install_codex.py
