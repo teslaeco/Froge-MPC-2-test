@@ -133,17 +133,18 @@
   ],
   "baked_base_colors": [],
   "uv_binding_limitations": [],
-  "triangles": 1164336,
+  "triangles": 1095436,
   "hair_preserved": true,
-  "long_lock_hash": "5b43da5d5ba6942104325b6710a2e825b35015175f68fe08cb24231733bff2f3",
+  "long_locks_preserved": true,
   "cap_modified": true,
   "likeness_accepted": false,
   "print_ready": false,
-  "changes": [
-    "continuous rounded shoulder/neck surface",
-    "tailored gown and sleeve geometry with seams, gathers and pleats",
-    "narrowed living mouth opening and adjusted tooth crowns",
-    "recessed mandibular overlay and relaxed nasal boundary",
-    "fine swept crown roots; all accepted long locks preserved"
+  "removed_hidden_chest_faces": 10770,
+  "crown": "source hair pixels used as cap texture; unseen back unchanged; not exact reconstruction",
+  "remaining": [
+    "likeness is approximate",
+    "separate neck/head join",
+    "unseen anatomy inferred",
+    "not watertight"
   ]
 }
