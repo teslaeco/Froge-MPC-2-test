@@ -1,0 +1,20 @@
+[
+  {
+    "name": "FORGE-model-r15.blend",
+    "file_id": "file_000000007c0881f58e7495ad9e8ed6ab",
+    "library_file_id": "libfile_8cc8d7eaa32c8191a70b85f85f2376cb",
+    "sha256": "f2e48e5018044d7318361d09437bebd463a7119bdff4435365ef5b03956eb01e"
+  },
+  {
+    "name": "FORGE-model-r15.fbx",
+    "file_id": "file_0000000087c481f5bf65949ede9e4f77",
+    "library_file_id": "libfile_0ffefbe229948191a68529c6358d2afc",
+    "sha256": "9a3d7c8b94987b8fa9f2c8cc75c6daaf2ce09c98f848a0cca0617ea5fd4efcd8"
+  },
+  {
+    "name": "FORGE-model-r15.glb",
+    "file_id": "file_00000000206081f59fabf9667bbdd2ec",
+    "library_file_id": "libfile_dcb6292616d481919c0612944f2b202d",
+    "sha256": "7a4106f995f7510dfc782fd0c8e8d41d52fb4b37f585e549b1c5d59583e05488"
+  }
+]
