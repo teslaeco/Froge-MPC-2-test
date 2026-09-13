@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {parsePrompt,compilePrompt,progress,validateTransform,validateGLB,KINDS} from '../core.mjs';
+import {build,inspect,neutral} from '../geometry.mjs';
+import {makeAudio} from '../audio.mjs';
+test('Polish prompts preserve units, colour and polygon side count',()=>{const p=parsePrompt('Niebieski graniastosłup 10 cm, boki 6');assert.equal(p.kind,'prism');assert.equal(p.size,100);assert.equal(p.sides,6);assert.equal(p.color,'#478cf5');});
+test('Unknown and reference-specific geometry is not replaced by a template',()=>{assert.throws(()=>parsePrompt('Odtwórz dokładnie twarz Julii'),/Astra/);assert.throws(()=>parsePrompt('12 sześciokątów i 6 kwadratów'),/wielościan/);});
+test('All parametric assets fit exactly inside requested maximum dimension',()=>{for(const kind of KINDS){const r=inspect(build({kind,size:100,color:'#42bc87'}));assert.ok(r.triangles>0,kind);assert.ok(Math.abs(Math.max(...Object.values(r.dimensions))-100)<.001,kind);assert.equal(r.printApproved,false);}});
+test('Prism has six true sides plus caps',()=>{const o=build({kind:'prism',sides:6,size:100});assert.equal(o.children[0].geometry.parameters.radialSegments,6);});
+test('Neutral preview does not alter original materials or geometry',()=>{const o=build({kind:'car',size:100});const m=o.children[0],original=m.material,geometry=m.geometry;neutral(o,true);assert.notEqual(m.material,original);assert.equal(m.material.map,null);assert.equal(m.geometry,geometry);neutral(o,false);assert.equal(m.material,original);});
+test('Prompt budget enforced after full instructions are composed',()=>{assert.ok(compilePrompt('Astronauta 100 mm').length<=9999);assert.throws(()=>compilePrompt('a'.repeat(9800)),/9999/);assert.throws(()=>compilePrompt(' '));});
+test('No fabricated progress for unknown backend state',()=>{assert.equal(progress(undefined,'running'),null);assert.equal(progress(100,'running'),99);assert.equal(progress(null,'succeeded'),100);});
+test('No non-finite scene transforms',()=>{assert.throws(()=>validateTransform({x:Infinity}));assert.throws(()=>validateTransform({scale:0}));});
+test('Reject malformed GLB and external data references',()=>{assert.throws(()=>validateGLB(new ArrayBuffer(40)));const text=JSON.stringify({asset:{version:'2.0'},buffers:[{uri:'https://bad.example/track'}]});const size=Math.ceil(text.length/4)*4,buf=new ArrayBuffer(20+size),v=new DataView(buf);v.setUint32(0,0x46546c67,true);v.setUint32(4,2,true);v.setUint32(8,buf.byteLength,true);v.setUint32(12,size,true);v.setUint32(16,0x4e4f534a,true);new Uint8Array(buf,20).fill(32);new Uint8Array(buf,20).set(new TextEncoder().encode(text));assert.throws(()=>validateGLB(buf),/zewnętrzne/);});
+test('Generated WAV includes real PCM frames and correct length',async()=>{const b=await makeAudio('alarm').arrayBuffer(),v=new DataView(b);assert.equal(v.getUint32(24,true),44100);assert.equal(v.getUint32(40,true),44100*4*2);assert.equal(b.byteLength,44+v.getUint32(40,true));});

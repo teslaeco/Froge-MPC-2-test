@@ -1,0 +1,48 @@
+import * as T from './vendor/three/build/three.module.min.js';
+import {OrbitControls} from './vendor/three/examples/jsm/controls/OrbitControls.js';
+import {build,neutral} from './geometry.mjs';
+export class World{
+  constructor(container,onSelect,onChange){
+    this.container=container;this.onSelect=onSelect;this.onChange=onChange;this.entities=new Map();this.keys=new Set();this.mode='earth';this.walking=false;this.controlled=null;this.selected=null;this.clay=false;this.wire=false;this.discovered=null;
+    this.scene=new T.Scene();this.scene.background=new T.Color('#1c3240');this.scene.fog=new T.Fog('#1c3240',60,160);
+    this.camera=new T.PerspectiveCamera(48,1,.02,500);this.camera.position.set(24,20,28);
+    this.renderer=new T.WebGLRenderer({antialias:true,alpha:false});this.renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));this.renderer.shadowMap.enabled=true;this.renderer.shadowMap.type=T.PCFSoftShadowMap;this.renderer.outputColorSpace=T.SRGBColorSpace;container.appendChild(this.renderer.domElement);
+    this.controls=new OrbitControls(this.camera,this.renderer.domElement);this.controls.target.set(0,1,0);this.controls.maxPolarAngle=Math.PI*.485;this.controls.minDistance=.25;this.controls.maxDistance=100;this.controls.enableDamping=true;
+    this.scene.add(new T.HemisphereLight('#d5f1ff','#364936',2.2));const sun=new T.DirectionalLight('#fff0dc',3);sun.position.set(12,24,10);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-40,right:40,top:40,bottom:-40,near:.5,far:100});this.scene.add(sun);
+    this.earth=new T.Group();this.station=new T.Group();this.scene.add(this.earth,this.station);this.station.visible=false;
+    const plane=new T.Mesh(new T.PlaneGeometry(180,180),new T.MeshStandardMaterial({color:'#304d48',roughness:1}));plane.rotation.x=-Math.PI/2;plane.receiveShadow=true;this.earth.add(plane);
+    const grid=new T.GridHelper(100,50,'#5a7c78','#3e5e59');grid.position.y=.015;this.earth.add(grid);
+    const road=new T.Mesh(new T.BoxGeometry(90,.025,5),new T.MeshStandardMaterial({color:'#26333b'}));road.position.y=.02;this.earth.add(road);
+    for(let i=-10;i<10;i++){const stripe=new T.Mesh(new T.BoxGeometry(1.8,.03,.08),new T.MeshStandardMaterial({color:'#dbc992'}));stripe.position.set(i*4.5,.04,0);this.earth.add(stripe);}
+    const stationDeck=new T.Mesh(new T.CylinderGeometry(18,18,.2,64),new T.MeshStandardMaterial({color:'#172738',metalness:.3,roughness:.6}));stationDeck.position.y=-.15;this.station.add(stationDeck);const sg=new T.GridHelper(35,35,'#5080a0','#253e58');sg.position.y=.005;this.station.add(sg);
+    this.iss=build({kind:'iss',size:24000,color:'#cbdce9'});this.iss.position.set(0,4,-6);this.station.add(this.iss);
+    this.faults=[{kind:'hatch',name:'Nieszczelny właz śluzy',pos:new T.Vector3(-6,0,3),done:false},{kind:'radiator',name:'Uszkodzony radiator',pos:new T.Vector3(6,0,3),done:false},{kind:'antenna',name:'Niesprawna antena',pos:new T.Vector3(0,0,-5),done:false}];
+    for(const f of this.faults){const pad=new T.Mesh(new T.CylinderGeometry(1,1,.25,32),new T.MeshStandardMaterial({color:'#304c63'}));pad.position.copy(f.pos);this.station.add(pad);f.marker=new T.Mesh(new T.OctahedronGeometry(.35),new T.MeshStandardMaterial({color:'#ff745d',emissive:'#ad3627',emissiveIntensity:1.5}));f.marker.position.copy(f.pos).add(new T.Vector3(0,1.5,0));this.station.add(f.marker);}
+    const stars=new Float32Array(1200*3);for(let i=0;i<stars.length;i+=3){const a=i*2.399,r=100+(i%91);stars[i]=Math.cos(a)*r;stars[i+1]=15+(i%83);stars[i+2]=Math.sin(a)*r;}const geo=new T.BufferGeometry();geo.setAttribute('position',new T.BufferAttribute(stars,3));this.starField=new T.Points(geo,new T.PointsMaterial({color:'#d8efff',size:.2}));this.station.add(this.starField);
+    this.avatar=build({kind:'astronaut',size:1850,color:'#9ae2c3'});this.avatar.position.set(0,0,7);this.scene.add(this.avatar);this.avatar.visible=false;
+    this.ray=new T.Raycaster();this.pointer=new T.Vector2();let down;
+    this.renderer.domElement.addEventListener('pointerdown',e=>{down={x:e.clientX,y:e.clientY};container.focus({preventScroll:true});});
+    this.renderer.domElement.addEventListener('pointerup',e=>{if(!down||Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)return;const b=this.renderer.domElement.getBoundingClientRect();this.pointer.set((e.clientX-b.left)/b.width*2-1,-(e.clientY-b.top)/b.height*2+1);this.ray.setFromCamera(this.pointer,this.camera);const hits=this.ray.intersectObjects([...this.entities.values()].filter(x=>x.zone===this.mode).map(x=>x.object),true);if(hits[0]){let o=hits[0].object;while(o&&!o.userData.entityId)o=o.parent;if(o)this.select(o.userData.entityId);}});
+    this.resize=new ResizeObserver(()=>{const w=container.clientWidth,h=container.clientHeight;this.renderer.setSize(w,h,false);this.camera.aspect=w/h;this.camera.updateProjectionMatrix();});this.resize.observe(container);
+    document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,dialog'))return;if(['KeyW','KeyA','KeyS','KeyD','ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)){e.preventDefault();this.keys.add(e.code);}if(e.code==='Escape')this.toggleWalk(false);});
+    document.addEventListener('keyup',e=>{this.keys.delete(e.code);});window.addEventListener('blur',()=>this.keys.clear());
+    this.clock=new T.Clock();this.renderer.setAnimationLoop(()=>this.frame());
+  }
+  add(object,{id,assetId,zone=this.mode,transform={x:0,y:0,z:0,rotation:0,scale:1}}){object.userData.entityId=id;object.position.set(transform.x,transform.y,transform.z);object.rotation.y=T.MathUtils.degToRad(transform.rotation);object.scale.setScalar(transform.scale);(zone==='iss'?this.station:this.earth).add(object);this.entities.set(id,{id,assetId,zone,object});neutral(object,this.clay,this.wire);return id;}
+  select(id){this.selected=this.entities.get(id)??null;if(this.selected){this.onSelect(this.selected);document.querySelector('#selection-badge').textContent=this.selected.object.name;}}
+  focus(){const o=this.selected?.object;if(!o)return;this.toggleWalk(false);const b=new T.Box3().setFromObject(o),c=b.getCenter(new T.Vector3()),s=b.getSize(new T.Vector3()).length();this.controls.target.copy(c);this.camera.position.copy(c).add(new T.Vector3(s*.8,s*.55,s*.9));this.controls.update();}
+  toggleWalk(value=!this.walking){this.walking=value;this.controls.enabled=!value;this.avatar.visible=value&&!this.controlled;this.keys.clear();document.querySelector('#walk').classList.toggle('active',value);document.querySelector('#world-hint').textContent=value?'WASD / strzałki: ruch · E: skan · Esc: widok edytora':'Obróć myszą lub palcem. Kliknij obiekt, aby go wybrać.';}
+  setZone(zone){this.mode=zone;this.earth.visible=zone==='earth';this.station.visible=zone==='iss';this.controlled=null;this.avatar.position.set(0,0,zone==='iss'?9:7);this.scene.background.set(zone==='iss'?'#020711':'#1c3240');this.scene.fog.color.copy(this.scene.background);this.camera.position.set(24,20,28);this.controls.target.set(0,1,0);this.toggleWalk(zone==='iss');document.querySelector('#mission').hidden=zone!=='iss';document.querySelector('#world-title').textContent=zone==='iss'?'ORBITA / RENOWACJA ISS':'ZIEMIA / PLAC BUDOWY';document.querySelector('#home-world').classList.toggle('active',zone==='earth');document.querySelector('#iss-world').classList.toggle('active',zone==='iss');}
+  setMaterial(clay,wire){this.clay=clay;this.wire=wire;for(const e of this.entities.values())neutral(e.object,clay,wire);}
+  scan(){const target=this.controlled??this.avatar;const f=this.faults.find(f=>!f.done&&target.position.distanceTo(f.pos)<3.2);this.discovered=f??null;return f;}
+  repair(object){const f=this.discovered;if(!f||f.done)throw Error('Najpierw zeskanuj usterkę.');f.done=true;f.marker.visible=false;object.position.copy(f.pos);object.position.y=.25;this.station.add(object);this.discovered=null;this.onChange();return f;}
+  serialize(){return{entities:[...this.entities.values()].map(e=>({id:e.id,assetId:e.assetId,zone:e.zone,transform:{x:e.object.position.x,y:e.object.position.y,z:e.object.position.z,rotation:T.MathUtils.radToDeg(e.object.rotation.y),scale:e.object.scale.x}})),faults:this.faults.map(f=>({kind:f.kind,done:f.done}))};}
+  frame(){const dt=Math.min(this.clock.getDelta(),.05);if(this.walking){const o=this.controlled??this.avatar;let x=0,z=0;if(this.keys.has('KeyW')||this.keys.has('ArrowUp'))z--;if(this.keys.has('KeyS')||this.keys.has('ArrowDown'))z++;if(this.keys.has('KeyA')||this.keys.has('ArrowLeft'))x--;if(this.keys.has('KeyD')||this.keys.has('ArrowRight'))x++;
+      if(x||z){const v=new T.Vector3(x,0,z).normalize().multiplyScalar(dt*(this.controlled?7:4));const next=o.position.clone().add(v);const limit=this.mode==='iss'?16:70;if(Math.abs(next.x)<limit&&Math.abs(next.z)<limit){o.position.copy(next);o.rotation.y=Math.atan2(x,z);}if(this.controlled)this.moved=true;}
+      if(this.moved&&!x&&!z){this.moved=false;this.onChange();}
+      this.camera.position.lerp(o.position.clone().add(new T.Vector3(0,5,7)),1-Math.exp(-dt*6));this.camera.lookAt(o.position.clone().add(new T.Vector3(0,1,0)));
+    }else this.controls.update();
+    const t=this.clock.elapsedTime;for(const f of this.faults){f.marker.rotation.y=t;f.marker.position.y=1.5+Math.sin(t*2)*.12;}
+    this.renderer.render(this.scene,this.camera);
+  }
+}
