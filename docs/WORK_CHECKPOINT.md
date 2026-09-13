@@ -1,3 +1,17 @@
+## Dodatkowe ujęcia osiemnastościanu — 2026-09-13
+
+- Poprzedni raport scalono w PR #13: `09b0769a637b17ee6e794ece1b5d52442464beda`.
+- Dodano nowy zrzut F3 `Screenshot_20260913-171806.png` (oryginalne bajty JPEG, SHA-256 `d9a42d6c9b7a5c91c2fc506f9e2d1823b6f05f469d45f27ed995461872bfa211`) jako `forge-171806.jpg`.
+- Drugi załącznik `Screenshot_20260913-170836.png` jest identyczny bajtowo z istniejącym F1. Oba żądane ujęcia pokazano bezpośrednio w HTML i Markdown; wykorzystano istniejącą kopię F1. Razem sześć unikatowych obrazów, trzy widoki FORGE tego samego zlecenia.
+- Zaktualizowano dane i weryfikację: sześć SHA-256, wymiary, lokalne linki, pochodzenie ujęć oraz zgodność obu wersji raportu.
+- Próba pobrania oryginalnego GLB z API Studio zwróciła HTTP 403. W ukierunkowanym wyszukiwaniu zapisanych eksportów nie znaleziono pliku dla tego zlecenia. Nie osadzono zastępczego ani wymyślonego modelu.
+- Do pełnego obrotowego podglądu trzeba otrzymać eksport `2000d271-08d1-4123-b014-137bfcaecaaf.glb` lub pobrany w Studio odpowiednik. Użytkownik ma przycisk „Pobierz GLB + tekstury”.
+- Bieżący odczyt Sites nadal wskazuje wersję 47. Opublikowany Site nie deklaruje serwera MCP. Publikacja raportu pozostaje niewykonana po wcześniejszym HTTP 500 pobierania źródeł; nie zmieniano dostępu ani generatora.
+- Przygotowano samodzielny wizualny podgląd HTML z osadzonymi obrazami, przeznaczony do bezpośredniego przekazania użytkownikowi. To podgląd obrazów, nie render ani obrotowy GLB.
+- [Raport](reviews/polyhedron-2026-09-13/README.md). Aktualna gałąź bazowa: `codex/v27-mcp-startup-audit`; gałąź aktualizacji: `codex/polyhedron-extra-views-2026-09-13`. Przed scaleniem należy odczytać zielone CI dokładnego SHA tej aktualizacji.
+
+---
+
 ## Osiemnastościan — raport 2026-09-13
 
 Raport: [porównanie FORGE / Meshy](reviews/polyhedron-2026-09-13/README.md). PR: [#13](https://github.com/teslaeco/Froge-MPC-2-test/pull/13), baza `codex/v27-mcp-startup-audit`.
