@@ -36,7 +36,7 @@ STATE = ROOT / 'state'
 JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
-CONNECTOR_VERSION = 33
+CONNECTOR_VERSION = 35
 AI_TIME_LIMIT = 600
 BLENDER_TIME_LIMIT = 900
 PROMPT_MAX_LENGTH = 5000
@@ -176,6 +176,7 @@ def health():
         state = {**state, 'ready': False, 'photoInput': False,
                  'detail': CODEX_UNAVAILABLE if state['ready'] else state['detail']}
     return {**state, 'textReady': state['ready'], 'astraPhotoRevision': 1,
+            'referenceAcceptanceRevision':1, 'workerRelease':'v35-reference-acceptance',
             'photoEngine': 'astra-blender', 'photoReasoningEffort': 'high',
             'instructionsRevision':1, 'executionEngine':'codex-mcp' if is_openai else 'astra-scene',
             'codexReady': agent,
@@ -357,7 +358,9 @@ def worker():
                 blender_seconds=outcome.get('blender_seconds',0.)
                 elapsed=time.monotonic()-started
                 ai_seconds=max(0.,elapsed-blender_seconds)
-                accepted=outcome.get('accepted') is True
+                # The raw agent verdict is provenance. The host decides whether
+                # the current exported artifact has complete review evidence.
+                accepted=model_status(folder, 'succeeded')['modelStatus']=='reviewed'
                 detail=('Model wykonany przez Codex + Astra + Blender MCP w %.1f s. '%elapsed)
                 detail+=('Ocena aktualnych renderow zakonczona; sprawdz podobienstwo w podgladzie.' if accepted else 'Wynik roboczy: ocena wskazuje bledy lub nie zostala ukonczona. Model wymaga poprawek; sprawdz raport.')
                 status(job['id'],'succeeded',detail)

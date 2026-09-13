@@ -1,0 +1,204 @@
+{
+  "before": {
+    "source_sha256": "adf3a18bcb69d1aa99efeba44c8b6d8d51ddbf9fcfa0af732d1d44bbe3e32ddf",
+    "mesh_objects": 369,
+    "triangles": 6315623,
+    "images": [
+      {
+        "name": "anatomical-dedicated-iris",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "E16 R13 black fine twill colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "E16 R13 ivory linen silk colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "R11 observed face microrelief 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 warm skin Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone BaseColor 2K",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "R11 weathered bone Normal 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 face feature roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R14 enamel cervical shade",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "Screenshot_20260912-131922",
+        "width": 449,
+        "height": 1024
+      },
+      {
+        "name": "Screenshot_20260912-170529",
+        "width": 449,
+        "height": 1024
+      }
+    ],
+    "renders": {
+      "face": {
+        "path": "before-face.png",
+        "sha256": "426587fd77e6f6608819d84cbf09c706c5d0f91909d4306b241ce4b62cb4b2a6"
+      },
+      "front": {
+        "path": "before-front.png",
+        "sha256": "5f67050cd5f56b571d8eb2aa63bdc6c77acc21f1bd98b6e66b556fd3127f8209"
+      }
+    }
+  },
+  "after": {
+    "source_sha256": "6f8bef167a6d0e9dc67d4fce67df3782f0bdffb69ede54f8f62a799520f5b6db",
+    "mesh_objects": 369,
+    "triangles": 6354061,
+    "images": [
+      {
+        "name": "anatomical-dedicated-iris",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "E16 R13 black fine twill colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "E16 R13 ivory linen silk colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "R11 observed face microrelief 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 warm skin Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone BaseColor 2K",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "R11 weathered bone Normal 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 face feature roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R14 enamel cervical shade",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "Screenshot_20260912-131922",
+        "width": 449,
+        "height": 1024
+      },
+      {
+        "name": "Screenshot_20260912-170529",
+        "width": 449,
+        "height": 1024
+      }
+    ],
+    "renders": {
+      "face": {
+        "path": "after-face.png",
+        "sha256": "c844bc2540efb342aec6b5f26ba8aaf6b75f727b5c9ba9dde9785661cdfbc539"
+      },
+      "front": {
+        "path": "after-front.png",
+        "sha256": "fc55a5d0c730fea346c1d638a33bbbcdbb6c994e3cfd7ad812619e12e599dddc"
+      },
+      "left": {
+        "path": "after-left.png",
+        "sha256": "b08965779b8cb62553f70b0360dad1103957e42e5ab2029b17633d19d803492a"
+      },
+      "back": {
+        "path": "after-back.png",
+        "sha256": "eb6ce9c150bef5690d1bf12e3f5df31fdb7d48a40c0a56c0cf77001fb300086a"
+      }
+    }
+  }
+}

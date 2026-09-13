@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-12",
+  "chess_main_commit": "f512f85b01504fca3b3d77efe0cb73a8e7c40a98",
+  "chess_v12_commit": "e8240922a43d852c878a5e8613b5750713de17d8",
+  "chess_v12_pr": 115,
+  "weights_recovered": false,
+  "neural_training_executed_this_turn": false,
+  "source_code_recovered": true,
+  "role": "visual QA auxiliary classifier, not image-to-3D",
+  "trained_checkpoint_in_recursive_tree": false,
+  "owner_local_checkpoints_verified": false,
+  "personal_context_available": false,
+  "transfer": [
+    "hard_invariants",
+    "explicit_reference_semantics",
+    "asset_family_holdout",
+    "source_candidate_sha",
+    "matched_camera_clay_textured",
+    "keep_revert",
+    "uv_material_roundtrip"
+  ],
+  "external_corpus_ingested": false
+}

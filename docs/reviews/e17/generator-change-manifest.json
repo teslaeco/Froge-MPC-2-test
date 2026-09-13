@@ -1,0 +1,35 @@
+{
+  "base_commit": "5c02f9ff1243b88876fef2631346c480a70cfffa",
+  "files": [
+    "oracle_connector/apply_update.py",
+    "oracle_connector/test_reference_reconstruction.py",
+    "oracle_connector/REFERENCE-RECONSTRUCTION-E17.md",
+    "oracle_connector/verify_board_review_blender.py",
+    "oracle_connector/board-review-smoke.json",
+    "oracle_connector/runtime/reference_reconstruction.py",
+    "oracle_connector/runtime/scene_contract.py",
+    "oracle_connector/runtime/run.py"
+  ],
+  "tests": {
+    "command": "python oracle_connector/test_reference_reconstruction.py",
+    "passed": 16,
+    "scope": "CPU behavioral tests; no visual score or training run",
+    "blender_integration": "Blender4.3.0 CPU2threads: consolidated64/512 valid, wrongmaterial, missingcell, missingspec"
+  },
+  "weights_updated": false,
+  "deployed": false,
+  "packaging": {
+    "allow_list_updated": true,
+    "package_scripts_use_allow_list": [
+      "scripts/package-worker.py",
+      "scripts/package-v33.py"
+    ],
+    "zips_rebuilt": false
+  },
+  "reference_provenance": {
+    "reference_sha256_required": true,
+    "per_view_reference_binding": true,
+    "explicit_refresh_cli": true,
+    "automatic_perceptual_grading": false
+  }
+}

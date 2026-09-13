@@ -1,0 +1,208 @@
+{
+  "blender": "4.3.0",
+  "checks_passed": 6,
+  "cases": {
+    "unassigned_2k_image_cannot_repair_512px_head": {
+      "passed_gate": false,
+      "diagnostic": {
+        "revision": 2,
+        "diagnostic_revision": 1,
+        "expected": {
+          "heads": 1,
+          "eyes": 2,
+          "hands": 0,
+          "nails": 0
+        },
+        "actual": {
+          "heads": 1,
+          "eyes": 2,
+          "hands": 0,
+          "nails": 0
+        },
+        "missing": {
+          "heads": 0,
+          "eyes": 0,
+          "hands": 0,
+          "nails": 0
+        },
+        "excess": {
+          "heads": 0,
+          "eyes": 0,
+          "hands": 0,
+          "nails": 0
+        },
+        "objects": {
+          "heads": [
+            "atlas-fixture-head"
+          ],
+          "eyes": [
+            "Sphere",
+            "Sphere.001"
+          ],
+          "hands": [],
+          "nails": []
+        },
+        "violations": [
+          {
+            "code": "skin_atlas",
+            "object": "atlas-fixture-head",
+            "minimum_edge": 2048,
+            "largest_image_edge": 512,
+            "observed_materials": "generic-skin",
+            "observed_images": "generic-skin-atlas (512x512)",
+            "atlas_scope": "effective_head_materials_including_groups",
+            "message": "atlas-fixture-head: przypisany atlas skory ma maksymalna krotsza krawedz 512 px; wymagane 2048 px. Zachowaj material i UV glowy; make_material(pattern=\"skin\") tworzy ogolna mape 512 px."
+          }
+        ],
+        "structural_checks_passed": false,
+        "likeness_verified": false,
+        "repair_hint": "Blad skin_atlas dotyczy materialow przypisanych do glowy, nie liczby obiektow. Zachowaj istniejacy atlas i UV; do osobnej stylizacji skopiuj material glowy metoda copy(). Nie zastepuj go make_material(pattern=\"skin\") 512 px ani nie skaluj szumu do 2048. Zachowaj osobne anatomiczne obiekty, ich znaczniki i UV. Celowy pusty oczodol deklaruj przed budowa w portrait.eye_states; nie zmieniaj licznikow po bledzie. Zachowaj zywe oko, dloni ani paznokci podczas stylizacji. Laczenie akcesoriow wykonuj osobno od anatomii. Napraw wymienione braki przed kolejna ocena renderow."
+      }
+    },
+    "object_material_override_2k_is_accepted": {
+      "passed_gate": true,
+      "evidence": {
+        "minimum_edge": 2048,
+        "largest_image_edge": 2048,
+        "observed_materials": "reference-skin",
+        "observed_images": "reference-skin-atlas (2048x2048)",
+        "atlas_scope": "effective_head_materials_including_groups"
+      }
+    },
+    "unused_mesh_2k_cannot_hide_low_object_override": {
+      "passed_gate": false,
+      "diagnostic": {
+        "revision": 2,
+        "diagnostic_revision": 1,
+        "expected": {
+          "heads": 1,
+          "eyes": 2,
+          "hands": 0,
+          "nails": 0
+        },
+        "actual": {
+          "heads": 1,
+          "eyes": 2,
+          "hands": 0,
+          "nails": 0
+        },
+        "missing": {
+          "heads": 0,
+          "eyes": 0,
+          "hands": 0,
+          "nails": 0
+        },
+        "excess": {
+          "heads": 0,
+          "eyes": 0,
+          "hands": 0,
+          "nails": 0
+        },
+        "objects": {
+          "heads": [
+            "atlas-fixture-head"
+          ],
+          "eyes": [
+            "Sphere",
+            "Sphere.001"
+          ],
+          "hands": [],
+          "nails": []
+        },
+        "violations": [
+          {
+            "code": "skin_atlas",
+            "object": "atlas-fixture-head",
+            "minimum_edge": 2048,
+            "largest_image_edge": 512,
+            "observed_materials": "generic-skin",
+            "observed_images": "generic-skin-atlas (512x512)",
+            "atlas_scope": "effective_head_materials_including_groups",
+            "message": "atlas-fixture-head: przypisany atlas skory ma maksymalna krotsza krawedz 512 px; wymagane 2048 px. Zachowaj material i UV glowy; make_material(pattern=\"skin\") tworzy ogolna mape 512 px."
+          }
+        ],
+        "structural_checks_passed": false,
+        "likeness_verified": false,
+        "repair_hint": "Blad skin_atlas dotyczy materialow przypisanych do glowy, nie liczby obiektow. Zachowaj istniejacy atlas i UV; do osobnej stylizacji skopiuj material glowy metoda copy(). Nie zastepuj go make_material(pattern=\"skin\") 512 px ani nie skaluj szumu do 2048. Zachowaj osobne anatomiczne obiekty, ich znaczniki i UV. Celowy pusty oczodol deklaruj przed budowa w portrait.eye_states; nie zmieniaj licznikow po bledzie. Zachowaj zywe oko, dloni ani paznokci podczas stylizacji. Laczenie akcesoriow wykonuj osobno od anatomii. Napraw wymienione braki przed kolejna ocena renderow."
+      }
+    },
+    "assigned_nested_group_atlas_is_accepted": {
+      "passed_gate": true,
+      "evidence": {
+        "minimum_edge": 2048,
+        "largest_image_edge": 2048,
+        "observed_materials": "grouped-skin",
+        "observed_images": "grouped-skin-atlas (2048x2048)",
+        "atlas_scope": "effective_head_materials_including_groups"
+      }
+    },
+    "shorter_image_edge_must_be_2048": {
+      "passed_gate": false,
+      "diagnostic": {
+        "revision": 2,
+        "diagnostic_revision": 1,
+        "expected": {
+          "heads": 1,
+          "eyes": 2,
+          "hands": 0,
+          "nails": 0
+        },
+        "actual": {
+          "heads": 1,
+          "eyes": 2,
+          "hands": 0,
+          "nails": 0
+        },
+        "missing": {
+          "heads": 0,
+          "eyes": 0,
+          "hands": 0,
+          "nails": 0
+        },
+        "excess": {
+          "heads": 0,
+          "eyes": 0,
+          "hands": 0,
+          "nails": 0
+        },
+        "objects": {
+          "heads": [
+            "atlas-fixture-head"
+          ],
+          "eyes": [
+            "Sphere",
+            "Sphere.001"
+          ],
+          "hands": [],
+          "nails": []
+        },
+        "violations": [
+          {
+            "code": "skin_atlas",
+            "object": "atlas-fixture-head",
+            "minimum_edge": 2048,
+            "largest_image_edge": 1024,
+            "observed_materials": "short-atlas",
+            "observed_images": "short-atlas-atlas (4096x1024)",
+            "atlas_scope": "effective_head_materials_including_groups",
+            "message": "atlas-fixture-head: przypisany atlas skory ma maksymalna krotsza krawedz 1024 px; wymagane 2048 px. Zachowaj material i UV glowy; make_material(pattern=\"skin\") tworzy ogolna mape 512 px."
+          }
+        ],
+        "structural_checks_passed": false,
+        "likeness_verified": false,
+        "repair_hint": "Blad skin_atlas dotyczy materialow przypisanych do glowy, nie liczby obiektow. Zachowaj istniejacy atlas i UV; do osobnej stylizacji skopiuj material glowy metoda copy(). Nie zastepuj go make_material(pattern=\"skin\") 512 px ani nie skaluj szumu do 2048. Zachowaj osobne anatomiczne obiekty, ich znaczniki i UV. Celowy pusty oczodol deklaruj przed budowa w portrait.eye_states; nie zmieniaj licznikow po bledzie. Zachowaj zywe oko, dloni ani paznokci podczas stylizacji. Laczenie akcesoriow wykonuj osobno od anatomii. Napraw wymienione braki przed kolejna ocena renderow."
+      }
+    },
+    "copy_preserves_existing_atlas_for_local_style": {
+      "passed_gate": true,
+      "evidence": {
+        "minimum_edge": 2048,
+        "largest_image_edge": 2048,
+        "observed_materials": "reference-skin.001",
+        "observed_images": "reference-skin-atlas (2048x2048)",
+        "atlas_scope": "effective_head_materials_including_groups"
+      }
+    }
+  },
+  "scope": "Real Blender geometry and node/slot assignments; no visual likeness or source-job reproduction claim."
+}

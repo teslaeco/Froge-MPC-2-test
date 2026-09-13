@@ -3,6 +3,11 @@ on:
   pull_request:
     paths:
       - 'oracle_connector/**'
+      - 'scripts/package-v34.py'
+      - 'scripts/cloud-shell-v34.template.py'
+      - 'scripts/package-v35.py'
+      - 'scripts/cloud-shell-v35.template.py'
+      - 'docs/reviews/v35/**'
       - 'scripts/package-v27.py'
       - 'scripts/cloud-shell-v27.template.py'
       - 'scripts/package-v33.py'
@@ -38,7 +43,7 @@ jobs:
         run: python -m pip install numpy==1.26.4
       - name: Unit and rollback regressions
         working-directory: oracle_connector
-        run: python -m unittest test_reference_anatomy test_portrait_quality test_blender_mcp test_update test_agent_execution test_agent_lifecycle test_mcp_snapshot test_codex_binary_integrity test_worker_handoff test_delta_update test_connector test_openai
+        run: python -m unittest test_reference_anatomy test_portrait_quality test_blender_mcp test_update test_agent_execution test_agent_lifecycle test_mcp_snapshot test_codex_binary_integrity test_worker_handoff test_delta_update test_connector test_openai test_reference_reconstruction test_validation_preflight test_reference_acceptance test_release_contract
       - name: Install checksum-pinned Codex and Code Mode host
         working-directory: oracle_connector
         run: python install_codex.py
@@ -65,6 +70,24 @@ jobs:
         if: matrix.python == '3.9'
         working-directory: oracle_connector
         run: /tmp/blender-4.3.0-linux-x64/blender --background --python-exit-code 1 --python verify_anatomy_edit.py
+      - name: Real Blender assigned atlas and nested material regressions
+        if: matrix.python == '3.9'
+        working-directory: oracle_connector
+        run: /tmp/blender-4.3.0-linux-x64/blender --background --python-exit-code 1 --python verify_skin_atlas_runtime.py -- --output /tmp/froge-v35-atlas-check
+      - name: Verify board geometry and flat material colours in Blender
+        if: matrix.python == '3.9'
+        working-directory: oracle_connector
+        run: /tmp/blender-4.3.0-linux-x64/blender --background --python-exit-code 1 --python verify_board_review_blender.py
+      - name: Build verified Oracle v35 update from this commit
+        if: matrix.python == '3.9'
+        run: python scripts/package-v35.py
+      - uses: actions/upload-artifact@v4
+        if: success() && matrix.python == '3.9'
+        with:
+          name: froge-v35-${{ github.event.pull_request.head.sha || github.sha }}
+          path: public/downloads/froge-v35.zip
+          if-no-files-found: error
+          retention-days: 30
       - uses: actions/upload-artifact@v4
         if: failure()
         with:

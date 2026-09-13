@@ -1,0 +1,68 @@
+{
+  "type": "labelled_evidence_contact_sheet",
+  "screenshot_source": "/workspace/scratch/584c9d97a5a1/upload/Screenshot_20260912-205829.png",
+  "screenshot_sha256": "f3293f6ed589716f49128f5573ea196608b18b07562a3c066b34a20e98fed22a",
+  "screenshot_crop_box": [
+    27,
+    1018,
+    834,
+    1363
+  ],
+  "source_attribution": "Meshy screenshot supplied by user; original comparison labels retained",
+  "same_camera_claim": false,
+  "meshy_source_mesh_inspected": false,
+  "baseline": {
+    "path": "/workspace/scratch/584c9d97a5a1/correction-e16/after-face.png",
+    "sha256": "e8d4328de7d955fbd08e2e51c489d719e534cd94f9bcf945c19a47b59404b507"
+  },
+  "candidate": {
+    "path": "/workspace/scratch/584c9d97a5a1/correction-e17/after-face.png",
+    "sha256": "1a55446025b6f0018ea5a7539540a34027393fd989e9ad04b071acc963155957"
+  },
+  "clay": {
+    "path": "/workspace/scratch/584c9d97a5a1/correction-e17/after-clay.png",
+    "sha256": "59b150953609f2b06d49b001f30ce390eea3dfca8d49733c854d1bf4c42fd357"
+  },
+  "operations": [
+    "crop complete comparison panel",
+    "proportional resize",
+    "label",
+    "compose"
+  ],
+  "output": "MESHY-FORGE-E17.png",
+  "output_sha256": "224cc4c54e3580844753d9ff69db37571dda4b80527e87e054f8bd99c44f9869",
+  "candidate_report": {
+    "path": "/workspace/scratch/584c9d97a5a1/correction-e17/after-verification.json",
+    "sha256": "5888bdf970563c2ed6ef9629a5bcd3f6c332114affded0046ec71c0923502fa4"
+  },
+  "e17_view_sources": [
+    {
+      "path": "/workspace/scratch/584c9d97a5a1/correction-e17/after-front.png",
+      "sha256": "162602852558315db4d04f1ee6518287d0a1dc24bfc12f3eed967564500713a1"
+    },
+    {
+      "path": "/workspace/scratch/584c9d97a5a1/correction-e17/after-left.png",
+      "sha256": "83abeaf61b1f24896f0418d6388f1d87971b2c8912a3733d9a8c058dba886c4a"
+    },
+    {
+      "path": "/workspace/scratch/584c9d97a5a1/correction-e17/after-back.png",
+      "sha256": "1251524ede8725d2a0fb623f57eb56586819c61587b0176b07e9a169d3f032bf"
+    }
+  ],
+  "web_derivatives": [
+    {
+      "file": "assets/final-comparison.webp",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "assets/e17-views.webp",
+      "bytes": 78764,
+      "sha256": "03a0c8bc7b42e7108e13a334608c73caabbf65b13199823f98477893100a387e"
+    }
+  ],
+  "checkpoint": "E17",
+  "visual_acceptance": "requires_further_correction",
+  "e16_e17_matching_camera_and_lights": true,
+  "meshy_matching_camera_and_lights": false
+}

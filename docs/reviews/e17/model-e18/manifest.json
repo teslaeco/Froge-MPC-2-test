@@ -1,0 +1,69 @@
+{
+  "revision": "E18",
+  "artifacts": [
+    {
+      "filename": "FORGE-model-E18.blend",
+      "bytes": 251119668,
+      "sha256": "0d9494db51004644d995f0c81d5e1fc126054687dd5fad743792ef09043665ec"
+    },
+    {
+      "filename": "FORGE-model-E18.fbx",
+      "bytes": 230381004,
+      "sha256": "28673fc400228a756d80128b89885ff7f0a017d857f517058cfb1bc689b7ffb6"
+    },
+    {
+      "filename": "FORGE-model-E18.glb",
+      "bytes": 220848824,
+      "sha256": "63f3b622a09b10bd207d9e1178f1b1fc7fdbcecbce81ea6c71cda6628d079ec2"
+    },
+    {
+      "filename": "FORGE-model-E18-web.glb",
+      "bytes": 23161896,
+      "sha256": "adf3a18bcb69d1aa99efeba44c8b6d8d51ddbf9fcfa0af732d1d44bbe3e32ddf"
+    },
+    {
+      "filename": "after-face.png",
+      "bytes": 798818,
+      "sha256": "1651c8778fc4c85e485b4cc6693f9a03c8777cee0310295ec4938504611fc0fd"
+    },
+    {
+      "filename": "after-clay.png",
+      "bytes": 692787,
+      "sha256": "22e3dd5b73582468278d962cce447697ab8cfb086fb9be97deeb876bb894be09"
+    },
+    {
+      "filename": "after-front.png",
+      "bytes": 607383,
+      "sha256": "9a84baa921fc067ee7ececfea82d0991db6afb9b645d8f485dd42aa158e39002"
+    },
+    {
+      "filename": "after-angle.png",
+      "bytes": 818521,
+      "sha256": "cadd620dc92446c596aabf215afad78eb0e8c95aebc6b157366ff219f271d776"
+    },
+    {
+      "filename": "after-left.png",
+      "bytes": 586205,
+      "sha256": "61bf2bdb00efe1bc07ef753f5ccf3da63e5114b2d15111509e11a96aec3dd7d9"
+    },
+    {
+      "filename": "after-back.png",
+      "bytes": 626458,
+      "sha256": "4f3af3bf2b521eb45d510dc903f9f2a0ae37b6101262efe5e17f5fb15e7d1f39"
+    },
+    {
+      "filename": "E18-HQ-2048x2560.png",
+      "bytes": 6647169,
+      "sha256": "6e314d224e141304dc898c94e8d9075f0ebaa2ab4c01398a4e3ae51155277a06",
+      "dimensions": [
+        2048,
+        2560
+      ],
+      "samples": 32,
+      "source_fbx_sha256": "28673fc400228a756d80128b89885ff7f0a017d857f517058cfb1bc689b7ffb6",
+      "actual_fbx_render": true
+    }
+  ],
+  "likeness_accepted": false,
+  "verification": "after-verification.json and web-verification.json"
+}

@@ -1,0 +1,102 @@
+{
+  "status": "input_evidence_only_not_corrected_model",
+  "method": "Mechanical crop, uniform resize and annotation; original pixels preserved without generative editing.",
+  "sources": [
+    {
+      "path": "upload/ChatGPT Image 13 wrz 2026, 02_19_48.png",
+      "bytes": 2820393,
+      "sha256": "633d08867370c06bde08e453648bdd1d3104ebb2d7f3c874b12ac3ba50241028",
+      "size_px": [
+        1024,
+        1536
+      ]
+    },
+    {
+      "path": "upload/Screenshot_20260913-025146.png",
+      "bytes": 643140,
+      "sha256": "1d191b7003d244562174ec4baa52ef6e808abd44ef867d97cfe31725ecbd2415",
+      "size_px": [
+        899,
+        2048
+      ]
+    },
+    {
+      "path": "upload/Screenshot_20260913-021422.png",
+      "bytes": 410611,
+      "sha256": "6c17a51e056d1bb63edd3a6df2cdf47bf92fd6c92ef587ef1a14d8037cbbf7bb",
+      "size_px": [
+        899,
+        2048
+      ]
+    },
+    {
+      "path": "upload/Screenshot_20260913-025123.png",
+      "bytes": 894680,
+      "sha256": "7a8740d6f4cd9bef49f6a0737ad0c15a5388663a8c5b01a06210082b7a7662df",
+      "size_px": [
+        899,
+        2048
+      ]
+    },
+    {
+      "path": "upload/Screenshot_20260913-025017.png",
+      "bytes": 872023,
+      "sha256": "d521e9b22d1a9c9671a24863208e493fc800525db3068de52a659a7a60afcdcf",
+      "size_px": [
+        899,
+        2048
+      ]
+    },
+    {
+      "path": "upload/Screenshot_20260912-230917.png",
+      "bytes": 721236,
+      "sha256": "390c8617fcbba1f2572068cca6906cb1d1beb772068335402f562c638de6dd77",
+      "size_px": [
+        899,
+        2048
+      ]
+    },
+    {
+      "path": "upload/886d2ed4263a4f285877eb1b43de90a2.mp4",
+      "bytes": 7042264,
+      "sha256": "11622888888142c7e8bd1f3a958fc43755ea14340d7e7a64cbf01fe51ea9667c",
+      "size_px": null
+    }
+  ],
+  "julia_job_id": "076cb6e8-c3de-4a59-a7b9-c0dfeb2d0e0d",
+  "atlas_job_id": "b653826a-1b24-44f5-a881-c0e0c2492a18",
+  "crops_xyxy": {
+    "julia_reference_face": [
+      333,
+      0,
+      659,
+      420
+    ],
+    "julia_failed_viewport": [
+      37,
+      632,
+      550,
+      1075
+    ],
+    "atlas_model": [
+      408,
+      889,
+      578,
+      1310
+    ]
+  },
+  "video": {
+    "duration_seconds": 29.833333,
+    "width": 1080,
+    "height": 1920,
+    "frame_timestamps_seconds": [
+      0,
+      5,
+      10,
+      15,
+      20,
+      25
+    ],
+    "classification": "Social screenshot montage; prior Meshy/FORGE comparisons. Not a clean model orbit and not capsule animation."
+  }
+}

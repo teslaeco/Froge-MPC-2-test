@@ -32,7 +32,7 @@ class UpdateTests(unittest.TestCase):
         (self.target / 'code_policy.py').write_text('policy = "strict"\n')
         (self.target / 'server.py').write_text('version = 1\n')
         (self.source / 'runtime').mkdir()
-        for name in ('freeform_geometry.py','projection_math.py','photo_projection.py','model_checkpoint.py','finalize.py'):
+        for name in ('freeform_geometry.py','projection_math.py','photo_projection.py','model_checkpoint.py','finalize.py','reference_reconstruction.py'):
             (self.source/'runtime'/name).write_text('v23 = True\n')
         (self.target / 'runtime').mkdir()
         (self.source / 'runtime/run.py').write_text('preserve_packed_images = True\n')
@@ -100,7 +100,7 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(service.call_args.args[0][-2:], ['start', 'froge-worker.service'])
 
     def test_update_preserves_pairing_and_keeps_backup(self):
-        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'executionEngine':'codex-mcp', 'connectorVersion': apply_update.EXPECTED_VERSION, 'instructionsRevision':1, 'freeformGeometryRevision':1, 'photoProjectionRevision':1, 'photoReviewReservedSeconds':240, 'astraPhotoRevision': 1, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'portraitGeometryRevision': 2, 'registeredReferenceRevision': 1}).encode())):
+        with patch.object(apply_update.subprocess, 'run') as service, patch.object(apply_update.urllib.request, 'urlopen', return_value=io.BytesIO(json.dumps({'executionEngine':'codex-mcp', 'connectorVersion': apply_update.EXPECTED_VERSION, 'referenceAcceptanceRevision':1, 'workerRelease':'v35-reference-acceptance', 'instructionsRevision':1, 'freeformGeometryRevision':1, 'photoProjectionRevision':1, 'photoReviewReservedSeconds':240, 'astraPhotoRevision': 1, 'rendererRevision': 3, 'portraitRevision': 2, 'characterStandard': 20, 'coutureRevision': 2, 'referenceQualityRevision': 1, 'materialQualityRevision': 2, 'interchangeRevision': 2, 'portraitGeometryRevision': 2, 'registeredReferenceRevision': 1}).encode())):
             apply_update.update(self.source, self.target)
         self.assertEqual(self.config.read_bytes(), self.original_config)
         self.assertEqual((self.target / 'server.py').read_text(), 'version = 2\n')
@@ -109,6 +109,7 @@ class UpdateTests(unittest.TestCase):
         self.assertTrue((self.target / 'runtime/scene_contract.py').is_file())
         self.assertTrue((self.target / 'runtime/build_scene.py').is_file())
         self.assertTrue((self.target / 'runtime/detailed_geometry.py').is_file())
+        self.assertTrue((self.target / 'runtime/reference_reconstruction.py').is_file())
         self.assertTrue((self.target / 'photo_input.py').is_file())
         backups = list((self.target / 'state/code-backups').glob('*/server.py'))
         self.assertEqual(backups[0].read_text(), 'version = 1\n')

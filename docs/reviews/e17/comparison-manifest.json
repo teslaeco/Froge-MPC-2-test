@@ -1,0 +1,68 @@
+{
+  "type": "labelled_evidence_contact_sheet",
+  "screenshot_source": "/workspace/scratch/584c9d97a5a1/upload/Screenshot_20260912-205829.png",
+  "screenshot_sha256": "f3293f6ed589716f49128f5573ea196608b18b07562a3c066b34a20e98fed22a",
+  "screenshot_crop_box": [
+    27,
+    1018,
+    834,
+    1363
+  ],
+  "source_attribution": "Meshy screenshot supplied by user; original comparison labels retained",
+  "same_camera_claim": false,
+  "meshy_source_mesh_inspected": false,
+  "baseline": {
+    "path": "/workspace/scratch/584c9d97a5a1/correction-e16/after-face.png",
+    "sha256": "e8d4328de7d955fbd08e2e51c489d719e534cd94f9bcf945c19a47b59404b507"
+  },
+  "candidate": {
+    "path": "/workspace/scratch/584c9d97a5a1/correction-e18/after-face.png",
+    "sha256": "1651c8778fc4c85e485b4cc6693f9a03c8777cee0310295ec4938504611fc0fd"
+  },
+  "clay": {
+    "path": "/workspace/scratch/584c9d97a5a1/correction-e18/after-clay.png",
+    "sha256": "22e3dd5b73582468278d962cce447697ab8cfb086fb9be97deeb876bb894be09"
+  },
+  "operations": [
+    "crop complete comparison panel",
+    "proportional resize",
+    "label",
+    "compose"
+  ],
+  "revision": "E18",
+  "output": "MESHY-FORGE-E18.png",
+  "output_sha256": "db5326971d5a7eb52235c4ead19b0d5f1d25e572bb92b7a8b6f7d7238b8bfa5b",
+  "candidate_report": {
+    "path": "/workspace/scratch/584c9d97a5a1/correction-e18/after-verification.json",
+    "sha256": "909cecc4e8c4f3675984b4b06acdf08210da78a54a30d520bde45c9145f622e2"
+  },
+  "visual_acceptance": "requires_further_correction",
+  "e16_e18_matching_camera_and_lights": true,
+  "meshy_matching_camera_and_lights": false,
+  "e18_view_sources": [
+    {
+      "path": "/workspace/scratch/584c9d97a5a1/correction-e18/after-front.png",
+      "sha256": "9a84baa921fc067ee7ececfea82d0991db6afb9b645d8f485dd42aa158e39002"
+    },
+    {
+      "path": "/workspace/scratch/584c9d97a5a1/correction-e18/after-left.png",
+      "sha256": "61bf2bdb00efe1bc07ef753f5ccf3da63e5114b2d15111509e11a96aec3dd7d9"
+    },
+    {
+      "path": "/workspace/scratch/584c9d97a5a1/correction-e18/after-back.png",
+      "sha256": "4f3af3bf2b521eb45d510dc903f9f2a0ae37b6101262efe5e17f5fb15e7d1f39"
+    }
+  ],
+  "web_derivatives": [
+    {
+      "file": "assets/final-comparison.webp",
+      "bytes": 230534,
+      "sha256": "47525b74c4a96a80c794dbb4466c032f1c150076f0ba06ee232764f7b4c84845"
+    },
+    {
+      "file": "assets/e18-views.webp",
+      "bytes": 78858,
+      "sha256": "45874940359f2286cb6f8ede0f2e70637e0a96876fc104d58763eb2b2812c734"
+    }
+  ]
+}
