@@ -1,0 +1,14 @@
+{
+  "source": "Recovered E18 public web GLB, not original master",
+  "source_sha256": "adf3a18bcb69d1aa99efeba44c8b6d8d51ddbf9fcfa0af732d1d44bbe3e32ddf",
+  "source_triangles": 6315623,
+  "removed_flat_root_triangles": 393832,
+  "added_vertices": 218055,
+  "added_triangles": 432270,
+  "targeted_change": "Replace old flat frontal root layer with 960 raised tapered fibers and separate darker scalp substrate; global head/eyes/neck dimensions unchanged",
+  "changed_original_geometry": "Removed old hairline mesh only; anatomical meshes untouched",
+  "texture_note": "Only recovered web image resolutions; no fabricated restored 4K master",
+  "material_fix": "R13 black fine twill: sheen weight .15 and tint [.07,.08,.10]; retain actual dark BaseColor map",
+  "artifact_sha256": "6f8bef167a6d0e9dc67d4fce67df3782f0bdffb69ede54f8f62a799520f5b6db",
+  "total_triangles": 6354061
+}
