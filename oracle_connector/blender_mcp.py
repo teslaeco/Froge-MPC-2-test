@@ -86,7 +86,7 @@ def anatomy_build_error(candidate, original):
                 if not isinstance(entry, dict): continue
                 item = {key:value[:160] if isinstance(value, str) else value
                         for key,value in entry.items()
-                        if key in ('code','component','object','expected','actual','vertices','minimum_vertices','has_uv','message')
+                        if key in ('code','component','object','expected','actual','vertices','minimum_vertices','has_uv','minimum_edge','largest_image_edge','observed_materials','observed_images','atlas_scope','message')
                         and (isinstance(value, str) or type(value) in (bool,int,float))}
                 detail['violations'].append(item); detail['omitted']['violations'] -= 1
                 if snapshot_wire_size(detail) > 6000:
@@ -122,7 +122,7 @@ TOOLS = [
     {'name':'get_modeling_contract','description':'Read supported scene operations, coordinate conventions, limits and current job. Call once before modeling.', 'inputSchema':schema({})},
     {'name':'build_model','description':'Build a complete scene JSON in real Blender and produce GLB plus preview renders. Replaces the candidate, preserving earlier attempts. At most five successful or failed builds per job.',
      'inputSchema':schema({'scene_json':{'type':'string','maxLength':256000},'expected_revision':{'type':'integer','minimum':0}})},
-    {'name':'edit_model','description':'Apply a short Python geometry/material edit to the current scene using bpy and existing helpers. Edits accumulate. No file/network access. Runs in isolated Blender and generates new renders. Use actual object names from get_current_model.',
+    {'name':'edit_model','description':'Apply a short Python geometry/material edit to the current scene using bpy and existing helpers. Edits accumulate. No file/network access. Runs in isolated Blender and generates new renders. Use actual object names from get_current_model. For a head skin edit preserve its existing atlas and UV; copy its assigned material before a local style change. make_material(pattern="skin") creates a generic 512px map and cannot replace a 2048px anatomical atlas.',
      'inputSchema':schema({'code':{'type':'string','maxLength':20000},'expected_revision':{'type':'integer','minimum':1}})},
     {'name':'get_current_model','description':'Read a bounded current-model snapshot. Small scene/edit/report sections are inline; an oversized section is null with its SHA256 and length in sections. Read it using section, offset and expected_revision; concatenate page.text using next_offset until null. Offsets count Unicode code points, not bytes or JavaScript UTF-16 units. Pass the section SHA256 as expected_sha256 to prevent mixing changed pages. JSON.parse the concatenated scene/report text in CodeMode and store it; print only needed summaries or object names. Does not generate or buy another model.',
      'inputSchema':schema({'section':{'type':'string','enum':['summary']+list(SNAPSHOT_SECTIONS)},
@@ -230,7 +230,16 @@ class JobTools:
         self.calls = []; self.tool_failures = 0; self.final_report = None
 
     def record(self, name, status, error=None):
+        # A failed edit keeps the last valid revision. Record the dispatched
+        # candidate separately so its failure cannot be mistaken for validation
+        # of that preserved model. Preflight failures have no candidate attempt.
+        started = next((call for call in reversed(self.calls)
+                        if call['tool'] == name and call['status'] == 'started'), None)
+        attempted = (status != 'started' and name in ('build_model','edit_model') and
+                     started is not None and self.attempts > started.get('build_attempts', self.attempts))
         entry = {'tool':name,'status':status,'revision':self.revision,
+                 'build_attempts':self.attempts,
+                 'attempt':self.attempts if attempted else None,
                  'elapsed_seconds':round(time.monotonic()-self.started,2)}
         if error: entry['error'] = tool_error(error)
         if status == 'failed': self.tool_failures += 1
@@ -389,7 +398,7 @@ class JobTools:
             return {'job_id':self.folder.name,'prompt':self.request['prompt'],
                     'instructions':self.request['instructions'],'scene_schema':photo_schema(len(self.photos)),
                     'coordinate_and_geometry_guide':PROMPT,
-                    'edit_helpers':'bpy, math, random, Vector. make_material(name,rgb,pattern="plain",roughness=0.7,metallic=0.0) returns a bpy.types.Material. At most 8 NEW materials across all accumulated edits; reuse existing materials with bpy.data.materials.get(name). mesh_object(name,vertices,faces,material), tube(name,points,radii,material,sides=12), ellipsoid(name,center,scale=None,material=None,subdivisions=4,*,radii=None), join_meshes(objects,name) each return one bpy.types.Object, not a tuple. ellipsoid radii is a compatibility alias for scale; provide only one. hair_lock(name,head,points,material,width=0.012,depth=0.010,wave=0.012,turns=2.0,seed=0,steps=80,sides=12) returns one closed UV hair volume. Supply 3-32 world-space guide points and the actual scalp/head mesh; the root is fitted to its geometry. Width/depth are radii in scene units; use varied reference-specific curves, lengths and depth instead of broad sheets or identical tubes. The helper does not infer hairstyle or likeness. No imports except bpy/math/random/mathutils. No files, shell or network.',
+                    'edit_helpers':'bpy, math, random, Vector. make_material(name,rgb,pattern="plain",roughness=0.7,metallic=0.0) returns a bpy.types.Material. At most 8 NEW materials across all accumulated edits; reuse existing materials with bpy.data.materials.get(name). A head already has its anatomical/photo atlas: copy its effective assigned material with head.material_slots[index].material.copy() and preserve its image nodes and UV. The generic make_material pattern skin is 512px and is not a replacement for that atlas. mesh_object(name,vertices,faces,material), tube(name,points,radii,material,sides=12), ellipsoid(name,center,scale=None,material=None,subdivisions=4,*,radii=None), join_meshes(objects,name) each return one bpy.types.Object, not a tuple. ellipsoid radii is a compatibility alias for scale; provide only one. hair_lock(name,head,points,material,width=0.012,depth=0.010,wave=0.012,turns=2.0,seed=0,steps=80,sides=12) returns one closed UV hair volume. Supply 3-32 world-space guide points and the actual scalp/head mesh; the root is fitted to its geometry. Width/depth are radii in scene units; use varied reference-specific curves, lengths and depth instead of broad sheets or identical tubes. The helper does not infer hairstyle or likeness. No imports except bpy/math/random/mathutils. No files, shell or network.',
                     'references':[{'index':i,'view':p.get('view'),'name':p.get('name')} for i,p in enumerate(self.photos)],'revision':self.revision}
         if name=='get_current_model': return self.snapshot(**arguments)
         if name=='build_model':

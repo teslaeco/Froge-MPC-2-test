@@ -1,0 +1,38 @@
+{
+  "base_sha": "01bf1d05ed72eb4e9da48d513d5b34a1a71e34f2",
+  "oracle_branch_base_sha": "5c02f9ff1243b88876fef2631346c480a70cfffa",
+  "files": [
+    {
+      "path": "oracle_connector/code_policy.py",
+      "sha256": "53f9aab08bdc39ad54fc7d8324fc0c8e6a540cf321f2db6795b8d8cdaae17d8d",
+      "bytes": 7654
+    },
+    {
+      "path": "oracle_connector/blender_mcp.py",
+      "sha256": "ed62bc94dd614a02780ba9ade5b9992fec688fa29ead3c9ac78f0462705ec490",
+      "bytes": 34604
+    },
+    {
+      "path": "oracle_connector/runtime/portrait.py",
+      "sha256": "259f05b612c4849b68f146654ad813e6857556d729d52c3b8cd650046a8d92a2",
+      "bytes": 34644
+    },
+    {
+      "path": "oracle_connector/test_validation_preflight.py",
+      "sha256": "d1109b273aa2d253f13dc992649f3eab18ad02487ceb8e3319d63eae8a71192a",
+      "bytes": 6687
+    },
+    {
+      "path": "oracle_connector/verify_skin_atlas_runtime.py",
+      "sha256": "6851bf10ca39fc159e0771584d00701da1a438fd3fc5881e228c1a1936652fd0",
+      "bytes": 4578
+    }
+  ],
+  "tests": {
+    "cpu": 6,
+    "blender": 6,
+    "blender_version": "4.3.0"
+  },
+  "integration_copy": "/workspace/scratch/584c9d97a5a1/resume-integration",
+  "remote_changes": false
+}

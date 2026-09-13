@@ -123,4 +123,8 @@ def validate_code(code, *, allow_helper_definitions=False):
             raise CodePolicyError(node.attr, node.lineno)
         elif isinstance(node, (ast.ClassDef, ast.Global, ast.Nonlocal, ast.AsyncFunctionDef)):
             raise ValueError('Uzyj zwyklych funkcji i operacji modelowania.')
+    # ast.parse does not reject context errors such as return/break outside a
+    # function/loop. Reject them on the host, before dispatch consumes a Blender
+    # build attempt. compile creates a code object only; it never executes it.
+    compile(tree, '<model-edit>', 'exec', dont_inherit=True)
     return code

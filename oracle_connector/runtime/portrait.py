@@ -443,6 +443,44 @@ def component_snapshot(objects):
             for key, tag in COMPONENT_TAGS.items()}
 
 
+def skin_atlas_evidence(obj):
+    """Inspect images of effective assigned materials, including node groups.
+
+    Object-linked material slots can override mesh.data.materials; reporting the
+    latter alone can reject a valid head or inspect a material that is not used.
+    Group nesting is bounded and cycle-safe. This establishes image attachment
+    and resolution only, not likeness or whether a specific shader uses colour.
+    """
+    slots = getattr(obj, 'material_slots', None)
+    materials = ([slot.material for slot in slots] if slots is not None
+                 else list(obj.data.materials))
+    images = []
+    seen_trees = set()
+    for material in materials:
+        if not material or not material.use_nodes or not material.node_tree:
+            continue
+        pending = [material.node_tree]
+        while pending and len(seen_trees) < 128:
+            tree = pending.pop()
+            pointer = tree.as_pointer()
+            if pointer in seen_trees:
+                continue
+            seen_trees.add(pointer)
+            for node in tree.nodes:
+                if node.type == 'TEX_IMAGE' and node.image:
+                    images.append(node.image)
+                elif node.type == 'GROUP' and node.node_tree:
+                    pending.append(node.node_tree)
+    edges = [min(image.size) for image in images]
+    return {
+        'minimum_edge': 2048,
+        'largest_image_edge': int(max(edges, default=0)),
+        'observed_materials': ', '.join(material.name for material in materials if material)[:600],
+        'observed_images': ', '.join('%s (%dx%d)' % (image.name, *image.size) for image in images)[:1000],
+        'atlas_scope': 'effective_head_materials_including_groups',
+    }
+
+
 def verify_components(objects, expected_heads, expected_hands, before=None, intent=None):
     groups = {key: [obj for obj in objects if obj.get(tag)]
               for key, tag in COMPONENT_TAGS.items()}
@@ -501,14 +539,12 @@ def verify_components(objects, expected_heads, expected_hands, before=None, inte
                                               (obj.name, count, minimum,
                                                'zachowane' if obj.data.uv_layers else 'brak')})
     for obj in groups['heads']:
-        images = [node.image for material in obj.data.materials
-                  if material and material.use_nodes and material.node_tree
-                  for node in material.node_tree.nodes
-                  if node.type == 'TEX_IMAGE' and node.image]
-        if not any(min(image.size) >= 2048 for image in images):
-            violations.append({'code': 'skin_atlas', 'object': obj.name,
-                               'minimum_edge': 2048,
-                               'message': '%s: brak atlasu skory co najmniej 2048 px.' % obj.name})
+        atlas = skin_atlas_evidence(obj)
+        if atlas['largest_image_edge'] < atlas['minimum_edge']:
+            violations.append({'code': 'skin_atlas', 'object': obj.name, **atlas,
+                               'message': '%s: przypisany atlas skory ma maksymalna krotsza krawedz %d px; wymagane 2048 px. '
+                                          'Zachowaj material i UV glowy; make_material(pattern="skin") tworzy ogolna mape 512 px.' %
+                                          (obj.name, atlas['largest_image_edge'])})
     detailed = (sum(any(states[side]=='present' for side in ('left','right')) for states in intent.values())
                 if intent is not None else sum(bool(obj.get('lash_geometry_required')) for obj in groups['heads']))
     lashes = [obj for obj in objects if 'upper_lashes_per_eye' in obj]
@@ -533,6 +569,10 @@ def verify_components(objects, expected_heads, expected_hands, before=None, inte
                                    'message':'Rzesy nie sa przypisane do wlasciwej glowy: '+owner})
     if violations:
         report['repair_hint'] = (
+            ('Blad skin_atlas dotyczy materialow przypisanych do glowy, nie liczby obiektow. '
+             'Zachowaj istniejacy atlas i UV; do osobnej stylizacji skopiuj material glowy metoda copy(). '
+             'Nie zastepuj go make_material(pattern="skin") 512 px ani nie skaluj szumu do 2048. '
+             if any(v['code'] == 'skin_atlas' for v in violations) else '') +
             'Zachowaj osobne anatomiczne obiekty, ich znaczniki i UV. '
             'Celowy pusty oczodol deklaruj przed budowa w portrait.eye_states; '
             'nie zmieniaj licznikow po bledzie. Zachowaj zywe oko, '

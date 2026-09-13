@@ -2,13 +2,23 @@
 
 Prywatna baza rozwoju sklepu TikTok Shop i studia modeli 3D na zamówienie, oparta na projekcie konkursowym **ForgeMCP — Multi-Agent Research & Game Studio**.
 
+## Wznowienie 13 września — jakość modelu i Oracle v34
+
+Nowa Julia w bluzie i figurka Atlas pokazały istotne niedopasowanie geometrii oraz materiałów. [Porównanie wejściowych przypadków](docs/reviews/resume-2026-09-13/REFERENCE-CASES-2026-09-13.md) rozdziela obserwacje ze screenów od pomiarów pliku 3D. E18 w sukni pozostaje osobnym modelem.
+
+Poprawka v34 obejmuje kompilację edycji przed zużyciem próby Blendera, faktyczne przypisania atlasu głowy, jednoznaczną historię kandydatów oraz ocenę hosta związaną ze skrótami aktualnego eksportu i referencji. Oko w kostnej połowie jest wymagane, gdy pokazuje je bieżąca referencja; pusty oczodół nie jest domyślnym wymaganiem dla każdej czaszki. Więcej trójkątów nie zastępuje właściwego kształtu.
+
+[Instrukcja wykonania i kryteria](docs/reviews/v34/POLECENIE-CODEX.txt) oraz testy są pamięcią projektu. Nie są treningiem wag ani uruchomieniem GPU L4. Meshy w dostarczonych próbach daje lepsze podobieństwo twarzy; Blender i agent pozwalają lokalnie edytować oraz sprawdzać geometrię. Nie wyciągamy ogólnego rankingu z różnych kamer i oświetlenia.
+
+**Wdrożenie:** źródła i paczka aktualizacji nie oznaczają instalacji. Dopiero `FROGE_V34_OK` oraz stan Oracle z `connectorVersion=34`, `referenceAcceptanceRevision=1` i `workerRelease=v34-reference-acceptance` potwierdzają instalację. Aktualny status pracy: [checkpoint](docs/WORK_CHECKPOINT.md). Publiczny [podgląd FORGE](https://forge-studio-public.terraformingplanet.chatgpt.site) przedstawia modele robocze; nie uruchamia płatnego generowania ani zamówień B2B.
+
 ## Aktualny priorytet
 
 Klient opisuje figurkę lub część → powstaje model 3D i podgląd → klient zatwierdza projekt → wykonawca B2B potwierdza możliwość produkcji, cenę i termin → produkcja → wysyłka → śledzenie zamówienia.
 
 TikTok Shop ma być kanałem sprzedaży. Docelowy zasięg jest światowy, wdrażany etapami po weryfikacji obsługiwanych rynków, dostawców i dostawy. Zakres obejmuje też dropshipping gotowych produktów, w tym rozważaną klawiaturę „Codex Micro”; producent, dostępność i warunki współpracy pozostają do potwierdzenia.
 
-**Stan tej kopii:** studio Codex + Blender, bez płatnego generatora i kluczy API. Strona przyjmuje geometrię od agenta WebMCP lub import GLB/JSON, daje podgląd i eksport. Do pobrania jest autorski dodatek Blender z importem modeli i opcjonalnym generowaniem przez lokalne Ollama. Przygotowano rzeczywisty model smoka: 94 części, 36 960 trójkątów i tekstury proceduralne. Wymiary i obroty są opcjonalne. Strona nie uruchamia samoczynnie Codexa, Blendera ani lokalnego modelu. Dodatek wymaga uruchomienia na komputerze; nie został jeszcze sprawdzony w rzeczywistym Blenderze.
+**Historyczny opis startowej kopii (późniejsze etapy powyżej i w checkpoint):** studio Codex + Blender, bez płatnego generatora i kluczy API. Strona przyjmuje geometrię od agenta WebMCP lub import GLB/JSON, daje podgląd i eksport. Do pobrania jest autorski dodatek Blender z importem modeli i opcjonalnym generowaniem przez lokalne Ollama. Przygotowano rzeczywisty model smoka: 94 części, 36 960 trójkątów i tekstury proceduralne. Wymiary i obroty są opcjonalne. Strona nie uruchamia samoczynnie Codexa, Blendera ani lokalnego modelu. Dodatek wymaga uruchomienia na komputerze; nie został jeszcze sprawdzony w rzeczywistym Blenderze.
 
 ## Fundament konkursowy
 
