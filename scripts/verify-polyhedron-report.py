@@ -57,8 +57,11 @@ def verify(root, mirror=None):
     assert data['verdict']['fullTopology'] == 'unverified'
     assert data['verdict']['printReadiness'] == 'unverified'
     assert data['verdict']['independentBenchmark'] is False
-    assert {e['id'] for e in data['evidence']} == {'R1', 'F1', 'F2', 'M1', 'M2'}
-    assert len(data['evidence']) == 5
+    assert {e['id'] for e in data['evidence']} == {'R1', 'F1', 'F2', 'F3', 'M1', 'M2'}
+    assert len(data['evidence']) == 6
+    assert data['followup']['submittedEvidence'] == ['F3', 'F1']
+    assert data['followup']['resubmittedByteIdenticalEvidence'] == ['F1']
+    assert data['followup']['sameJobId'] == data['forge']['jobId']
     for record in data['evidence']:
         asset = (root / record['path']).resolve()
         assert asset.is_relative_to(root.resolve())
@@ -87,7 +90,7 @@ def verify(root, mirror=None):
     document.feed(html)
     assert document.lang == 'pl' and document.headings == 1
     assert len(document.ids) == len(set(document.ids))
-    assert len(document.images) == 5
+    assert len(document.images) == 6
     assert all(i.get('alt') and i.get('width') and i.get('height') for i in document.images)
     for link in document.links:
         parsed = urlsplit(link)
@@ -113,7 +116,7 @@ def verify(root, mirror=None):
     if mirror:
         mirror_text = mirror.read_text().replace('../../../public/comparisons/polyhedron-2026-09-13/', '')
         assert markdown == mirror_text, 'GitHub and website report text differ after normalizing image paths'
-    print('PASS: five original evidence hashes, image dimensions, report/data consistency, conditional geometry arithmetic, local links and GitHub mirror.')
+    print('PASS: six original evidence hashes, image dimensions, report/data consistency, conditional geometry arithmetic, local links and GitHub mirror.')
     print('This verifies the report package. It does not certify either 3D model or print readiness.')
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "caseId": "polyhedron-2026-09-13",
   "reviewDate": "2026-09-13",
   "scope": "single_case_screenshot_review_with_live_job_metadata",
@@ -116,6 +116,18 @@
       "height": 1536,
       "kind": "user_screenshot",
       "transformed": false
+    },
+    {
+      "id": "F3",
+      "path": "assets/forge-171806.jpg",
+      "uploaded_filename": "Screenshot_20260913-171806.png",
+      "mime": "image/jpeg",
+      "bytes": 117020,
+      "sha256": "d9a42d6c9b7a5c91c2fc506f9e2d1823b6f05f469d45f27ed995461872bfa211",
+      "width": 674,
+      "height": 1536,
+      "kind": "user_screenshot",
+      "transformed": false
     }
   ],
   "liveMetadata": {
@@ -136,5 +148,28 @@
     "input_reference_hash_mismatch",
     "single_case_not_independent",
     "no_general_generator_ranking"
-  ]
+  ],
+  "followup": {
+    "date": "2026-09-13",
+    "submittedEvidence": [
+      "F3",
+      "F1"
+    ],
+    "newUniqueEvidence": [
+      "F3"
+    ],
+    "resubmittedByteIdenticalEvidence": [
+      "F1"
+    ],
+    "sameJobId": "2000d271-08d1-4123-b014-137bfcaecaaf",
+    "additionalGenerationClaimed": false
+  },
+  "modelPreview": {
+    "actualModelEmbedded": false,
+    "status": "blocked_missing_export",
+    "modelRequestStatus": 403,
+    "matchingSavedExportFound": false,
+    "expectedArtifactName": "2000d271-08d1-4123-b014-137bfcaecaaf.glb",
+    "modelNotReconstructedFromScreenshots": true
+  }
 }

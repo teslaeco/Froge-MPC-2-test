@@ -1,6 +1,6 @@
 # Osiemnastościan Sebastiana: FORGE MCP i Meshy 7
 
-**Data oceny: 13 września 2026. Zakres: jeden przypadek, pięć dostarczonych obrazów oraz odczyt metadanych zlecenia FORGE.**
+**Data oceny: 13 września 2026. Zakres: jeden przypadek, sześć unikatowych dostarczonych obrazów oraz odczyt metadanych zlecenia FORGE.**
 
 W pokazanych ujęciach **FORGE MCP — Codex + Astra + Blender MCP — lepiej realizuje cel prostych, równych prętów i czytelnych naroży**. Meshy 7 odtwarza ogólną ażurową sylwetkę, lecz widoczne pręty falują, mają zmienną grubość i miejscowe zgrubienia. To przewaga wizualna FORGE w tym przypadku; nie jest to dowód, że Astra jest najlepszym generatorem 3D we wszystkich zadaniach ani potwierdzenie dokładnego odwzorowania całej bryły.
 
@@ -9,7 +9,7 @@ W pokazanych ujęciach **FORGE MCP — Codex + Astra + Blender MCP — lepiej re
 | Dowód | Zawartość | Pochodzenie |
 |---|---|---|
 | R1 | Referencja obiektu trzymanego w dłoni | Obraz dostarczony przez Sebastiana |
-| F1, F2 | Dwa widoki wyniku FORGE | Zrzuty ekranu 17:08:36 i 17:08:14 |
+| F1, F2, F3 | Trzy widoki tego samego wyniku FORGE | Zrzuty 17:08:36, 17:08:14 i 17:18:06 |
 | M1, M2 | Dwa widoki wyniku Meshy 7 — Flagship | Zrzuty ekranu 16:50:44 i 16:50:15 |
 | J1 | Rekord zlecenia FORGE, odczytany 2026-09-13 | Baza istniejącego prywatnego Studio |
 
@@ -22,6 +22,16 @@ Oryginalne obrazy są zachowane bez zmiany bajtów w katalogu `public/comparison
 | ![Referencja](assets/reference.jpg) | ![FORGE — pełny zrzut](assets/forge-170814.jpg) | ![Meshy — pełny zrzut](assets/meshy-165015.jpg) |
 
 Drugi widok: [FORGE F1](assets/forge-170836.jpg) · [Meshy M1](assets/meshy-165044.jpg). Są to całe zrzuty, z zachowanym kontekstem interfejsu. Czytelną stronę z powiększonymi kadrami przygotowano w [index.html](index.html); wdrożenie na Studio pozostaje zablokowane błędem HTTP 500 przy pobieraniu źródeł Sites.
+
+## Dodatkowe ujęcia FORGE przekazane przez Sebastiana
+
+| F3 · 17:18:06 · nowe ujęcie | F1 · 17:08:36 · ponownie przesłane |
+|---|---|
+| ![FORGE — nowy widok bryły](assets/forge-171806.jpg) | ![FORGE — widok z przodu](assets/forge-170836.jpg) |
+
+Oba wskazane zdjęcia są teraz pokazane bezpośrednio w raporcie i na przygotowanej stronie porównania. F3 przedstawia dodatkowy kąt oglądania tego samego zlecenia. Ponownie przesłany F1 jest identyczny bajtowo z wcześniejszym plikiem (SHA-256 `d7ff600d33d506c17e40bfc879491ac5d620623cdecca18d7c249b3501a2a659`), dlatego nie tworzymy drugiej kopii ani nie liczymy go jako niezależnej próby. Łącznie mamy sześć unikatowych obrazów.
+
+Pełny obrotowy podgląd wymaga oryginalnego eksportu GLB. W tej aktualizacji nie dodano zastępczej geometrii odtworzonej ze zrzutów i nie przedstawiono zdjęć jako pliku 3D.
 
 ## Ocena porównawcza
 
