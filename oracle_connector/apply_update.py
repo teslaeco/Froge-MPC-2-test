@@ -27,7 +27,7 @@ FILES += ('generation_budget.py','quality_report.py','v23_fixture.py',
 FILES += ('runtime/model_checkpoint.py','scene_repair.py',)
 FILES += ('verify_anatomy_edit.py','verify_edit_runtime.py','agent_limits.py','paid_trial.py','blender_mcp.py','codex_runner.py','install_codex.py','codex_smoke.py','runtime/finalize.py',)
 FILES += ('runtime/rooted_hair.py','runtime/reference_reconstruction.py',)
-EXPECTED_VERSION = 33
+EXPECTED_VERSION = 35
 EXPECTED_RENDERER_REVISION = 3
 CODEX_FILES = ('codex', 'codex-code-mode-host', 'codex-binary.json',
                'code-mode-host.json', 'verified.json')
@@ -121,9 +121,9 @@ def update(source, target, verify=None):
                 try:
                     with urllib.request.urlopen(request, timeout=2) as response:
                         health = json.loads(response.read(10000))
-                        if health.get('connectorVersion') == EXPECTED_VERSION and health.get('executionEngine') == 'codex-mcp' and health.get('freeformGeometryRevision') == 1 and health.get('photoProjectionRevision') == 1 and health.get('instructionsRevision') == 1 and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
+                        if health.get('connectorVersion') == EXPECTED_VERSION and health.get('referenceAcceptanceRevision') == 1 and health.get('workerRelease') == 'v35-reference-acceptance' and health.get('executionEngine') == 'codex-mcp' and health.get('freeformGeometryRevision') == 1 and health.get('photoProjectionRevision') == 1 and health.get('instructionsRevision') == 1 and health.get('astraPhotoRevision') == 1 and health.get('rendererRevision') == EXPECTED_RENDERER_REVISION and health.get('portraitRevision') == 2 and health.get('characterStandard') == 20 and health.get('coutureRevision') == 2 and health.get('referenceQualityRevision') == 1 and health.get('materialQualityRevision') == 2 and health.get('interchangeRevision') == 2 and health.get('portraitGeometryRevision') == 2 and health.get('registeredReferenceRevision') == 1:
                             print('FROGE_UPDATE_OK')
-                            print('Froge v33: sprawdzono Codex, argumenty MCP, rzeczywista budowe i eksport. Rozroznione limity zlecenia i OpenAI. Modele i klucz zachowane.')
+                            print('Froge v35: sprawdzono wersje hosta, gate referencji, Codex, MCP, rzeczywista budowe i eksport. Rozroznione limity zlecenia i OpenAI. Modele i klucz zachowane.')
                             return
                 except (OSError, ValueError):
                     pass
@@ -155,4 +155,3 @@ if __name__ == '__main__':
     except Exception as error:
         print('FROGE_UPDATE_ERROR: ' + str(error))
         raise SystemExit(1)
-
