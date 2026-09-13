@@ -1,3 +1,11 @@
+## Oracle — odzyskanie plików i gotowa paczka, 2026-09-13
+
+Odzyskano froge-v19.zip i FORGE-modelka-4K.zip z MCP2 oraz froge-v33.zip; v34 pobrano z public/downloads w repo. Hash ZIP i payloadu v34 zgodny z wcześniejszym raportem. GLB i BLEND wcześniejszej modelki zgodne z oryginalnym manifestem. Nie pomylono ich z bieżącymi zleceniami Julia/Queen.
+
+Nowy tools/oracle-recovery/forge-oracle.py uruchamia niezmienione v34 tylko na starszej bezczynnej instalacji, zachowuje v34/nowsze, sprawdza health i eksportuje dokładne dwa zlecenia z Oracle do Cloud Shell. 7 testów lokalnych przeszło; nie uruchomiono nowego skryptu na Oracle. To etap instalacji/odzyskania plików, NIE nowa generacja ani naprawa geometrii. Prywatna/publiczna strona nie została zmieniona w tym etapie. Dalsze instrukcje: docs/reviews/oracle-recovery-20260913.md. Paczka użytkownika: FORGE-Oracle-aktualizacja.zip. Zgoda na publikację i Oracle jest udzielona; brak aktywnego SSH w sesji, instalacja czeka na polecenie w Cloud Shell.
+
+---
+
 ## Stan końcowy wznowienia — 2026-09-13
 
 Aktualny raport: [DELIVERY-2026-09-13.md](reviews/resume-2026-09-13/DELIVERY-2026-09-13.md).
