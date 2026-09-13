@@ -1,0 +1,13 @@
+{
+  "method": "mechanical crops/layout of actual renders and supplied screenshot, no generated replacements",
+  "meshy_source": "previous published comparison.webp top-left user screenshot panel",
+  "reference": "Screenshot_20260912-170529(3).png",
+  "model_sha256": "08b88ea54b5046e579a9dab0e4f85342ffabdf3b9ed5932c3d49a00ec2b63cb4",
+  "boards": {
+    "E19-TORSO.png": "83eca744bf707b1d018b96fc4162759f872772c15ef17ddbcae404cb87573c0f",
+    "E19-MESHY.png": "6cc08c305223953cbc783c75dfb5fb48e60bef74c86f89751a59e44c7148de86",
+    "E19-TEETH.png": "fae2aac5b5fcd4e6c6c3737b1363fee5e276e5c22e0a832e08ee47e87a732c5f",
+    "E19-WIDOKI.png": "b0a67b6ecffad65275e60e6f04f54bd82255889e11ea26eb0bf3429e7c77cbc1",
+    "E19-PRZED-PO.png": "de02b3d0deb303d1d8c9ba99b2037bd870a54928b53cb4b46b90aafc31d78a2c"
+  }
+}

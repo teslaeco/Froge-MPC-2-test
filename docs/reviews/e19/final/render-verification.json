@@ -1,0 +1,361 @@
+{
+  "before": {
+    "source": "FORGE-E18R.glb",
+    "source_sha256": "6f8bef167a6d0e9dc67d4fce67df3782f0bdffb69ede54f8f62a799520f5b6db",
+    "images": [
+      {
+        "name": "anatomical-dedicated-iris",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "E16 R13 black fine twill colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "E16 R13 ivory linen silk colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "R11 observed face microrelief 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 warm skin Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone BaseColor 2K",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "R11 weathered bone Normal 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 face feature roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R14 enamel cervical shade",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "Screenshot_20260912-131922",
+        "width": 449,
+        "height": 1024
+      },
+      {
+        "name": "Screenshot_20260912-170529",
+        "width": 449,
+        "height": 1024
+      }
+    ],
+    "triangles": 6354061,
+    "renders": {
+      "face": {
+        "file": "before-face.png",
+        "sha256": "46106fc604fc2f2511607189a40f2a633fe80f474b3507a7f1b8e3befe22d704",
+        "pixels": [
+          800,
+          1000
+        ]
+      },
+      "front": {
+        "file": "before-front.png",
+        "sha256": "6b79959347478205fb2c7c06acb808f1368bca821d5d7acb50cff290c2de92d1",
+        "pixels": [
+          800,
+          1000
+        ]
+      }
+    }
+  },
+  "after": {
+    "source": "FORGE-E19-web.glb",
+    "source_sha256": "08b88ea54b5046e579a9dab0e4f85342ffabdf3b9ed5932c3d49a00ec2b63cb4",
+    "images": [
+      {
+        "name": "anatomical-dedicated-iris",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "E16 R13 black fine twill colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "E16 R13 ivory linen silk colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "E19_body_BaseColor_8K",
+        "width": 2048,
+        "height": 2048
+      },
+      {
+        "name": "E19_body_Normal_8K",
+        "width": 2048,
+        "height": 2048
+      },
+      {
+        "name": "E19_body_ORM_8K",
+        "width": 2048,
+        "height": 2048
+      },
+      {
+        "name": "R11 observed face microrelief 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 warm skin Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone BaseColor 2K",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "R11 weathered bone Normal 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 face feature roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "Screenshot_20260912-131922",
+        "width": 449,
+        "height": 1024
+      },
+      {
+        "name": "Screenshot_20260912-170529",
+        "width": 449,
+        "height": 1024
+      }
+    ],
+    "triangles": 6384581,
+    "renders": {
+      "face": {
+        "file": "after-face.png",
+        "sha256": "b75bebd1c1a0982260fa1fbf21d3f3a770e5ebc280b60c9e376dfd32acfb82c1",
+        "pixels": [
+          800,
+          1000
+        ]
+      },
+      "front": {
+        "file": "after-front.png",
+        "sha256": "186c3e75fa7c2504a80bc9fdcbe0cb7f66b2abe301fc23b8fdd6f035777ef678",
+        "pixels": [
+          800,
+          1000
+        ]
+      },
+      "left": {
+        "file": "after-left.png",
+        "sha256": "be09bc960907455a7a1021907033c06cbf2994e4c27683a71278651ce3c58ee9",
+        "pixels": [
+          800,
+          1000
+        ]
+      },
+      "right": {
+        "file": "after-right.png",
+        "sha256": "9e58fda3ad09e5906a17d77f57c6a609c57ee2f90e505fc6239b9b4cf215288c",
+        "pixels": [
+          800,
+          1000
+        ]
+      },
+      "back": {
+        "file": "after-back.png",
+        "sha256": "f06a88d8d50998d5811e1563eff1a6aeb2b38873cefda328b85379485e7b1c42",
+        "pixels": [
+          800,
+          1000
+        ]
+      },
+      "underside": {
+        "file": "after-underside.png",
+        "sha256": "a89ab17183db5a6e1ae7f9f1ec561c05c8561e86a387c81517ef007233498a4f",
+        "pixels": [
+          800,
+          1000
+        ]
+      }
+    }
+  },
+  "8k": {
+    "source": "FORGE-E19-8K.glb",
+    "source_sha256": "f5196a7e6b822d50bbfdaa9d7f6051919b7d48a2e6a84fa5f3082cfc45c5e4f9",
+    "images": [
+      {
+        "name": "anatomical-dedicated-iris",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "E16 R13 black fine twill colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "E16 R13 ivory linen silk colour",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "E19_body_BaseColor_8K",
+        "width": 8192,
+        "height": 8192
+      },
+      {
+        "name": "E19_body_Normal_8K",
+        "width": 8192,
+        "height": 8192
+      },
+      {
+        "name": "E19_body_ORM_8K",
+        "width": 8192,
+        "height": 8192
+      },
+      {
+        "name": "R11 observed face microrelief 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 warm skin Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone BaseColor 2K",
+        "width": 1024,
+        "height": 1024
+      },
+      {
+        "name": "R11 weathered bone Normal 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R11 weathered bone Roughness 2K",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 black fine twill tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 face feature roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk roughness",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "R13 ivory linen silk tangent weave",
+        "width": 512,
+        "height": 512
+      },
+      {
+        "name": "Screenshot_20260912-131922",
+        "width": 449,
+        "height": 1024
+      },
+      {
+        "name": "Screenshot_20260912-170529",
+        "width": 449,
+        "height": 1024
+      }
+    ],
+    "triangles": 6384581,
+    "renders": {
+      "skin": {
+        "file": "8k-skin.png",
+        "sha256": "c7c0db1346220f45522867ffd57f383b383502ead80e019b8da3c6f682bf2d77",
+        "pixels": [
+          1200,
+          1500
+        ]
+      }
+    }
+  }
+}

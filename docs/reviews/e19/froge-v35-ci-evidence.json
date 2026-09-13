@@ -1,0 +1,26 @@
+{
+  "source_commit": "4c6c7fb000a98627264d7c6bcca1f441eb760fe2",
+  "run_id": 34733597773,
+  "jobs": [
+    {
+      "id": 103660879468,
+      "python": "3.9",
+      "tests": 150,
+      "real_blender": true
+    },
+    {
+      "id": 103660879555,
+      "python": "3.12",
+      "tests": 150,
+      "real_blender": false
+    }
+  ],
+  "summary": [
+    "2026-09-13T02:40:38.7622836Z Ran 150 tests in 25.467s",
+    "2026-09-13T02:42:39.3297903Z CODEX_MCP_BLENDER_BUILD_OK; real GLB, texture, 3 renders and FBX; fixture model responses; no paid API",
+    "2026-09-13T02:43:03.1301287Z {\"checks_passed\": 6, \"blender\": \"4.3.0\"}",
+    "2026-09-13T02:43:03.7884929Z {\"levels\": 1, \"cells\": 64, \"geometry_and_material_checks\": \"passed\", \"wrong_material_detected\": true, \"missing_cell_detected\": true, \"missing_spec_unverified\": true, \"texture_pixels_verified\": false}",
+    "2026-09-13T02:43:03.7887273Z {\"levels\": 8, \"cells\": 512, \"geometry_and_material_checks\": \"passed\", \"wrong_material_detected\": true, \"missing_cell_detected\": true, \"missing_spec_unverified\": true, \"texture_pixels_verified\": false}",
+    "2026-09-13T02:43:04.0309468Z FORGE v35: 394642 bytes; 67 files; payload da7bc39d22b829f757c548beea44db3fdffa57e08188df356b3d47a70ced0d23"
+  ]
+}

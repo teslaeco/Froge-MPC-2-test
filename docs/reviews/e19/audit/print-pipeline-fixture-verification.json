@@ -1,0 +1,18 @@
+{
+  "fixture_only": true,
+  "checks": [
+    "GLB100mmheight",
+    "one_closed_mesh",
+    "one_connected_component",
+    "zero_degenerate_triangles",
+    "positive_signed_volume"
+  ],
+  "source_sha256": "ccb0fc2c00635164e00294781bdc466d820467f96fc38be0a137a33a75b055b7",
+  "dimensions_mm": [
+    28.963880007302212,
+    28.963876192604765,
+    100.00000474974513
+  ],
+  "triangles": 53916,
+  "passed": true
+}
