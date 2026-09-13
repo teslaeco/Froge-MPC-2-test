@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Osiemnastościan — FORGE MCP i Meshy 7 | Porównanie</title>
+  <meta name="description" content="Porównanie osiemnastościanu Sebastiana: referencja, wyniki FORGE MCP i Meshy 7, ocena krawędzi oraz jawne granice weryfikacji geometrii.">
+  <link rel="stylesheet" href="report.css">
+</head>
+<body>
+<header class="top"><a href="/">FORGE <span>MCP</span></a><span>Ocena modeli · 13.09.2026</span></header>
+<main>
+  <div class="intro">
+    <p class="eyebrow">Studium jednego przypadku · geometria ażurowa</p>
+    <h1>Osiemnastościan Sebastiana</h1>
+    <p class="lead">FORGE ma równiejsze widoczne krawędzie i czytelniejsze naroża. Pełna zgodność układu 18 ścian wymaga sprawdzenia plików 3D.</p>
+    <div class="statuses"><span class="status observed">Przewaga wizualna: FORGE</span><span class="status pending">Pełna geometria: niezweryfikowana</span></div>
+  </div>
+
+  <section aria-label="Referencja i wyniki modeli" class="comparison">
+    <figure class="card">
+      <figcaption><span class="eyebrow">R1 · Referencja Sebastiana</span><h2>Oryginalny obiekt</h2></figcaption>
+      <a class="crop reference" href="assets/reference.jpg" aria-label="Otwórz pełny obraz referencyjny"><img src="assets/reference.jpg" width="1024" height="1536" alt="Ażurowy model wielościanu, o błyszczących prętach, trzymany w dłoni."></a>
+      <p>Źródło kształtu. Pojedynczy widok nie ujawnia jednoznacznie wszystkich ścian i połączeń.</p>
+      <a class="text-link" href="assets/reference.jpg">Pełna referencja ↗</a>
+    </figure>
+    <figure class="card forge">
+      <figcaption><span class="eyebrow">F2 · Zrzut ekranu</span><h2>Codex + Astra + Blender</h2></figcaption>
+      <a class="crop forge-view" href="assets/forge-170814.jpg" aria-label="Otwórz pełny zrzut FORGE z godziny 17:08:14"><img src="assets/forge-170814.jpg" width="674" height="1536" alt="Wynik FORGE: jasnobeżowy przestrzenny szkielet z prostymi prętami na ciemnym tle."></a>
+      <p>Odcinki wyglądają prosto, grubość prętów jest bardziej regularna. Układ całej bryły nie został zmierzony.</p>
+      <a class="text-link" href="assets/forge-170814.jpg">Pełny zrzut FORGE ↗</a>
+    </figure>
+    <figure class="card">
+      <figcaption><span class="eyebrow">M2 · Zrzut ekranu</span><h2>Meshy 7 — Flagship</h2></figcaption>
+      <a class="crop meshy-view" href="assets/meshy-165015.jpg" aria-label="Otwórz pełny zrzut Meshy z godziny 16:50:15"><img src="assets/meshy-165015.jpg" width="674" height="1536" alt="Wynik Meshy: jasny ażurowy szkielet z pofalowanymi prętami i zgrubieniami połączeń."></a>
+      <p>Zachowany ogólny kształt ażurowy. Widać falowanie krawędzi, zmienną grubość i zgrubienia węzłów.</p>
+      <a class="text-link" href="assets/meshy-165015.jpg">Pełny zrzut Meshy ↗</a>
+    </figure>
+  </section>
+  <p class="caption">Powiększone fragmenty oryginalnych obrazów. Różne kamery, skala i oświetlenie; to porównanie ze zrzutów, bez nowych renderów. Kliknięcie otwiera niezmieniony plik dowodowy.</p>
+
+  <aside class="notice"><strong>Zapisany wynik nie oznacza zaliczonej jakości.</strong> W bazie FORGE potwierdzono zapis modelu po 578,9 s, ale komunikat mówi również: „Wynik roboczy: ocena wskazuje bledy lub nie zostala ukonczona”. Ten raport zachowuje tę informację.</aside>
+
+  <section aria-labelledby="assessment"><h2 id="assessment">Co pokazuje porównanie</h2>
+  <div class="table-wrap" role="region" aria-label="Tabela oceny porównawczej" tabindex="0"><table>
+    <thead><tr><th scope="col">Kryterium</th><th scope="col">FORGE MCP</th><th scope="col">Meshy 7</th><th scope="col">Wniosek</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Proste pręty</th><td>Równe widoczne odcinki</td><td>Falowanie i lokalne wygięcia</td><td class="positive">Przewaga wizualna FORGE</td></tr>
+      <tr><th scope="row">Grubość i naroża</th><td>Bardziej regularne przekroje i połączenia</td><td>Zmienna grubość, zgrubienia</td><td class="positive">Przewaga wizualna FORGE</td></tr>
+      <tr><th scope="row">Ażurowa sylwetka</th><td>Przestrzenny szkielet, otwarte pola</td><td>Przestrzenny szkielet, otwarte pola</td><td>Zachowana ogólna forma</td></tr>
+      <tr><th scope="row">18 ścian i ich układ</th><td>Brak pomiaru eksportu</td><td>Brak pomiaru eksportu</td><td>Niezweryfikowane</td></tr>
+      <tr><th scope="row">Materiał referencji</th><td>Jasnobeżowy, uproszczony wygląd</td><td>Jasna, nierówna powierzchnia</td><td>Brak potwierdzenia wierności materiału</td></tr>
+      <tr><th scope="row">Dłoń i tło w modelu</th><td>Brak widocznej dłoni</td><td>Brak widocznej dłoni</td><td>Wizualnie osiągnięte</td></tr>
+      <tr><th scope="row">Druk i siatka</th><td>Brak audytu produkcyjnego</td><td>Zielona etykieta „Drukowalność” w UI</td><td>Brak niezależnego testu obu modeli</td></tr>
+    </tbody>
+  </table></div>
+  <p>Nierówności widoczne w Meshy nie realizują celu idealnie prostych odcinków. Również referencja ma nierówności powierzchni i odbicia światła, dlatego ocena regularności dotyczy celu geometrycznego, a nie identyczności każdego detalu zdjęcia.</p>
+  </section>
+
+  <section class="split" aria-label="Dane i warunki geometrii">
+    <article class="panel"><h2>Liczby z dowodów</h2>
+      <dl><div><dt>Czas FORGE</dt><dd>578,9 s <small>Komunikat wykonawcy, potwierdzony w bazie</small></dd></div>
+      <div><dt>Podgląd FORGE · X / Y / Z</dt><dd>8,86 / 9,36 / 10,00 cm <small>Odczyt zrzutu; nie wymiary fizycznego wzorca</small></dd></div>
+      <div><dt>Trójkąty Meshy</dt><dd>3 079 398 <small>Licznik UI, bez niezależnego odczytu pliku</small></dd></div>
+      <div><dt>Wierzchołki Meshy</dt><dd>1 539 659 <small>Wierzchołki siatki, nie grafu wielościanu</small></dd></div></dl>
+      <p>Nie ustalono liczby trójkątów FORGE, porównywalnego czasu Meshy ani kosztów obu prób. Liczba trójkątów nie jest miarą poprawności bryły.</p>
+    </article>
+    <article class="panel"><h2>Co znaczy „12 + 6 ścian”</h2>
+      <p>Dla zamkniętej powierzchni wielościanu bez uchwytów, z dwiema ścianami przy każdej krawędzi:</p>
+      <div class="equations"><p><b>F = 18</b><span>12 sześciokątów + 6 kwadratów</span></p><p><b>E = 48</b><span>(12 × 6 + 6 × 4) ÷ 2</span></p><p><b>V = 32</b><span>Ze wzoru Eulera: V − E + F = 2</span></p></div>
+      <p><strong>To warunki wymaganej geometrii, nie wyniki pomiaru tych modeli.</strong> Trzeba jeszcze sprawdzić sąsiedztwo ścian, płaskość, kąty, proporcje i zgodność z wzorcem. Liczymy graf prętów, a nie powierzchnię ich grubej siatki.</p>
+    </article>
+  </section>
+
+  <section aria-labelledby="second"><h2 id="second">Drugi widok i pełny kontekst</h2>
+    <details><summary>Zobacz pozostałe zrzuty FORGE i Meshy</summary><div class="originals">
+      <figure><a href="assets/forge-170836.jpg"><img src="assets/forge-170836.jpg" width="674" height="1536" loading="lazy" alt="F1: pełny zrzut FORGE z komunikatem wyniku roboczego i drugim widokiem bryły."></a><figcaption>F1 · FORGE · 17:08:36</figcaption></figure>
+      <figure><a href="assets/meshy-165044.jpg"><img src="assets/meshy-165044.jpg" width="674" height="1536" loading="lazy" alt="M1: pełny zrzut Meshy z drugim widokiem bryły i licznikami siatki; prawa część podglądu jest przycięta w interfejsie."></a><figcaption>M1 · Meshy · 16:50:44 · podgląd przycięty przy prawej krawędzi</figcaption></figure>
+    </div></details>
+  </section>
+
+  <section aria-labelledby="scope"><h2 id="scope">Granice tej oceny</h2>
+    <ul>
+      <li>FORGE otrzymał zdjęcie, opis i dodatkowe instrukcje. W Meshy widać referencję i włączone ulepszanie obrazu, ale nie znamy pełnego promptu, seeda ani historii prób. Warunki nie były kontrolowanym benchmarkiem.</li>
+      <li>Hash dostarczonego tutaj zdjęcia różni się od hasha zapisanego wejścia FORGE. Nie potwierdzono identyczności bajtowej ani przyczyny różnicy.</li>
+      <li>Nie odczytano eksportów obu modeli. Nie zmierzono całej topologii, kątów, płaskości, samoprzecięć, UV ani grubości do druku.</li>
+      <li>Limit zdjęcia 4096 w FORGE i ustawienie „Ultra 2K” w Meshy nie dowodzą rozdzielczości ani jakości tekstur wynikowych.</li>
+      <li>Raport przygotowano w ramach FORGE na prośbę autora, z pomocą AI. Werdykt dotyczy jednego przypadku i nie jest niezależnym rankingiem generatorów.</li>
+    </ul>
+  </section>
+  <section class="conclusion"><h2>Werdykt</h2><p><strong>FORGE wygrywa wizualnie w regularności widocznych krawędzi.</strong> Pełna zgodność osiemnastościanu i gotowość do druku pozostają niezweryfikowane.</p><p>Pełne zaliczenie wymaga plików obu modeli, uzgodnienia układu ścian wzorca oraz pomiarów grafu, proporcji i powierzchni, przy tych samych kamerach i oświetleniu.</p></section>
+  <nav class="downloads" aria-label="Dokumentacja raportu"><a href="report.md" download>Pełny raport · Markdown</a><a href="evidence.json" download>Dane i hashe · JSON</a><a href="https://github.com/teslaeco/Froge-MPC-2-test/tree/codex/polyhedron-comparison-2026-09-13/docs/reviews/polyhedron-2026-09-13">Raport na GitHub ↗</a></nav>
+  <p class="caption">GitHub projektu i operator Studio wymagają dostępu właściciela. Zlecenie FORGE: <code>2000d271-08d1-4123-b014-137bfcaecaaf</code>. Oryginalne dowody nie zostały wygenerowane ani poprawione na potrzeby raportu.</p>
+</main>
+<footer>FORGE MCP · Raport porównawczy · 13 września 2026</footer>
+</body>
+</html>
