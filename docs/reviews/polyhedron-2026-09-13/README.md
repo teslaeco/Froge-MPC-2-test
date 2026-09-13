@@ -15,6 +15,14 @@ W pokazanych ujęciach **FORGE MCP — Codex + Astra + Blender MCP — lepiej re
 
 Oryginalne obrazy są zachowane bez zmiany bajtów w katalogu `public/comparisons/polyhedron-2026-09-13/assets/`. Interaktywna strona pokazuje powiększone fragmenty oryginałów i pozwala otworzyć pełny zrzut. Załączniki mają nazwy zakończone `.png`, lecz ich wykryty format to JPEG; publikujemy je jako `.jpg`, bez rekompresji. Kadrowanie podglądu nie zmienia pliku dowodowego. Zrzuty ekranowe są oznaczone jako zrzuty; w tej ocenie nie wykonano nowych renderów ani generacji.
 
+## Obrazy porównawcze
+
+| Referencja R1 | FORGE F2 | Meshy M2 |
+|---|---|---|
+| ![Referencja](../../../public/comparisons/polyhedron-2026-09-13/assets/reference.jpg) | ![FORGE — pełny zrzut](../../../public/comparisons/polyhedron-2026-09-13/assets/forge-170814.jpg) | ![Meshy — pełny zrzut](../../../public/comparisons/polyhedron-2026-09-13/assets/meshy-165015.jpg) |
+
+Drugi widok: [FORGE F1](../../../public/comparisons/polyhedron-2026-09-13/assets/forge-170836.jpg) · [Meshy M1](../../../public/comparisons/polyhedron-2026-09-13/assets/meshy-165044.jpg). Są to całe zrzuty, z zachowanym kontekstem interfejsu. Czytelną stronę z powiększonymi kadrami przygotowano w [index.html](../../../public/comparisons/polyhedron-2026-09-13/index.html); wdrożenie na Studio pozostaje zablokowane błędem HTTP 500 przy pobieraniu źródeł Sites.
+
 ## Ocena porównawcza
 
 | Kryterium | FORGE MCP | Meshy 7 | Co można stwierdzić |

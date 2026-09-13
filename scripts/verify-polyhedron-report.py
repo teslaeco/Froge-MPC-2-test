@@ -104,8 +104,15 @@ def verify(root, mirror=None):
         assert forge['jobId'] in text
         assert 'niezweryfikowane' in text.lower() or 'niezweryfikowana' in text.lower()
         assert not re.search(r'(?:siwc_bypass|Authorization:|sk-proj-|Bearer )', text)
+    markdown = (root / 'report.md').read_text()
+    for link in re.findall(r'\]\(([^)]+)\)', markdown):
+        parsed = urlsplit(link)
+        if not parsed.scheme and parsed.path:
+            target = (root / parsed.path).resolve()
+            assert target.is_relative_to(root.resolve()) and target.is_file(), link
     if mirror:
-        assert (root / 'report.md').read_bytes() == mirror.read_bytes(), 'GitHub and website report differ'
+        mirror_text = mirror.read_text().replace('../../../public/comparisons/polyhedron-2026-09-13/', '')
+        assert markdown == mirror_text, 'GitHub and website report text differ after normalizing image paths'
     print('PASS: five original evidence hashes, image dimensions, report/data consistency, conditional geometry arithmetic, local links and GitHub mirror.')
     print('This verifies the report package. It does not certify either 3D model or print readiness.')
 
