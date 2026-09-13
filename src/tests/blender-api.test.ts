@@ -53,6 +53,71 @@ beforeEach(() => {
 afterEach(() => { db.close(); vi.unstubAllGlobals() })
 
 describe('private Blender request lifecycle with real SQLite', () => {
+  function saveFixture(jobId: string, created: string, owner = 'owner-a', present = true) {
+    const artifact = `${jobId}.glb`
+    db.prepare('INSERT INTO blender_jobs (id,owner,endpoint,prompt,state,detail,artifact,created,updated) VALUES (?,?,?,?,?,?,?,?,?)')
+      .run(jobId, owner, endpoint, `Model ${jobId}`, 'succeeded', 'Wynik wymaga oceny', artifact, created, created)
+    if (present) files.set(`${owner}/${artifact}`, minimalGlb())
+  }
+  it('keeps both saved results visible after many later failed jobs and opens them without Oracle', async () => {
+    const polyhedron = '2000d271-08d1-4123-b014-137bfcaecaaf', wooden = '26daac02-a948-4c5e-88ba-b6757a385eac'
+    for (const jobId of [polyhedron, wooden]) saveFixture(jobId, '2026-09-13T15:00:00.000Z')
+    for (let n = 0; n < 40; n++) db.prepare('INSERT INTO blender_jobs (id,owner,endpoint,prompt,state,detail,created,updated) VALUES (?,?,?,?,?,?,?,?)')
+      .run(`failed-${n}`, 'owner-a', endpoint, 'Later attempt', 'failed', '', '2026-09-14T15:00:00.000Z', '2026-09-14T15:00:00.000Z')
+    delete env.BLENDER_SETTINGS_KEY
+    const upstream = vi.fn(); vi.stubGlobal('fetch', upstream)
+    const history = await (await request('jobs')).json()
+    expect(history.jobs.filter((job: {hasModel: boolean}) => job.hasModel).map((job: {id: string}) => job.id).sort()).toEqual([polyhedron, wooden].sort())
+    for (const jobId of [polyhedron, wooden]) {
+      expect(history.jobs.find((job: {id: string}) => job.id === jobId).modelStorage).toBe('available')
+      expect((await request(`jobs/${jobId}`)).status).toBe(200)
+      const model = await request(`jobs/${jobId}/model`)
+      expect(model.status).toBe(200)
+      expect(await model.arrayBuffer()).toEqual(minimalGlb())
+      expect((await request(`jobs/${jobId}/model`, 'GET', undefined, 'owner-b')).status).toBe(404)
+    }
+    expect(upstream).not.toHaveBeenCalled()
+  })
+  it('pages saved models with tied timestamps without skipping, repeating or exposing another owner', async () => {
+    const ids = Array.from({length:23}, (_, n) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`)
+    for (const jobId of ids) saveFixture(jobId, '2026-09-13T15:00:00.000Z')
+    saveFixture(id, '2026-09-14T15:00:00.000Z', 'owner-b')
+    const first = await (await request('jobs')).json()
+    expect(first.jobs).toHaveLength(20)
+    expect(first.nextCursor).toBeTruthy()
+    saveFixture('99999999-0000-4000-8000-000000000000', '2026-09-15T15:00:00.000Z')
+    const second = await (await request('jobs?before=' + encodeURIComponent(first.nextCursor))).json()
+    expect(second.jobs).toHaveLength(3)
+    expect(second.nextCursor).toBeUndefined()
+    expect([...first.jobs, ...second.jobs].map(job => job.id).sort()).toEqual(ids.sort())
+    expect((await request('jobs?before=' + encodeURIComponent("' OR 1=1"))).status).toBe(400)
+  })
+  it('retains a record with a missing blob and reads available results despite an unusable Oracle key', async () => {
+    await pair()
+    env.BLENDER_SETTINGS_KEY = 'invalid-after-rotation'
+    saveFixture(id, '2026-09-13T15:00:00.000Z', 'owner-a', false)
+    const upstream = vi.fn(); vi.stubGlobal('fetch', upstream)
+    expect(await (await request('jobs')).json()).toMatchObject({jobs:[{id, hasModel:true, modelStorage:'missing'}]})
+    expect((await request(`jobs/${id}`)).status).toBe(200)
+    expect((await request(`jobs/${id}/model`)).status).toBe(404)
+    files.set(`owner-a/${id}.glb`, minimalGlb())
+    expect((await request(`jobs/${id}/model`)).status).toBe(200)
+    expect(await (await request('jobs')).json()).toMatchObject({jobs:[{id, modelStorage:'available'}]})
+    expect(upstream).not.toHaveBeenCalled()
+  })
+  it('does not acknowledge successful storage until the GLB write completes and safely retries the same result', async () => {
+    await pair(); await submit()
+    const upstream = vi.fn(async url => String(url).endsWith('/model') ? new Response(minimalGlb()) : Response.json({state:'succeeded'}))
+    vi.stubGlobal('fetch', upstream)
+    const put = env.BUCKET!.put
+    env.BUCKET!.put = async () => { throw new Error('storage unavailable') }
+    expect((await request(`jobs/${id}`)).status).toBe(503)
+    expect(db.prepare('SELECT state,artifact FROM blender_jobs WHERE id=?').get(id)).toMatchObject({state:'queued', artifact:null})
+    env.BUCKET!.put = put
+    expect(await (await request(`jobs/${id}`)).json()).toMatchObject({job:{state:'succeeded', hasModel:true}})
+    expect(await (await request(`jobs/${id}/model`)).arrayBuffer()).toEqual(minimalGlb())
+    expect(upstream.mock.calls.every(([url]) => String(url).endsWith(id) || String(url).endsWith('/model'))).toBe(true)
+  })
   it('rejects the retired provider without forwarding its key or making a network call', async () => {
     await pair()
     const upstream = vi.fn(); vi.stubGlobal('fetch', upstream)

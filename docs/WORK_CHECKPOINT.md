@@ -1,3 +1,9 @@
+## Zapisane modele — 2026-09-13
+
+Przygotowano poprawkę historii modeli na kopii GitHub: widoczna lista z aktualnym modelem, starsze zapisane wyniki, sprawdzenie dostępności GLB i odczyt bez działającego Oracle. 69 testów lokalnych i ścisłe sprawdzenie typów przeszły. Oba zgłoszone rekordy (drewniana postać i osiemnastościan) nadal istnieją w produkcyjnym D1. Dostępność rzeczywistych GLB pozostaje niezweryfikowana (API wymaga sesji właściciela, HTTP 401). Prywatny Site nadal v47; pobranie jego aktualnych źródeł jest zablokowane błędem Git HTTP 500/timeout. **Poprawka GitHub nie jest jeszcze wdrożona na prywatnym Site.** Szczegóły: [raport](reviews/saved-model-history-20260913.md).
+
+---
+
 ## Dodatkowe ujęcia osiemnastościanu — 2026-09-13
 
 - Poprzedni raport scalono w PR #13: `09b0769a637b17ee6e794ece1b5d52442464beda`.

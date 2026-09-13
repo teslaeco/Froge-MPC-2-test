@@ -3,3 +3,11 @@
 .photo-references{margin-top:20px;padding:18px 0;border-top:1px solid #293448}.photo-references h3{font-size:1rem;margin:0 0 8px}.photo-references>p{font-size:1rem;line-height:1.6;color:#b5c2d3}.photo-picker{display:block;padding:14px;border:1px dashed #667892;border-radius:10px;line-height:1.6}.photo-picker input{display:block;max-width:100%;width:100%;margin-top:10px;font-size:.875rem}.photo-reference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:14px}.photo-reference{min-width:0;background:#101c2b;border-radius:10px;padding:10px}.photo-reference img,.job-photos img{width:100%;height:150px;object-fit:contain;display:block;background:#080f19;border-radius:6px}.photo-reference>span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.875rem;margin:8px 0}.photo-reference label{display:block}.photo-reference select{display:block;width:100%;background:#142030;border:1px solid #445064;color:#e8edf4;border-radius:6px;min-height:44px;margin:6px 0;font-size:1rem}.photo-reference button{width:100%;min-height:44px}.job-photos a{min-width:0;color:#d9e5f2;text-decoration:none;font-size:.875rem}.job-photos span{display:block;margin-top:6px}@media(max-width:380px){.photo-reference-grid{grid-template-columns:minmax(0,1fr)}}
 
 .generation-job pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.875rem}
+.generation-history { margin-top: 1.5rem; border-top: 1px solid #344454; padding-top: 1rem; }
+.generation-history h4 { margin: 0 0 .5rem; font-size: 1rem; }
+.generation-history > p { font-size: .875rem; line-height: 1.6; }
+.generation-history ul { list-style: none; margin: 1rem 0; padding: 0; display: grid; gap: .75rem; }
+.generation-history li { display: flex; flex-wrap: wrap; gap: .6rem; padding: 1rem; border: 1px solid #344454; border-radius: .6rem; min-width: 0; }
+.generation-history li strong, .generation-history li small, .generation-history li p, .generation-history li span { flex-basis: 100%; overflow-wrap: anywhere; }
+.generation-history li small { font-size: .875rem; }
+.generation-history li a { align-self: center; padding: .65rem; }
