@@ -1,7 +1,7 @@
 export const MAX_PROMPT = 9999;
 export const SOURCE_MODELS = Object.freeze([
-  {id:'076cb6e8-c3de-4a59-a7b9-c0dfeb2d0e0d',name:'Julia',status:'Do pobrania z Oracle · wynik roboczy'},
-  {id:'99397623-e45c-48dc-95ec-6f84446a54d5',name:'Królowa Neptuna',status:'Do pobrania z Oracle · wynik roboczy'}
+  {id:'076cb6e8-c3de-4a59-a7b9-c0dfeb2d0e0d',name:'Julia',file:'./models/julia-current.glb',sha256:'283ae0198914b905689f8f37fac271ca337170b525d67bbc4bf348899880635d',status:'Zachowany GLB · wynik roboczy'},
+  {id:'99397623-e45c-48dc-95ec-6f84446a54d5',name:'Królowa Neptuna',file:'./models/neptune-queen-current.glb',sha256:'b99e5e8a2de78bddf3fcb1fff941ac15073d94369efd759d5f573dd7a20a9fa1',status:'Zachowany GLB · wynik roboczy'}
 ]);
 export const KINDS = ['cube','sphere','cylinder','cone','torus','icosahedron','octahedron','prism','house','car','excavator','astronaut','iss','hatch','radiator','antenna','tree','board'];
 export const LABELS = {cube:'Sześcian',sphere:'Kula',cylinder:'Walec',cone:'Stożek',torus:'Torus',icosahedron:'Dwudziestościan',octahedron:'Ośmiościan',prism:'Graniastosłup',house:'Dom',car:'Samochód',excavator:'Koparka',astronaut:'Astronauta',iss:'Stacja ISS — schemat',hatch:'Właz',radiator:'Radiator',antenna:'Antena',tree:'Drzewo',board:'Plansza 8 × 8'};
@@ -14,7 +14,7 @@ export function parsePrompt(text,options={}) {
   const p=String(text).trim();if(!p||p.length>MAX_PROMPT)throw Error('Opis musi mieć 1–9999 znaków.');
   const s=p.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/ł/g,'l');
   if(/12\s*(?:scian.*)?szesciokat/.test(s))throw Error('Złożony wielościan wymaga opisu wszystkich ścian lub referencji i analizy Oracle. Nie zastąpię go inną bryłą.');
-  const patterns=[['excavator',/kopark|excavator/],['astronaut',/astronaut/],['iss',/\biss\b|stacj.*kosmicz/],['hatch',/wlaz|hatch|slu[zż]/],['radiator',/radiator/],['antenna',/anten/],['house',/\bdom\b|domy|domow|osiedl|house/],['car',/auto|samoch|pojazd|vehicle|\bcar\b/],['tree',/drzew|tree/],['board',/plansz|szachownic|chessboard/],['icosahedron',/dwudziestoscian|icosa/],['octahedron',/osmioscian|octa/],['prism',/graniastoslup|prism/],['torus',/torus|pierscien/],['sphere',/kul[aeiyę]?\b|sfer|sphere/],['cylinder',/walec|walca|cylinder/],['cone',/stozek|cone/],['cube',/szescian|kostk|cube|prostopadloscian/]];
+  const patterns=[['excavator',/kopark|excavator/],['astronaut',/astronaut/],['iss',/\biss\b|stacj.*kosmicz/],['hatch',/wlaz|hatch|slu[zż]/],['radiator',/radiator/],['antenna',/anten/],['house',/\bdom\b|domy|domow|osiedl|house/],['car',/auto|samoch|pojazd|vehicle|\bcar\b/],['tree',/drzew|tree/],['board',/plansz|szachownic|chessboard/],['icosahedron',/dwudziestoscian|icosa/],['octahedron',/osmioscian|octa/],['prism',/graniastoslup|prism/],['torus',/torus|pierscien/],['sphere',/kul[aeiyę]?\b|sfer|sphere/],['cylinder',/walec|walca|cylinder/],['cone',/stozek|cone/],['cube',/szescian|kostk|cube/]];
   const kind=patterns.find(([,r])=>r.test(s))?.[0];if(!kind)throw Error('Dla tego opisu wybierz „Astra + Blender”. Tryb parametryczny zna bryły, dom, auto, koparkę, drzewo, astronautę i elementy ISS.');
   const dimension=s.match(/(\d+(?:[.,]\d+)?)\s*(mm|cm|m)\b/);
   const size=dimension?Number(dimension[1].replace(',','.'))*({mm:1,cm:10,m:1000}[dimension[2]]):options.size??100;
@@ -29,7 +29,7 @@ export function compilePrompt(description,{instructions='',size=100,texture=2048
   if(out.length>MAX_PROMPT)throw Error(`Łącznie ${out.length} znaków. Skróć opis lub instrukcje do limitu ${MAX_PROMPT}.`);return out;
 }
 export function progress(value,state) {if(state==='succeeded')return 100;if(typeof value!=='number'||!Number.isFinite(value))return null;return Math.max(0,Math.min(99,Math.round(value)));}
-export function escapeCSV(value){return '"'+String(value??'').replaceAll('"','""')+'"';}
+export function escapeCSV(value){return '"'+String(value??'').replace(/^[=+@-]/,"'$&").replaceAll('"','""')+'"';}
 export function validateTransform(t={}){return {x:finite(t.x??0,-500,500),y:finite(t.y??0,-500,500),z:finite(t.z??0,-500,500),rotation:finite(t.rotation??0,-36000,36000),scale:finite(t.scale??1,0.001,10000)};}
 export function validateGLB(buffer){
   if(!(buffer instanceof ArrayBuffer)||buffer.byteLength<20||buffer.byteLength>100*1024*1024)throw Error('GLB: limit 100 MB.');

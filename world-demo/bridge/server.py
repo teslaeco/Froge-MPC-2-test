@@ -65,7 +65,9 @@ class Bridge:
     def exists(self,id):
         with self.db() as db:return id in IDS or db.execute('SELECT 1 FROM jobs WHERE id=?',(id,)).fetchone() is not None
     def enqueue(self,data):
-        payload=validate_job(data);encoded=json.dumps(payload,sort_keys=True,ensure_ascii=False)
+        payload=validate_job(data)
+        if payload['id'] in IDS: raise ValueError('Identyfikator chronionego modelu. Użyj nowego zlecenia.')
+        encoded=json.dumps(payload,sort_keys=True,ensure_ascii=False)
         with LOCK,self.db() as db:
             previous=db.execute('SELECT * FROM jobs WHERE id=?',(data['id'],)).fetchone()
             if previous:

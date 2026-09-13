@@ -1,0 +1,43 @@
+{
+  "created": "2026-09-13",
+  "origin": "Authenticated private FORGE Studio, user-visible export buttons",
+  "quality": "Unapproved draft models, preserved without geometry edits",
+  "models": [
+    {
+      "name": "queen",
+      "jobId": "99397623-e45c-48dc-95ec-6f84446a54d5",
+      "files": [
+        {
+          "path": "queen/model.blend",
+          "bytes": 39523580,
+          "sha256": "9c76eb6b50f1ec9c27794da6d0e7c0f9acf58d11097d29ba3ed0f4c36e1e6e3f"
+        },
+        {
+          "path": "queen/model.glb",
+          "bytes": 30916276,
+          "sha256": "b99e5e8a2de78bddf3fcb1fff941ac15073d94369efd759d5f573dd7a20a9fa1"
+        }
+      ],
+      "glbProvenance": "Studio viewer GLB export, visible scale and orientation; not claimed byte-identical to raw worker GLB",
+      "blendProvenance": "Worker exported Blender file"
+    },
+    {
+      "name": "julia",
+      "jobId": "076cb6e8-c3de-4a59-a7b9-c0dfeb2d0e0d",
+      "files": [
+        {
+          "path": "julia/model.blend",
+          "bytes": 22893340,
+          "sha256": "014970a87c7df75a7fbbf478ee66c29d771877de5125f038603833afa8581bd9"
+        },
+        {
+          "path": "julia/model.glb",
+          "bytes": 16833328,
+          "sha256": "283ae0198914b905689f8f37fac271ca337170b525d67bbc4bf348899880635d"
+        }
+      ],
+      "glbProvenance": "Studio viewer GLB export, visible scale and orientation; not claimed byte-identical to raw worker GLB",
+      "blendProvenance": "Worker exported Blender file"
+    }
+  ]
+}
