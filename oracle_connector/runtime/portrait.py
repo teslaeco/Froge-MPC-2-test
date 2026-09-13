@@ -13,6 +13,9 @@ import portrait_shape
 
 
 def head(p, skin, eyes, hair, mesh_object, ellipsoid):
+    eye_states=p.get('eye_states',{'left':'present','right':'present'})
+    present={side:eye_states.get(label,'present')=='present'
+             for side,label in (('l','left'),('r','right'))}
     photo_fit=p.get('_photo_fit')
     if photo_fit is not None:
         # Calibration uses a neutral, dense feminine head. The photographed
@@ -21,10 +24,22 @@ def head(p, skin, eyes, hair, mesh_object, ellipsoid):
         p={**p,'face':{},'makeup':'soft_glam'}
     style=p.get('hair_style','short'); long=style in ('long_wavy','straight_bob','curly')
     parts=anatomy.head({**p,'hair_style':'bald' if long else 'short' if style=='ponytail' else style},skin,eyes,hair,mesh_object,ellipsoid)
+    # Intent comes from the validated plan, never from a failed edit or a name
+    # guessed by the agent. Keep the living eye; omit only the declared socket.
+    for eye in list(parts):
+        if eye.name.startswith('anatomical-eye-'):
+            side=eye.name[len('anatomical-eye-')]
+            if not present[side]:
+                parts.remove(eye);bpy.data.objects.remove(eye,do_unlink=True)
+            else:
+                eye['anatomy_owner']=p['name'];eye['anatomy_eye_side']=side
     from portrait_eyes import apply_eye_albedo
     gaze=portrait_shape.measured_gaze(photo_fit.observation,photo_fit.template['observation']) if photo_fit is not None else (0.,0.)
     apply_eye_albedo(parts,eyes.diffuse_color[:3],gaze)
     obj=parts[0]
+    obj['anatomy_owner']=p['name']
+    for side in ('l','r'):
+        obj['orbit_anchor_'+side]=list(anatomy.landmark(side+'-eye',p['presentation']))
     obj['photo_skin_midtone_calibration']='makeup_rgb' in p
     # The cosmetic masks need sufficient surface samples around the eyelids and
     # lip border. Subdivide this head only, before sculpting and fitting details.
@@ -96,6 +111,7 @@ def head(p, skin, eyes, hair, mesh_object, ellipsoid):
         return tuple(a+(b-a)*weight for a,b in zip(rows[index],rows[index+1]))
     rng=random.Random(1107)
     for side in (-1,1):
+        if not present['l' if side==1 else 'r']:continue
         vertices=[];faces=[];count=0
         eye_z=anatomy.landmark(('l' if side==1 else 'r')+'-eye',p['presentation']).z
         for i in range(420 if glam else 240):
@@ -162,6 +178,9 @@ def head(p, skin, eyes, hair, mesh_object, ellipsoid):
         ff.append(tuple(base+j for j in reversed(range(sides))))
         ff.append(tuple(base+(len(points)-1)*sides+j for j in range(sides)))
     for side in ('l','r'):
+        if not present[side]:
+            lash_counts.append(0)
+            continue
         previous=None;count=0;outer_root=None
         center=anatomy.landmark(side+'-eye',p['presentation']);sign=1 if center.x>0 else -1
         for i in range(44):
@@ -204,11 +223,13 @@ def head(p, skin, eyes, hair, mesh_object, ellipsoid):
                 if previous is not None:liner_faces.append((previous,start,start+1,previous+1))
                 previous=start
         lash_counts.append(count)
-    lashes=mesh_object('anatomical-lash-fibres',vv,ff,cosmetic);parts.append(lashes)
-    for polygon in lashes.data.polygons:polygon.use_smooth=True
-    lashes['upper_lashes_per_eye']=lash_counts
-    obj['lash_geometry_required']=True
-    parts.append(mesh_object('anatomical-upper-eyeliner',liner_vertices,liner_faces,cosmetic))
+    if any(present.values()):
+        lashes=mesh_object('anatomical-lash-fibres',vv,ff,cosmetic);parts.append(lashes)
+        for polygon in lashes.data.polygons:polygon.use_smooth=True
+        lashes['upper_lashes_per_eye']=lash_counts
+        lashes['anatomy_owner']=p['name']
+        parts.append(mesh_object('anatomical-upper-eyeliner',liner_vertices,liner_faces,cosmetic))
+    obj['lash_geometry_required']=any(present.values())
     cosmetic_finish=[]
     if glam:
         # Portable vertex tint multiplies the subject-independent anatomical
@@ -367,21 +388,198 @@ def build_portrait(p, materials, mesh_object, ellipsoid):
     return parts
 
 
-def verify_components(objects, expected_heads, expected_hands):
-    heads=[o for o in objects if o.get('anatomical_head')]
-    hands=[o for o in objects if o.get('anatomical_hand')]
-    eyes=[o for o in objects if o.get('anatomical_eye')]
-    nails=[o for o in objects if o.get('anatomical_nail')]
-    if len(heads)!=expected_heads or len(hands)!=expected_hands or len(eyes)!=2*expected_heads or len(nails)!=5*expected_hands:
-        raise ValueError('Standard postaci: brakuje anatomicznej twarzy, dwoch oczu, dloni lub paznokci. Wynik nie zostal zaakceptowany.')
-    for obj,minimum in [(o,12000) for o in heads]+[(o,4500) for o in hands]:
-        if len(obj.data.vertices)<minimum or not obj.data.uv_layers:
-            raise ValueError('Standard postaci: utracono anatomie lub UV podczas budowy.')
-    for obj in heads:
-        images=[n.image for m in obj.data.materials for n in m.node_tree.nodes if n.type=='TEX_IMAGE' and n.image]
-        if not any(min(im.size)>=2048 for im in images):raise ValueError('Standard postaci: skora wymaga atlasu 2048 px.')
-    detailed=sum(bool(o.get('lash_geometry_required')) for o in heads)
-    lashes=[o for o in objects if 'upper_lashes_per_eye' in o]
-    if len(lashes)!=detailed or any(len(o['upper_lashes_per_eye'])!=2 or min(o['upper_lashes_per_eye'])<16 for o in lashes):
-        raise ValueError('Standard portretu: brakuje rzes dopasowanych do obu powiek.')
-    return {'revision':2,'heads':len(heads),'eyes':len(eyes),'hands':len(hands),'nails':len(nails),'structural_checks_passed':True,'likeness_verified':False}
+COMPONENT_TAGS = {
+    'heads': 'anatomical_head', 'eyes': 'anatomical_eye',
+    'hands': 'anatomical_hand', 'nails': 'anatomical_nail',
+}
+
+
+def socket_clearance_checks(objects, intent):
+    """A bounded occupancy check, NOT proof of skull shape or likeness.
+
+    Check real evaluated geometry, including untagged black filler spheres.
+    Rays use the head's local anatomical frame, so world pose/scale are retained.
+    The base intentionally remains a draft until its eyelids are sculpted away.
+    """
+    checks=[]
+    if not intent:return {'required':False,'passed':True,'checks':checks}
+    depsgraph=bpy.context.evaluated_depsgraph_get()
+    for owner,states in intent.items():
+        for side,label in (('l','left'),('r','right')):
+            if states[label]!='empty_socket':continue
+            heads=[obj for obj in objects if obj.get('anatomical_head') and obj.get('anatomy_owner')==owner]
+            item={'owner':owner,'side':label,'passed':False,'clear_rays':0,'required_rays':5}
+            checks.append(item)
+            if len(heads)!=1 or 'orbit_anchor_'+side not in heads[0]:continue
+            head=heads[0];anchor=Vector(head['orbit_anchor_'+side]);transform=head.matrix_world
+            # A shallow slit, a black globe and a front disk all fail. The
+            # five samples must reach behind the former eye centre.
+            for dx,dz in ((0,0),(-.009,0),(.009,0),(0,-.008),(0,.008)):
+                start=transform@(anchor+Vector((dx,-.05,dz)))
+                end=transform@(anchor+Vector((dx,.006,dz)))
+                vector=end-start;length=vector.length
+                hit,*_=bpy.context.scene.ray_cast(depsgraph,start,vector.normalized(),distance=length)
+                if not hit:item['clear_rays']+=1
+            item['passed']=item['clear_rays']==item['required_rays']
+    return {'required':bool(checks),'passed':all(item['passed'] for item in checks),
+            'checks':checks,'scope':'Orbital foreground occupancy only; skull shape and likeness require visual review.'}
+
+
+class AnatomyValidationError(ValueError):
+    """A failed structural gate with diagnostics the agent can act on."""
+    def __init__(self, report):
+        self.report = report
+        names = {'heads': 'twarze', 'eyes': 'oczy', 'hands': 'dlonie', 'nails': 'paznokcie'}
+        counts = ', '.join('%s %d/%d' % (names[key], report['actual'][key],
+                                       report['expected'][key]) for key in COMPONENT_TAGS)
+        details = '; '.join(issue['message'] for issue in report['violations'])
+        super().__init__('Standard postaci: %s. %s Wynik nie zostal zaakceptowany.' % (counts, details))
+
+
+def component_snapshot(objects):
+    """Remember identities before an edit without retaining removed bpy objects."""
+    return {key: [{'name': obj.name, 'pointer': obj.as_pointer()}
+                  for obj in objects if obj.get(tag)]
+            for key, tag in COMPONENT_TAGS.items()}
+
+
+def skin_atlas_evidence(obj):
+    """Inspect images of effective assigned materials, including node groups.
+
+    Object-linked material slots can override mesh.data.materials; reporting the
+    latter alone can reject a valid head or inspect a material that is not used.
+    Group nesting is bounded and cycle-safe. This establishes image attachment
+    and resolution only, not likeness or whether a specific shader uses colour.
+    """
+    slots = getattr(obj, 'material_slots', None)
+    materials = ([slot.material for slot in slots] if slots is not None
+                 else list(obj.data.materials))
+    images = []
+    seen_trees = set()
+    for material in materials:
+        if not material or not material.use_nodes or not material.node_tree:
+            continue
+        pending = [material.node_tree]
+        while pending and len(seen_trees) < 128:
+            tree = pending.pop()
+            pointer = tree.as_pointer()
+            if pointer in seen_trees:
+                continue
+            seen_trees.add(pointer)
+            for node in tree.nodes:
+                if node.type == 'TEX_IMAGE' and node.image:
+                    images.append(node.image)
+                elif node.type == 'GROUP' and node.node_tree:
+                    pending.append(node.node_tree)
+    edges = [min(image.size) for image in images]
+    return {
+        'minimum_edge': 2048,
+        'largest_image_edge': int(max(edges, default=0)),
+        'observed_materials': ', '.join(material.name for material in materials if material)[:600],
+        'observed_images': ', '.join('%s (%dx%d)' % (image.name, *image.size) for image in images)[:1000],
+        'atlas_scope': 'effective_head_materials_including_groups',
+    }
+
+
+def verify_components(objects, expected_heads, expected_hands, before=None, intent=None):
+    groups = {key: [obj for obj in objects if obj.get(tag)]
+              for key, tag in COMPONENT_TAGS.items()}
+    expected = {'heads': int(expected_heads), 'eyes': 2 * int(expected_heads),
+                'hands': int(expected_hands), 'nails': 5 * int(expected_hands)}
+    if intent is not None:
+        if len(intent)!=int(expected_heads):
+            raise ValueError('Niespojny kontrakt anatomii z planem sceny.')
+        expected['eyes']=sum(states[side]=='present' for states in intent.values()
+                             for side in ('left','right'))
+    actual = {key: len(items) for key, items in groups.items()}
+    violations = []
+    report = {
+        'revision': 2, 'diagnostic_revision': 1, 'expected': expected, 'actual': actual,
+        'missing': {key: max(0, expected[key] - actual[key]) for key in COMPONENT_TAGS},
+        'excess': {key: max(0, actual[key] - expected[key]) for key in COMPONENT_TAGS},
+        'objects': {key: [obj.name for obj in items] for key, items in groups.items()},
+        'violations': violations, 'structural_checks_passed': False,
+        'likeness_verified': False,
+    }
+    if intent is not None:
+        report['reference_anatomy']=intent
+        for owner,states in intent.items():
+            owned_heads=[obj for obj in groups['heads'] if obj.get('anatomy_owner')==owner]
+            if len(owned_heads)!=1:
+                violations.append({'code':'head_identity','object':owner,
+                                   'message':'Brak jednoznacznej glowy: '+owner})
+            for side,label in (('l','left'),('r','right')):
+                wanted=int(states[label]=='present')
+                found=sum(obj.get('anatomy_owner')==owner and obj.get('anatomy_eye_side')==side
+                          for obj in groups['eyes'])
+                if found!=wanted:
+                    violations.append({'code':'eye_identity','object':owner+':'+label,
+                                       'expected':wanted,'actual':found,
+                                       'message':'Oko '+owner+':'+label+' nie zgadza sie z deklaracja referencji.'})
+    if before:
+        present = {key: {obj.as_pointer() for obj in items} for key, items in groups.items()}
+        report['removed_or_untagged'] = {
+            key: [item['name'] for item in before.get(key, [])
+                  if item['pointer'] not in present[key]] for key in COMPONENT_TAGS
+        }
+    for key in COMPONENT_TAGS:
+        if actual[key] != expected[key]:
+            violations.append({'code': 'component_count', 'component': key,
+                               'expected': expected[key], 'actual': actual[key],
+                               'message': '%s: wymagane %d, znalezione %d.' %
+                                          (key, expected[key], actual[key])})
+    for key, minimum in (('heads', 12000), ('hands', 4500)):
+        for obj in groups[key]:
+            count = len(obj.data.vertices)
+            if count < minimum or not obj.data.uv_layers:
+                violations.append({'code': 'anatomy_topology_or_uv', 'object': obj.name,
+                                   'vertices': count, 'minimum_vertices': minimum,
+                                   'has_uv': bool(obj.data.uv_layers),
+                                   'message': '%s: wierzcholki %d/%d, UV %s.' %
+                                              (obj.name, count, minimum,
+                                               'zachowane' if obj.data.uv_layers else 'brak')})
+    for obj in groups['heads']:
+        atlas = skin_atlas_evidence(obj)
+        if atlas['largest_image_edge'] < atlas['minimum_edge']:
+            violations.append({'code': 'skin_atlas', 'object': obj.name, **atlas,
+                               'message': '%s: przypisany atlas skory ma maksymalna krotsza krawedz %d px; wymagane 2048 px. '
+                                          'Zachowaj material i UV glowy; make_material(pattern="skin") tworzy ogolna mape 512 px.' %
+                                          (obj.name, atlas['largest_image_edge'])})
+    detailed = (sum(any(states[side]=='present' for side in ('left','right')) for states in intent.values())
+                if intent is not None else sum(bool(obj.get('lash_geometry_required')) for obj in groups['heads']))
+    lashes = [obj for obj in objects if 'upper_lashes_per_eye' in obj]
+    if len(lashes) != detailed:
+        violations.append({'code': 'lash_components', 'expected': detailed, 'actual': len(lashes),
+                           'message': 'Rzesy: wymagane %d par, znalezione %d.' % (detailed, len(lashes))})
+    for obj in lashes:
+        counts = list(obj['upper_lashes_per_eye'])
+        states=intent.get(obj.get('anatomy_owner'),{}) if intent is not None else {}
+        minimum=[16 if states.get(side,'present')=='present' else 0 for side in ('left','right')]
+        if (len(counts) != 2 or (intent is not None and not states) or
+                any((count<limit if limit else count!=0) for count,limit in zip(counts,minimum))):
+            violations.append({'code': 'lash_count', 'object': obj.name, 'actual': counts,
+                               'minimum_per_eye': 16,
+                               'message': '%s: rzesy %s; wymagane %s zgodnie z referencja.' %
+                                          (obj.name, counts, minimum)})
+    if intent is not None:
+        for owner,states in intent.items():
+            wanted=int(any(states[side]=='present' for side in ('left','right')))
+            if sum(obj.get('anatomy_owner')==owner for obj in lashes)!=wanted:
+                violations.append({'code':'lash_identity','object':owner,
+                                   'message':'Rzesy nie sa przypisane do wlasciwej glowy: '+owner})
+    if violations:
+        report['repair_hint'] = (
+            ('Blad skin_atlas dotyczy materialow przypisanych do glowy, nie liczby obiektow. '
+             'Zachowaj istniejacy atlas i UV; do osobnej stylizacji skopiuj material glowy metoda copy(). '
+             'Nie zastepuj go make_material(pattern="skin") 512 px ani nie skaluj szumu do 2048. '
+             if any(v['code'] == 'skin_atlas' for v in violations) else '') +
+            'Zachowaj osobne anatomiczne obiekty, ich znaczniki i UV. '
+            'Celowy pusty oczodol deklaruj przed budowa w portrait.eye_states; '
+            'nie zmieniaj licznikow po bledzie. Zachowaj zywe oko, '
+            'dloni ani paznokci podczas stylizacji. Laczenie akcesoriow wykonuj '
+            'osobno od anatomii. Napraw wymienione braki przed kolejna ocena renderow.')
+        raise AnatomyValidationError(report)
+    return {'revision': 2, 'diagnostic_revision': 2, **actual, 'expected': expected,
+            'reference_anatomy':intent or {},
+            'socket_shape_verified':False,
+            'structural_checks_passed': True, 'likeness_verified': False}

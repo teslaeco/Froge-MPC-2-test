@@ -1,0 +1,36 @@
+{
+  "nasal_boundary_vertices": 538,
+  "nasal_boundary_connected_degree_two": true,
+  "nasal_new_faces": 10761,
+  "living_eye_aperture_faces_removed": 5934,
+  "head_bounds_before": [
+    [
+      -0.11963798105716705,
+      -0.05436102673411369,
+      1.3476849794387817
+    ],
+    [
+      0.11963821947574615,
+      0.17448048293590546,
+      1.7009100914001465
+    ]
+  ],
+  "head_bounds_after": [
+    [
+      -0.11438706838374736,
+      -0.05436102673411369,
+      1.3476849794387817
+    ],
+    [
+      0.12881002452650306,
+      0.17448048293590546,
+      1.6789616131763505
+    ]
+  ],
+  "upper_cranium_max_compression": 0.022,
+  "temple_width_factor": 1.035,
+  "bust_local_depth": 0.021,
+  "living_eye_surface_y": 0.01575368642807007,
+  "living_eye_center_y": 0.01,
+  "likeness_accepted": false
+}

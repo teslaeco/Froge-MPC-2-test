@@ -1,0 +1,11 @@
+Kontynuuj oryginalne zlecenie z jego opisem i jego grafikami. Najpierw odczytaj aktualna scene oraz raport bledow. Nie przenos kolorow wlosow, stroju ani proporcji z innej postaci.
+
+Na podstawie TEJ referencji okresl: obrys postaci, wielkosc glowy, szyje, ulozenie ramion, fryzure i przedzialek, ekspresje, strone zywa/kostna oraz obecnosc oka. Ciemne oko we wnece czaszki ma byc obecne i zaglebione; pusty oczodol wolno zastosowac jedynie gdy rzeczywiscie wynika to z zadania.
+
+Popraw lokalnie najwieksze roznice geometrii: oczodol i luk jarzmowy, luk zebowy oraz koronki roznych typow zebow, kontur nosa, usmiech, polaczenie szyi z obojczykami. Zamknij szczeliny nasady wlosow cienkimi pasmami dopasowanymi do powierzchni i kierunku przedzialka. Nie powiekszaj globalnie glowy. Tekstury i subdivision nie zastapia brakujacego ksztaltu.
+
+Zachowaj istniejacy atlas skory przypisany do glowy. Sprawdz faktyczny obraz w materiale, UV i rozmiar; obraz istniejacy w scenie, lecz nieuzywany przez glowe, nie jest poprawnym atlasem. Nie podmieniaj go proceduralnym szumem 512px i nie zwiekszaj rozdzielczosci samego szumu, aby przejsc walidacje.
+
+Po kazdej nazwanej korekcie obejrzyj aktualny eksport z przodu, boku, tylu i twarz; dolacz clay, aby ocenic forme bez pomocy koloru. Uzyj tej samej kamery i swiatla do przed/po. Raportuj rzeczywista liczbe trojkatow, rozdzielczosci i SHA256 modelu oraz renderow. Oceniaj podobienstwo osobno od licznikow anatomii i poprawnosci eksportu.
+
+Jesli nie ma wystarczajacego podobienstwa albo dowodow aktualnej rewizji, zachowaj najlepszy wynik jako draft i opisz pozostale roznice. Nie zaliczaj wykonania tylko dlatego, ze skonczyl sie limit prob. Te instrukcje i testy regresji sa pamiecia projektu, nie treningiem wag modelu.

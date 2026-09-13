@@ -1,0 +1,27 @@
+name: Polyhedron comparison report
+on:
+  pull_request:
+    paths:
+      - 'public/comparisons/polyhedron-2026-09-13/**'
+      - 'docs/reviews/polyhedron-2026-09-13/**'
+      - 'scripts/verify-polyhedron-report.py'
+      - '.github/workflows/polyhedron-report.yml'
+  push:
+    branches:
+      - 'codex/polyhedron-comparison-2026-09-13'
+    paths:
+      - 'public/comparisons/polyhedron-2026-09-13/**'
+      - 'docs/reviews/polyhedron-2026-09-13/**'
+      - 'scripts/verify-polyhedron-report.py'
+      - '.github/workflows/polyhedron-report.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evidence-and-links:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original images, report consistency and links
+        run: python3 scripts/verify-polyhedron-report.py

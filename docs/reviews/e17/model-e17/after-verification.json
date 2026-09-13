@@ -1,0 +1,9 @@
+{
+  "source_fbx_sha256": "2fd70d61f936573abc1687306b80003365c1ffe67e83189ff38dbb1b95c010cf",
+  "triangles": 5922115,
+  "mesh_objects": 368,
+  "uv_meshes": 368,
+  "missing_textures": [],
+  "actual_fbx_reimport": true,
+  "camera_and_lights_fixed": true
+}

@@ -42,4 +42,3 @@ def apply_eye_albedo(objects, iris_color=(.075,.031,.014), gaze=(0.,0.)):
   obj['gaze_method']='calibrated-photo-iris' if any(gaze) else 'neutral'
   count+=1
  return count
-

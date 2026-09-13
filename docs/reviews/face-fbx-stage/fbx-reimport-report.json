@@ -1,0 +1,23 @@
+{
+  "fbx_reimport_verified": true,
+  "triangles": 1000000,
+  "mesh_objects": 151,
+  "bounds": [
+    [
+      -0.36180761456489563,
+      -0.15548302233219147,
+      0.5252182483673096
+    ],
+    [
+      0.36180761456489563,
+      0.286962628364563,
+      1.7471487522125244
+    ]
+  ],
+  "missing_textures": [],
+  "meshes_with_uv": 151,
+  "renders": "actual reimported FBX",
+  "hair_preserved_in_master": true,
+  "likeness_accepted": false,
+  "print_ready": false
+}

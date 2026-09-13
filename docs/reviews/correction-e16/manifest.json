@@ -1,0 +1,42 @@
+{
+  "artifacts": [
+    {
+      "name": "FORGE-model-E16.blend",
+      "bytes": 181797739,
+      "sha256": "0784886765449fe7f04edc4aac0043c4ced9867449e992749761d4578cfb4dac"
+    },
+    {
+      "name": "FORGE-model-E16.fbx",
+      "bytes": 178034812,
+      "sha256": "5756bebe52360c39789feeeddc65be6f92ede71c991250c40b869ff477346d74"
+    },
+    {
+      "name": "FORGE-model-E16.glb",
+      "bytes": 115822128,
+      "sha256": "b28790dc760506a52def54787f87d01d5a793ad4d91e6cfc6526c547f0d07ce4"
+    },
+    {
+      "name": "POROWNANIE-E16.png",
+      "bytes": 1343301,
+      "sha256": "2d9bff7f1760b8f52c0da6c3d11298585c5b2251b0d50b86887701155b0d06b8"
+    },
+    {
+      "name": "WIDOKI-E16.png",
+      "bytes": 1045848,
+      "sha256": "6f5bf83d17f40169f185793772d7656000b6ab091293448e3a4c72963f8a56f9"
+    },
+    {
+      "name": "GEOMETRIA-E16.png",
+      "bytes": 711723,
+      "sha256": "cf4b43d21844184e5b1b301ba4cb2dca94c59dfbb28aa9f393012c657587ab18"
+    },
+    {
+      "name": "RAPORT-E16.md",
+      "bytes": 3387,
+      "sha256": "c29964846d74c7eb58367a4a8fc4cb0c14cf0d0b5daa4ad37dd29bba97508e29"
+    }
+  ],
+  "durable_artifact_save": "unavailable: no Library callable tools",
+  "source_repository": "teslaeco/Froge-MPC-2-test",
+  "deployment": "unchanged"
+}

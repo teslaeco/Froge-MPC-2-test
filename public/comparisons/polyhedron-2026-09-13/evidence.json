@@ -1,0 +1,175 @@
+{
+  "schemaVersion": 2,
+  "caseId": "polyhedron-2026-09-13",
+  "reviewDate": "2026-09-13",
+  "scope": "single_case_screenshot_review_with_live_job_metadata",
+  "verdict": {
+    "visibleEdgeRegularity": "forge_visual_advantage",
+    "fullTopology": "unverified",
+    "printReadiness": "unverified",
+    "independentBenchmark": false
+  },
+  "requiredSkeleton": {
+    "hexagonalFaces": 12,
+    "squareFaces": 6,
+    "faces": 18,
+    "edges": 48,
+    "vertices": 32,
+    "status": "conditional_requirement_not_measurement",
+    "assumptions": [
+      "closed_genus_zero_polyhedral_surface",
+      "two_faces_per_edge",
+      "ordinary_polygonal_faces"
+    ]
+  },
+  "forge": {
+    "jobId": "2000d271-08d1-4123-b014-137bfcaecaaf",
+    "executionEngine": "codex-mcp",
+    "state": "succeeded",
+    "artifactName": "2000d271-08d1-4123-b014-137bfcaecaaf.glb",
+    "detail": "Model wykonany przez Codex + Astra + Blender MCP w 578.9 s. Wynik roboczy: ocena wskazuje bledy lub nie zostala ukonczona. Model wymaga poprawek; sprawdz raport.",
+    "reportedSeconds": 578.9,
+    "createdAt": "2026-09-13T14:57:52.856Z",
+    "updatedAt": "2026-09-13T15:07:39.724Z",
+    "recordElapsedSeconds": 586.868,
+    "uiBoundsCm": {
+      "x": 8.86,
+      "y": 9.36,
+      "z": 10
+    },
+    "measuredTriangles": null,
+    "measuredVertices": null,
+    "inputPhotoSha256": "7e08a2fc32715796f9b920494218916b424a23d862ae5a4fd6cef6c323fc9e46",
+    "inputPhotoByteMatch": false,
+    "inputTextureMaxSize": 4096,
+    "engineVersionVerified": false
+  },
+  "meshy": {
+    "uiModelLabel": "Meshy 7 - Flagship",
+    "uiTriangleCount": 3079398,
+    "uiVertexCount": 1539659,
+    "countSource": "M1/M2 screenshot UI; not an independent file measurement",
+    "uiResolutionLabel": "Ultra 2K",
+    "imageEnhancementVisibleEnabled": true,
+    "uiPrintabilityBadge": "green",
+    "reportedSeconds": null,
+    "measuredTriangles": null,
+    "measuredVertices": null
+  },
+  "evidence": [
+    {
+      "id": "R1",
+      "path": "assets/reference.jpg",
+      "uploaded_filename": "file_000000005db871f4875ad854ce029890.png",
+      "mime": "image/jpeg",
+      "bytes": 251962,
+      "sha256": "ab6736e4b51061bb1676adad6229958097498a32b3f5ffe36f050ed70385daa7",
+      "width": 1024,
+      "height": 1536,
+      "kind": "reference_image",
+      "transformed": false
+    },
+    {
+      "id": "F1",
+      "path": "assets/forge-170836.jpg",
+      "uploaded_filename": "Screenshot_20260913-170836.png",
+      "mime": "image/jpeg",
+      "bytes": 129231,
+      "sha256": "d7ff600d33d506c17e40bfc879491ac5d620623cdecca18d7c249b3501a2a659",
+      "width": 674,
+      "height": 1536,
+      "kind": "user_screenshot",
+      "transformed": false
+    },
+    {
+      "id": "F2",
+      "path": "assets/forge-170814.jpg",
+      "uploaded_filename": "Screenshot_20260913-170814.png",
+      "mime": "image/jpeg",
+      "bytes": 130818,
+      "sha256": "d376cb7d1762fe8b0515ddaafc1a7735b4d6719489b0bcfa795421d34af3dd80",
+      "width": 674,
+      "height": 1536,
+      "kind": "user_screenshot",
+      "transformed": false
+    },
+    {
+      "id": "M1",
+      "path": "assets/meshy-165044.jpg",
+      "uploaded_filename": "Screenshot_20260913-165044.png",
+      "mime": "image/jpeg",
+      "bytes": 96900,
+      "sha256": "2e0d5e2e932295d4b12c9cbdb6ac04f76b2a593fdfd04713d148fd12eedf7b22",
+      "width": 674,
+      "height": 1536,
+      "kind": "user_screenshot",
+      "transformed": false
+    },
+    {
+      "id": "M2",
+      "path": "assets/meshy-165015.jpg",
+      "uploaded_filename": "Screenshot_20260913-165015.png",
+      "mime": "image/jpeg",
+      "bytes": 98168,
+      "sha256": "d85b68f9dc02345198f33e9c15dc6f78c07d3b434058407775b0b51841eb7e17",
+      "width": 674,
+      "height": 1536,
+      "kind": "user_screenshot",
+      "transformed": false
+    },
+    {
+      "id": "F3",
+      "path": "assets/forge-171806.jpg",
+      "uploaded_filename": "Screenshot_20260913-171806.png",
+      "mime": "image/jpeg",
+      "bytes": 117020,
+      "sha256": "d9a42d6c9b7a5c91c2fc506f9e2d1823b6f05f469d45f27ed995461872bfa211",
+      "width": 674,
+      "height": 1536,
+      "kind": "user_screenshot",
+      "transformed": false
+    }
+  ],
+  "liveMetadata": {
+    "evidenceId": "J1",
+    "readDate": "2026-09-13",
+    "source": "Sites DB blender_jobs, matching jobId; owner/endpoint/credentials excluded",
+    "fullAgentInstructionsAvailable": false
+  },
+  "reviewedSource": {
+    "repository": "teslaeco/Froge-MPC-2-test",
+    "baseBranch": "codex/v27-mcp-startup-audit",
+    "baseCommit": "23a7b5859f6093073bedeb037b2ba0e75b142c7b"
+  },
+  "limitations": [
+    "no_model_exports_inspected",
+    "different_views_and_lighting",
+    "not_identical_prompt_and_budget",
+    "input_reference_hash_mismatch",
+    "single_case_not_independent",
+    "no_general_generator_ranking"
+  ],
+  "followup": {
+    "date": "2026-09-13",
+    "submittedEvidence": [
+      "F3",
+      "F1"
+    ],
+    "newUniqueEvidence": [
+      "F3"
+    ],
+    "resubmittedByteIdenticalEvidence": [
+      "F1"
+    ],
+    "sameJobId": "2000d271-08d1-4123-b014-137bfcaecaaf",
+    "additionalGenerationClaimed": false
+  },
+  "modelPreview": {
+    "actualModelEmbedded": false,
+    "status": "blocked_missing_export",
+    "modelRequestStatus": 403,
+    "matchingSavedExportFound": false,
+    "expectedArtifactName": "2000d271-08d1-4123-b014-137bfcaecaaf.glb",
+    "modelNotReconstructedFromScreenshots": true
+  }
+}

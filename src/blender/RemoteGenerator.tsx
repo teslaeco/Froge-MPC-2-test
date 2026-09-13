@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { BlenderRequestError, blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob } from './client'
+import { BlenderRequestError, blenderRequest, finished, generatedModel, type BlenderConnection, type GenerationJob, type GenerationHistory } from './client'
 import './generator.css'
 import { OpenAISettings, GeometryUpdate } from './OpenAISettings'
 import { GenerationExports } from './GenerationExports'
@@ -19,6 +19,9 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
   const [connectionError, setConnectionError] = useState(''), [jobError, setJobError] = useState<Error | null>(null)
   const [checkingConnection, setCheckingConnection] = useState(true), [checkedAt, setCheckedAt] = useState('')
   const [active, setActive] = useState<GenerationJob | null>(null), [recent, setRecent] = useState<GenerationJob[]>([])
+  const [historyLoading, setHistoryLoading] = useState(true), [historyError, setHistoryError] = useState('')
+  const [historyCursor, setHistoryCursor] = useState<string | undefined>()
+  const historyLock = useRef(false)
   const [displayed, setDisplayed] = useState(false), [fromHistory, setFromHistory] = useState(false)
   const [photos, setPhotos] = useState<PhotoInput[]>([]), [preparingPhotos, setPreparingPhotos] = useState(false)
   const callbacks = useRef({ onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel }); callbacks.current = { onStart, onResult, canAutoRestore, onRestorePrompt, onReusePrompt, onNewModel }
@@ -85,14 +88,15 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
   useEffect(() => {
     mounted.current = true
     void refreshConnection()
-    void blenderRequest<{ jobs: GenerationJob[] }>('jobs').then(({ jobs }) => {
+    void blenderRequest<GenerationHistory>('jobs').then(({ jobs, nextCursor }) => {
       if (!mounted.current) return
-      setRecent(jobs)
+      setRecent(items => [...items, ...jobs.filter(job => !items.some(item => item.id === job.id))])
+      setHistoryCursor(nextCursor)
       if (serial.current === 0 && jobs.length && (callbacks.current.canAutoRestore?.() ?? true)) {
         if (!finished(jobs[0])) callbacks.current.onRestorePrompt?.(jobs[0].prompt)
         selectJob(jobs[0])
       }
-    }).catch(e => { if (mounted.current) setError(e.message) })
+    }).catch(e => { if (mounted.current) setHistoryError(e.message) }).finally(() => { if (mounted.current) setHistoryLoading(false) })
     const timer = window.setInterval(() => { if (!connectionRequest.current) void refreshConnection() }, 20000)
     return () => { mounted.current = false; connectionSerial.current++; connectionRequest.current?.abort(); connectionRequest.current = null; window.clearInterval(timer) }
   }, [])
@@ -110,7 +114,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
         const { job } = await blenderRequest<{ job: GenerationJob }>('jobs/' + jobId, { signal: controller.signal })
         if (stopped) return
         setActive(job)
-        setRecent(items => [job, ...items.filter(item => item.id !== job.id)].slice(0, 10))
+        setRecent(items => [{ ...items.find(item => item.id === job.id), ...job }, ...items.filter(item => item.id !== job.id)])
         if (job.state === 'succeeded' && loaded.current !== jobId) {
           const bytes = await generatedModel(jobId, { signal: controller.signal })
           if (stopped) return
@@ -188,7 +192,7 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
       if (!mounted.current || serial.current !== requestSerial) return
       revision.current = nextRevision; loaded.current = ''
       setDisplayed(false); setFromHistory(false); setJobError(null); setActive(job)
-      setRecent(items => [job, ...items].slice(0, 10))
+      setRecent(items => [job, ...items.filter(item => item.id !== job.id)])
     } catch (e) { if (mounted.current) setError(e instanceof Error ? e.message : 'Nie udało się wysłać zlecenia. Spróbuj ponownie.') } finally { submissionLock.current = false; if (mounted.current) setSubmitting(false) }
   }
   async function cancel() {
@@ -207,6 +211,18 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
       const shown = await callbacks.current.onResult(bytes, job, nextRevision)
       if (mounted.current && serial.current === requestSerial) setDisplayed(shown)
     } catch (e) { setError((e as Error).message) }
+  }
+  async function loadHistory(older = false) {
+    if (historyLoading || historyLock.current) return
+    historyLock.current = true
+    setHistoryLoading(true); setHistoryError('')
+    try {
+      const { jobs, nextCursor } = await blenderRequest<GenerationHistory>('jobs' + (older && historyCursor ? '?before=' + encodeURIComponent(historyCursor) : ''))
+      if (!mounted.current) return
+      setRecent(items => [...new Map([...items, ...jobs].map(job => [job.id, job])).values()])
+      setHistoryCursor(nextCursor)
+    } catch (e) { if (mounted.current) setHistoryError((e as Error).message) }
+    finally { historyLock.current = false; if (mounted.current) setHistoryLoading(false) }
   }
   return <div className="remote-generator">
     <button className="new-model-button" disabled={busy || preparingPhotos} onClick={() => newModel()}>Nowy model · wyczyść formularz</button>
@@ -285,6 +301,23 @@ export function RemoteGenerator({ prompt, onStart, onResult, canAutoRestore, onR
       </div>}
     </div>}
     {error && <p className="studio-error" role="alert">{error}</p>}
-    {recent.filter(job => job.hasModel && job.id !== active?.id).length > 0 && <details className="generation-history"><summary>Poprzednie modele</summary>{recent.filter(job => job.hasModel && job.id !== active?.id).map(job => <button key={job.id} disabled={busy} onClick={() => selectJob(job)}>{job.prompt.slice(0, 100)}</button>)}</details>}
+    <section className="generation-history" aria-label="Twoje zapisane modele" aria-busy={historyLoading}>
+      <h4>Twoje zapisane modele</h4>
+      <p>Wyniki są tutaj także wtedy, gdy wymagają poprawek i nie zostały dodane do katalogu.</p>
+      <button disabled={historyLoading} onClick={() => void loadHistory()}>Odśwież listę modeli</button>
+      {historyLoading && <p role="status">Odczytuję zapisane modele…</p>}
+      {historyError && <p className="studio-error" role="alert">Nie udało się odczytać historii. {historyError}</p>}
+      {!historyLoading && !historyError && !recent.some(job => job.hasModel) && <p>Nie ma jeszcze zapisanych modeli.</p>}
+      <ul>{recent.filter(job => job.hasModel).sort((a, b) => (b.created || '').localeCompare(a.created || '') || b.id.localeCompare(a.id)).map(job => <li key={job.id}>
+        <strong>{job.prompt.slice(0, 180)}</strong>
+        <small>{job.created && <time dateTime={job.created}>{new Date(job.created).toLocaleString('pl-PL')}</time>} · {job.id.slice(0, 8)}</small>
+        {job.id === active?.id && displayed && <span>Otwarty w podglądzie</span>}
+        {job.modelStorage === 'missing' ? <p role="status">Zlecenie jest zapisane, ale nie znaleziono jego pliku GLB. Odśwież listę, aby sprawdzić ponownie.</p> : job.modelStorage === 'unavailable' ? <p role="status">Zapis plików jest chwilowo niedostępny.</p> : <>
+          <button disabled={busy} aria-label={'Otwórz model: ' + job.prompt} onClick={() => job.id === active?.id ? void openModel(job) : selectJob(job)}>Otwórz model 3D</button>
+          <a href={'/api/blender/jobs/' + job.id + '/model'} download aria-label={'Pobierz GLB: ' + job.prompt}>Pobierz GLB</a>
+        </>}
+      </li>)}</ul>
+      {historyCursor && <button disabled={historyLoading} onClick={() => void loadHistory(true)}>Pokaż starsze modele</button>}
+    </section>
   </div>
 }

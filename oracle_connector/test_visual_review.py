@@ -25,7 +25,7 @@ class VisualReviewTests(unittest.TestCase):
 
     def response(self,scene=None):
         value=deepcopy(scene or self.scene);value['parts'][0]['fan']['radius']=.34
-        return json.dumps({'action':'refine','issues':['Fan too large'],'scene':value})
+        return json.dumps({'action':'refine','issues':['Fan too large'],'changes':[{'path':'/parts/0/fan/radius','value_json':'0.34'}]})
 
     def test_reference_and_five_actual_views_are_sent_without_external_urls(self):
         content=review_content('Original request',[],self.folder,self.scene)
@@ -34,12 +34,12 @@ class VisualReviewTests(unittest.TestCase):
         self.assertTrue(all(x.startswith('data:image/png;base64,') for x in images))
 
     def test_refinement_uses_remaining_cumulative_budgets_and_retains_original(self):
-        generate=Mock(return_value=self.response());build=Mock()
-        clock=iter((10.,14.,20.,26.)).__next__
+        generate=Mock(side_effect=[self.response(),json.dumps({'action':'keep','issues':[],'changes':[]})]);build=Mock()
+        clock=iter((10.,14.,20.,26.,30.,33.)).__next__
         ai,blender,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,generate,build,550,840,clock=clock)
-        self.assertEqual(generate.call_args.args[2],50)
+        self.assertEqual(generate.call_args_list[0].args[2],50)
         build.assert_called_once_with(60)
-        self.assertEqual((ai,blender),(554,846));self.assertEqual(report['refinements'],1)
+        self.assertEqual((ai,blender),(557,846));self.assertEqual(report['refinements'],1)
         self.assertEqual((self.folder/'before-refinement/model.glb').read_bytes(),b'original-model.glb')
         self.assertFalse(report['likeness_verified'])
 
@@ -72,7 +72,7 @@ class VisualReviewTests(unittest.TestCase):
     def test_identity_scope_and_missing_views_stop_refinement(self):
         changed=deepcopy(self.scene);changed['parts'][0]['name']='different-person'
         build=Mock()
-        _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,lambda *_:self.response(changed),build)
+        _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,lambda *_:json.dumps({'action':'refine','issues':['wrong person'],'changes':[{'path':'/parts/0/name','value_json':json.dumps('different-person')}]}),build)
         self.assertEqual(report['status'],'original_retained');build.assert_not_called()
         (self.folder/'review/face.png').unlink();generate=Mock()
         refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,generate,build)
@@ -84,11 +84,11 @@ class VisualReviewTests(unittest.TestCase):
         self.assertEqual(report['status'],'budget_exhausted');generate.assert_not_called();build.assert_not_called()
 
     def test_keep_can_be_assessed_without_repeating_scene_or_rebuild_budget(self):
-        generate=Mock(return_value=json.dumps({'action':'keep','issues':['Requires new geometry'], 'scene':None}))
+        generate=Mock(return_value=json.dumps({'action':'keep','issues':['Requires new geometry'], 'changes':[]}))
         build=Mock()
         _,_,report=refine(self.scene,'Kobieta w sukni',[],self.folder,self.cancel,generate,build,600,899,ai_limit=840)
-        self.assertEqual(generate.call_args.args[2],240)
-        self.assertTrue(report['assessment_completed']);self.assertFalse(report['likeness_verified'])
+        self.assertEqual(generate.call_args.args[2],120)
+        self.assertTrue(report['assessment_completed']);self.assertFalse(report['likeness_verified']);self.assertFalse(report['accepted'])
         build.assert_not_called()
 
 

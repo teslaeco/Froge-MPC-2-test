@@ -1,0 +1,66 @@
+[
+  {
+    "file_name": "FORGE-model-r15.blend",
+    "file_id": "file_000000007c0881f58e7495ad9e8ed6ab",
+    "library_file_id": "libfile_8cc8d7eaa32c8191a70b85f85f2376cb",
+    "status": "succeeded",
+    "local_metadata_applied": true,
+    "sha256": "f2e48e5018044d7318361d09437bebd463a7119bdff4435365ef5b03956eb01e"
+  },
+  {
+    "file_name": "FORGE-model-r15.fbx",
+    "file_id": "file_0000000087c481f5bf65949ede9e4f77",
+    "library_file_id": "libfile_0ffefbe229948191a68529c6358d2afc",
+    "status": "succeeded",
+    "local_metadata_applied": true,
+    "sha256": "9a3d7c8b94987b8fa9f2c8cc75c6daaf2ce09c98f848a0cca0617ea5fd4efcd8"
+  },
+  {
+    "file_name": "FORGE-model-r15.glb",
+    "file_id": "file_00000000206081f59fabf9667bbdd2ec",
+    "library_file_id": "libfile_dcb6292616d481919c0612944f2b202d",
+    "status": "succeeded",
+    "local_metadata_applied": true,
+    "sha256": "7a4106f995f7510dfc782fd0c8e8d41d52fb4b37f585e549b1c5d59583e05488"
+  },
+  {
+    "file_name": "FORGE-r15-twarz-porownanie.png",
+    "file_id": "file_000000003a80822fbeac5989b1852e4d",
+    "library_file_id": "libfile_89b7badd6d4c8191b3d946e9d58efea9",
+    "status": "succeeded",
+    "local_metadata_applied": true,
+    "sha256": "b0b50e0f154b992941f40f5e66f04c54e3e587c5be44c9aa658047e7b4a5237c"
+  },
+  {
+    "file_name": "FORGE-r15-trzy-widoki.png",
+    "file_id": "file_0000000037bc822fa15ea30f22843420",
+    "library_file_id": "libfile_20ef659fdbc88191acfc3a12862e8ea2",
+    "status": "succeeded",
+    "local_metadata_applied": true,
+    "sha256": "166d9518bf1ff1dbce491c4709f7c77f72304ab66caab896c3018a9a15cfd1fb"
+  },
+  {
+    "file_name": "FORGE-r15-geometria.png",
+    "file_id": "file_00000000dcc8822fadf7a76696cf8e4c",
+    "library_file_id": "libfile_4f23287efb4881918b137da736f04000",
+    "status": "succeeded",
+    "local_metadata_applied": true,
+    "sha256": "d334cc0f1bb41c9e639d8fd966e01b266f68e1e0efe4dfe1f747a8b8afa7f5d6"
+  },
+  {
+    "file_name": "FORGE-r15-render-HQ.png",
+    "file_id": "file_00000000cef081f6a92a61fe2e72ea77",
+    "library_file_id": "libfile_79b59d905a8c8191b651386878ba7a25",
+    "status": "succeeded",
+    "local_metadata_applied": true,
+    "sha256": "a31d9367f6564a9c4ccca1d446180f9bf1352c87fd4e42764d9a8453b54aac99"
+  },
+  {
+    "file_name": "RAPORT-r15.md",
+    "file_id": "file_00000000763881f68bc06f7277ea4a8e",
+    "library_file_id": "libfile_786a04bb0ce08191b20295d9a57ac853",
+    "status": "succeeded",
+    "local_metadata_applied": true,
+    "sha256": "69e344303cf77cdd01217b85d0e8f40e32f33cdd2b90413ee3c55c4169b50d2b"
+  }
+]

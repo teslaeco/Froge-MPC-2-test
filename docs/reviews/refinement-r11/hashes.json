@@ -1,0 +1,22 @@
+{
+  "FORGE-r11-trzy-widoki.png": {
+    "bytes": 1134606,
+    "sha256": "8505d077d47d4080b3794d98770799c9580861698b2db5cd0482af29b188821d"
+  },
+  "FORGE-r11-twarz.png": {
+    "bytes": 1119453,
+    "sha256": "c6f495ce70ecfe548904108ed7c5ae9e26641fb23a22a8b4ab38768daf72d8e8"
+  },
+  "FORGE-model-r11-2000k.fbx": {
+    "bytes": 126988700,
+    "sha256": "9ae1b0d4c3865c3b4acf859c7a5c7a7ba4a6cf7c2b12b7c6b02619e0de4a71dd"
+  },
+  "FORGE-model-r11-2000k.blend": {
+    "bytes": 130258805,
+    "sha256": "d31349856708960f0c33250d57ac21bff60ed6e55b6ab7d7186aaece0d7c0ca7"
+  },
+  "FORGE-model-r11-2000k.glb": {
+    "bytes": 123587964,
+    "sha256": "4ba2fe4d533a5ebf66661a5ef3e7e8f79d1fd8ac4be31e61048003cf0840e27a"
+  }
+}

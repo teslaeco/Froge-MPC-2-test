@@ -1,0 +1,44 @@
+[
+  {
+    "file_name": "FORGE-r12-przed-po.png",
+    "library_file_id": "libfile_086062648cac8191b7241c15bc72a0ab",
+    "file_id": "file_00000000325881f58c22d85d7d2d39bb",
+    "status": "succeeded"
+  },
+  {
+    "file_name": "FORGE-r12-geometria.png",
+    "library_file_id": "libfile_d00a6f85dd1c8191915be10a5782dac1",
+    "file_id": "file_00000000f91081f59ffe447dc3890f07",
+    "status": "succeeded"
+  },
+  {
+    "file_name": "FORGE-r12-trzy-widoki.png",
+    "library_file_id": "libfile_8a649e73e7188191a52fb810dd6f9ca8",
+    "file_id": "file_00000000f7dc81f5adbd4e56d914616b",
+    "status": "succeeded"
+  },
+  {
+    "file_name": "FORGE-model-r12.fbx",
+    "library_file_id": "libfile_0fd3dc06eac88191a31d52daff838b8f",
+    "file_id": "file_0000000029a881f583339513fc98e03b",
+    "status": "succeeded"
+  },
+  {
+    "file_name": "FORGE-model-r12.blend",
+    "library_file_id": "libfile_b8b304cdfd48819184442d2e47a4aead",
+    "file_id": "file_000000002ab881f5953a7e430f7f3339",
+    "status": "succeeded"
+  },
+  {
+    "file_name": "FORGE-model-r12.glb",
+    "library_file_id": "libfile_cf2aba0bd3888191be713c2d28da0894",
+    "file_id": "file_000000000c5881f594442f1306dd85be",
+    "status": "succeeded"
+  },
+  {
+    "file_name": "FORGE-analiza-r12.md",
+    "library_file_id": "libfile_407b8ac58cb88191a1c75518b44cedfd",
+    "file_id": "file_00000000f8d081f5b1e2d7c469f5e422",
+    "status": "succeeded"
+  }
+]

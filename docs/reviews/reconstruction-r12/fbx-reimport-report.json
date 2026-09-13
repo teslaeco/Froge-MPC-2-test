@@ -1,0 +1,23 @@
+{
+  "fbx_reimport_verified": true,
+  "triangles": 1955886,
+  "mesh_objects": 417,
+  "bounds": [
+    [
+      -0.35902881622314453,
+      -0.1666141152381897,
+      0.5252182483673096
+    ],
+    [
+      0.35902881622314453,
+      0.2860009968280792,
+      1.7456308603286743
+    ]
+  ],
+  "missing_textures": [],
+  "meshes_with_uv": 417,
+  "renders": "actual reimported FBX",
+  "wave_guides_retained": true,
+  "likeness_accepted": false,
+  "print_ready": false
+}

@@ -1,8 +1,57 @@
 import { afterEach, expect, it, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { RemoteGenerator } from '../blender/RemoteGenerator'
 import { blenderRequest } from '../blender/client'
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers() })
+
+it('shows the current model, opens an older saved GLB and retains paged results across a fresh visit without generating', async () => {
+  const wooden = {id:'26daac02-a948-4c5e-88ba-b6757a385eac',prompt:'Drewniana postać',state:'succeeded',detail:'Wymaga poprawek',hasModel:true,modelStorage:'available',created:'2026-09-13T16:36:57.168Z'}
+  const polyhedron = {...wooden,id:'2000d271-08d1-4123-b014-137bfcaecaaf',prompt:'Osiemnastościan',created:'2026-09-13T15:07:39.724Z'}
+  const cursor = wooden.created + '|' + wooden.id
+  const onResult = vi.fn(async () => true)
+  const fetcher = vi.fn(async (url, _init) => {
+    const path = String(url)
+    if (path.endsWith('/connection')) return Response.json({connected:false,ready:false})
+    if (path.endsWith('/jobs')) return Response.json({jobs:[wooden],nextCursor:cursor})
+    if (path.includes('?before=')) return Response.json({jobs:[polyhedron]})
+    if (path.endsWith('/model')) return new Response(new Uint8Array([1,2,3]),{headers:{'Content-Type':'model/gltf-binary'}})
+    if (path.endsWith('/exports')) return Response.json({files:[]})
+    return Response.json({job:path.includes(polyhedron.id)?polyhedron:wooden})
+  })
+  vi.stubGlobal('fetch',fetcher)
+  let view = render(<RemoteGenerator prompt="" onStart={()=>1} onResult={onResult}/>)
+  await screen.findByText('Otwarty w podglądzie')
+  const history = within(screen.getByRole('region',{name:'Twoje zapisane modele'}))
+  expect(history.getByRole('button',{name:'Otwórz model: Drewniana postać'})).toBeVisible()
+  fireEvent.click(history.getByRole('button',{name:'Pokaż starsze modele'}))
+  const older = await history.findByRole('button',{name:'Otwórz model: Osiemnastościan'})
+  expect(fetcher.mock.calls.some(([url])=>String(url)==='/api/blender/jobs?before='+encodeURIComponent(cursor))).toBe(true)
+  expect(history.getByRole('link',{name:'Pobierz GLB: Osiemnastościan'})).toHaveAttribute('href',`/api/blender/jobs/${polyhedron.id}/model`)
+  fireEvent.click(older)
+  await waitFor(()=>expect(onResult).toHaveBeenLastCalledWith(expect.any(ArrayBuffer),expect.objectContaining({id:polyhedron.id}),1))
+  expect(history.getByRole('button',{name:'Otwórz model: Drewniana postać'})).toBeVisible()
+  view.unmount()
+  view = render(<RemoteGenerator prompt="" onStart={()=>1} onResult={onResult}/>)
+  fireEvent.click(await screen.findByRole('button',{name:'Pokaż starsze modele'}))
+  await screen.findByRole('button',{name:'Otwórz model: Osiemnastościan'})
+  expect(fetcher.mock.calls.every(([,init])=>!init?.method || init.method==='GET')).toBe(true)
+  view.unmount()
+})
+
+it('keeps a missing-file record visible and distinguishes failed history loading from an empty archive', async () => {
+  let available = false
+  const fetcher = vi.fn(async url => String(url).endsWith('/connection') ? Response.json({connected:false,ready:false}) : available ? Response.json({jobs:[{id:'2000d271-08d1-4123-b014-137bfcaecaaf',prompt:'Osiemnastościan',state:'succeeded',hasModel:true,modelStorage:'missing'}]}) : Response.json({error:'Chwilowo niedostępne'},{status:503}))
+  vi.stubGlobal('fetch',fetcher)
+  render(<RemoteGenerator prompt="" onStart={()=>1} onResult={vi.fn()} canAutoRestore={()=>false}/>)
+  expect(await screen.findByRole('alert')).toHaveTextContent('Nie udało się odczytać historii')
+  expect(screen.queryByText('Nie ma jeszcze zapisanych modeli.')).not.toBeInTheDocument()
+  available = true
+  fireEvent.click(screen.getByRole('button',{name:'Odśwież listę modeli'}))
+  await screen.findByText('Osiemnastościan')
+  expect(screen.getByText(/nie znaleziono jego pliku GLB/)).toBeVisible()
+  expect(screen.queryByRole('button',{name:'Otwórz model: Osiemnastościan'})).not.toBeInTheDocument()
+  expect(screen.queryByRole('link',{name:'Pobierz GLB: Osiemnastościan'})).not.toBeInTheDocument()
+})
 
 it('recovers a texture failure only after the worker confirms the patch and submits a saved plan without photos or AI', async () => {
   const failed = { id: '12345678-1234-4234-8234-123456789abc', prompt: 'Dziewczyna z mojego zdjęcia', state: 'failed', detail: 'ValueError: Use at most 8 materials and 8 images.', hasModel: false, referencePhotos: [{ name: 'front.jpg', view: 'front', url: '/private-photo' }] }
@@ -85,7 +134,7 @@ it('keeps a completed model in history without filling the new prompt or submitt
  render(<RemoteGenerator prompt="" onStart={()=>1} onResult={onResult} onRestorePrompt={restore} onReusePrompt={reuse}/>)
  await screen.findByText('Zapisany model w podglądzie')
  expect(restore).not.toHaveBeenCalled()
- expect(screen.getByText(job.prompt).closest('details')).not.toHaveAttribute('open')
+ expect(screen.getByText('Opis tego zlecenia').closest('details')).not.toHaveAttribute('open')
  expect(screen.getByText('Wpisz opis albo dodaj zdjęcia.')).toBeInTheDocument()
  fireEvent.click(screen.getByRole('button',{name:'Edytuj opis tego modelu'}))
  expect(reuse).toHaveBeenCalledWith(job.prompt)
@@ -101,7 +150,7 @@ it('does not replace an explicitly selected example with a late history response
  render(<RemoteGenerator prompt="" onStart={start} onResult={result} canAutoRestore={()=>!explicit} onRestorePrompt={restore}/>)
  await screen.findByText('Opis → scena · lokalne AI')
  explicit=true;finishHistory(Response.json({jobs:[job]}))
- await screen.findByText('Poprzednie modele')
+ await screen.findByRole('heading', { name: 'Twoje zapisane modele' })
  expect(start).not.toHaveBeenCalled();expect(result).not.toHaveBeenCalled();expect(restore).not.toHaveBeenCalled()
  expect(remote.mock.calls.some(([url])=>String(url).endsWith('/model'))).toBe(false)
 })

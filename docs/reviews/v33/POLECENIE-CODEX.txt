@@ -1,0 +1,22 @@
+Wykonaj poprawioną rekonstrukcję referencji pół-kobieta / pół-czaszka w FORGE MCP v33 (Astra + Codex + Blender MCP). Zachowaj poprzedni wynik. Nie zwiększaj budżetu ani nie zmieniaj dostawcy AI.
+
+REFERENCJA
+Poprzednie wadliwe zlecenie: 49ac337d-0a00-4c94-96ef-d8dfa716d435, opis: „Zrób mi zniej model 3D i teksturę wszystko wysoka jakość.” Użyj dołączonej oryginalnej grafiki jako wzorca. Jeśli dołączono też zrzuty wadliwego modelu, pokazują BŁĘDY, nie pożądany wygląd. Nie próbuj pobierać starego zlecenia narzędziami, których nie udostępniono.
+Po LEWEJ stronie obrazu: żywa, uśmiechnięta twarz kobiety, brązowe oko, brwi i rzęsy, jasna skóra, długie falujące brązowe włosy i kremowa suknia z odkrytymi ramionami. Po PRAWEJ: połowa czaszki, pusty głęboki oczodół, otwór nosowy, kość policzkowa, szczęka i zęby, ciemna strona sukni. To jedna spójna głowa, a nie dwie nałożone maski. Plecy i niewidoczny dół są rekonstrukcją.
+
+ZASADY BUDOWY W V33
+1. Zachowaj zwykłą kontrolę dwóch oczu i rzęs dla człowieka. Dla jawnie zamierzonej czaszki zastosuj portrait.eye_states: left=empty_socket, right=present, evidence opisujący prawą stronę obrazu. Są to strony ANATOMICZNE postaci. Nie obniżaj wymagań po błędzie i nie usuwaj żywego oka.
+2. Nie dopasowuj ludzkich landmarków powiek i tęczówek do części kostnej. Zachowaj oryginalne zdjęcie, UV i projekcję tekstury na widoczne powierzchnie.
+3. Baza z pominiętym okiem nie jest gotową czaszką. Wyrzeźbij oczodół i jego obrzeże; żadnej czarnej kuli, dysku ani wypukłej imitacji zagłębienia. Odczytaj report.reference_socket_checks. Nie zatwierdzaj wyniku, jeżeli kontrola promieni nadal wykrywa przesłonięcie.
+
+NAPRAWA GEOMETRII
+4. Dopasuj kamerę i proporcje sylwetki, szerokość i wysokość głowy, położenie oczu, nosa i ust do zdjęcia. Najpierw napraw duże różnice kształtu.
+5. Połącz połówki czoła, nosa, ust i brody ciągłą powierzchnią bez schodków, dziur, zdublowanych warg ani ostrych występów. Zachowaj naturalny uśmiech żywej części i anatomiczną ciągłość szyi z barkami.
+6. Zęby ułóż w łukach szczęki i żuchwy. Rozróżnij siekacze, kły i dalsze zęby, ich rozmiary, nachylenie i niewielkie odstępy. Usuń regularną siatkę identycznych, zbyt wielkich brył.
+7. Odtwórz falujące pasma, przedziałek i loki opadające na ramiona zgodnie z referencją. Usuń płaskie proste płyty, odstające pasy i szczelinę na karku. Pasma mają wychodzić ze skóry głowy i układać się przestrzennie.
+8. Zachowaj podział kremowej i ciemnej sukni, odsłonięte ramiona, dopasowany stanik, rękawy i marszczenia. Rekwizyt taśmy filmowej ma mieć cienką geometrię i nie przecinać dłoni ani rękawa. Nie przenoś lasu i księżyca na teksturę skóry.
+
+WYKONANIE I OCENA
+9. Użyj build_model, inspect_render i edit_model na rzeczywistej geometrii. Obejrzyj końcowy przód, twarz, profil, trzy czwarte i tył oraz geometrię bez tekstury. Porównaj osobno sylwetkę, żywe oko, oczodół, nos, szew połówki, usta/zęby, włosy i suknię. Tekstura 4K ani dodatkowe podziały siatki nie są naprawą błędnych proporcji.
+10. Zachowaj limity 5 budów, 32 tur, 96000 tokenów i 1800 sekund. Bez automatycznego kupowania kolejnych prób. Po błędzie popraw konkretną przyczynę, nie powtarzaj identycznego wywołania.
+11. Zapisz BLEND, GLB z UV i teksturami oraz dostępne FBX/OBJ. Ponownie otwórz eksport. Podaj faktyczne rozdzielczości obrazów i pozostałe różnice. finish_model accepted=false, jeśli cechy referencji nadal się nie zgadzają. Nie przedstawiaj testowej bazy, ilustracji ani samego eksportu jako udanej rekonstrukcji.

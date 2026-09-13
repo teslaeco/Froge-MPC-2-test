@@ -1,0 +1,419 @@
+{
+  "textures": [
+    {
+      "path": "textures/00-Observed_original_face-ab38445e406a.png",
+      "bytes": 2812287,
+      "sha256": "ab38445e406ac6e97fa41fe818e2e8c8eb80ba301aa1d0986ecd44330691bd2c",
+      "image": "Observed_original_face",
+      "size": [
+        899,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/01-R11-chestnut-fine-hair-BaseColor-2K-6bce28947d8c.png",
+      "bytes": 2347523,
+      "sha256": "6bce28947d8ce1d7196993406cf758ba8ae15c6882a781496529548d01d79df3",
+      "image": "R11 chestnut fine hair BaseColor 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/02-R11-chestnut-fine-hair-Normal-2K-0e48bb8201e7.png",
+      "bytes": 1068201,
+      "sha256": "0e48bb8201e78666df50c52cea505be110a0d86c74b7eaa72b6e40fbdfab6080",
+      "image": "R11 chestnut fine hair Normal 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/03-R11-chestnut-fine-hair-Roughness-2K-de87e5af276a.png",
+      "bytes": 2824745,
+      "sha256": "de87e5af276a00506cc731ac8fc5a4e8c56e8d79ca52f8ec8b08be1f4130a7f3",
+      "image": "R11 chestnut fine hair Roughness 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/04-R11-observed-face-microrelief-2K-c4cf7190adb2.png",
+      "bytes": 6699735,
+      "sha256": "c4cf7190adb2d0e1771649c5bd314757e8d2862dff536501f7ff90efeedc7291",
+      "image": "R11 observed face microrelief 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/05-R11-warm-skin-BaseColor-2K-ffeb6d1ddae1.png",
+      "bytes": 3347611,
+      "sha256": "ffeb6d1ddae1378b37a8e44f52a91a78aecfc6ab5b850fc2d7c970d7fe4e7a71",
+      "image": "R11 warm skin BaseColor 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/06-R11-warm-skin-BaseColor-2K-001-ffeb6d1ddae1.png",
+      "bytes": 3347611,
+      "sha256": "ffeb6d1ddae1378b37a8e44f52a91a78aecfc6ab5b850fc2d7c970d7fe4e7a71",
+      "image": "R11 warm skin BaseColor 2K.001",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/07-R11-warm-skin-BaseColor-2K-003-ffeb6d1ddae1.png",
+      "bytes": 3347611,
+      "sha256": "ffeb6d1ddae1378b37a8e44f52a91a78aecfc6ab5b850fc2d7c970d7fe4e7a71",
+      "image": "R11 warm skin BaseColor 2K.003",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/08-R11-warm-skin-Normal-2K-34c060cb2e40.png",
+      "bytes": 7837988,
+      "sha256": "34c060cb2e40b156ade2f68561ad7df965a1e9a9ed6bb2cec5743bb280502b67",
+      "image": "R11 warm skin Normal 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/09-R11-warm-skin-Normal-2K-001-34c060cb2e40.png",
+      "bytes": 7837988,
+      "sha256": "34c060cb2e40b156ade2f68561ad7df965a1e9a9ed6bb2cec5743bb280502b67",
+      "image": "R11 warm skin Normal 2K.001",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/10-R11-warm-skin-Normal-2K-003-34c060cb2e40.png",
+      "bytes": 7837988,
+      "sha256": "34c060cb2e40b156ade2f68561ad7df965a1e9a9ed6bb2cec5743bb280502b67",
+      "image": "R11 warm skin Normal 2K.003",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/11-R11-warm-skin-Roughness-2K-d3af9801f601.png",
+      "bytes": 2824635,
+      "sha256": "d3af9801f60176dd11b043f154608909451228a6bb11f7cb4667fe280a29bcd2",
+      "image": "R11 warm skin Roughness 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/12-R11-warm-skin-Roughness-2K-001-d3af9801f601.png",
+      "bytes": 2824635,
+      "sha256": "d3af9801f60176dd11b043f154608909451228a6bb11f7cb4667fe280a29bcd2",
+      "image": "R11 warm skin Roughness 2K.001",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/13-R11-warm-skin-Roughness-2K-003-d3af9801f601.png",
+      "bytes": 2824635,
+      "sha256": "d3af9801f60176dd11b043f154608909451228a6bb11f7cb4667fe280a29bcd2",
+      "image": "R11 warm skin Roughness 2K.003",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/14-R11-weathered-bone-BaseColor-2K-a8e4a359ef95.png",
+      "bytes": 4042589,
+      "sha256": "a8e4a359ef95de9d27c6309ebbf88fbbd60853bab5cebe3e30cf7c92203ece47",
+      "image": "R11 weathered bone BaseColor 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/15-R11-weathered-bone-BaseColor-2K-001-a8e4a359ef95.png",
+      "bytes": 4042589,
+      "sha256": "a8e4a359ef95de9d27c6309ebbf88fbbd60853bab5cebe3e30cf7c92203ece47",
+      "image": "R11 weathered bone BaseColor 2K.001",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/16-R11-weathered-bone-BaseColor-2K-003-a8e4a359ef95.png",
+      "bytes": 4042589,
+      "sha256": "a8e4a359ef95de9d27c6309ebbf88fbbd60853bab5cebe3e30cf7c92203ece47",
+      "image": "R11 weathered bone BaseColor 2K.003",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/17-R11-weathered-bone-Normal-2K-e135e1fab10b.png",
+      "bytes": 9404867,
+      "sha256": "e135e1fab10bc431d040f9750f78abc5385653d77e2e886bfa8ffa84c30c3afe",
+      "image": "R11 weathered bone Normal 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/18-R11-weathered-bone-Normal-2K-001-e135e1fab10b.png",
+      "bytes": 9404867,
+      "sha256": "e135e1fab10bc431d040f9750f78abc5385653d77e2e886bfa8ffa84c30c3afe",
+      "image": "R11 weathered bone Normal 2K.001",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/19-R11-weathered-bone-Normal-2K-003-e135e1fab10b.png",
+      "bytes": 9404867,
+      "sha256": "e135e1fab10bc431d040f9750f78abc5385653d77e2e886bfa8ffa84c30c3afe",
+      "image": "R11 weathered bone Normal 2K.003",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/20-R11-weathered-bone-Roughness-2K-6114a48ff51b.png",
+      "bytes": 2825052,
+      "sha256": "6114a48ff51bd347c1087796d17bfb4726a90a9312e2d93d60a1e03c9d1f7ee9",
+      "image": "R11 weathered bone Roughness 2K",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/21-R11-weathered-bone-Roughness-2K-001-6114a48ff51b.png",
+      "bytes": 2825052,
+      "sha256": "6114a48ff51bd347c1087796d17bfb4726a90a9312e2d93d60a1e03c9d1f7ee9",
+      "image": "R11 weathered bone Roughness 2K.001",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/22-R11-weathered-bone-Roughness-2K-003-6114a48ff51b.png",
+      "bytes": 2825052,
+      "sha256": "6114a48ff51bd347c1087796d17bfb4726a90a9312e2d93d60a1e03c9d1f7ee9",
+      "image": "R11 weathered bone Roughness 2K.003",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/23-R13-black-fine-twill-colour-a3fd6af82125.png",
+      "bytes": 2107085,
+      "sha256": "a3fd6af82125fc4176fdecfbde37261a59bb3de05b1f4283703d57c8e0888a02",
+      "image": "R13 black fine twill colour",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/24-R13-black-fine-twill-roughness-bdaa57ca0593.png",
+      "bytes": 3912700,
+      "sha256": "bdaa57ca059388f3dd90976160fe9e1fdb73ed966a501dc0e17959f429c104fc",
+      "image": "R13 black fine twill roughness",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/25-R13-black-fine-twill-tangent-weave-9a57cdcf252c.png",
+      "bytes": 3798966,
+      "sha256": "9a57cdcf252c444efad5e24bc5c153cf5001f4a0885c74e04601bad742cd4d9f",
+      "image": "R13 black fine twill tangent weave",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/26-R13-face-feature-roughness-e27272e2d574.png",
+      "bytes": 90971,
+      "sha256": "e27272e2d574b2707627e9c53eb82b7d41981774a78622c6298a87fb4e472fce",
+      "image": "R13 face feature roughness",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/27-R13-ivory-linen-silk-colour-b75bbf85dd63.png",
+      "bytes": 5212360,
+      "sha256": "b75bbf85dd638e17ee361880bf5e6e64b62d886e4ca1b0d3cec001b816967961",
+      "image": "R13 ivory linen silk colour",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/28-R13-ivory-linen-silk-roughness-9f0237e1b3b0.png",
+      "bytes": 3913006,
+      "sha256": "9f0237e1b3b04a380deae3a71c59044712d224dff907e79145ac5f922ec13112",
+      "image": "R13 ivory linen silk roughness",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/29-R13-ivory-linen-silk-tangent-weave-9a57cdcf252c.png",
+      "bytes": 3798966,
+      "sha256": "9a57cdcf252c444efad5e24bc5c153cf5001f4a0885c74e04601bad742cd4d9f",
+      "image": "R13 ivory linen silk tangent weave",
+      "size": [
+        2048,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/30-R13-latest-supplied-reference-550d4101ba27.png",
+      "bytes": 2471170,
+      "sha256": "550d4101ba27558ce3c93904103509536693cda7df74cfa0978a35b58df1772d",
+      "image": "R13 latest supplied reference",
+      "size": [
+        899,
+        2048
+      ],
+      "pixels_resampled": false
+    },
+    {
+      "path": "textures/31-anatomical-dedicated-iris-d08a5ec559c1.png",
+      "bytes": 45594,
+      "sha256": "d08a5ec559c1bc7ac6d5155bf2f9368e9b01eb38146ebd07f0b715f2b5f3b3b1",
+      "image": "anatomical-dedicated-iris",
+      "size": [
+        512,
+        512
+      ],
+      "pixels_resampled": false
+    }
+  ],
+  "uv_order_changes": [
+    {
+      "object": "anatomical-eye-r",
+      "primary": "ExportColourUV",
+      "per_face_colour_uvs_consolidated": true,
+      "other_uv_channels_preserved": true,
+      "all_shader_uv_bindings_verified": false
+    }
+  ],
+  "baked_base_colors": [],
+  "uv_binding_limitations": [],
+  "triangles": 1955886,
+  "maps": [
+    "R13 ivory linen silk colour",
+    "R13 ivory linen silk roughness",
+    "R13 ivory linen silk tangent weave",
+    "R13 black fine twill colour",
+    "R13 black fine twill roughness",
+    "R13 black fine twill tangent weave",
+    "R13 face feature roughness"
+  ],
+  "cloth_uv": [
+    {
+      "object": "R9_tailored_split_gown",
+      "uv_repeat": [
+        6.0,
+        3.35
+      ],
+      "tile_m": 0.2
+    },
+    {
+      "object": "R9_gathered_sleeve_-1",
+      "uv_repeat": [
+        1.8,
+        2.85
+      ],
+      "tile_m": 0.2
+    },
+    {
+      "object": "R9_gathered_sleeve_1",
+      "uv_repeat": [
+        1.8,
+        2.85
+      ],
+      "tile_m": 0.2
+    }
+  ],
+  "face_region_polygons": {
+    "skin": 415095,
+    "bone": 208759
+  },
+  "reference_registration": {
+    "scale": 1.3399541385579454,
+    "translate_x": -163.50778090604848,
+    "translate_y": -140.0901660043437,
+    "fit_rgb_rmse": 0.008506359611463999,
+    "samples": 4524,
+    "source": "same artwork zoomed reference; no invented facial detail"
+  },
+  "geometry_changed": false,
+  "wave_guides_retained": true,
+  "likeness_accepted": false,
+  "reference_lighting_removed": false
+}

@@ -64,3 +64,4 @@ class ReferenceQualityTests(unittest.TestCase):
         for region in ((slice(5,15),slice(15,25)),(slice(26,40),slice(15,30))):
             changed=pixels.copy();changed[region]=[.9,.1,.8]
             self.assertFalse(compare(changed,template)['matched'])
+

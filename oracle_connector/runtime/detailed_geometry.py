@@ -240,7 +240,8 @@ def person(p, materials, mesh_object, tube, ellipsoid, join_meshes):
     floor=min(v.z for v in bounds);factor=p['height']/(max(v.z for v in bounds)-floor)
     grouped={}
     for obj in parts:
-        preserve=any(obj.get(key) for key in ('anatomical_head','anatomical_hand','anatomical_eye','anatomical_nail'))
+        preserve=('upper_lashes_per_eye' in obj or
+                  any(obj.get(key) for key in ('anatomical_head','anatomical_hand','anatomical_eye','anatomical_nail')))
         grouped.setdefault(obj.name if preserve else obj.data.materials[0].name,[]).append(obj)
     result=[]
     for material,group in grouped.items():

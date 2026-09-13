@@ -122,3 +122,4 @@ def export_textures(images, folder):
     return {'revision': 2, 'requested_max_edge': limit, 'textures': report, 'memory_budget': budget,
             'upscaling_used': False, 'likeness_verified': False,
             'note': '4K/8K is a maximum texture edge, not recovered detail or render resolution.'}
+

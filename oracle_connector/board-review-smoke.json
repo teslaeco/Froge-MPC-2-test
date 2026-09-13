@@ -1,0 +1,27 @@
+{
+  "blender_version": "4.3.0",
+  "execution": "actual_Blender_CPU",
+  "threads": 2,
+  "cases": [
+    {
+      "levels": 1,
+      "cells": 64,
+      "geometry_and_material_checks": "passed",
+      "wrong_material_detected": true,
+      "missing_cell_detected": true,
+      "missing_spec_unverified": true,
+      "texture_pixels_verified": false
+    },
+    {
+      "levels": 8,
+      "cells": 512,
+      "geometry_and_material_checks": "passed",
+      "wrong_material_detected": true,
+      "missing_cell_detected": true,
+      "missing_spec_unverified": true,
+      "texture_pixels_verified": false
+    }
+  ],
+  "renders_created": false,
+  "weights_trained": false
+}

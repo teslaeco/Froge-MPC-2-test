@@ -1,0 +1,12 @@
+{
+  "filename": "E18-HQ-2048x2560.png",
+  "bytes": 6647169,
+  "sha256": "6e314d224e141304dc898c94e8d9075f0ebaa2ab4c01398a4e3ae51155277a06",
+  "dimensions": [
+    2048,
+    2560
+  ],
+  "samples": 32,
+  "source_fbx_sha256": "28673fc400228a756d80128b89885ff7f0a017d857f517058cfb1bc689b7ffb6",
+  "actual_fbx_render": true
+}

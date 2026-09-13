@@ -1,0 +1,28 @@
+# FORGE — R15, rekonstrukcja do oceny
+
+Źródło odniesienia: Screenshot_20260912-131939(2).png. Zachowano poprzedni model R14. Nie wdrażano zmian strony ani Oracle.
+
+## Zmieniona geometria
+- Obniżono górną część czaszki i nieznacznie poszerzono skronie. Zmiana jest stopniowa; nie zwiększano liczby trójkątów płaskim podziałem powierzchni.
+- Przebudowano przejście otworu nosowego, używając rzeczywistej, połączonej pętli 538 krawędzi. Dodano pierścienie przejścia i wnętrze otworu.
+- Żywe oko ma osobną kulistą geometrię, wypukłą tęczówkę z promienistym detalem, źrenicę i otwór w powiece. Po pierwszym renderze cofnięto oko i zwiększono tęczówkę. Zachowano oraz przyciemniono oko wewnątrz oczodołu szkieletowego, zgodnie z poleceniem użytkownika.
+- Skorygowano nos, kącik uśmiechu, obrys po stronie czaszki, ułożenie tułowia i objętość biustu pod suknią. Zmiana objęła ubranie razem z ciałem.
+- Grube prowadnice fryzury zmniejszono do 43% promienia i przyciemniono. Dodano 4992 drobne, zwężające się włókna długich włosów oraz osobną geometrię nasady. Zachowano falisty kierunek pasm.
+
+Końcowa siatka: **6 419 299 trójkątów**, w tym geometria drobnych włosów. To przekracza wcześniejszy cel 2 mln; nie jest to wariant zoptymalizowany do telefonu. Rzeczywista liczba jest podana w raporcie eksportu, zamiast nazywania modelu „2M”.
+
+Dodatkowo lokalnie wygładzono wierzchołki nosa, kącika ust i brzegu powieki, zachowując połączenia siatki oraz UV. Widok neutralnego materiału ujawnia, że drobne załamania przy otworze nosowym i nierówna krawędź ust nie zostały całkowicie usunięte.
+
+## Ocena wizualna i ograniczenia
+To rzeczywisty edytowalny model, ale NIE potwierdzono wiernego, fotorealistycznego odwzorowania całej referencji. Rysy, powieki, przejście głowy w szyję i układ nasady włosów wciąż odbiegają od zdjęcia. Delikatny uśmiech oryginału nie jest odtworzony w pełni. Materiał twarzy korzysta z wcześniejszej projekcji referencji; część cieni pozostaje zapisana w kolorze i może wyglądać inaczej w nowym oświetleniu. Tkanina i ułożenie włosów pozostają bardziej regularne niż w oryginale. Większa liczba trójkątów nie jest dowodem podobieństwa.
+
+Widok z tyłu i fragmenty niewidoczne na referencji są interpretacją. Model kończy się poniżej tułowia; nie jest pełną figurą z nogami. Nie wykonano kwalifikacji do druku ani kontroli wszystkich przenikań. Osobne części pozostają edytowalne.
+
+## Podglądy
+Porównanie R14/R15 ma tę samą kamerę, rozdzielczość i oświetlenie. Przód, lewy bok, tył i widok geometrii pochodzą z ponownie zaimportowanego FBX. Dodatkowy render HQ ma 2048 × 2560 px i wykorzystuje ten sam FBX, Cycles, limit 128 próbek z adaptacyjnym próbkowaniem i odszumianiem. Nie użyto generatora ilustracji ani retuszu do udawania lepszego modelu. Render HQ jest innym kadrem i oświetleniem, nie osobną bardziej szczegółową siatką.
+
+Kontrola techniczna i sumy SHA-256 znajdują się w zapisanych raportach projektu. Brak akceptacji podobieństwa nie blokuje pobrania wersji roboczej.
+
+## Wynik ponownego importu FBX
+
+Potwierdzono 6 419 299 trójkątów, 686 obiektów siatki, UV na wszystkich 686 siatkach, dwie gałki oczne i brak brakujących danych obrazów tekstur. SHA-256 FBX: `9a3d7c8b94987b8fa9f2c8cc75c6daaf2ce09c98f848a0cca0617ea5fd4efcd8`. Te kontrole potwierdzają integralność eksportu, nie podobieństwo do referencji.

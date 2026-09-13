@@ -1,0 +1,64 @@
+*** Begin Patch
+*** Update File: src/blender/RemoteGenerator.tsx
+@@
+   function selectJob(job: GenerationJob) {
+     serial.current++
++    statusSerial.current++
+     revision.current = callbacks.current.onStart()
+@@
+   function newModel(preservePrompt = false) {
+     if (busy) return
+     serial.current++
++    statusSerial.current++
+     loaded.current = ''
+@@
+     const jobId = active.id, visualRevision = revision.current
++    // Starting another action must stop this job's old timer/online handler,
++    // even while its replacement POST has not returned a new active.id yet.
++    const actionSerial = serial.current
++    const staleAction = () => stopped || actionSerial !== serial.current
+     async function poll() {
+-      if (stopped || inFlight) return
++      if (staleAction() || inFlight) return
+@@
+         const { job } = await blenderRequest<{ job: GenerationJob }>('jobs/' + jobId, { signal: controller.signal })
+-        if (stopped || requestSerial !== statusSerial.current) return
++        if (staleAction() || requestSerial !== statusSerial.current) return
+@@
+           const bytes = await generatedModel(jobId, { signal: controller.signal })
+-          if (stopped || requestSerial !== statusSerial.current) return
++          if (staleAction() || requestSerial !== statusSerial.current) return
+           const shown = await callbacks.current.onResult(bytes, job, visualRevision)
+-          if (stopped) return
++          if (staleAction() || requestSerial !== statusSerial.current) return
+           loaded.current = jobId; setDisplayed(shown)
+@@
+       } catch (e) {
+-        if (stopped) return
++        if (staleAction() || requestSerial !== statusSerial.current) return
+         setJobError(e as Error)
+         if (e instanceof BlenderRequestError && e.retryable) nextPoll = 10000
+       } finally {
+         inFlight = false
+-        if (!stopped && nextPoll) timer = window.setTimeout(() => void poll(), nextPoll)
++        if (!staleAction() && requestSerial === statusSerial.current && nextPoll) timer = window.setTimeout(() => void poll(), nextPoll)
+@@
+-    submissionLock.current = true
++    statusSerial.current++
++    submissionLock.current = true
+@@
+-    } catch (e) { setError((e as Error).message); retryPoll.current() }
++    } catch (e) {
++      if (!mounted.current || requestSerial !== statusSerial.current) return
++      setError((e as Error).message); retryPoll.current()
++    }
+   }
+   async function openModel(job: GenerationJob) {
+     if (!job.hasModel || !finished(job)) return
+     const requestSerial = ++serial.current
++    statusSerial.current++
+@@
+       if (mounted.current && serial.current === requestSerial) { loaded.current = shown ? job.id : ''; setDisplayed(shown); setJobError(null) }
+-    } catch (e) { setError((e as Error).message) }
++    } catch (e) { if (mounted.current && serial.current === requestSerial) setError((e as Error).message) }
+*** End Patch

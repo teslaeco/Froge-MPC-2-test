@@ -218,6 +218,11 @@ def load_fit(folder, parts):
         report['reason'] = 'one_person_required'
         return None, report
     person = people[0]
+    states=person.get('eye_states',{})
+    if any(states.get(side)=='empty_socket' for side in ('left','right')):
+        report['reason']='nonhuman_anatomy_requires_reference_sculpt'
+        report['human_landmarks_ignored']=True
+        return None,report
     if person['kind'] != 'reference_character' and person.get('presentation') != 'feminine':
         report['reason'] = 'feminine_template_required'
         return None, report

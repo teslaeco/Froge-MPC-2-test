@@ -1,0 +1,19 @@
+{
+  "source_sha256": "b369e18e017412ef87dedd9c82ebdbf1ed10374447988eecb1f8fd46fc31d54d",
+  "revision": "r3",
+  "changes": [
+    "shared head/neck proportion correction",
+    "fitted scalp replacing floating cap",
+    "continuous rear hair",
+    "asymmetric chestnut waves",
+    "teeth inset and reduced height",
+    "gentle bone subdivision"
+  ],
+  "likeness_accepted": false,
+  "remaining": [
+    "facial likeness and smile",
+    "central facial seam and dental anatomy",
+    "garment folds and sleeves",
+    "unseen back is inferred"
+  ]
+}

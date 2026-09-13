@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "title": "FORGE reference reconstruction failure catalogue",
+  "case": "split-living-skeletal-adult-E17",
+  "purpose": "retrievable application memory and proposed acceptance checks; not a record of passed tests",
+  "image_coordinate_convention": {
+    "left": "living side",
+    "right": "skeletal side"
+  },
+  "creative_deviations": [
+    {
+      "feature": "skeletal-side hair colour",
+      "requested": "aged grey/silver",
+      "previous_reference": "brown/dark",
+      "exact_reference_match": false
+    }
+  ],
+  "case_count": 20,
+  "cases": [
+    {
+      "id": "HEAD_REGRESSION",
+      "priority": "P0",
+      "region": "head",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "R15 changed the preferred R14 head impression and was rejected despite more triangles.",
+      "proposed_repair": "Preserve accepted head envelope and use registered local edits only.",
+      "acceptance_criteria": [
+        "Report head width/height/depth before and after.",
+        "Show front and both oblique silhouettes.",
+        "No automatic acceptance from polygon count."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "HAIR_ROOT_CAP",
+      "priority": "P0",
+      "region": "hairline",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Visible cap edge and roots ending above the forehead break realism.",
+      "proposed_repair": "Attach roots to scalp and cover exposed cap edge with controlled overlapping growth.",
+      "acceptance_criteria": [
+        "No blunt exposed root ends in front/oblique close-ups.",
+        "No open centre trench.",
+        "No larger apparent head caused by new root volume."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "HAIR_ROPES",
+      "priority": "P1",
+      "region": "hair",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Repeated thick cylindrical locks replace natural broad waves and fine structure.",
+      "proposed_repair": "Shape primary waves, secondary clumps and tapered thin strands with bounded irregularity.",
+      "acceptance_criteria": [
+        "Front/profile/back have coherent gravity and wave direction.",
+        "No repeated equal-radius rope silhouette.",
+        "No isolated strands penetrating the face."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "HAIR_SIDE_SPEC",
+      "priority": "P1",
+      "region": "hair_material",
+      "evidence": "Latest user instruction; earlier reference has brown/dark hair",
+      "observed_failure": "Latest art direction requests chestnut on image-left and grey on image-right.",
+      "proposed_repair": "Assign regions in image coordinates and preserve natural inter-strand variation.",
+      "acceptance_criteria": [
+        "Live side brown/chestnut, skeletal side grey/silver.",
+        "Grey is labelled requested deviation from prior reference.",
+        "Colour regions survive FBX/GLB export."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "EYE_TEXTURE_PROXY",
+      "priority": "P0",
+      "region": "living_eye",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Coloured face appears more detailed than its neutral-material geometry.",
+      "proposed_repair": "Build eyelid opening and seated eyeball with canthus continuity.",
+      "acceptance_criteria": [
+        "Neutral-material eye reads as eye with upper/lower lids.",
+        "Eyeball stays behind lid rims.",
+        "Expression remains consistent with preferred reference."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "ORBIT_CYLINDER",
+      "priority": "P0",
+      "region": "skeletal_orbit",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Deep uniform dark socket and obvious spherical eye resemble inserted objects.",
+      "proposed_repair": "Refine orbital walls and brow/zygomatic transitions; keep requested eye recessed.",
+      "acceptance_criteria": [
+        "Eye stays in socket in both profiles.",
+        "No perfect tube edge or floating eyelid ring.",
+        "Clay and textured views show the same cavity shape."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "TEETH_BLOCKS",
+      "priority": "P0",
+      "region": "teeth",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Repeated small rectangular crowns and abrupt mouth edge produce an artificial smile.",
+      "proposed_repair": "Use differentiated rounded crowns on a coherent arch and fit to mouth envelope.",
+      "acceptance_criteria": [
+        "Incisors/canines differ visibly where exposed.",
+        "No duplicated rows or floating crowns.",
+        "No tooth projects through the cheek or lip.",
+        "Same smile envelope in textured and clay views."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "NOSE_BOUNDARY",
+      "priority": "P0",
+      "region": "nasal_cavity",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Nasal opening and adjoining surfaces were jagged and only partly corrected in E16.",
+      "proposed_repair": "Use connected boundary loops and local surface reconstruction.",
+      "acceptance_criteria": [
+        "No unintended open crack at outer transition.",
+        "Nasal wall has depth in side view.",
+        "No broad black texture that fakes an absent opening."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "SKULL_CONTINUITY",
+      "priority": "P0",
+      "region": "skull",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Orbit/maxilla/mandible read as disconnected simplified forms.",
+      "proposed_repair": "Sculpt continuous supporting structures within the accepted head envelope.",
+      "acceptance_criteria": [
+        "Neutral material shows coherent cheek arch and jaw line.",
+        "No sharp unsupported patch edge.",
+        "Live/skeletal split is deliberate and aligned."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "NECK_RING",
+      "priority": "P0",
+      "region": "neck",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "E15 had a step where neck entered jaw; E16 reduced but did not fully validate all angles.",
+      "proposed_repair": "Fit connected transitions and retain proportional neck length.",
+      "acceptance_criteria": [
+        "No detached ring or horizontal shelf below jaw in front/profile.",
+        "No skin colour seam across a continuous intended surface.",
+        "Neck silhouette remains plausible from both sides."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "BODY_RELIEF",
+      "priority": "P1",
+      "region": "torso",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Shoulder/neck anatomy and garment-supported bust need clearer shape.",
+      "proposed_repair": "Use restrained clavicle/neck/torso forms and fit garment jointly.",
+      "acceptance_criteria": [
+        "No tendon represented by a loose cord.",
+        "Bust follows garment and reference proportions.",
+        "No skin-through-cloth at neckline/axilla.",
+        "No inferred hidden anatomy reported as observed."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "CLOTH_FLOATING_SEAMS",
+      "priority": "P0",
+      "region": "dress",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Some earlier seams floated above the material.",
+      "proposed_repair": "Project/follow seams on the garment with appropriate relief and consistent thickness.",
+      "acceptance_criteria": [
+        "No floating seam in oblique light.",
+        "No slit under sleeve attachment.",
+        "Visible neckline and panel seams match garment construction."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "CLOTH_UNIFORMITY",
+      "priority": "P1",
+      "region": "dress_material",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Large blotches and regular folds fail to describe cloth weave and fit.",
+      "proposed_repair": "Separate colour/roughness/normal and use local cloth tension/fold structure.",
+      "acceptance_criteria": [
+        "Ivory and black materials remain distinguishable under neutral light.",
+        "Weave scale is consistent across panels.",
+        "No texture seam at paired neckline panels."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "SKIN_MICRODETAIL",
+      "priority": "P1",
+      "region": "skin_material",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Pores are requested, but missing anatomy cannot be corrected by noise.",
+      "proposed_repair": "Use restrained, scale-aware surface detail after structural acceptance.",
+      "acceptance_criteria": [
+        "Pores remain microdetail rather than pitted stone.",
+        "Roughness responds under changed light direction.",
+        "Colour maps do not add new heavy baked lighting."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "EXPORT_MISMATCH",
+      "priority": "P0",
+      "region": "export",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Native shading/curves can differ from the delivered viewer asset.",
+      "proposed_repair": "Re-import exported artifact into an empty scene and render it.",
+      "acceptance_criteria": [
+        "Artifact SHA matches manifest.",
+        "Actual exported triangles recorded.",
+        "Every expected active image exists and loads.",
+        "No empty review view.",
+        "Units and dimensions documented."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "UNOBSERVED_GEOMETRY",
+      "priority": "P1",
+      "region": "scope",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "A single frontal image does not provide hidden-side and back geometry.",
+      "proposed_repair": "Track visibility and mark reconstructed unseen areas as interpretation.",
+      "acceptance_criteria": [
+        "Front coverage mask saved.",
+        "No exact reconstruction claim for hidden surfaces.",
+        "Back view shown for continuity review."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "BOARD_PARITY",
+      "priority": "P0",
+      "region": "chessboard",
+      "evidence": "Inspected private ChessArena board visualizer and layout contract; source links in research-e17/CHESS-TRAINING-TRANSFER-E17.md",
+      "observed_failure": "User reports wrong square colours and alternating pattern from earlier generation.",
+      "proposed_repair": "Preserve exact 8×8×8 indexing and ((X+Y+Z)&1)==0 colour convention; test material and rendered output.",
+      "acceptance_criteria": [
+        "Expected cell count and level count exact.",
+        "Each adjacent cell changes parity per specification.",
+        "Camera projection/lighting does not conceal the test."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "FAN_RADIAL_CONSTRUCTION",
+      "priority": "P1",
+      "region": "fan",
+      "evidence": "User-reported earlier observation, not independently reproduced",
+      "observed_failure": "User reports better fan geometry in an earlier Astra/Blender attempt.",
+      "proposed_repair": "Keep as a targeted reproducible case: count ribs, verify pivot, span and hand contact.",
+      "acceptance_criteria": [
+        "Original reference and both compared assets identified.",
+        "Rib count/span/pivot measured from the case specification.",
+        "No public superiority claim from memory alone."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "FALSE_TRAINING_CLAIM",
+      "priority": "P0",
+      "region": "evaluation",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Prompt/context improvements can be misdescribed as training model weights.",
+      "proposed_repair": "Separate case memory, retrieval, evaluations and actual checkpoint training records.",
+      "acceptance_criteria": [
+        "No retrained-Astra claim without supported weight-training run.",
+        "Data manifest and held-out results linked for any actual training claim.",
+        "Synthetic or mocked evaluations clearly labelled."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    },
+    {
+      "id": "PUBLIC_ORDER_STATE",
+      "priority": "P0",
+      "region": "commerce",
+      "evidence": "E15/E16 renders and user feedback",
+      "observed_failure": "Saving a prompt or quote draft can be confused with confirmed production.",
+      "proposed_repair": "Use distinct draft, reviewed, quoted, accepted and production states.",
+      "acceptance_criteria": [
+        "No invented supplier rates.",
+        "Preview is not an accepted order.",
+        "Price currency, material usage and process assumptions visible."
+      ],
+      "status": "requires_artifact_review",
+      "acceptance_is_measured": false
+    }
+  ],
+  "training_evidence_boundary": "Repository source and CPU smoke found; completed L4 visual training summary and neural weights not recovered from the reviewed tree. Earlier VM artifacts not inspected."
+}

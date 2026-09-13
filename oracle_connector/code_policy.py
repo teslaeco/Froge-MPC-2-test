@@ -5,7 +5,7 @@ import re
 import tokenize
 
 IMPORTS = {'bpy', 'math', 'random', 'mathutils'}
-HELPERS = {'make_material', 'mesh_object', 'tube', 'ellipsoid', 'join_meshes'}
+HELPERS = {'make_material', 'mesh_object', 'tube', 'ellipsoid', 'join_meshes', 'hair_lock'}
 BLOCKED = {'open', 'exec', 'eval', 'compile', '__import__', 'globals', 'locals', 'vars',
            'getattr', 'setattr', 'delattr', 'breakpoint', 'input', 'help', 'dir', 'type',
            'object', 'memoryview', 'classmethod', 'staticmethod', 'property'}
@@ -123,4 +123,8 @@ def validate_code(code, *, allow_helper_definitions=False):
             raise CodePolicyError(node.attr, node.lineno)
         elif isinstance(node, (ast.ClassDef, ast.Global, ast.Nonlocal, ast.AsyncFunctionDef)):
             raise ValueError('Uzyj zwyklych funkcji i operacji modelowania.')
+    # ast.parse does not reject context errors such as return/break outside a
+    # function/loop. Reject them on the host, before dispatch consumes a Blender
+    # build attempt. compile creates a code object only; it never executes it.
+    compile(tree, '<model-edit>', 'exec', dont_inherit=True)
     return code

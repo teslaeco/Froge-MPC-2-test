@@ -36,14 +36,18 @@ def verify_key(value):
     return value
 
 
-def generate(messages, api_key, cancelled, progress, timeout, validate_chunk, usage_callback, schema=None):
+def generate(messages, api_key, cancelled, progress, timeout, validate_chunk, usage_callback, schema=None, purpose="plan"):
     has_images=any(isinstance(m.get('content'),list) and any(isinstance(item,dict) and item.get('type')=='input_image' for item in m['content']) for m in messages)
+    # The output allowance includes reasoning. Max effort exhausted the whole
+    # allowance before producing a usable scene. Spend it on geometry instead;
+    # reviews return a compact verdict/patch, never a second complete scene.
+    effort = 'high' if has_images and purpose == 'plan' else 'low'
+    allowance = 6000 if purpose == 'review' else 9000 if purpose == 'repair' else 24000 if has_images else 9000
     payload = {'model': MODEL, 'input': messages, 'stream': True, 'store': False,
-               'reasoning': {'effort': 'max' if has_images else 'low'}, 'max_output_tokens': 24000 if has_images else 9000}
+               'reasoning': {'effort': effort}, 'max_output_tokens': allowance}
     if schema is not None:
         payload['text'] = {'format': {'type': 'json_schema', 'name': 'froge_scene',
                                       'strict': True, 'schema': schema}}
     return stream_chat(API + '/responses', payload, cancelled, progress, timeout=timeout,
                        interval=2, validate_chunk=validate_chunk, response_protocol='responses',
                        api_key=api_key, usage_callback=usage_callback)
-

@@ -1,0 +1,14 @@
+{
+  "render_source": "actual exported GLB reimport",
+  "triangles": 594200,
+  "mesh_objects": 103,
+  "missing_texture_images": [],
+  "model_sha256": "067ebb9cb36cf5bf0191c8459c90f1755713785f89fd1c89d158454241cdd274",
+  "views": [
+    "front",
+    "side",
+    "upper",
+    "back"
+  ],
+  "face_likeness_verified": false
+}

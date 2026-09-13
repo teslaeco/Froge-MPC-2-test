@@ -17,6 +17,9 @@ def build_scene(scene, make_material, mesh_object, tube, ellipsoid, join_meshes,
     face_fit, fit_report = load_fit(reference_folder, scene['parts'])
     bpy.context.scene['photo_face_fit'] = json.dumps(fit_report)
     bpy.context.scene['expected_heads']=sum(p['kind'] in ('person','portrait','reference_character') for p in scene['parts'])
+    bpy.context.scene['anatomy_intent']=json.dumps({p['name']:p.get('eye_states',
+        {'left':'present','right':'present','evidence':''}) for p in scene['parts']
+        if p['kind'] in ('person','portrait','reference_character')})
     bpy.context.scene['expected_hands']=sum(2 if p['kind'] in ('person','reference_character') else 1 if p['kind']=='anatomical_hand' else 0 for p in scene['parts'])
     bpy.context.scene['reference_couture']=any(p['kind']=='reference_character' for p in scene['parts'])
     materials, objects = {}, {}

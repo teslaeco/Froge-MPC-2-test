@@ -1,0 +1,15 @@
+{
+  "source_sha256": "c063e4ada817c1f5c5d0e0a5a87b0b4ee1dd6c104bd420090e5115af0866dd5a",
+  "bytes": 22040920,
+  "triangles": 5921791,
+  "mesh_objects": 368,
+  "missing_textures": [],
+  "actual_glb_reimport": true,
+  "compression": "Draco6",
+  "colour_maps_max_px": 1024,
+  "normal_roughness_maps_max_px": 512,
+  "master_triangles": 5922115,
+  "triangle_delta_glb_vs_fbx": -324,
+  "manual_decimation": false,
+  "uncompressed_glb_triangles": 5921791
+}

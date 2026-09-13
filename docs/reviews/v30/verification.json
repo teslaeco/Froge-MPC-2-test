@@ -1,0 +1,20 @@
+{
+  "release": 30,
+  "zip_bytes": 15559309,
+  "zip_sha256": "2481770a2db73497f001fa3a42692faafccb0aad2ee37bd11b9d49cbe47c1f6b",
+  "payload_sha256": "f928973f2e645cccc69b23cdf96a26f8457ced1c8fb46cf5d2d916aecef273c8",
+  "payload_files": 64,
+  "all_payloads_match": true,
+  "python_tests": 39,
+  "ui_api_tests": 83,
+  "typecheck": "passed",
+  "real_paid_generation": false,
+  "oracle_installed_here": false,
+  "ci": "success",
+  "ci_commit": "c3ed4d71d65bf01a4c56a52777c6c821f938d930",
+  "ci_run": "https://github.com/teslaeco/Froge-MPC-2-test/actions/runs/34672628976",
+  "code_mode_to_blender_with_scripted_responses": true,
+  "finished_read_verified": true,
+  "native_edit_palette_and_fbx_verified": true,
+  "site_source": "c1faea9135f1d12f0f3ecea893f86bc2382b80ae"
+}

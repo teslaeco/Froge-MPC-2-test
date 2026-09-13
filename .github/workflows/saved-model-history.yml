@@ -1,0 +1,28 @@
+name: Saved model history
+on:
+  pull_request:
+    paths:
+      - 'src/blender/**'
+      - 'src/auth/**'
+      - 'src/tests/blender-*.test.*'
+      - 'drizzle/**'
+      - 'package*.json'
+      - 'vite.config.ts'
+      - '.github/workflows/saved-model-history.yml'
+permissions:
+  contents: read
+jobs:
+  saved-models:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Type-check archive API and interface
+        run: npx tsc --ignoreConfig --noEmit --target ES2023 --module ESNext --moduleResolution bundler --jsx react-jsx --esModuleInterop --skipLibCheck --types vite/client,node --strict src/blender/server.ts src/blender/RemoteGenerator.tsx
+      - name: Exercise storage, ownership and reopening
+        run: npm test -- src/tests/blender-api.test.ts src/tests/blender-ui.test.tsx

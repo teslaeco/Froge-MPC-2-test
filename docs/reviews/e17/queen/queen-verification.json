@@ -1,0 +1,2081 @@
+{
+  "vertices": 305367,
+  "triangles": 594200,
+  "objects": 103,
+  "images": 11,
+  "portrait_quality": {
+    "revision": 2,
+    "diagnostic_revision": 2,
+    "heads": 1,
+    "eyes": 2,
+    "hands": 2,
+    "nails": 10,
+    "expected": {
+      "heads": 1,
+      "eyes": 2,
+      "hands": 2,
+      "nails": 10
+    },
+    "reference_anatomy": {
+      "emerald-muse": {
+        "left": "present",
+        "right": "present",
+        "evidence": ""
+      }
+    },
+    "socket_shape_verified": false,
+    "structural_checks_passed": true,
+    "likeness_verified": false
+  },
+  "characterStandard": 20,
+  "reference_likeness_verified": false,
+  "master_export": {
+    "formats": [
+      "glb",
+      "blend",
+      "fbx",
+      "obj+mtl",
+      "stl",
+      "froge-scene-json"
+    ],
+    "decimation_applied": false,
+    "position_quantization_applied": false
+  },
+  "reference_socket_checks": {
+    "required": false,
+    "passed": true,
+    "checks": [],
+    "scope": "Orbital foreground occupancy only; skull shape and likeness require visual review."
+  },
+  "texture_quality": {
+    "revision": 2,
+    "requested_max_edge": 2048,
+    "textures": [
+      {
+        "name": "anatomical-dedicated-iris",
+        "source_size": [
+          512,
+          512
+        ],
+        "export_size": [
+          512,
+          512
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "source_or_legacy",
+        "color_space": "sRGB",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "crystal-microfacet-albedo",
+        "source_size": [
+          1024,
+          1024
+        ],
+        "export_size": [
+          1024,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "authored_procedural_native",
+        "color_space": "sRGB",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "crystal-microfacet-normal",
+        "source_size": [
+          1024,
+          1024
+        ],
+        "export_size": [
+          1024,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "authored_procedural_native",
+        "color_space": "Non-Color",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "dress-UV",
+        "source_size": [
+          512,
+          512
+        ],
+        "export_size": [
+          512,
+          512
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "source_or_legacy",
+        "color_space": "sRGB",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "emerald-muse-warm-hair-locks-strand-albedo",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "authored_procedural_native",
+        "color_space": "sRGB",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "emerald-muse-warm-hair-locks-strand-roughness",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "authored_procedural_native",
+        "color_space": "Non-Color",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "female-skin.png",
+        "source_size": [
+          2048,
+          2048
+        ],
+        "export_size": [
+          2048,
+          2048
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "source_or_legacy",
+        "color_space": "sRGB",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "hair-strand-albedo",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "authored_procedural_native",
+        "color_space": "sRGB",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "hair-strand-roughness",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "authored_procedural_native",
+        "color_space": "Non-Color",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "procedural-fine-hair-strands-normal",
+        "source_size": [
+          2048,
+          1024
+        ],
+        "export_size": [
+          2048,
+          1024
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "authored_procedural_native",
+        "color_space": "Non-Color",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      },
+      {
+        "name": "silver-UV",
+        "source_size": [
+          512,
+          512
+        ],
+        "export_size": [
+          512,
+          512
+        ],
+        "resampled": false,
+        "upscaled": false,
+        "origin": "source_or_legacy",
+        "color_space": "sRGB",
+        "source_sha256": null,
+        "contains_photographed_lighting": false
+      }
+    ],
+    "memory_budget": {
+      "source_pixels": 17563648,
+      "export_pixels": 17563648,
+      "estimated_peak_bytes": 1916796928,
+      "memory_limit_bytes": 4294967296,
+      "max_export_pixels": 201326592,
+      "estimate_is_measured_peak": false
+    },
+    "upscaling_used": false,
+    "likeness_verified": false,
+    "note": "4K/8K is a maximum texture edge, not recovered detail or render resolution.",
+    "geometry_preserved_during_texture_export": true,
+    "geometry_sha256_before_export": "b1a3ace7593dd0f2f89c40a96e0d9755a1a703b52cb326e40d63a82fdb95f4ee"
+  },
+  "edit_palette": {
+    "new_material_limit": 8,
+    "created": 0,
+    "used_materials": 0,
+    "used_images": 0
+  },
+  "photo_face_fit": {
+    "revision": 1,
+    "applied": false,
+    "reason": "no_measured_face"
+  },
+  "photo_projection": {
+    "revision": 2,
+    "status": "not_requested",
+    "mapped_faces": 0,
+    "unmapped_faces": 0,
+    "source_images": [],
+    "regions": [],
+    "camera_estimates_verified": false,
+    "photographed_lighting_removed": false,
+    "likeness_verified": false
+  },
+  "mesh_objects": [
+    {
+      "name": "emerald-muse-body-under-gown",
+      "dimensions": [
+        0.3331335783004761,
+        0.23416201770305634,
+        0.6194145083427429
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-neck",
+      "dimensions": [
+        0.1080000028014183,
+        0.10072425752878189,
+        0.0801842212677002
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fitted-gown",
+      "dimensions": [
+        0.627996027469635,
+        0.47257545590400696,
+        1.4250000715255737
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-conformal-facets",
+      "dimensions": [
+        0.6271793842315674,
+        0.471871942281723,
+        1.3650000095367432
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-couture-seams",
+      "dimensions": [
+        0.630447506904602,
+        0.458712100982666,
+        1.3657922744750977
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-drape",
+      "dimensions": [
+        0.6227449178695679,
+        0.23975752294063568,
+        1.368222713470459
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-reconstructed-back-seam",
+      "dimensions": [
+        0.11409875750541687,
+        0.1258295476436615,
+        1.3048292398452759
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-reconstructed-back-seam.001",
+      "dimensions": [
+        0.0011258330196142197,
+        0.18456196784973145,
+        1.3682926893234253
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-reconstructed-back-seam.002",
+      "dimensions": [
+        0.11651888489723206,
+        0.12735198438167572,
+        1.3048315048217773
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-visible-pleated-cape",
+      "dimensions": [
+        0.16927996277809143,
+        0.1743708699941635,
+        1.340203046798706
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-metal-ribbon",
+      "dimensions": [
+        0.261957049369812,
+        0.1763429045677185,
+        0.019969701766967773
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-metal-ribbon.001",
+      "dimensions": [
+        0.25101718306541443,
+        0.17209692299365997,
+        0.01189112663269043
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-metal-ribbon.002",
+      "dimensions": [
+        0.25049394369125366,
+        0.172061026096344,
+        0.010619640350341797
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-metal-ribbon.003",
+      "dimensions": [
+        0.25606679916381836,
+        0.17438289523124695,
+        0.01737523078918457
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-gem",
+      "dimensions": [
+        0.041999999433755875,
+        0.014499999582767487,
+        0.05900000035762787
+      ],
+      "location": [
+        0.0,
+        -0.09200000017881393,
+        1.1030000448226929
+      ]
+    },
+    {
+      "name": "emerald-muse-waist-gem-rim",
+      "dimensions": [
+        0.043304916471242905,
+        0.0015999972820281982,
+        0.06013834476470947
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-leg",
+      "dimensions": [
+        0.12998804450035095,
+        0.1459737867116928,
+        0.8445234298706055
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoe",
+      "dimensions": [
+        0.07000000029802322,
+        0.20599998533725739,
+        0.06199999898672104
+      ],
+      "location": [
+        -0.10499999672174454,
+        -0.061000000685453415,
+        0.04800000041723251
+      ]
+    },
+    {
+      "name": "emerald-muse-shoe-heel",
+      "dimensions": [
+        0.02799999713897705,
+        0.02800000086426735,
+        0.04600000008940697
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fitted-sleeve",
+      "dimensions": [
+        0.17566800117492676,
+        0.3625003695487976,
+        0.37935078144073486
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-inlay",
+      "dimensions": [
+        0.18000000715255737,
+        0.07799999415874481,
+        0.0989999771118164
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-silver-edge",
+      "dimensions": [
+        0.18089202046394348,
+        0.07760582864284515,
+        0.10032939910888672
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-fold",
+      "dimensions": [
+        0.11844239383935928,
+        0.042039062827825546,
+        0.03891146183013916
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-leg.001",
+      "dimensions": [
+        0.12998804450035095,
+        0.1459737867116928,
+        0.8445234298706055
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoe.001",
+      "dimensions": [
+        0.07000000029802322,
+        0.20599998533725739,
+        0.06199999898672104
+      ],
+      "location": [
+        0.10499999672174454,
+        -0.061000000685453415,
+        0.04800000041723251
+      ]
+    },
+    {
+      "name": "emerald-muse-shoe-heel.001",
+      "dimensions": [
+        0.02799999713897705,
+        0.02800000086426735,
+        0.04600000008940697
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-exposed-upper-arm",
+      "dimensions": [
+        0.11704212427139282,
+        0.09778294712305069,
+        0.1377471685409546
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fitted-sleeve.001",
+      "dimensions": [
+        0.13795514404773712,
+        0.18996071815490723,
+        0.3236652612686157
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-inlay.001",
+      "dimensions": [
+        0.18000000715255737,
+        0.07799999415874481,
+        0.0989999771118164
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-silver-edge.001",
+      "dimensions": [
+        0.18089202046394348,
+        0.07760582864284515,
+        0.10032939910888672
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-shoulder-fold.001",
+      "dimensions": [
+        0.11844239383935928,
+        0.042039062827825546,
+        0.03891146183013916
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-head",
+      "dimensions": [
+        0.18406495451927185,
+        0.2343217432498932,
+        0.3415851294994354
+      ],
+      "location": [
+        0.3322216868400574,
+        -0.32240530848503113,
+        0.026708893477916718
+      ]
+    },
+    {
+      "name": "anatomical-eye-l",
+      "dimensions": [
+        0.029400017112493515,
+        0.03040001541376114,
+        0.028599999845027924
+      ],
+      "location": [
+        -0.010665854439139366,
+        -0.10196255892515182,
+        1.6617120504379272
+      ]
+    },
+    {
+      "name": "anatomical-eye-r",
+      "dimensions": [
+        0.029400017112493515,
+        0.03040001541376114,
+        0.028599999845027924
+      ],
+      "location": [
+        -0.07305306941270828,
+        -0.09443994611501694,
+        1.6463342905044556
+      ]
+    },
+    {
+      "name": "fitted-none",
+      "dimensions": [
+        0.16263842582702637,
+        0.20263925194740295,
+        0.1759323924779892
+      ],
+      "location": [
+        0.3322216868400574,
+        -0.32240530848503113,
+        0.026708893477916718
+      ]
+    },
+    {
+      "name": "eyebrow-fibres",
+      "dimensions": [
+        0.04489224776625633,
+        0.028380364179611206,
+        0.011379598639905453
+      ],
+      "location": [
+        0.3322216868400574,
+        -0.32240530848503113,
+        0.026708893477916718
+      ]
+    },
+    {
+      "name": "eyebrow-fibres.001",
+      "dimensions": [
+        0.044950563460588455,
+        0.028440237045288086,
+        0.011233209632337093
+      ],
+      "location": [
+        0.3322216868400574,
+        -0.32240530848503113,
+        0.026708893477916718
+      ]
+    },
+    {
+      "name": "anatomical-lash-fibres",
+      "dimensions": [
+        0.09546195715665817,
+        0.015068918466567993,
+        0.009547828696668148
+      ],
+      "location": [
+        0.3322216868400574,
+        -0.32240530848503113,
+        0.026708893477916718
+      ]
+    },
+    {
+      "name": "anatomical-upper-eyeliner",
+      "dimensions": [
+        0.10021334141492844,
+        0.03102642297744751,
+        0.0047903056256473064
+      ],
+      "location": [
+        0.3322216868400574,
+        -0.32240530848503113,
+        0.026708893477916718
+      ]
+    },
+    {
+      "name": "emerald-muse-standing-collar",
+      "dimensions": [
+        0.13589049875736237,
+        0.1267918199300766,
+        0.11223864555358887
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-rim",
+      "dimensions": [
+        0.11343446373939514,
+        0.10283449292182922,
+        0.0068694353103637695
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-front-edge",
+      "dimensions": [
+        0.011567862704396248,
+        0.04155987873673439,
+        0.10546374320983887
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-front-edge.001",
+      "dimensions": [
+        0.009222052991390228,
+        0.04155987873673439,
+        0.10543644428253174
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-diagonal-inlay",
+      "dimensions": [
+        0.026994947344064713,
+        0.05619098246097565,
+        0.10787856578826904
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-collar-diagonal-inlay.001",
+      "dimensions": [
+        0.030880220234394073,
+        0.05616730451583862,
+        0.10815823078155518
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-updo-back",
+      "dimensions": [
+        0.10199999809265137,
+        0.07799999415874481,
+        0.14399999380111694
+      ],
+      "location": [
+        -0.01991415023803711,
+        0.10474053025245667,
+        1.681095838546753
+      ]
+    },
+    {
+      "name": "emerald-muse-updo-folds",
+      "dimensions": [
+        0.1070326641201973,
+        0.08290350437164307,
+        0.1428525298833847
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-swept-updo-locks",
+      "dimensions": [
+        0.16184581816196442,
+        0.20324890315532684,
+        0.1766718477010727
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-fine-updo-filaments",
+      "dimensions": [
+        0.16314950585365295,
+        0.20372003316879272,
+        0.1775655597448349
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-hairline-wisps",
+      "dimensions": [
+        0.1653350293636322,
+        0.11919310688972473,
+        0.0772622749209404
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-earring-chain",
+      "dimensions": [
+        0.010296164080500603,
+        0.00637209415435791,
+        0.026746030896902084
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-earring",
+      "dimensions": [
+        0.025999996811151505,
+        0.008700000122189522,
+        0.04899999126791954
+      ],
+      "location": [
+        -0.09005359560251236,
+        -0.006550606340169907,
+        1.5409969091415405
+      ]
+    },
+    {
+      "name": "emerald-muse-earring-rim",
+      "dimensions": [
+        0.02692076750099659,
+        0.0010999999940395355,
+        0.0495985671877861
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-earring-chain.001",
+      "dimensions": [
+        0.010296164080500603,
+        0.00637209415435791,
+        0.026746030896902084
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-earring.001",
+      "dimensions": [
+        0.025999996811151505,
+        0.008700000122189522,
+        0.04899999126791954
+      ],
+      "location": [
+        0.07195765525102615,
+        -0.02608581632375717,
+        1.5809309482574463
+      ]
+    },
+    {
+      "name": "emerald-muse-earring-rim.001",
+      "dimensions": [
+        0.02692076750099659,
+        0.0010999999940395355,
+        0.0495985671877861
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-hair-jewel",
+      "dimensions": [
+        0.07599999010562897,
+        0.011600000783801079,
+        0.06399999558925629
+      ],
+      "location": [
+        -0.015022940933704376,
+        -0.02719005011022091,
+        1.7649911642074585
+      ]
+    },
+    {
+      "name": "emerald-muse-hair-jewel-rims",
+      "dimensions": [
+        0.09567995369434357,
+        0.030833080410957336,
+        0.10957668721675873
+      ],
+      "location": [
+        0.3237709701061249,
+        -0.3141554892063141,
+        0.06502897292375565
+      ]
+    },
+    {
+      "name": "emerald-muse-hair-jewel.001",
+      "dimensions": [
+        0.06299998611211777,
+        0.011600000783801079,
+        0.059999994933605194
+      ],
+      "location": [
+        0.005243021994829178,
+        -0.0264821145683527,
+        1.7588438987731934
+      ]
+    },
+    {
+      "name": "emerald-muse-hair-jewel.002",
+      "dimensions": [
+        0.037999991327524185,
+        0.011600000783801079,
+        0.06299999356269836
+      ],
+      "location": [
+        0.02381463162600994,
+        -0.012235629372298717,
+        1.757779598236084
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-grip-handle",
+      "dimensions": [
+        0.018000006675720215,
+        0.018000006675720215,
+        0.08299994468688965
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-pendant-chain",
+      "dimensions": [
+        0.010037824511528015,
+        0.0012000203132629395,
+        0.17305386066436768
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-pendant",
+      "dimensions": [
+        0.019999999552965164,
+        0.011600000783801079,
+        0.05000000074505806
+      ],
+      "location": [
+        -0.14600001275539398,
+        -0.2549999952316284,
+        1.090000033378601
+      ]
+    },
+    {
+      "name": "emerald-muse-pleated-fan",
+      "dimensions": [
+        0.5027552247047424,
+        0.01785578951239586,
+        0.27016833424568176
+      ],
+      "location": [
+        -0.16500000655651093,
+        -0.24300000071525574,
+        1.274999976158142
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-outer-rim",
+      "dimensions": [
+        0.40629059076309204,
+        0.006388217210769653,
+        0.14636361598968506
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib",
+      "dimensions": [
+        0.2512001395225525,
+        0.002250000834465027,
+        0.10614371299743652
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.001",
+      "dimensions": [
+        0.22024692595005035,
+        0.002250000834465027,
+        0.16143810749053955
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.002",
+      "dimensions": [
+        0.17718644440174103,
+        0.002249985933303833,
+        0.20785820484161377
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.003",
+      "dimensions": [
+        0.12438583374023438,
+        0.002249971032142639,
+        0.24285197257995605
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.004",
+      "dimensions": [
+        0.06474754214286804,
+        0.002250000834465027,
+        0.26449573040008545
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.005",
+      "dimensions": [
+        0.0020000040531158447,
+        0.002250000834465027,
+        0.271604061126709
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.006",
+      "dimensions": [
+        0.06474754959344864,
+        0.002250000834465027,
+        0.26449573040008545
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.007",
+      "dimensions": [
+        0.12438581883907318,
+        0.002249971032142639,
+        0.24285197257995605
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.008",
+      "dimensions": [
+        0.17718647420406342,
+        0.002249985933303833,
+        0.20785820484161377
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.009",
+      "dimensions": [
+        0.22024695575237274,
+        0.002250000834465027,
+        0.16143810749053955
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rib.010",
+      "dimensions": [
+        0.2512001395225525,
+        0.002250000834465027,
+        0.10614371299743652
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-dark-continuous-outline",
+      "dimensions": [
+        0.5039165019989014,
+        0.001399993896484375,
+        0.17158377170562744
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        -0.3869640827178955,
+        -0.2549999952316284,
+        1.4001199007034302
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-01",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        -0.35172995924949646,
+        -0.2549999952316284,
+        1.4483636617660522
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-02",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        -0.3062310516834259,
+        -0.2549999952316284,
+        1.4870773553848267
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-03",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        -0.2529684603214264,
+        -0.2549999952316284,
+        1.5141329765319824
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-04",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        -0.19487015902996063,
+        -0.2549999952316284,
+        1.5280430316925049
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-05",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        -0.13512985408306122,
+        -0.2549999952316284,
+        1.5280430316925049
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-06",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        -0.07703153789043427,
+        -0.2549999952316284,
+        1.5141329765319824
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-07",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        -0.023768968880176544,
+        -0.2549999952316284,
+        1.4870773553848267
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-08",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        0.02172994241118431,
+        -0.2549999952316284,
+        1.4483636617660522
+      ]
+    },
+    {
+      "name": "emerald-muse-fan-rotor-09",
+      "dimensions": [
+        0.0383184552192688,
+        0.015000006183981895,
+        0.04390032961964607
+      ],
+      "location": [
+        0.05696406587958336,
+        -0.2549999952316284,
+        1.4001199007034302
+      ]
+    },
+    {
+      "name": "anatomical-hand-right",
+      "dimensions": [
+        0.13619668781757355,
+        0.0732799619436264,
+        0.12467241287231445
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-1",
+      "dimensions": [
+        0.024217844009399414,
+        0.013320311903953552,
+        0.009838342666625977
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-2",
+      "dimensions": [
+        0.018699437379837036,
+        0.020927265286445618,
+        0.014666080474853516
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-3",
+      "dimensions": [
+        0.009226322174072266,
+        0.01876293122768402,
+        0.012631535530090332
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-4",
+      "dimensions": [
+        0.0031662583351135254,
+        0.018063217401504517,
+        0.014586687088012695
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-right-5",
+      "dimensions": [
+        0.0016604065895080566,
+        0.016263216733932495,
+        0.015256524085998535
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-glove-wrist-seam",
+      "dimensions": [
+        0.06201750040054321,
+        0.05712890625,
+        0.06082260608673096
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-fitted-palm-glove",
+      "dimensions": [
+        0.08188484609127045,
+        0.05314433574676514,
+        0.09180343151092529
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-glove-facets",
+      "dimensions": [
+        0.08036822080612183,
+        0.013853013515472412,
+        0.0853724479675293
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "emerald-muse-glove-facet-edges",
+      "dimensions": [
+        0.08069296181201935,
+        0.011848747730255127,
+        0.08579015731811523
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-hand-left",
+      "dimensions": [
+        0.12254956364631653,
+        0.07381740212440491,
+        0.19313877820968628
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-1",
+      "dimensions": [
+        0.013297021389007568,
+        0.018326833844184875,
+        0.016084790229797363
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-2",
+      "dimensions": [
+        0.01231926679611206,
+        0.014986351132392883,
+        0.019639194011688232
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-3",
+      "dimensions": [
+        0.011006325483322144,
+        0.018502406775951385,
+        0.01778501272201538
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-4",
+      "dimensions": [
+        0.009024858474731445,
+        0.020858019590377808,
+        0.01569545269012451
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "anatomical-nail-left-5",
+      "dimensions": [
+        0.007055819034576416,
+        0.01649397611618042,
+        0.010313272476196289
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "geometry_capabilities": {
+    "revision": 1,
+    "freeform_surfaces": true,
+    "arbitrary_photo_likeness_verified": false
+  },
+  "export_validation": {
+    "reimported": true,
+    "anatomy": {
+      "anatomical_head": 1,
+      "anatomical_eye": 2,
+      "anatomical_hand": 2,
+      "anatomical_nail": 10
+    },
+    "roles": {
+      "body-under-gown": 1,
+      "collar-diagonal-inlay": 2,
+      "collar-front-edge": 2,
+      "collar-rim": 1,
+      "conformal-facets": 1,
+      "couture-seams": 1,
+      "earring-chain": 2,
+      "earring-rim": 2,
+      "earring": 2,
+      "exposed-upper-arm": 1,
+      "fan-dark-continuous-outline": 1,
+      "fan-grip-handle": 1,
+      "fan-outer-rim": 1,
+      "fan-pendant-chain": 1,
+      "fan-pendant": 1,
+      "fan-rib": 11,
+      "fan-rotor": 10,
+      "updo-filaments": 1,
+      "fitted-gown": 1,
+      "fitted-palm-glove": 1,
+      "fitted-sleeve": 2,
+      "glove-facet-edges": 1,
+      "glove-facet-panels": 1,
+      "glove-wrist-seam": 1,
+      "hair-ornament-rims": 1,
+      "hair-ornament": 3,
+      "hairline-wisps": 1,
+      "leg": 2,
+      "neck": 1,
+      "pleated-fan": 1,
+      "reconstructed-back-seam": 3,
+      "shoe-heel": 2,
+      "reconstructed-shoe": 2,
+      "shoulder-drape": 1,
+      "shoulder-fold": 2,
+      "shoulder-inlay": 2,
+      "shoulder-silver-edge": 2,
+      "standing-collar": 1,
+      "updo-locks": 1,
+      "updo-volume": 1,
+      "updo-folds": 1,
+      "visible-pleated-cape": 1,
+      "waist-gem-rim": 1,
+      "waist-gem": 1,
+      "waist-metal-ribbon": 4,
+      "swept-updo": 1
+    },
+    "packed_images": 10,
+    "reference_surface_objects": 0,
+    "reference_surface_faces": 0,
+    "fan_apertures": {
+      "windows": 10,
+      "clear_rays": 130,
+      "filled_panel_rays": 10,
+      "filled_frame_junction_rays": 60,
+      "passed": true
+    },
+    "prop_grip": {
+      "hands": 1,
+      "contacts": 5,
+      "details": [
+        {
+          "fingertip_surface_gaps_mm": [
+            1.676,
+            0.112,
+            0.831,
+            0.024,
+            0.085
+          ],
+          "local_signed_depths_mm": [
+            0.0,
+            0.0,
+            0.0,
+            1.018,
+            1.718
+          ]
+        }
+      ],
+      "passed": true,
+      "complete_hand_collision_checked": false
+    },
+    "free_hand_clearance": {
+      "hands": 1,
+      "details": [
+        {
+          "hand": "anatomical-hand-left.001",
+          "checked_edges": 20198,
+          "crossing_edges": 0,
+          "minimum_vertex_clearance_mm": 36.382
+        }
+      ],
+      "passed": true,
+      "scope": "free hand skin versus gown and cape"
+    },
+    "fingerless_glove": {
+      "gloves": 1,
+      "details": [
+        {
+          "closed_shell": true,
+          "volume_m3": 1.1272138294182212e-05,
+          "surface_samples": 1000
+        }
+      ],
+      "passed": true,
+      "scope": "closed leather shell; does not verify every finger collision"
+    },
+    "eyebrows_fibres_and_photo_contour": [
+      [
+        420,
+        false
+      ],
+      [
+        420,
+        false
+      ]
+    ],
+    "garment_containment": {
+      "samples": 11774,
+      "worst_envelope_ratio": 0.98224,
+      "passed": true
+    },
+    "makeup_heads": 1,
+    "upper_lashes_per_eye": [
+      [
+        44,
+        44
+      ]
+    ],
+    "likeness_assessed": false,
+    "print_readiness_assessed": false
+  },
+  "interchange_exports": {
+    "revision": 2,
+    "formats": [
+      "glb",
+      "blend",
+      "fbx",
+      "obj+mtl",
+      "stl",
+      "froge-scene-json"
+    ],
+    "same_master_scene": true,
+    "textures": [
+      {
+        "path": "textures/00-anatomical-dedicated-iris-1843dfb2c9b9.png",
+        "bytes": 48813,
+        "sha256": "1843dfb2c9b946800cc15ad39f899dc4c0a9bf8e64406133176fd02f9a77c8d6",
+        "image": "anatomical-dedicated-iris",
+        "size": [
+          512,
+          512
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/01-baked-base-color-anatomical-head-c881dcbd7c74.png",
+        "bytes": 1774371,
+        "sha256": "c881dcbd7c74bc260d9f8860cfd052df1e0226f586e092facfe21a5333c32c14",
+        "image": "baked-base-color-anatomical-head",
+        "size": [
+          2048,
+          2048
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/02-crystal-microfacet-albedo-6b18e63b647c.png",
+        "bytes": 957071,
+        "sha256": "6b18e63b647c58008d08bf1462d672eb9123ee6d99af0fafe0ddba071fa607e8",
+        "image": "crystal-microfacet-albedo",
+        "size": [
+          1024,
+          1024
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/03-crystal-microfacet-normal-b6315419592b.png",
+        "bytes": 89431,
+        "sha256": "b6315419592b0a176a82843859486ee87c07017cfbc7a0efb762fcafe74a94a8",
+        "image": "crystal-microfacet-normal",
+        "size": [
+          1024,
+          1024
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/04-dress-UV-e5a6e32ba6ac.png",
+        "bytes": 107763,
+        "sha256": "e5a6e32ba6aca813601510bf5ffc36cf78bdc001e0d734b8f608a5dddcff859c",
+        "image": "dress-UV",
+        "size": [
+          512,
+          512
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/05-emerald-muse-warm-hair-locks-strand-albedo-4eb43726a5e8.png",
+        "bytes": 92043,
+        "sha256": "4eb43726a5e8d8960e9682d79e9232389c13431f3673e34c930af6d096c8da89",
+        "image": "emerald-muse-warm-hair-locks-strand-albedo",
+        "size": [
+          2048,
+          1024
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/06-emerald-muse-warm-hair-locks-strand-roughness-bb483c893395.png",
+        "bytes": 128165,
+        "sha256": "bb483c89339538dec4f2970beef4bb1685ae43fa5c5f727e90bcc27208c870b8",
+        "image": "emerald-muse-warm-hair-locks-strand-roughness",
+        "size": [
+          2048,
+          1024
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/07-female-skin-png-0e34b842ef57.png",
+        "bytes": 4674615,
+        "sha256": "0e34b842ef57c85da424280f3747724ce349b9c1181eba0ec324ee93493a0661",
+        "image": "female-skin.png",
+        "size": [
+          2048,
+          2048
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/08-hair-strand-albedo-7f7dcbd804a9.png",
+        "bytes": 90902,
+        "sha256": "7f7dcbd804a9bcc77415faf6cf508a9a10d5ab338f0585b757535d2995eb480a",
+        "image": "hair-strand-albedo",
+        "size": [
+          2048,
+          1024
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/09-hair-strand-roughness-bb483c893395.png",
+        "bytes": 128165,
+        "sha256": "bb483c89339538dec4f2970beef4bb1685ae43fa5c5f727e90bcc27208c870b8",
+        "image": "hair-strand-roughness",
+        "size": [
+          2048,
+          1024
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/10-procedural-fine-hair-strands-normal-a15679ad7164.png",
+        "bytes": 222258,
+        "sha256": "a15679ad7164d0569027729dbbc6efe3e233033614152a8e2f48d4ac42710ce3",
+        "image": "procedural-fine-hair-strands-normal",
+        "size": [
+          2048,
+          1024
+        ],
+        "pixels_resampled": false
+      },
+      {
+        "path": "textures/11-silver-UV-8d6dc46c12e7.png",
+        "bytes": 345918,
+        "sha256": "8d6dc46c12e72abcd991e2f673adfc3e3cad49eeae104e5bab038bd08ab41662",
+        "image": "silver-UV",
+        "size": [
+          512,
+          512
+        ],
+        "pixels_resampled": false
+      }
+    ],
+    "baked_base_colors": [
+      {
+        "object": "anatomical-head",
+        "material": "skin",
+        "size": [
+          2048,
+          2048
+        ],
+        "pass": "EMIT",
+        "scene_lighting_baked": false,
+        "reference_lighting_removed": false,
+        "other_shader_channels_baked": false
+      }
+    ],
+    "uv_order_changes": [
+      {
+        "object": "anatomical-eye-l",
+        "primary": "EyeLocal",
+        "per_face_colour_uvs_consolidated": false,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "anatomical-eye-r",
+        "primary": "EyeLocal",
+        "per_face_colour_uvs_consolidated": false,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-01",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-02",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-03",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-04",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-05",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-06",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-07",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-08",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      },
+      {
+        "object": "emerald-muse-fan-rotor-09",
+        "primary": "ExportColourUV",
+        "per_face_colour_uvs_consolidated": true,
+        "other_uv_channels_preserved": true,
+        "all_shader_uv_bindings_verified": false
+      }
+    ],
+    "uv_binding_limitations": [],
+    "fbx": {
+      "axis_forward": "-Z",
+      "axis_up": "Y",
+      "textures_embedding_requested": true,
+      "reimport_verified": false,
+      "shader_boundary": "FBX preserves supported image-based channels, not every Blender PBR shader",
+      "rig_policy": "Export existing armatures and animation; do not invent a rig",
+      "status": "ready",
+      "files": [
+        {
+          "path": "model.fbx",
+          "bytes": 18308668,
+          "sha256": "ad5e3db6d196443b67402c200b670ea0ef90e34d30dc872cfaac292a3ffb4dec"
+        }
+      ]
+    },
+    "obj": {
+      "mtl": "model.mtl",
+      "uvs_requested": true,
+      "normals_requested": true,
+      "reimport_verified": false,
+      "shader_boundary": "OBJ/MTL cannot reproduce every Blender or glTF PBR shader",
+      "status": "ready",
+      "files": [
+        {
+          "path": "model.obj",
+          "bytes": 46261148,
+          "sha256": "3aec99b04c154c0d14d37e90e512a31b6351885f534dbdfecb79d69274339e39"
+        },
+        {
+          "path": "model.mtl",
+          "bytes": 4224,
+          "sha256": "fa4956bcd65ba235a1b520f8fdcfde16453d393d52615af243163577a0dc3297"
+        }
+      ]
+    },
+    "stl": {
+      "numeric_unit": "millimetre",
+      "textures": false,
+      "axis_forward": "-Z",
+      "axis_up": "Y",
+      "print_readiness_assessed": false,
+      "reimport_verified": false,
+      "status": "ready",
+      "files": [
+        {
+          "path": "model-mm.stl",
+          "bytes": 29710084,
+          "sha256": "06b12a592e8c57d4c2ea3b77296d1cc67059cf5280cf05b0f7e36cbe280e7465"
+        }
+      ]
+    },
+    "scene_json": {
+      "schema": "Froge scene contract",
+      "present": true,
+      "status": "ready",
+      "files": [
+        {
+          "path": "model.froge-scene.json",
+          "bytes": 3449,
+          "sha256": "61af09c55c4d8f772f3b2b2dc831796afe63848874492990143d2a426113622a"
+        }
+      ]
+    },
+    "status": "ready"
+  },
+  "source": "Queen Neptune: authored production couture fixture, parameterized adult face",
+  "source_photo_matching": false,
+  "poster_used_as_general_design_reference": true,
+  "likeness_accepted": false,
+  "build_seconds": 18.36
+}

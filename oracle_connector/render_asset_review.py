@@ -8,6 +8,7 @@ from pathlib import Path
 import sys
 import bpy
 from mathutils import Vector
+sys.path.insert(0,str(Path(__file__).resolve().parent))
 
 
 def load_model(path,normalize_height=None):
@@ -30,10 +31,11 @@ def load_model(path,normalize_height=None):
         bounds=[o.matrix_world@Vector(p) for o in meshes for p in o.bound_box]
         low=Vector(tuple(min(p[i] for p in bounds) for i in range(3)))
         high=Vector(tuple(max(p[i] for p in bounds) for i in range(3)))
-    eyes = [o.matrix_world.translation for o in meshes if o.get('anatomical_eye')]
-    face = sum(eyes, Vector())/len(eyes) if eyes else (low+high)*.5
+    # Use the same geometry-based target as the live MCP review.
+    from runtime.review_views import face_framing
+    face,face_scale,_ = face_framing(meshes)
     return {'full': list((low+high)*.5), 'height': (high-low).z,
-            'face': list(face+Vector((0,0,.035)))}
+            'face': list(face), 'face_scale':face_scale}
 
 
 def render(asset, folder, views, camera_file=None, width=1080, height=1440, samples=48,normalize_height=None):
@@ -63,7 +65,8 @@ def render(asset, folder, views, camera_file=None, width=1080, height=1440, samp
         offset = {'full': (2,-4,.50), 'back':(0,4,.25), 'front': (0,-3,.01), 'profile': (3,0,.01), 'angle': (1.6,-3,.04)}[view]
         camera.location = target+Vector(offset)
         camera.rotation_euler = (target-camera.location).to_track_quat('-Z','Y').to_euler()
-        camera.data.ortho_scale = targets['height']*1.14 if is_full else .52
+        camera.data.ortho_scale = (targets['height']*1.14 if is_full else
+                                  targets.get('face_scale',.52)*max(1,.8/(width/height)))
         pending=folder/(view+'.pending.png')
         scene.render.filepath = str(pending)
         bpy.ops.render.render(write_still=True)

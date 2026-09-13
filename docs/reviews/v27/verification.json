@@ -1,0 +1,33 @@
+{
+  "version": 27,
+  "date": "2026-09-12",
+  "local_mcp_rollback_tests": 21,
+  "site_ui_api_tests": 65,
+  "python39_syntax": "passed",
+  "code_mode_host_version": "0.154.0",
+  "host_checksum_and_startup": "passed",
+  "full_local_cli": "stalled before first model request; no sandbox bypass",
+  "paid_api_requests": 0,
+  "oracle_installed": false,
+  "new_model_likeness_verified": false,
+  "github_pr": "https://github.com/teslaeco/Froge-MPC-2-test/pull/10",
+  "ci_run": 34661987718,
+  "ci_status": "success",
+  "installer": {
+    "file": "froge-v27.zip",
+    "bytes": 15536825,
+    "sha256": "836205fc9738841037101de0bf903ba03b51fcee10c7ba4565b0ef635d3e46c9",
+    "payload_files": 61,
+    "payload_matches_source": true
+  },
+  "ci_tested_commit": "3ca6201b4c357ddb4b01e6c0516305f58cc1164a",
+  "ci_python_versions": [
+    "3.9",
+    "3.12"
+  ],
+  "ci_tests_per_job": 21,
+  "ci_real_codex_mcp_roundtrip": true,
+  "ci_paid_api_requests": 0,
+  "typecheck": "passed",
+  "source_syntax_python39": "passed"
+}

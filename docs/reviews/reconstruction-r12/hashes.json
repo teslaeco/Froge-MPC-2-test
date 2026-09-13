@@ -1,0 +1,30 @@
+{
+  "FORGE-r12-przed-po.png": {
+    "bytes": 983035,
+    "sha256": "9bc9d9c66ba76bff2a6d39c82e6c3bb868a0e4ef539b9f8fd9776d6a1f8171ee"
+  },
+  "FORGE-r12-geometria.png": {
+    "bytes": 803074,
+    "sha256": "a7880b65937b953ff1bb210c7deea8b6dfdf015740528075981e11ee0d9cae91"
+  },
+  "FORGE-r12-trzy-widoki.png": {
+    "bytes": 1136765,
+    "sha256": "c13f8d6225663c33d76e95593372895d52dc693a950693c75ef82b8b00fbe1a8"
+  },
+  "FORGE-model-r12.fbx": {
+    "bytes": 186636268,
+    "sha256": "e3550adb577805025b15ec420c291fb20f33aafae60897b2ce93c7457d4ad579"
+  },
+  "FORGE-model-r12.blend": {
+    "bytes": 230406579,
+    "sha256": "116680aa66ba16bd99d88e2882bba88369eee16116911e192152886d47ce1ddd"
+  },
+  "FORGE-model-r12.glb": {
+    "bytes": 122269364,
+    "sha256": "cec79d4d3ecda841ddb5d7bdd5a58824203da6f371601dd8b685218af281aea0"
+  },
+  "FORGE-analiza-r12.md": {
+    "bytes": 6372,
+    "sha256": "d060af1811aa085a714ca04862b4aee68267f3e23af7bdd8ca6685ea3935d198"
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "files": [
+    {
+      "path": "FORGE-E18R.glb",
+      "bytes": 23225144,
+      "sha256": "6f8bef167a6d0e9dc67d4fce67df3782f0bdffb69ede54f8f62a799520f5b6db"
+    },
+    {
+      "path": "FORGE-E18R-recovered-checkpoint.blend",
+      "bytes": 191699747,
+      "sha256": "72504bb056c06c5ef4eaaa41b0e1a8aae864376984516000895366ee8ba89cdb"
+    },
+    {
+      "path": "E18R-PRZED-PO.webp",
+      "bytes": 175860,
+      "sha256": "ab042f990aefb3c8583ca53be6ce1fe8036f763f49918065bc7477e03feb973e"
+    },
+    {
+      "path": "E18R-TRZY-STRONY.webp",
+      "bytes": 111024,
+      "sha256": "14f66a31e38c5cdd9e0d6a843a9502f7fabb07ba696b622a366644f656f16abc"
+    },
+    {
+      "path": "E18R-NASADA-DETAL.webp",
+      "bytes": 70612,
+      "sha256": "4ef857bef406bad574cbfa5c50c46fd08c0439e541fdfec53f8f2e34a4d40bd9"
+    },
+    {
+      "path": "E18R-MATERIAL-PRZED-PO.webp",
+      "bytes": 80668,
+      "sha256": "b8e57a6761c4e497f81f8fc66d9598f721cca178acb08d525cbf8d7b65d8f26a"
+    },
+    {
+      "path": "correct.py",
+      "bytes": 5683,
+      "sha256": "1f74c16f77da76e7be22bea1c40fdd400b9b0c4d60a04bc66708f555dd4e79c6"
+    },
+    {
+      "path": "render-exports.py",
+      "bytes": 2573,
+      "sha256": "0cdb19381e948916d984ec699b473c59568346998db09a48ed80d967bfc6f1d2"
+    },
+    {
+      "path": "correction-report.json",
+      "bytes": 876,
+      "sha256": "dca13dfdcbc362ebb8a844178f36e9adb3af7f1deadb4312838c650dd469281f"
+    },
+    {
+      "path": "render-verification.json",
+      "bytes": 4817,
+      "sha256": "0e2c7ea9ebfaed2a8cc19d375ee5b3b3c36b18cc346d2542642cffea7b6aa93b"
+    }
+  ]
+}

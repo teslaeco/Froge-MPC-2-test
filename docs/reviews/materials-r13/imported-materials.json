@@ -1,0 +1,113 @@
+[
+  {
+    "material": "R13 black fine twill",
+    "roughness": 0.8799999952316284,
+    "roughness_links": [
+      [
+        "TEX_IMAGE",
+        "24-R13-black-fine-twill-roughness-bdaa57ca0593.png"
+      ]
+    ],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 ivory linen silk",
+    "roughness": 0.8399999737739563,
+    "roughness_links": [
+      [
+        "TEX_IMAGE",
+        "28-R13-ivory-linen-silk-roughness-9f0237e1b3b0.png"
+      ]
+    ],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 observed living face",
+    "roughness": 0.5799999833106995,
+    "roughness_links": [
+      [
+        "TEX_IMAGE",
+        "26-R13-face-feature-roughness-e27272e2d574.png"
+      ]
+    ],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 observed skeletal face",
+    "roughness": 0.8600000143051147,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 seam R9_bodice_seam_-1_0.3",
+    "roughness": 0.7799999713897705,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 seam R9_bodice_seam_-1_0.67",
+    "roughness": 0.7799999713897705,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 seam R9_bodice_seam_1_0.3",
+    "roughness": 0.7799999713897705,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 seam R9_bodice_seam_1_0.67",
+    "roughness": 0.7799999713897705,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 seam R9_neckline_-1",
+    "roughness": 0.7799999713897705,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 seam R9_neckline_1",
+    "roughness": 0.7799999713897705,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 seam R9_sleeve_edge_-1",
+    "roughness": 0.7799999713897705,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  },
+  {
+    "material": "R13 seam R9_sleeve_edge_1",
+    "roughness": 0.7799999713897705,
+    "roughness_links": [],
+    "normal_links": [
+      "NORMAL_MAP"
+    ]
+  }
+]
