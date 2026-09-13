@@ -23,6 +23,6 @@ jobs:
           cache: npm
       - run: npm ci --no-audit --no-fund
       - name: Type-check archive API and interface
-        run: npx tsc --noEmit --target ES2023 --module ESNext --moduleResolution bundler --jsx react-jsx --esModuleInterop --skipLibCheck --types vite/client,node --strict src/blender/server.ts src/blender/RemoteGenerator.tsx
+        run: npx tsc --ignoreConfig --noEmit --target ES2023 --module ESNext --moduleResolution bundler --jsx react-jsx --esModuleInterop --skipLibCheck --types vite/client,node --strict src/blender/server.ts src/blender/RemoteGenerator.tsx
       - name: Exercise storage, ownership and reopening
         run: npm test -- src/tests/blender-api.test.ts src/tests/blender-ui.test.tsx
