@@ -1,0 +1,93 @@
+{
+  "schema": "forge.production.preflight/1",
+  "blender": "4.3.0",
+  "source_name": "FORGE-E19-print-candidate-200mm.stl",
+  "source_sha256": "aec225c5d3361eb2da75a6540b581b5f6ea0ca6629197e74a7b540c252f7b084",
+  "scope": "Evaluated scene objects, per-object exact-position welded triangle topology. No cross-object welding or Boolean union.",
+  "source_units": "mm",
+  "scene_scale_length": 0.001,
+  "dimensions_mm": [
+    128.70428466796878,
+    83.05342864990234,
+    200.00001525878906
+  ],
+  "expected_height_mm": 200.0,
+  "dimension_matches_expected_height": true,
+  "scale_confirmed_by_customer": false,
+  "mesh_objects": 1,
+  "triangles": 2120444,
+  "objects_failing_topology": [],
+  "totals_position_welded_per_object": {
+    "boundary_edges": 0,
+    "nonmanifold_edges_more_than_two_faces": 0,
+    "inconsistent_winding_edges_two_faces": 0,
+    "collapsed_edges": 0,
+    "components_including_unused_vertices": 1,
+    "unused_vertices": 0
+  },
+  "degenerate_triangles": 0,
+  "manufacturing_ready": false,
+  "manufacturing_status": "not_certified",
+  "unchecked": [
+    "self_intersections",
+    "cross_object_intersections",
+    "nested_internal_shells",
+    "minimum_wall_thickness",
+    "minimum_feature_diameter",
+    "support_orientation",
+    "base_stability",
+    "slicer_result",
+    "material_profile",
+    "CNC_tool_access",
+    "laser_stone_process_test",
+    "physical_sample"
+  ],
+  "objects": [
+    {
+      "status": "topology_pass",
+      "vertices": 1058394,
+      "triangles": 2120444,
+      "position_welded_vertices": 1058394,
+      "exact_duplicate_positions": 0,
+      "raw_topology": {
+        "edges": 3180666,
+        "boundary_edges": 0,
+        "nonmanifold_edges_more_than_two_faces": 0,
+        "inconsistent_winding_edges_two_faces": 0,
+        "collapsed_edges": 0
+      },
+      "position_welded_topology": {
+        "edges": 3180666,
+        "boundary_edges": 0,
+        "nonmanifold_edges_more_than_two_faces": 0,
+        "inconsistent_winding_edges_two_faces": 0,
+        "collapsed_edges": 0,
+        "components_including_unused_vertices": 1,
+        "unused_vertices": 0
+      },
+      "degenerate_triangles": 0,
+      "degenerate_area_threshold_mm2": 1e-12,
+      "bounds_min_mm": [
+        -64.35214233398439,
+        -41.52671432495117,
+        0.0
+      ],
+      "bounds_max_mm": [
+        64.35214233398439,
+        41.52671432495117,
+        200.00001525878906
+      ],
+      "dimensions_mm": [
+        128.70428466796878,
+        83.05342864990234,
+        200.00001525878906
+      ],
+      "surface_area_mm2": 134778.7468881799,
+      "signed_volume_mm3": 190430.95244801743,
+      "volume_note": "Algebraic per-object volume only; overlaps, nesting, self intersections and union are not evaluated.",
+      "name": "FORGE-E19-print-candidate-200mm",
+      "object_type": "MESH",
+      "negative_transform_determinant": false
+    }
+  ]
+}

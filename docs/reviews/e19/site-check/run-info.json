@@ -1,0 +1,29 @@
+{
+  "executed_at": "2026-09-13T03:06:59.178Z",
+  "node": "v24.19.0",
+  "command": "node --test --test-reporter=tap verify-site.cjs",
+  "site_dist": "/workspace/scratch/584c9d97a5a1/public-resume/dist",
+  "input_sha256": {
+    "app.js": "01bc434c8d2850eedc8b6dadba86125703ad5629a42d82b89e32c3dd8dd27475",
+    "index.html": "2df961d3c9a98734305a0c689cce0f8ce91efa9880765f60fa2190754cfc08ce",
+    "viewer.js": "39c02a6ceaa9124cd8bdbbde4f72cf64e390daf92cfd314eabb440b9f758acf0",
+    "assets/release.json": "77ea42e6f6fa8801d7fc1f986f7e88eb3c51e195ad62e7a0a8c98db42743b2a9",
+    "assets/E19-downloads.json": "b87ae27f4f9b8ebe57d6fd44cdeb22fb6341bba03ca3ab3639f7593266e8ce52"
+  },
+  "test_harness_sha256": "8211e19d523c30212c4d95f49ef29239bb6518e7ee3aeb46a6ff85749108b2ea",
+  "results_sha256": "a3cfea7f417ae9d6fb83c09af15f750f27d41df536fc37cd8e94c28d6a1e395f",
+  "models": {
+    "web": {
+      "bytes": 27521620,
+      "sha256": "08b88ea54b5046e579a9dab0e4f85342ffabdf3b9ed5932c3d49a00ec2b63cb4"
+    },
+    "master": {
+      "bytes": 64211024,
+      "sha256": "f5196a7e6b822d50bbfdaa9d7f6051919b7d48a2e6a84fa5f3082cfc45c5e4f9"
+    }
+  },
+  "tests": 20,
+  "passed": 20,
+  "failed": 0,
+  "scope": "Read-only Node DOM/network fixtures and actual split GLB integrity; no browser or WebGL rendering."
+}

@@ -1,0 +1,37 @@
+{
+  "source_sha256": "549795249681f542cdeb856b8504ce9b79216a4db649366ab712d9612daa8453",
+  "hair_vertices_smoothed": 276452,
+  "maximum_hair_displacement_mm": 1.4758646737654857,
+  "maximum_protected_vertex_displacement_mm": 0.0,
+  "protected_margin_mm": 2,
+  "pedestal_radius_mm": 16,
+  "pedestal_z_range_mm": [
+    2,
+    38
+  ],
+  "manufacturing_ready": false,
+  "elapsed_seconds": 52.297281146995374,
+  "status": "rejected_for_sale_do_not_replace_current_final",
+  "visual_review": {
+    "pedestal": "Visible direct central body-to-base support added; material/load qualification not performed",
+    "hair": "Slightly smoother fragments, but perforated ragged hair and facial simplification remain unacceptable",
+    "reference_similarity_improved": false
+  },
+  "topology": {
+    "triangles": 2111868,
+    "connected_components": 1,
+    "boundary_edges": 0,
+    "nonmanifold_edges": 0,
+    "degenerate_triangles": 0
+  },
+  "dimensions_mm": [
+    128.70428466796878,
+    83.05342864990234,
+    199.9386444091797
+  ],
+  "height_200mm_tolerance_passed": false,
+  "stl_sha256": "0ebbc52c8184a6ce3ed3106fcc166530999ba0580c87611443d410ff7cd62852",
+  "glb_sha256": "f27ec0e9783372486beb7a95266ceecf42f972bc1139c8a0e3c0174c2f017527",
+  "comparison": "trial-before-after.png",
+  "original_final_changed": false
+}

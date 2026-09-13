@@ -1,0 +1,40 @@
+{
+  "schema": "forge.print-delivery-verification/1",
+  "files": [
+    {
+      "format": "STL",
+      "file": "FORGE-E19-print-candidate-200mm.stl",
+      "bytes": 106022284,
+      "sha256": "aec225c5d3361eb2da75a6540b581b5f6ea0ca6629197e74a7b540c252f7b084",
+      "topology": "one closed connected component, no detected degenerate triangles or edge topology defects"
+    },
+    {
+      "format": "GLB",
+      "file": "FORGE-E19-print-candidate-200mm.glb",
+      "bytes": 11655952,
+      "sha256": "727e1e8899b1ba179b101d773877f9c49095513534659e2ff47ccde40e9cde6e",
+      "topology": "one closed connected component, no detected degenerate triangles or edge topology defects"
+    }
+  ],
+  "zip_parts_reconstruction_and_crc": "passed",
+  "render_source_and_four_images_hashes": "passed",
+  "print_candidate_visual_review_passed": false,
+  "manufacturing_ready": false,
+  "blocking_findings": [
+    "Ragged hair after manufacturing remesh",
+    "Simplified facial and dental details",
+    "Body-to-base load path and structural support not established",
+    "Minimum feature thickness, self-intersections, slicer/toolpath and physical sample not verified"
+  ],
+  "source_reports": [
+    "print-STL-production-audit.json",
+    "print-GLB-production-audit.json",
+    "print-build-report.json",
+    "print-connection-repair.json",
+    "print-internal-shell-cleanup.json",
+    "print-shell-stitching.json",
+    "print-render-verification.json",
+    "print-production-gate.json",
+    "README-PRINT-E19.md"
+  ]
+}

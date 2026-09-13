@@ -1,0 +1,37 @@
+{
+  "deployment": {
+    "env_set_revision": 0,
+    "failure_message": null,
+    "id": "appgdep_6aa61c9f6c208191870473026181a2be",
+    "project_id": "appgprj_6aa5c12d4f4c81919545504d438b3ff3",
+    "provider_deployment_id": "site---6aa5c12d4f4c81919545504d438b3ff3",
+    "screenshot_asset_pointer": null,
+    "status": "succeeded",
+    "title": "FORGE Studio — modele na zamówienie",
+    "type": "publish",
+    "updated_at": "2026-09-13T03:47:55.457329+00:00",
+    "url": "https://forge-studio-public.terraformingplanet.chatgpt.site",
+    "version_id": "appgprj_6aa5c12d4f4c81919545504d438b3ff3~appgver_78886ebfb0088191bafe4f7d3099dd14"
+  },
+  "version": {
+    "archive_storage": {
+      "archive_format": "tar",
+      "content_hash": "sha256:dcf34527f174b6681f97fe662a34c9fef80964e0fbb7cdf289f5622ff04f8168",
+      "file_count": 65,
+      "sediment_file_id": "file_000000000f348210b19528b597f0728d",
+      "size_bytes": 263342080
+    },
+    "deployment_id": null,
+    "id": "appgprj_6aa5c12d4f4c81919545504d438b3ff3~appgver_78886ebfb0088191bafe4f7d3099dd14",
+    "project_id": "appgprj_6aa5c12d4f4c81919545504d438b3ff3",
+    "screenshot_url": null,
+    "source": {
+      "commit_sha": "fe05d7400b64fefd44736863d870174b5c00280e"
+    },
+    "version_number": 3
+  },
+  "source_sha": "fe05d7400b64fefd44736863d870174b5c00280e",
+  "browser_test_performed": false,
+  "oracle_updated": false,
+  "private_studio_updated": false
+}

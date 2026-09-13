@@ -4,7 +4,7 @@ Prywatna baza rozwoju sklepu TikTok Shop i studia modeli 3D na zamówienie, opar
 
 ## E19: anatomia, skóra 8K i audyt fizycznego produktu — 13 września
 
-**Poprawka generatora v35 przeszła CI i została scalona w [PR #11](https://github.com/teslaeco/Froge-MPC-2-test/pull/11).** Scalenie: `23a7b5859f6093073bedeb037b2ba0e75b142c7b`. **Oracle nie został zaktualizowany w tej sesji.** [Paczka v35](public/downloads/froge-v35.zip) i [instrukcja Cloud Shell](docs/reviews/ORACLE-v35.md) dotyczą istniejącej instalacji.
+**Poprawka generatora v35 przeszła CI i została scalona w [PR #11](https://github.com/teslaeco/Froge-MPC-2-test/pull/11).** Scalenie do `codex/v27-mcp-startup-audit`: `23a7b5859f6093073bedeb037b2ba0e75b142c7b`. Korekta E19 i jej dowody są w osobnym [PR #12](https://github.com/teslaeco/Froge-MPC-2-test/pull/12), nadal draft. **Oracle nie został zaktualizowany w tej sesji.** [Paczka v35](public/downloads/froge-v35.zip) i [instrukcja Cloud Shell](docs/reviews/ORACLE-v35.md) dotyczą istniejącej instalacji.
 
 **Nie używać wcześniejszej paczki v34.** Audyt wykrył, że zawierała serwer i instalator deklarujące wersję 33; zielone testy nie obejmowały zgodności reklamowanego wydania. Host gate już kontrolował API jakości, ale komunikat zakończenia zadania nadal ufał deklaracji agenta. V35 naprawia te niespójności i dodaje testy rzeczywistej zawartości paczki, health, rollbacku oraz komunikatu zadania.
 
@@ -16,11 +16,13 @@ Nowe mapy ciała mają **8192 × 8192 px**: Base Color, ORM i normal. Powstały 
 
 Raport budowy E19: **6 384 581 trójkątów, 379 obiektów siatkowych**. Model pozostaje roboczym rezultatem do oceny. Podobieństwo twarzy, profil czaszki, żywe oko, nos oraz układ długich włosów nadal nie osiągają realizmu referencji. [Zmiany, porównanie z Meshy i ograniczenia](docs/reviews/e19/COMPARISON-E19.md).
 
-**Nie oferujemy tego mastera jako gotowego pliku produkcyjnego.** Audyt finalnego wizualnego E19 wykrył 19 001 otwartych krawędzi. Osobna kopia produkcyjna musi przejść własne pomiary. Potrzebna jest osobna kopia o ustalonej skali, połączonych bryłach i detalach odpowiednich dla wybranej technologii. Akceptacja wyglądu przez klienta nie zastępuje oceny wykonawcy. [Aktualny checkpoint](docs/WORK_CHECKPOINT.md).
+**Nie oferujemy tego mastera jako gotowego pliku produkcyjnego.** Audyt finalnego wizualnego E19 wykrył 19 001 otwartych krawędzi. Kopia konstrukcyjna 200 mm przeszła pomiary topologii (jedna zamknięta składowa), lecz została odrzucona wizualnie do sprzedaży; włosy, rysy i podparcie nadal wymagają poprawy. Ta kopia wymaga dalszej korekty detali i podparcia oraz kwalifikacji dla konkretnej technologii i materiału. Akceptacja wyglądu przez klienta nie zastępuje oceny wykonawcy. [Aktualny checkpoint](docs/WORK_CHECKPOINT.md).
 
 Meshy na dostarczonych screenach lepiej odtwarza podobieństwo twarzy i ciągłość większych form. FORGE / Astra + Blender wnosi edytowalne części, ukierunkowane poprawki oraz jawne testy. Porównanie ze screenów o różnych kamerach i świetle nie jest kontrolowanym rankingiem produktów. Wcześniejsze obserwacje wachlarza i szachownic pozostają przypadkami regresji do odtworzenia. Instrukcje, raporty i testy są pamięcią aplikacji — **nie przeprowadzono treningu wag Astra ani uruchomienia GPU L4**.
 
-Publiczny [FORGE Studio](https://forge-studio-public.terraformingplanet.chatgpt.site) jest pokazem modeli oraz formularzem lokalnego opisu/wyceny. Nie uruchamia płatnego generowania, płatności ani zleceń do wykonawców. Status publikacji danej wersji modelu jest odrębny od scalenia kodu i aktualizacji Oracle.
+Ukończono sześć rzeczywistych widoków po ponownym imporcie GLB, dodatkowe zbliżenie ciała 8K oraz porównania. Przeszło **20 testów Python audytu i reguły dopuszczenia oraz 20 testów Node formularza i pobierania plików**; nie jest to przeglądarkowy test WebGL ani kwalifikacja fizycznej produkcji.
+
+Publiczny [FORGE Studio](https://forge-studio-public.terraformingplanet.chatgpt.site) jest pokazem modeli oraz formularzem lokalnego opisu/wyceny. Nie uruchamia płatnego generowania, płatności ani zleceń do wykonawców. **Publikacja E19 oczekuje na potwierdzenie deploymentu.** Ostatnia potwierdzona publiczna wersja to 2 z E18R; status publikacji jest odrębny od scalenia kodu i aktualizacji Oracle.
 
 
 ## Aktualny priorytet

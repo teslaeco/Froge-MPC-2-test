@@ -1,0 +1,14 @@
+{
+  "can_review_visual_model": true,
+  "can_order_physical_product": false,
+  "status": "requires_geometry_repair",
+  "reasons": [
+    "mesh_topology_requires_repair",
+    "assembly_or_solid_union_not_verified",
+    "degenerate_triangles_require_repair",
+    "manufacturing_process_profile_missing",
+    "target_height_mm_required",
+    "process_specific_engineering_checks_and_sample_not_verified"
+  ],
+  "next_action": "repair_targeted_regions_then_reaudit"
+}

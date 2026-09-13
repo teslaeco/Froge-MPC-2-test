@@ -8,7 +8,7 @@ import math
 import re
 
 
-def production_preflight(audit, current_sha256, process=None, target_height_mm=None):
+def production_preflight(audit, current_sha256, process=None, target_height_mm=None, visual_review=None):
     reasons = []
     if not isinstance(audit, dict) or audit.get('schema') != 'forge.production.preflight/1':
         reasons.append('missing_or_unsupported_production_audit')
@@ -44,6 +44,13 @@ def production_preflight(audit, current_sha256, process=None, target_height_mm=N
             reasons.append('physical_dimensions_missing')
         elif abs(dims[2] - target_height_mm) > 0.01:
             reasons.append('physical_dimensions_do_not_match_order')
+    if visual_review is not None:
+        if not isinstance(visual_review, dict) or visual_review.get('source_sha256') != current_sha256:
+            reasons.append('stale_or_wrong_visual_review')
+        elif visual_review.get('accepted') is False:
+            reasons.append('visual_or_structural_review_requires_repair')
+        elif visual_review.get('accepted') is not True:
+            reasons.append('visual_review_incomplete')
     # The preflight schema has no thickness/intersection/toolpath proof. A
     # manufacturing_ready=true string supplied by a model cannot override this.
     reasons.append('process_specific_engineering_checks_and_sample_not_verified')

@@ -1,0 +1,1257 @@
+{
+  "source_blend_sha256": "863a293797317854d399ab760e873c0f611ad2c86f30d3d977e30c3a244ad634",
+  "method": "Local triangular-prism surface bridges; every retained component preserved, no anatomical deletion",
+  "components_before": 90,
+  "bridge_count": 89,
+  "bridge_details": [
+    {
+      "component": 1,
+      "removed_patch_triangles": [
+        64805,
+        64786
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.10266818106174469,
+      "bridge_edge_lengths_mm": [
+        0.6827931174418425,
+        0.10059364228070371,
+        0.11409310597012408
+      ]
+    },
+    {
+      "component": 2,
+      "removed_patch_triangles": [
+        227091,
+        226991
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 3.8113157749176025,
+      "bridge_edge_lengths_mm": [
+        3.9280456358984184,
+        3.963024496078712,
+        3.8113955544063116
+      ]
+    },
+    {
+      "component": 3,
+      "removed_patch_triangles": [
+        227071,
+        227036
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.9074479341506958,
+      "bridge_edge_lengths_mm": [
+        1.4233671012668694,
+        1.039790523740214,
+        0.8223250347059415
+      ]
+    },
+    {
+      "component": 4,
+      "removed_patch_triangles": [
+        227055,
+        227089
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.5612993836402893,
+      "bridge_edge_lengths_mm": [
+        0.6767100362850949,
+        0.536115432117282,
+        1.1387538179092163
+      ]
+    },
+    {
+      "component": 5,
+      "removed_patch_triangles": [
+        360421,
+        360375
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.462950199842453,
+      "bridge_edge_lengths_mm": [
+        0.7188133385479162,
+        0.7576940401555933,
+        0.7394342146789851
+      ]
+    },
+    {
+      "component": 6,
+      "removed_patch_triangles": [
+        389736,
+        389722
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.02172720991075039,
+      "bridge_edge_lengths_mm": [
+        0.6227445274331521,
+        0.5020656604967778,
+        0.25911685027878373
+      ]
+    },
+    {
+      "component": 7,
+      "removed_patch_triangles": [
+        390691,
+        390688
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.01714952476322651,
+      "bridge_edge_lengths_mm": [
+        0.5670201618734156,
+        0.26290190781971406,
+        0.22886866247095766
+      ]
+    },
+    {
+      "component": 8,
+      "removed_patch_triangles": [
+        374622,
+        374700
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.3007560968399048,
+      "bridge_edge_lengths_mm": [
+        0.6109485740787978,
+        0.22344427940357983,
+        0.7796863082552297
+      ]
+    },
+    {
+      "component": 9,
+      "removed_patch_triangles": [
+        382100,
+        382098
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.659972608089447,
+      "bridge_edge_lengths_mm": [
+        0.6432247174053579,
+        0.694634957530735,
+        0.7088201243883758
+      ]
+    },
+    {
+      "component": 10,
+      "removed_patch_triangles": [
+        382154,
+        382157
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.20343901216983795,
+      "bridge_edge_lengths_mm": [
+        0.4919580340600119,
+        0.3416892753251365,
+        0.6044539687432661
+      ]
+    },
+    {
+      "component": 11,
+      "removed_patch_triangles": [
+        389454,
+        387375
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0320405550301075,
+      "bridge_edge_lengths_mm": [
+        1.084992356715148,
+        0.44110659598916147,
+        0.7925154833089677
+      ]
+    },
+    {
+      "component": 12,
+      "removed_patch_triangles": [
+        399500,
+        399487
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.2655886113643646,
+      "bridge_edge_lengths_mm": [
+        0.9704446354890868,
+        0.8781681548717107,
+        0.9266078052893172
+      ]
+    },
+    {
+      "component": 13,
+      "removed_patch_triangles": [
+        399658,
+        399461
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.40087854862213135,
+      "bridge_edge_lengths_mm": [
+        1.6326034425052105,
+        0.6263154457329467,
+        0.43699573715906526
+      ]
+    },
+    {
+      "component": 14,
+      "removed_patch_triangles": [
+        479860,
+        479943
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0010683825239539146,
+      "bridge_edge_lengths_mm": [
+        0.35991437394362474,
+        0.20540157371860226,
+        0.27568784630255116
+      ]
+    },
+    {
+      "component": 15,
+      "removed_patch_triangles": [
+        484152,
+        484051
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.00925367884337902,
+      "bridge_edge_lengths_mm": [
+        0.058127220031742526,
+        0.27417649519242776,
+        0.6810459362516322
+      ]
+    },
+    {
+      "component": 16,
+      "removed_patch_triangles": [
+        490456,
+        490518
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.11840411275625229,
+      "bridge_edge_lengths_mm": [
+        0.3914542986150587,
+        1.0908373658479473,
+        0.562051499384652
+      ]
+    },
+    {
+      "component": 17,
+      "removed_patch_triangles": [
+        619798,
+        622511
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.09747159481048584,
+      "bridge_edge_lengths_mm": [
+        0.7379495515318525,
+        0.2143945271281497,
+        0.2272390885373109
+      ]
+    },
+    {
+      "component": 18,
+      "removed_patch_triangles": [
+        1635394,
+        1635374
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.01177051942795515,
+      "bridge_edge_lengths_mm": [
+        0.11438860374676338,
+        0.5219824022383293,
+        0.9964152598241103
+      ]
+    },
+    {
+      "component": 19,
+      "removed_patch_triangles": [
+        675779,
+        675802
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0142127750441432,
+      "bridge_edge_lengths_mm": [
+        0.7384225964159311,
+        0.725419155362021,
+        0.3441811536356141
+      ]
+    },
+    {
+      "component": 20,
+      "removed_patch_triangles": [
+        720584,
+        720554
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.3649834096431732,
+      "bridge_edge_lengths_mm": [
+        0.4429684544723592,
+        0.31712856752943114,
+        0.6504598679862067
+      ]
+    },
+    {
+      "component": 21,
+      "removed_patch_triangles": [
+        720754,
+        720758
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.04986189678311348,
+      "bridge_edge_lengths_mm": [
+        0.3887691527057193,
+        1.620794713057945,
+        0.3072695273087892
+      ]
+    },
+    {
+      "component": 22,
+      "removed_patch_triangles": [
+        729418,
+        729459
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.5284757018089294,
+      "bridge_edge_lengths_mm": [
+        1.0652265596634343,
+        0.8630162005758342,
+        0.5442813578992988
+      ]
+    },
+    {
+      "component": 23,
+      "removed_patch_triangles": [
+        750683,
+        750698
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.880865216255188,
+      "bridge_edge_lengths_mm": [
+        0.9953579135132127,
+        0.8776875430915565,
+        0.9110027514966126
+      ]
+    },
+    {
+      "component": 24,
+      "removed_patch_triangles": [
+        757591,
+        765975
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 2.512303352355957,
+      "bridge_edge_lengths_mm": [
+        2.4316498033600014,
+        2.591684081468819,
+        2.825889170707784
+      ]
+    },
+    {
+      "component": 25,
+      "removed_patch_triangles": [
+        1736690,
+        765979
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 2.460660696029663,
+      "bridge_edge_lengths_mm": [
+        2.307961849840741,
+        2.432882790850481,
+        2.6705417643461877
+      ]
+    },
+    {
+      "component": 26,
+      "removed_patch_triangles": [
+        766072,
+        766135
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0565667450428009,
+      "bridge_edge_lengths_mm": [
+        1.118168710783945,
+        0.12317930602892192,
+        0.7328979018350744
+      ]
+    },
+    {
+      "component": 27,
+      "removed_patch_triangles": [
+        805630,
+        789467
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.004617840517312288,
+      "bridge_edge_lengths_mm": [
+        0.6310531116277135,
+        0.055516461678674224,
+        0.36523358677652956
+      ]
+    },
+    {
+      "component": 28,
+      "removed_patch_triangles": [
+        790473,
+        790550
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.6820747256278992,
+      "bridge_edge_lengths_mm": [
+        0.5407945619702029,
+        0.9088937490853776,
+        0.8462508340611207
+      ]
+    },
+    {
+      "component": 29,
+      "removed_patch_triangles": [
+        796204,
+        796158
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.3402707576751709,
+      "bridge_edge_lengths_mm": [
+        0.2766051108964343,
+        0.6061615044626765,
+        0.6970894241650809
+      ]
+    },
+    {
+      "component": 30,
+      "removed_patch_triangles": [
+        798821,
+        798817
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0004399057652335614,
+      "bridge_edge_lengths_mm": [
+        0.8439998632452279,
+        0.12717904540976227,
+        0.6058799891408883
+      ]
+    },
+    {
+      "component": 31,
+      "removed_patch_triangles": [
+        801766,
+        801779
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.16816191375255585,
+      "bridge_edge_lengths_mm": [
+        0.59886509240005,
+        0.1080091984224194,
+        0.1328195154068954
+      ]
+    },
+    {
+      "component": 32,
+      "removed_patch_triangles": [
+        820937,
+        820889
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.131837397813797,
+      "bridge_edge_lengths_mm": [
+        1.009686142202057,
+        0.7680130067148987,
+        0.9800359515621399
+      ]
+    },
+    {
+      "component": 33,
+      "removed_patch_triangles": [
+        810391,
+        810444
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.25932201743125916,
+      "bridge_edge_lengths_mm": [
+        0.6410884939574242,
+        0.5963188743670347,
+        0.28333373205336154
+      ]
+    },
+    {
+      "component": 34,
+      "removed_patch_triangles": [
+        819497,
+        819491
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.017271138727664948,
+      "bridge_edge_lengths_mm": [
+        0.7532789855018299,
+        0.2263169723928603,
+        1.1920310580463407
+      ]
+    },
+    {
+      "component": 35,
+      "removed_patch_triangles": [
+        811408,
+        829890
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.08280842751264572,
+      "bridge_edge_lengths_mm": [
+        0.408337141281746,
+        0.6828449708360086,
+        0.8306454205373415
+      ]
+    },
+    {
+      "component": 36,
+      "removed_patch_triangles": [
+        882661,
+        882653
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.40703484416007996,
+      "bridge_edge_lengths_mm": [
+        0.4819592311358571,
+        0.43753766024598434,
+        0.49385235456657456
+      ]
+    },
+    {
+      "component": 37,
+      "removed_patch_triangles": [
+        885052,
+        885057
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.10852670669555664,
+      "bridge_edge_lengths_mm": [
+        0.4597813311381598,
+        0.566601508776361,
+        0.2063215892571867
+      ]
+    },
+    {
+      "component": 38,
+      "removed_patch_triangles": [
+        884816,
+        884815
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.17830023169517517,
+      "bridge_edge_lengths_mm": [
+        0.2291717022365645,
+        0.710223088521398,
+        0.3877825955772949
+      ]
+    },
+    {
+      "component": 39,
+      "removed_patch_triangles": [
+        885347,
+        885355
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0051070693880319595,
+      "bridge_edge_lengths_mm": [
+        0.2831457114034311,
+        0.8154127551012741,
+        0.6230435602185322
+      ]
+    },
+    {
+      "component": 40,
+      "removed_patch_triangles": [
+        906077,
+        906121
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.19065795838832855,
+      "bridge_edge_lengths_mm": [
+        0.5715735714855805,
+        0.2855274241357369,
+        0.07948631905897037
+      ]
+    },
+    {
+      "component": 41,
+      "removed_patch_triangles": [
+        906174,
+        906137
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.6603354811668396,
+      "bridge_edge_lengths_mm": [
+        0.6137167209349926,
+        1.1551427546672635,
+        1.2430607932631528
+      ]
+    },
+    {
+      "component": 42,
+      "removed_patch_triangles": [
+        934206,
+        934209
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.35884010791778564,
+      "bridge_edge_lengths_mm": [
+        0.35742742342027756,
+        0.549816141932336,
+        0.5500327575656542
+      ]
+    },
+    {
+      "component": 43,
+      "removed_patch_triangles": [
+        934284,
+        934305
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.19877959787845612,
+      "bridge_edge_lengths_mm": [
+        1.0211050073079788,
+        0.05352739677157424,
+        0.4125308840850282
+      ]
+    },
+    {
+      "component": 44,
+      "removed_patch_triangles": [
+        979857,
+        979851
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.20622283220291138,
+      "bridge_edge_lengths_mm": [
+        0.8251507737375671,
+        0.6083307865001856,
+        0.25702348484939036
+      ]
+    },
+    {
+      "component": 45,
+      "removed_patch_triangles": [
+        1010314,
+        1010386
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0020030441228300333,
+      "bridge_edge_lengths_mm": [
+        0.14678460834533624,
+        0.023447765893536497,
+        0.303624990803602
+      ]
+    },
+    {
+      "component": 46,
+      "removed_patch_triangles": [
+        1032618,
+        1032620
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.4437740445137024,
+      "bridge_edge_lengths_mm": [
+        0.46436130019898825,
+        1.6856989390943737,
+        1.6691827066855558
+      ]
+    },
+    {
+      "component": 47,
+      "removed_patch_triangles": [
+        1047460,
+        1047451
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.3605114817619324,
+      "bridge_edge_lengths_mm": [
+        0.3375418232477815,
+        0.704609918016284,
+        0.711237558224973
+      ]
+    },
+    {
+      "component": 48,
+      "removed_patch_triangles": [
+        1058187,
+        1058172
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.012299991212785244,
+      "bridge_edge_lengths_mm": [
+        0.6126170291040879,
+        0.1187659912126196,
+        0.22427318049639677
+      ]
+    },
+    {
+      "component": 49,
+      "removed_patch_triangles": [
+        1272020,
+        1271960
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.42612773180007935,
+      "bridge_edge_lengths_mm": [
+        0.9066504748933653,
+        0.35798052737857017,
+        0.8303623919575236
+      ]
+    },
+    {
+      "component": 50,
+      "removed_patch_triangles": [
+        1360487,
+        1360485
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.12446567416191101,
+      "bridge_edge_lengths_mm": [
+        0.776560008013142,
+        0.35868260265870394,
+        0.5559597516851792
+      ]
+    },
+    {
+      "component": 51,
+      "removed_patch_triangles": [
+        1406949,
+        1406884
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.20721937716007233,
+      "bridge_edge_lengths_mm": [
+        0.4832161863562079,
+        0.5840184319720001,
+        0.2158129684962048
+      ]
+    },
+    {
+      "component": 52,
+      "removed_patch_triangles": [
+        1439608,
+        1412851
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.09114519506692886,
+      "bridge_edge_lengths_mm": [
+        2.4471625034925064,
+        2.535568352180226,
+        0.08222196645701976
+      ]
+    },
+    {
+      "component": 53,
+      "removed_patch_triangles": [
+        1422466,
+        1422540
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.004100870806723833,
+      "bridge_edge_lengths_mm": [
+        0.47847737128165246,
+        1.2301376436818567,
+        0.4413176762966229
+      ]
+    },
+    {
+      "component": 54,
+      "removed_patch_triangles": [
+        1436600,
+        1436602
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.02417934313416481,
+      "bridge_edge_lengths_mm": [
+        0.5118021939835045,
+        0.7569310936243214,
+        0.5979649695557173
+      ]
+    },
+    {
+      "component": 55,
+      "removed_patch_triangles": [
+        1473299,
+        1474614
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.25853583216667175,
+      "bridge_edge_lengths_mm": [
+        0.7201456009308139,
+        0.4952743048234257,
+        0.7229111984756912
+      ]
+    },
+    {
+      "component": 56,
+      "removed_patch_triangles": [
+        1477966,
+        1477943
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.20824462175369263,
+      "bridge_edge_lengths_mm": [
+        0.5666728417713608,
+        0.22739606344341598,
+        0.43967734896942795
+      ]
+    },
+    {
+      "component": 57,
+      "removed_patch_triangles": [
+        1557806,
+        1557674
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.032418493181467056,
+      "bridge_edge_lengths_mm": [
+        0.8166535678309684,
+        0.6374139245022642,
+        0.3588528014556545
+      ]
+    },
+    {
+      "component": 58,
+      "removed_patch_triangles": [
+        1560873,
+        1560889
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.007041347213089466,
+      "bridge_edge_lengths_mm": [
+        0.3497312762683302,
+        0.9047867979472505,
+        0.2456064411381796
+      ]
+    },
+    {
+      "component": 59,
+      "removed_patch_triangles": [
+        1564594,
+        1564664
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.023846590891480446,
+      "bridge_edge_lengths_mm": [
+        0.48073871504091154,
+        0.08072959459824129,
+        0.6398793048590187
+      ]
+    },
+    {
+      "component": 60,
+      "removed_patch_triangles": [
+        1564539,
+        1564742
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.011038841679692268,
+      "bridge_edge_lengths_mm": [
+        0.0876054368198774,
+        2.0359197693175703,
+        0.1465038926811025
+      ]
+    },
+    {
+      "component": 61,
+      "removed_patch_triangles": [
+        1576072,
+        2090383
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.033551525324583054,
+      "bridge_edge_lengths_mm": [
+        0.46904516864286977,
+        0.8301346579878286,
+        1.015892736852304
+      ]
+    },
+    {
+      "component": 62,
+      "removed_patch_triangles": [
+        1587647,
+        2107343
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.2816852629184723,
+      "bridge_edge_lengths_mm": [
+        0.14519032374623422,
+        0.8981638180866074,
+        0.6214463116822577
+      ]
+    },
+    {
+      "component": 63,
+      "removed_patch_triangles": [
+        1738683,
+        1738210
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.536859929561615,
+      "bridge_edge_lengths_mm": [
+        0.5699865358567936,
+        0.8506218486260888,
+        0.4930927817170304
+      ]
+    },
+    {
+      "component": 64,
+      "removed_patch_triangles": [
+        767791,
+        1738651
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.49352115392684937,
+      "bridge_edge_lengths_mm": [
+        0.3376565713588115,
+        1.1349474966350306,
+        0.8896848684634238
+      ]
+    },
+    {
+      "component": 65,
+      "removed_patch_triangles": [
+        1762260,
+        1870314
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.4565325677394867,
+      "bridge_edge_lengths_mm": [
+        0.8930775741916006,
+        0.15118622248037333,
+        1.3210151810520756
+      ]
+    },
+    {
+      "component": 66,
+      "removed_patch_triangles": [
+        1772283,
+        1772276
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.38855862617492676,
+      "bridge_edge_lengths_mm": [
+        0.3693087109071849,
+        0.5566020114875289,
+        0.3774896225243158
+      ]
+    },
+    {
+      "component": 67,
+      "removed_patch_triangles": [
+        1827144,
+        1825314
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.33696645498275757,
+      "bridge_edge_lengths_mm": [
+        0.6107164612983533,
+        0.5942500505038267,
+        0.2203515157556613
+      ]
+    },
+    {
+      "component": 68,
+      "removed_patch_triangles": [
+        1839151,
+        1839167
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 5.188549403101206e-05,
+      "bridge_edge_lengths_mm": [
+        0.27304342702302004,
+        0.778770980453034,
+        0.462768443672718
+      ]
+    },
+    {
+      "component": 69,
+      "removed_patch_triangles": [
+        1829208,
+        1829287
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.22336558997631073,
+      "bridge_edge_lengths_mm": [
+        0.7033809859184184,
+        0.14866039886816615,
+        0.26327751491892515
+      ]
+    },
+    {
+      "component": 70,
+      "removed_patch_triangles": [
+        1829932,
+        1829940
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.31825166940689087,
+      "bridge_edge_lengths_mm": [
+        0.5643166498594745,
+        0.5789418936601547,
+        0.7535588624724501
+      ]
+    },
+    {
+      "component": 71,
+      "removed_patch_triangles": [
+        1839876,
+        1839878
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.1573132872581482,
+      "bridge_edge_lengths_mm": [
+        0.5773564386035565,
+        0.44883026594063696,
+        0.6606290210654453
+      ]
+    },
+    {
+      "component": 72,
+      "removed_patch_triangles": [
+        1873151,
+        1872773
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.09444734454154968,
+      "bridge_edge_lengths_mm": [
+        0.32861033595475975,
+        0.7651916626107205,
+        0.26946787962254026
+      ]
+    },
+    {
+      "component": 73,
+      "removed_patch_triangles": [
+        1906391,
+        1905967
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.04557020217180252,
+      "bridge_edge_lengths_mm": [
+        0.7565734810754227,
+        0.655760051606965,
+        0.5183027699406366
+      ]
+    },
+    {
+      "component": 74,
+      "removed_patch_triangles": [
+        1907821,
+        1906400
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.19759997725486755,
+      "bridge_edge_lengths_mm": [
+        0.474786840873482,
+        0.05001010752595543,
+        0.31421814015415916
+      ]
+    },
+    {
+      "component": 75,
+      "removed_patch_triangles": [
+        1915079,
+        1915127
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0759584829211235,
+      "bridge_edge_lengths_mm": [
+        0.5783786480083986,
+        0.41085565567678,
+        0.8789106187386153
+      ]
+    },
+    {
+      "component": 76,
+      "removed_patch_triangles": [
+        1958275,
+        1928553
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.08023518323898315,
+      "bridge_edge_lengths_mm": [
+        0.8417398093044884,
+        0.2660001213202082,
+        0.4247980530958287
+      ]
+    },
+    {
+      "component": 77,
+      "removed_patch_triangles": [
+        1929832,
+        1929883
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.02276109717786312,
+      "bridge_edge_lengths_mm": [
+        0.5468849092655708,
+        1.038526575276868,
+        0.6779969900926501
+      ]
+    },
+    {
+      "component": 78,
+      "removed_patch_triangles": [
+        1931803,
+        1931788
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.1466774046421051,
+      "bridge_edge_lengths_mm": [
+        0.6980009120043515,
+        0.18772586835439187,
+        0.5802387903625653
+      ]
+    },
+    {
+      "component": 79,
+      "removed_patch_triangles": [
+        1967860,
+        1967802
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.057755324989557266,
+      "bridge_edge_lengths_mm": [
+        0.9798170053679656,
+        0.19451950537643375,
+        0.16983868405121877
+      ]
+    },
+    {
+      "component": 80,
+      "removed_patch_triangles": [
+        1973397,
+        1972448
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.26911112666130066,
+      "bridge_edge_lengths_mm": [
+        0.7445627976457799,
+        0.9576847848529961,
+        0.24749011165672496
+      ]
+    },
+    {
+      "component": 81,
+      "removed_patch_triangles": [
+        1995356,
+        1995239
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.004709866363555193,
+      "bridge_edge_lengths_mm": [
+        0.20478565334911153,
+        0.28253134878134406,
+        0.6667165275752492
+      ]
+    },
+    {
+      "component": 82,
+      "removed_patch_triangles": [
+        1995725,
+        1995705
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.008352215401828289,
+      "bridge_edge_lengths_mm": [
+        0.33992184425665295,
+        0.06798265822547239,
+        0.5808454016339064
+      ]
+    },
+    {
+      "component": 83,
+      "removed_patch_triangles": [
+        2031312,
+        2031288
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0006852641236037016,
+      "bridge_edge_lengths_mm": [
+        0.45710136577702565,
+        0.44703729701165745,
+        0.26284885994242724
+      ]
+    },
+    {
+      "component": 84,
+      "removed_patch_triangles": [
+        2049502,
+        2049354
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.002190962666645646,
+      "bridge_edge_lengths_mm": [
+        0.9982193687761288,
+        0.5728029881400295,
+        0.5056953939727687
+      ]
+    },
+    {
+      "component": 85,
+      "removed_patch_triangles": [
+        2052064,
+        2050336
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.008576245978474617,
+      "bridge_edge_lengths_mm": [
+        0.06891270575981454,
+        0.10074335614007321,
+        1.4504191834038922
+      ]
+    },
+    {
+      "component": 86,
+      "removed_patch_triangles": [
+        2069082,
+        2069101
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.3457641899585724,
+      "bridge_edge_lengths_mm": [
+        0.28449970026444027,
+        0.5328224694184263,
+        0.5878394111725913
+      ]
+    },
+    {
+      "component": 87,
+      "removed_patch_triangles": [
+        2085672,
+        2085592
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.31316083669662476,
+      "bridge_edge_lengths_mm": [
+        0.6793331611570346,
+        0.31081518507684264,
+        0.39605716962093246
+      ]
+    },
+    {
+      "component": 88,
+      "removed_patch_triangles": [
+        2093459,
+        2094028
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.04157501459121704,
+      "bridge_edge_lengths_mm": [
+        0.5758766739341307,
+        0.8741733540710603,
+        0.9666109978567216
+      ]
+    },
+    {
+      "component": 89,
+      "removed_patch_triangles": [
+        2104382,
+        2104394
+      ],
+      "added_triangles": 6,
+      "nearest_surface_distance_mm": 0.0027660848572850227,
+      "bridge_edge_lengths_mm": [
+        0.7462752813940723,
+        0.39944425147602125,
+        0.43271288382926554
+      ]
+    }
+  ],
+  "minimum_thickness_and_self_intersections_unchecked": true,
+  "manufacturing_ready": false,
+  "final_stl_sha256": "aec225c5d3361eb2da75a6540b581b5f6ea0ca6629197e74a7b540c252f7b084"
+}

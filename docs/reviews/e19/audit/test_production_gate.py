@@ -28,4 +28,25 @@ class ProductionGateTests(unittest.TestCase):
     def test_nan_scale_blocked(self):
         self.assertIn('target_height_mm_required',production_preflight(CLEAN,SHA,PROFILE,float('nan'))['reasons'])
 
+
+
+class VisualReviewTests(unittest.TestCase):
+    def test_rejected_review_requests_repair(self):
+        h='a'*64
+        result=production_preflight(CLEAN,h,PROFILE,100,visual_review={'source_sha256':h,'accepted':False})
+        self.assertEqual(result['status'],'requires_geometry_repair')
+        self.assertFalse(result['can_order_physical_product'])
+    def test_stale_review_is_identified(self):
+        result=production_preflight(CLEAN,'a'*64,PROFILE,100,visual_review={'source_sha256':'b'*64,'accepted':True})
+        self.assertIn('stale_or_wrong_visual_review',result['reasons'])
+    def test_incomplete_review_is_identified(self):
+        h='a'*64
+        result=production_preflight(CLEAN,h,PROFILE,100,visual_review={'source_sha256':h,'accepted':'yes'})
+        self.assertIn('visual_review_incomplete',result['reasons'])
+    def test_visual_approval_cannot_approve_manufacturing(self):
+        h='a'*64
+        result=production_preflight(CLEAN,h,PROFILE,100,visual_review={'source_sha256':h,'accepted':True})
+        self.assertFalse(result['can_order_physical_product'])
+        self.assertIn('process_specific_engineering_checks_and_sample_not_verified',result['reasons'])
+
 if __name__=='__main__':unittest.main()

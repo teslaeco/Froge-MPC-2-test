@@ -1,0 +1,44 @@
+{
+  "source": "FORGE-E19-smooth-support-trial.glb",
+  "source_sha256": "f27ec0e9783372486beb7a95266ceecf42f972bc1139c8a0e3c0174c2f017527",
+  "render": "real Blender Cycles reimport, neutral clay",
+  "resolution": [
+    640,
+    800
+  ],
+  "samples": 24,
+  "views": [
+    {
+      "view": "front",
+      "path": "print-front.png",
+      "sha256": "7f24711d32535aa130dc612be5c5988a6f7b967aff49df76148299f7a8b0a6f8",
+      "camera_location": [
+        0,
+        -0.8,
+        0.13
+      ],
+      "camera_target": [
+        0,
+        0,
+        0.1
+      ],
+      "orthographic_scale_m": 0.245
+    },
+    {
+      "view": "face",
+      "path": "print-face.png",
+      "sha256": "7f4ce154beee307e1217b5004a7888684523df12b56d64a69da2a1bdaf610f43",
+      "camera_location": [
+        0.15,
+        -0.8,
+        0.205
+      ],
+      "camera_target": [
+        0,
+        0,
+        0.177
+      ],
+      "orthographic_scale_m": 0.075
+    }
+  ]
+}

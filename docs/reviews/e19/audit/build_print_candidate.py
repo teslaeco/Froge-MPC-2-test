@@ -68,7 +68,7 @@ def main():
     matrix=Matrix.Translation(Vector((0,0,4.0))) @ Matrix.Diagonal((scale,scale,scale,1.)) @ Matrix.Translation(Vector(-origin))
     # Original glTF coordinates are metres; these prototype object coordinates
     # intentionally become millimetres. Scene unit scale is adjusted below.
-    skipped=[];solidified=[];decimated=[];objects=[]
+    skipped=[];solidified=[];decimated=[];capped=[];objects=[]
     for obj in list(source_objects):
         name=obj.name.lower()
         if any(t in name for t in ('individual hair fibers','960 tapered hairline fibers','lash','eyeliner','cornea','tearline','catchlight')):
@@ -92,6 +92,11 @@ def main():
         bmesh.ops.dissolve_degenerate(bm,edges=list(bm.edges),dist=1e-7)
         bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces))
         boundary=sum(e.is_boundary for e in bm.edges)
+        if boundary and any(token in obj.name.lower() for token in ('tailored_split_gown','continuous_shoulders_neck','gathered_sleeve','upper_arm')):
+            filled=bmesh.ops.holes_fill(bm,edges=[e for e in bm.edges if e.is_boundary],sides=0)
+            bmesh.ops.recalc_face_normals(bm,faces=list(bm.faces))
+            capped.append({'name':obj.name,'boundary_before':boundary,'cap_faces_created':len(filled.get('faces',[])),'purpose':'filled structural body instead of hollow shell'})
+            boundary=sum(e.is_boundary for e in bm.edges)
         bm.to_mesh(obj.data);bm.free();obj.data.update()
         obj.data.materials.clear()
         for layer in list(obj.data.uv_layers):obj.data.uv_layers.remove(layer)
@@ -159,7 +164,7 @@ def main():
             'working_assumed_total_height_mm':args.height_mm,'measured_dimensions_mm':dims,
             'scale_confirmed_by_customer':False,'nominal_voxel_mm':args.voxel_mm,'print_copy_seam_weld_tolerance_mm':0.0001,'post_remesh_uniform_dimension_scale':final_scale,
             'nominal_added_shell_thickness_mm':0.9,'base_height_mm':5.,'base_overlap_with_hem_mm':1.,
-            'omitted_visual_layers':skipped,'solidified_objects':solidified,'print_only_simplification':decimated,
+            'omitted_visual_layers':skipped,'solidified_objects':solidified,'print_only_simplification':decimated,'structural_opening_caps':capped,
             'manufacturing_ready':False,'post_export_audit_required':True,
             'limitations':['Nominal solidify thickness is not measured minimum thickness.','Voxel union changes fine details, hair, teeth and seam edges.','STL has no texture or standardized stored unit; this file uses mm.','FDM infill is a separate slicer parameter; no100%infill print was performed.','Machine/material/supports/thickness/tool access and physical proof are unverified.'],
             'stl_sha256':hashlib.sha256(stl.read_bytes()).hexdigest()}

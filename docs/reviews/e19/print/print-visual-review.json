@@ -1,0 +1,9 @@
+{
+  "source_sha256": "aec225c5d3361eb2da75a6540b581b5f6ea0ca6629197e74a7b540c252f7b084",
+  "accepted": false,
+  "findings": [
+    "ragged_hair",
+    "simplified_face_teeth",
+    "body_to_base_support_not_established"
+  ]
+}

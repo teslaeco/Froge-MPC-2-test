@@ -1,6 +1,6 @@
 # E19 — korekta modelu, porównanie z Meshy i warunki produkcji
 
-Stan: 13 września 2026. E19 jest korektą postaci w sukni na podstawie E18R. Nie jest nową Julią w bluzie ani Atlasem. Model i tekstury rzeczywiście wygenerowano w Blenderze 4.3.0. To rezultat roboczy, bez zatwierdzenia idealnego podobieństwa i bez dopuszczenia do fizycznej produkcji.
+Stan: 13 września 2026. E19 jest korektą postaci w sukni na podstawie E18R. Nie jest nową Julią w bluzie ani Atlasem. Model i tekstury rzeczywiście poprawiono w Blenderze 4.3.0. To rezultat roboczy, bez zatwierdzenia idealnego podobieństwa i bez dopuszczenia do fizycznej produkcji.
 
 ## Co zmieniono w pliku
 
@@ -41,13 +41,13 @@ Raport wspólnej sceny podaje **6 384 581 trójkątów i 379 obiektów siatkowyc
 | Materiały i skóra | Wygląd referencyjny jest przekonujący w dostarczonym ujęciu | Udokumentowane mapy ciała 8K, UV i semantyka kanałów; E18R usunął błędny biały sheen czarnej sukni | Nie porównano map obu plików, pokrycia UV ani faktycznej ilości detalu twarzy |
 | Królowa Neptuna i wachlarz | Brak aktualnego, porównywalnego eksportu Meshy tego samego zadania | Zachowany model wachlarza i wcześniejsza obserwacja użytkownika o lepszym układzie jego geometrii | To obserwacja konkretnej wcześniejszej próby, nie potwierdzona ogólna przewaga |
 | Szachownice 64/512 pól | Użytkownik zgłaszał błędną liczbę pól lub kolory wcześniejszych prób | Mierzalne sprawdzanie liczby, pozycji i naprzemienności przypisanych materiałów; celowe błędy wykrywane w testach | Test nie mierzy dowolnej fotograficznej tekstury szachownicy i nie jest nowym benchmarkiem Meshy |
-| Produkt fizyczny | Screen nie pozwala zatwierdzić bryły, grubości i podpór | Jest audyt wejściowego E18R i osobny proces przygotowania kopii produkcyjnej | Żaden dostępny screen nie dowodzi gotowości do sprzedaży ani przewagi w druku |
+| Produkt fizyczny | Screen nie pozwala zatwierdzić bryły, grubości i podpór | Ukończono audyty E18R i E19 oraz osobną, zamkniętą kopię 200 mm; ta kopia nie przeszła oceny wizualnej do sprzedaży | Żaden dostępny screen nie dowodzi gotowości do sprzedaży ani przewagi w druku |
 
 Meshy jest wartościowym narzędziem rekonstrukcji obrazu i mocnym punktem odniesienia. Astra + Blender może uzupełnić taki proces przez lokalne poprawki, parametryczne części i weryfikację. W tych próbach Meshy lepiej odtwarza część cech referencji; zalety edycji FORGE nie są automatycznie przewagą wizualną. Nie przyznajemy zmyślonych procentów podobieństwa ani rankingu całych produktów.
 
 ## Dlaczego master wizualny nie jest jeszcze produktem fizycznym
 
-Audyt dotyczył **wejściowego E18R**, SHA256 `6f8bef167a6d0e9dc67d4fce67df3782f0bdffb69ede54f8f62a799520f5b6db`. Wykryto 19 001 krawędzi otwartych, 44 024 krawędzie należące do więcej niż dwóch trójkątów, 8 481 niespójnych kierunkowo krawędzi i 121 092 trójkąty zdegenerowane. Połączono jedynie identyczne pozycje na potrzeby analizy szwów UV; nie zamykano szczelin tolerancją. **Nie wolno przypisywać tych liczb nowemu E19 bez jego osobnego audytu.**
+Audyt bazowy dotyczył **wejściowego E18R**, SHA256 `6f8bef167a6d0e9dc67d4fce67df3782f0bdffb69ede54f8f62a799520f5b6db`. Wykryto 19 001 krawędzi otwartych, 44 024 krawędzie należące do więcej niż dwóch trójkątów, 8 481 niespójnych kierunkowo krawędzi i 121 092 trójkąty zdegenerowane. Połączono jedynie identyczne pozycje na potrzeby analizy szwów UV; nie zamykano szczelin tolerancją. Te liczby opisują wyłącznie E18R. Oddzielny audyt finalnego E19 i ukończonej kopii konstrukcyjnej przedstawiono poniżej.
 
 Oddzielna próbka kontrolna walca i kuli przeszła konwersję oraz ponowny import: jedna składowa, 53 916 trójkątów i zero wykrytych błędów topologii. To sprawdza skrypt oraz jednostki, nie dopuszcza postaci E19. Szczegóły w [audycie](audit/PRODUCTION-AND-MESHY-REVIEW.md).
 
@@ -87,4 +87,25 @@ Ponowny import obu GLB potwierdził **6 384 581 trójkątów**. Master zawiera t
 
 Audyt finalnego **wizualnego** E19 wykazał 19 001 otwartych krawędzi, 47 116 krawędzi o więcej niż dwóch incydentnych ścianach i 124 634 zdegenerowane trójkąty po dokładnym połączeniu identycznych pozycji. To diagnostyka zbioru osobnych części, nie test scalonej bryły. [Pełne dane E19](audit/E19-production-audit.json). Duża część problemów dotyczy włosów. Liczba trójkątów nie oznacza gotowości produkcyjnej.
 
-Osobna kopia produkcyjna jest opracowywana niezależnie i wymaga własnego raportu. Master wizualny pozostaje zablokowany do sprzedaży jako gotowy plik do wykonania fizycznego.
+Osobna kopia konstrukcyjna została ukończona, sprawdzona i odrzucona wizualnie do sprzedaży — szczegóły poniżej. Master wizualny pozostaje zablokowany do sprzedaży jako gotowy plik do wykonania fizycznego.
+
+
+## Wynik końcowy audytu kopii konstrukcyjnej
+
+STL oraz ponownie importowany GLB mają **2 120 444 trójkąty, jedną połączoną składową i zero wykrytych błędów topologii krawędzi oraz degeneracji**. Wysokość STL: 200,000015 mm. [Raport STL](print/print-STL-production-audit.json), [raport GLB](print/print-GLB-production-audit.json), [manifest końcowy](print/print-final-delivery-manifest.json).
+
+**Odrzucono tę kopię do sprzedaży.** Rendery pokazują poszarpane włosy i uproszczone rysy/uzębienie; nie potwierdzono poprawnego podparcia tułowia i minimalnych grubości. Jedna zamknięta siatka nie jest certyfikatem produktu. [Opis ograniczeń](print/README-PRINT-E19.md).
+
+![Odrzucona kopia konstrukcyjna](images/E19-PRINT.webp)
+
+Po odrzuceniu wykonano dodatkową izolowaną próbę wygładzenia włosów i centralnego piedestału. Piedestał zmienia sposób podparcia, ale wygląd włosów i twarzy nadal jest niewystarczający; wysokość 199,9386 mm nie przeszła przyjętej tolerancji 200 ±0,01 mm. Nie zastąpiono nią pliku referencyjnego ani nie nazwano produktem gotowym do wykonania.
+
+Audyt i reguła dopuszczenia fizycznego zamówienia są modułami offline, nie integracją działającą już na Oracle. Reguła łączy uwagi z hashem bieżącego STL i po odrzuceniu wyglądu zwraca wymóg naprawy. **20 testów metryk/reguły oraz 20 testów formularza i pobierania plików przeszło**. Testy strony korzystają z kontrolowanego DOM w Node; nie obejmują przeglądarkowego WebGL.
+
+Master wizualny zawiera 6 384 581 trójkątów i trzy mapy ciała/szyi 8K. Nie dokonano nowego skanu ani treningu wag. Baza źródłowa, mapy, rendery i edytowalny master zostały zachowane w repozytorium źródłowym publicznego FORGE Studio. E19 jest nadal wersją roboczą do oceny.
+
+## Kod i publikacja
+
+[PR #11](https://github.com/teslaeco/Froge-MPC-2-test/pull/11) scalono do `codex/v27-mcp-startup-audit` w commicie `23a7b5859f6093073bedeb037b2ba0e75b142c7b`. [PR #12](https://github.com/teslaeco/Froge-MPC-2-test/pull/12) z korektą E19 i dowodami pozostaje draftem. Paczka v35 jest gotowa i zweryfikowana; **nie zainstalowano jej na Oracle**. Publiczny FORGE Studio z E19 opublikowano jako **wersję 3**: https://forge-studio-public.terraformingplanet.chatgpt.site . Źródła: `fe05d7400b64fefd44736863d870174b5c00280e`; deployment `appgdep_6aa61c9f6c208191870473026181a2be` ma stan **succeeded**. Prywatnego Studio ani Oracle nie zaktualizowano. [Potwierdzenie publikacji](publication-receipt.json).
+
+Ocena końcowego ujęcia frontalnego: zęby nadal są zbyt regularne i odsłonięte względem subtelnego uśmiechu referencji; włosy pozostają zgrupowane w sztywne pasma. Korekta geometrii nie oznacza uzyskania naturalnej twarzy. Dalsza poprawa powinna zmieniać te konkretne formy, zamiast jedynie zwiększać liczbę trójkątów.

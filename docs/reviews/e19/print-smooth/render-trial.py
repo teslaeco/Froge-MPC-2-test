@@ -24,6 +24,7 @@ def main():
         light=bpy.data.objects.new(name,data);scene.collection.objects.link(light);light.location=loc;aim(light,(0,0,.1))
     camdata=bpy.data.cameras.new('Orthographic production review');cam=bpy.data.objects.new('camera',camdata);scene.collection.objects.link(cam);scene.camera=cam;camdata.type='ORTHO'
     views=[('front',(0,-.8,.13),(0,0,.1),.245),('left',(-.8,0,.13),(0,0,.1),.245),('back',(0,.8,.13),(0,0,.1),.245),('face',(.15,-.8,.205),(0,0,.177),.075)]
+    views=[v for v in views if v[0] in {'front','face'}]
     rows=[]
     for name,location,target,ortho in views:
         cam.location=location;aim(cam,target);camdata.ortho_scale=ortho
