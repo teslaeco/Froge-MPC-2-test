@@ -1,0 +1,465 @@
+{
+  "provenance": "deterministic reconstruction from source; not downloaded CI artifact",
+  "source_commit": "4c6c7fb000a98627264d7c6bcca1f441eb760fe2",
+  "ci_run": 34733597773,
+  "ci_url": "https://github.com/teslaeco/Froge-MPC-2-test/actions/runs/34733597773",
+  "ci_payload_sha256": "da7bc39d22b829f757c548beea44db3fdffa57e08188df356b3d47a70ced0d23",
+  "payload_sha256": "da7bc39d22b829f757c548beea44db3fdffa57e08188df356b3d47a70ced0d23",
+  "payload_matches_ci": true,
+  "listed_files": 67,
+  "embedded_files": 62,
+  "reused_assets": {
+    "runtime/assets/anatomy.json.gz": "cec12295f87c2a3b6a6ad4c30f4866178e461664fcf54f68d57d34a89f5b23f7",
+    "runtime/assets/male-skin.png": "862a26e335e958b70534cb5f0d7c47ef30ab148a56c42b3e9da969cf76f12963",
+    "runtime/assets/female-skin.png": "b2a6ac8cd4f9febdb447368e29c76cd68410bb66e46d9dcfa2d5f75126eea8fc",
+    "runtime/assets/cotton-jersey-albedo.png": "81b3ef738b7999af1d75928c8804c92d82d10dc91b96bff04655ca61f3ca3b7b",
+    "runtime/assets/indigo-denim-albedo.png": "9772b184960695e23b7d9ff3bd323f13674d3e59c796f3f6d5d01a1f3a930fce"
+  },
+  "base_assets_verified_locally": false,
+  "base_assets_verification": "CI checked original repository assets; installer rechecks all five on Oracle before mutation. Missing local PNG files were not fabricated.",
+  "zip_file": "froge-v35.zip",
+  "zip_bytes": 394642,
+  "ci_zip_bytes": 394642,
+  "zip_size_matches_ci": true,
+  "zip_sha256": "913918c69dd44a0579b71819522204d1c31f7d5eb4b38c952659347dd9b11c2a",
+  "ci_zip_sha256_available": false,
+  "byte_identical_to_ci_archive_claimed": false,
+  "compression_profile": "python39_gzipfile",
+  "compression_attempts": [
+    {
+      "profile": "python39_gzipfile",
+      "bytes": 394642,
+      "sha256": "913918c69dd44a0579b71819522204d1c31f7d5eb4b38c952659347dd9b11c2a"
+    },
+    {
+      "profile": "local_gzip_compress",
+      "bytes": 394642,
+      "sha256": "5887e48015ae81fa74ab1416d78240320e9b94a1b7629593efa16fc88386524c"
+    }
+  ],
+  "zip_crc_passed": true,
+  "embedded_python_compile_passed": true,
+  "embedded_payload_source_hashes_passed": true,
+  "installer_executed": false,
+  "oracle_deployed": false,
+  "ci_tests_per_python": 150,
+  "ci_python_versions": [
+    "3.9",
+    "3.12"
+  ],
+  "actual_server_version_verified": 35,
+  "actual_updater_version_verified": 35,
+  "reference_acceptance_revision_verified": 1,
+  "worker_release_verified": "v35-reference-acceptance",
+  "worker_detail_uses_host_model_status": true,
+  "updater_requires_capability_and_release": true,
+  "input_files": [
+    {
+      "path": "scripts/package-v35.py",
+      "sha256": "4eee6fa6badfcaf422b8caa55f35644f5316caadb65c271262f2522fd97ad5eb"
+    },
+    {
+      "path": "scripts/cloud-shell-v35.template.py",
+      "sha256": "2264e8cd2c56fbf15831b2172c0814af41de0f10ed634a5d5878644bf5e3b9fa"
+    },
+    {
+      "path": "docs/reviews/v35/POLECENIE-CODEX.txt",
+      "sha256": "b509096a1e9d7e56c9af52e0b03096ed41be3965a04354267b8eac52f77d53ed"
+    },
+    {
+      "path": "oracle_connector/runtime/assets/manifest.json",
+      "sha256": "d5fe19ad6b72092ccf4f2b430439d5dc07347c31ecc3f38d250211f474e5838f"
+    }
+  ],
+  "source_file_receipts": [
+    {
+      "path": "code_policy.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 7654,
+      "sha256": "53f9aab08bdc39ad54fc7d8324fc0c8e6a540cf321f2db6795b8d8cdaae17d8d"
+    },
+    {
+      "path": "ai_stream.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 10353,
+      "sha256": "dbb55afc5f0e2d27cd16cb92b4524da84f2d3bb41d0e8a8f8997c1fefd32b1ea"
+    },
+    {
+      "path": "openai_provider.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 2732,
+      "sha256": "cbb89bd34301c973389014b8892d2f3c3abe8e76169446fb0f026600bd3a9e2b"
+    },
+    {
+      "path": "photo_input.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 7840,
+      "sha256": "99c12353ba02f1ab293a3a46b23dce0669a975b9d651879fbd88d6e97123c223"
+    },
+    {
+      "path": "runtime_check.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 4581,
+      "sha256": "d9f9e1c9ff429363c5fd3101bdf6d8336bb210afd33ff1d3e4b1d3937744060e"
+    },
+    {
+      "path": "server.py",
+      "local_source": "deliverables/v35-source/oracle_connector/server.py",
+      "bytes": 54338,
+      "sha256": "dea74071bfd80241553b29ee6f301b0c40ef14681d3b3f6a30e1fa98977a0ea5"
+    },
+    {
+      "path": "runtime/run.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 22397,
+      "sha256": "9b44d809329d3ae256966eda856adf9fd1b894cd964afa261fa580834ba067d4"
+    },
+    {
+      "path": "runtime/scene_contract.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 41249,
+      "sha256": "1a814893c23061c9b901b806bbb83d75e2e421fea349e5ca98a0965e10842dc8"
+    },
+    {
+      "path": "runtime/build_scene.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 10066,
+      "sha256": "be31c4002be6b4de0ee6edcb68838a181f2f1e0711fe28661b97ad3040628c4d"
+    },
+    {
+      "path": "runtime/detailed_geometry.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 14921,
+      "sha256": "20951ac3d912752edb68a60e06b1cce6eedb306eb21828d5477863da5624303a"
+    },
+    {
+      "path": "runtime/anatomy.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 24330,
+      "sha256": "c69b4372aa6104841fced1809cc062ea3ea3035ec3fc036e08a29c62c0067ab5"
+    },
+    {
+      "path": "runtime/wardrobe.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 16821,
+      "sha256": "dd6fa4f389f8d23a7bb4540f009cbde289b3b79c06ea883126198e5c4f858a4a"
+    },
+    {
+      "path": "runtime/textiles.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 6599,
+      "sha256": "645780cb1c4447b3f33811ca112a588bcfd7927b3c8463d2896caf9887e2fd22"
+    },
+    {
+      "path": "runtime/assets/LICENSE.CC0.md",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 6962,
+      "sha256": "f6089cba01cb570a24712b41ab8a586ccd3cc5ef53dc266ca50b95c288956d2c"
+    },
+    {
+      "path": "runtime/assets/SOURCES.md",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 2325,
+      "sha256": "c81e8d5798766753ebdeffd07ec94ce9f635c4b14b85842eb05917687bcfca9e"
+    },
+    {
+      "path": "runtime/assets/manifest.json",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 463,
+      "sha256": "d5fe19ad6b72092ccf4f2b430439d5dc07347c31ecc3f38d250211f474e5838f"
+    },
+    {
+      "path": "visual_review.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 6581,
+      "sha256": "67cac4c6bddd403b0d87ba10a68b339a40836c8ebb13d39cedd5e10bb4a95d06"
+    },
+    {
+      "path": "runtime/reference_surfaces.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 4825,
+      "sha256": "16a0f6725eff7df0f92334e96864d02a5848efd808fd8dd97077c3762e787faa"
+    },
+    {
+      "path": "runtime/reference_quality.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 5538,
+      "sha256": "084d20cc87d3a1aaa390223c6c78f7c46f9eabe2ee6b6aef3ebe6b5f7f4482e2"
+    },
+    {
+      "path": "runtime/reference_match.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 2507,
+      "sha256": "6b1772419f41b6f68e9df9ffafd2d8d7670b2a44d4319bb61a9abde454e6c200"
+    },
+    {
+      "path": "runtime/assets/emerald-reference-signature.json",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 77188,
+      "sha256": "f40c36461d079e12334e7c16c458ba418aa70bb073dff36059af1d32200ff12d"
+    },
+    {
+      "path": "face_measurement.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 888,
+      "sha256": "c153be6dbfb9bb692edbbbeb38537110905305322742f2922b8ab2b74b4b1fb5"
+    },
+    {
+      "path": "runtime/photo_face.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 12306,
+      "sha256": "6d5668f0c2a1dc9adc6fb4bf7f7dcc007d687d467cc62bf02f8d696e9f3fd1f3"
+    },
+    {
+      "path": "runtime/photo_face_color.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 10863,
+      "sha256": "b262a8af1581c9dfc69419c38b0460b3f1878c91adcf2bc3065de1cc70ba339f"
+    },
+    {
+      "path": "runtime/assets/face-template-feminine.json",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 51690,
+      "sha256": "cf73ea20f0a01ca5c9bded1419abb634639899855b654266387e21287837054c"
+    },
+    {
+      "path": "runtime/assets/emerald-reference-landmarks.json",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 15736,
+      "sha256": "1ce5284605c282708ab0ae528b3c1aaa3bece39d60abdfdb0be3620bb2320c99"
+    },
+    {
+      "path": "runtime/portrait.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 34644,
+      "sha256": "259f05b612c4849b68f146654ad813e6857556d729d52c3b8cd650046a8d92a2"
+    },
+    {
+      "path": "runtime/portrait_eyes.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 2600,
+      "sha256": "2a987bf15851fd4f3eb6debf571f2746dae5c94e1d457f90632177f4874ee10f"
+    },
+    {
+      "path": "runtime/portrait_shape.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 4618,
+      "sha256": "55eea06dda4e8c4e4cc5a764ac60f47320e84ee3a5ca6e4eb43742fdd307362c"
+    },
+    {
+      "path": "runtime/portrait_orbits.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 905,
+      "sha256": "890fac29d0a0b2293b1e6beaa250b042e97a2214829c81f410e08e58ec539b70"
+    },
+    {
+      "path": "runtime/portrait_hands.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 10318,
+      "sha256": "5d421fd8061569195ee3cc9e5dd0b3ba0489ebe198b57c190708f046a1fb7891"
+    },
+    {
+      "path": "runtime/portrait_hair.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 11031,
+      "sha256": "93fa96d9340dcfddb6aed776087e57578481ac5849aa33d0b4fcad96f5fe8ec6"
+    },
+    {
+      "path": "runtime/portrait_hair_surface.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 7226,
+      "sha256": "d799c565dcd5f73371b6396658dbdb5c372cb778400c2dd88cc347192a595cf2"
+    },
+    {
+      "path": "runtime/portrait_locks.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 2859,
+      "sha256": "75df02bb1cfc90a82bb64dad72191eda2bc24af480e9f151393d5bcf8e7ccdcf"
+    },
+    {
+      "path": "runtime/fashion.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 10750,
+      "sha256": "f82fd9218e70861be48dafff7e1e02f91678a44bd6f0800611a5ba826afa5b26"
+    },
+    {
+      "path": "runtime/couture.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 52075,
+      "sha256": "1f2d39803737f082d051cde3dc2a71d4eb07cfa113c2131759ff4ff06131e2ba"
+    },
+    {
+      "path": "runtime/couture_geometry.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 17247,
+      "sha256": "00ff740bfe2696b874c40c9d38775b7bca13ad87508bc9d56a34434ae32cc46a"
+    },
+    {
+      "path": "runtime/couture_qa.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 14344,
+      "sha256": "494ef5228b8487942a566c455a57b2b275877ee1acca6ba397fd78e8708a452c"
+    },
+    {
+      "path": "runtime/review_views.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 7990,
+      "sha256": "e66dc2f36a9e7cc56b575da2afaa02dec0202f7811f5278afe88562f9fba1cab"
+    },
+    {
+      "path": "runtime/scene_exports.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 15779,
+      "sha256": "b5eebeaf0a61152582302df2241470316cca2f16173fec531d97c061a74673da"
+    },
+    {
+      "path": "image3d_fixture.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 2676,
+      "sha256": "6bec427bbdccaed3084a0698228e3bd7392097da84a25a3b39572f3ebf8db91f"
+    },
+    {
+      "path": "runtime/imported_asset.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 5938,
+      "sha256": "d1c46a07489f4d5ad7419704962d51d41caa0936a6b236bc7f597db4ffd0e1aa"
+    },
+    {
+      "path": "generation_budget.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 567,
+      "sha256": "fb83f2d6e9267ac516d04ff43a2ee60e24b6b32140ff08e7d0ebad50595746d0"
+    },
+    {
+      "path": "quality_report.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 9466,
+      "sha256": "193cef6fa7012c3c3a746de37a9c725ad307a33506d06db12066fc8e41358979"
+    },
+    {
+      "path": "v23_fixture.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 3775,
+      "sha256": "49a45f316e7567b0f6674b854b4b6fab1b3c6f659725187d2c21d5110012eaae"
+    },
+    {
+      "path": "runtime/freeform_geometry.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 4554,
+      "sha256": "d54fb0ad7a8ae5fb2ddb9b9b6f19c0213f213be980989c4fe4c9068a880f3ab8"
+    },
+    {
+      "path": "runtime/projection_math.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 1408,
+      "sha256": "6df6ce63cbdd52c08bc8b3b654b19316b228f28b54b169d6b4d01c78d6212909"
+    },
+    {
+      "path": "runtime/photo_projection.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 8235,
+      "sha256": "550f2ef87d7641de8d426f2dda683912b4584f33405f42db7e828828d92eb1d6"
+    },
+    {
+      "path": "runtime/model_checkpoint.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 2130,
+      "sha256": "690087beb5d02b0f06a487d17b06fd20a06c084e5dc9c984b7e30846aeca8d39"
+    },
+    {
+      "path": "scene_repair.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 3828,
+      "sha256": "49a95d9c65a5f4e51fd13978cbbe5524bc51c1b32c15594ecc92429ee622fd2e"
+    },
+    {
+      "path": "verify_anatomy_edit.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 13657,
+      "sha256": "4e218f60d8584cc6682f2bdfd0e96d1ec0f61a4f56876d94deb2f2e01622e9f8"
+    },
+    {
+      "path": "verify_edit_runtime.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 7944,
+      "sha256": "08c033eedf222298b815c09eed5cea837c7983340f8c6a97286105871901f703"
+    },
+    {
+      "path": "agent_limits.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 195,
+      "sha256": "c146203929766679cb76101fc0a508ab1b67f99281f5b5ae2e9bf226001e75f5"
+    },
+    {
+      "path": "paid_trial.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 6126,
+      "sha256": "058aacd2b53a17bad2cdb38c089070b414a9d33fe40d26205177d3d8716bb19b"
+    },
+    {
+      "path": "blender_mcp.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 34604,
+      "sha256": "ed62bc94dd614a02780ba9ade5b9992fec688fa29ead3c9ac78f0462705ec490"
+    },
+    {
+      "path": "codex_runner.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 33989,
+      "sha256": "fa7c4db7ea0395803dffb9bd040f21e2e6a72e84c4c6d03b8dae03a62c05db8c"
+    },
+    {
+      "path": "install_codex.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 8709,
+      "sha256": "b04f83bca3485df8f7cb901858ac5d79fae4d38505d464317cd052cfbe9a3ca7"
+    },
+    {
+      "path": "codex_smoke.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 14771,
+      "sha256": "47c1750eebc5fe31ad35ba820401edd4745bf91c4cd00ef661fc384eeadc9aa6"
+    },
+    {
+      "path": "runtime/finalize.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 850,
+      "sha256": "da80fa37eea4d79e24b3531146086eeb6ab0f5f02926d11b71517eef310b97e4"
+    },
+    {
+      "path": "runtime/rooted_hair.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 4591,
+      "sha256": "d8d9718527d67f9e6aef4282f78e41d3e4ba3cf24bd0b14619d12cbca6a5273d"
+    },
+    {
+      "path": "runtime/reference_reconstruction.py",
+      "local_source": "unchanged verified v34 payload from ad8844cd8d350c0af6939e1a0cda847dd87e3f9b",
+      "bytes": 21438,
+      "sha256": "a46eda474fa1336d57b27776cef0c65749757f95763d8765c9c283b4e6588256"
+    },
+    {
+      "path": "apply_update.py",
+      "local_source": "deliverables/v35-source/oracle_connector/apply_update.py",
+      "bytes": 10224,
+      "sha256": "700967e001fcd6d71451392bb9216fb329b25f564250129673cd5a30e04fa733"
+    }
+  ],
+  "archive_members": [
+    {
+      "path": "froge-v35.py",
+      "bytes": 524125,
+      "sha256": "9cfe9080f5d6165b167631d5d531d42ea35372a65e8d6de226b906e689088d4c"
+    },
+    {
+      "path": "CZYTAJ.txt",
+      "bytes": 2120,
+      "sha256": "e7edd942a3ddc1559aa35d5e46b337202be538af37604e79dbf9e8fda8813685"
+    },
+    {
+      "path": "POLECENIE-CODEX.txt",
+      "bytes": 1762,
+      "sha256": "b509096a1e9d7e56c9af52e0b03096ed41be3965a04354267b8eac52f77d53ed"
+    }
+  ]
+}

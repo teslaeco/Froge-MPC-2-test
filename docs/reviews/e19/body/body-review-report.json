@@ -1,0 +1,105 @@
+{
+  "uv_wrap_triangles_repaired": 124,
+  "geometry": [
+    {
+      "object": "R9_continuous_shoulders_neck",
+      "changed_vertices": 6924,
+      "max_displacement_m": 0.028005760624209862
+    },
+    {
+      "object": "R9_tailored_split_gown",
+      "changed_vertices": 11539,
+      "max_displacement_m": 0.009153787793813995
+    },
+    {
+      "object": "R9_bodice_seam_-1_0.3",
+      "changed_vertices": 825,
+      "max_displacement_m": 0.0031202889239907625
+    },
+    {
+      "object": "R9_bodice_seam_-1_0.67",
+      "changed_vertices": 825,
+      "max_displacement_m": 0.007422012506053496
+    },
+    {
+      "object": "R9_neckline_-1",
+      "changed_vertices": 1128,
+      "max_displacement_m": 0.009253552933378885
+    },
+    {
+      "object": "R9_gathered_sleeve_-1",
+      "changed_vertices": 2979,
+      "max_displacement_m": 0.0010395852493233887
+    },
+    {
+      "object": "R9_sleeve_edge_-1",
+      "changed_vertices": 618,
+      "max_displacement_m": 0.000679247387215479
+    },
+    {
+      "object": "R9_bodice_seam_1_0.3",
+      "changed_vertices": 825,
+      "max_displacement_m": 0.0031240270453647126
+    },
+    {
+      "object": "R9_bodice_seam_1_0.67",
+      "changed_vertices": 825,
+      "max_displacement_m": 0.007422050003251931
+    },
+    {
+      "object": "R9_neckline_1",
+      "changed_vertices": 1130,
+      "max_displacement_m": 0.009253694133961772
+    },
+    {
+      "object": "R9_gathered_sleeve_1",
+      "changed_vertices": 2960,
+      "max_displacement_m": 0.0011858451917191048
+    },
+    {
+      "object": "R9_sleeve_edge_1",
+      "changed_vertices": 623,
+      "max_displacement_m": 0.0006762846696785794
+    },
+    {
+      "object": "R10_upper_arm_-1",
+      "changed_vertices": 1431,
+      "max_displacement_m": 0.0019132056029671082
+    },
+    {
+      "object": "R10_upper_arm_1",
+      "changed_vertices": 1431,
+      "max_displacement_m": 0.0019131776743411151
+    }
+  ],
+  "textures": {
+    "base": {
+      "file": "/workspace/scratch/584c9d97a5a1/e19/body/textures/E19_body_BaseColor_8K.png",
+      "size": [
+        8192,
+        8192
+      ]
+    },
+    "orm": {
+      "file": "/workspace/scratch/584c9d97a5a1/e19/body/textures/E19_body_ORM_8K.png",
+      "size": [
+        8192,
+        8192
+      ]
+    },
+    "normal": {
+      "file": "/workspace/scratch/584c9d97a5a1/e19/body/textures/E19_body_Normal_8K.png",
+      "size": [
+        8192,
+        8192
+      ]
+    }
+  },
+  "scope": "torso, neck, upper arms, gown and attached seam geometry; existing face albedo retained unchanged",
+  "claims": "authored procedural skin details, not a recovered 8K photograph; no print-readiness claim",
+  "uv_check": {
+    "triangles_u_span_over_0_5": 0,
+    "sum_abs_triangle_uv_areas": 0.38808727022210043,
+    "target_vertices": 7116
+  }
+}

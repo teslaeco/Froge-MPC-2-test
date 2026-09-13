@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: download: success
+ok 1 - download: success
+  ---
+  duration_ms: 10.092679
+  type: 'test'
+  ...
+# Subtest: viewer flow: success
+ok 2 - viewer flow: success
+  ---
+  duration_ms: 1.633555
+  type: 'test'
+  ...
+# Subtest: download: missing manifest
+ok 3 - download: missing manifest
+  ---
+  duration_ms: 1.015112
+  type: 'test'
+  ...
+# Subtest: viewer flow: missing manifest
+ok 4 - viewer flow: missing manifest
+  ---
+  duration_ms: 0.95436
+  type: 'test'
+  ...
+# Subtest: download: missing chunk
+ok 5 - download: missing chunk
+  ---
+  duration_ms: 1.06093
+  type: 'test'
+  ...
+# Subtest: viewer flow: missing chunk
+ok 6 - viewer flow: missing chunk
+  ---
+  duration_ms: 0.974821
+  type: 'test'
+  ...
+# Subtest: download: same-length corrupt chunk
+ok 7 - download: same-length corrupt chunk
+  ---
+  duration_ms: 2.382105
+  type: 'test'
+  ...
+# Subtest: viewer flow: same-length corrupt chunk
+ok 8 - viewer flow: same-length corrupt chunk
+  ---
+  duration_ms: 1.46482
+  type: 'test'
+  ...
+# Subtest: download: truncated chunk
+ok 9 - download: truncated chunk
+  ---
+  duration_ms: 1.063956
+  type: 'test'
+  ...
+# Subtest: viewer flow: truncated chunk
+ok 10 - viewer flow: truncated chunk
+  ---
+  duration_ms: 1.009043
+  type: 'test'
+  ...
+# Subtest: viewer failure restores static render and revokes URL
+ok 11 - viewer failure restores static render and revokes URL
+  ---
+  duration_ms: 1.25286
+  type: 'test'
+  ...
+# Subtest: repair export: no release
+ok 12 - repair export: no release
+  ---
+  duration_ms: 1.914288
+  type: 'test'
+  ...
+# Subtest: repair export: missing hash
+ok 13 - repair export: missing hash
+  ---
+  duration_ms: 1.148794
+  type: 'test'
+  ...
+# Subtest: repair export: malformed hash
+ok 14 - repair export: malformed hash
+  ---
+  duration_ms: 0.879407
+  type: 'test'
+  ...
+# Subtest: repair export: mismatched hash
+ok 15 - repair export: mismatched hash
+  ---
+  duration_ms: 0.761179
+  type: 'test'
+  ...
+# Subtest: repair export: missing manifest
+ok 16 - repair export: missing manifest
+  ---
+  duration_ms: 0.797633
+  type: 'test'
+  ...
+# Subtest: repair export: malformed manifest
+ok 17 - repair export: malformed manifest
+  ---
+  duration_ms: 1.098227
+  type: 'test'
+  ...
+# Subtest: repair export: actual release and manifest
+ok 18 - repair export: actual release and manifest
+  ---
+  duration_ms: 2.894218
+  type: 'test'
+  ...
+# Subtest: actual web parts: size, SHA-256, GLB header, embedded resources
+ok 19 - actual web parts: size, SHA-256, GLB header, embedded resources
+  ---
+  duration_ms: 54.827044
+  type: 'test'
+  ...
+# Subtest: actual master parts: size, SHA-256, GLB header, embedded resources
+ok 20 - actual master parts: size, SHA-256, GLB header, embedded resources
+  ---
+  duration_ms: 100.096997
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 273.704782

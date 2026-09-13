@@ -1,0 +1,68 @@
+{
+  "status": "E18R audit complete; print pipeline fixture verified; final E19 source awaited",
+  "tests_passed": 16,
+  "native_blender_print_fixture": "passed",
+  "oracle_integration": false,
+  "files": [
+    {
+      "name": "E18R-production-audit.json",
+      "bytes": 547673,
+      "sha256": "a72c3d5d02457146c31c45c8fe5ab305ab197b68e3ad7dda4e5347fd83f343fb"
+    },
+    {
+      "name": "E18R-production-gate.json",
+      "bytes": 462,
+      "sha256": "6f930bb40c84d4e40956134c27049af8f84aebc9f234c9086da949775052aea9"
+    },
+    {
+      "name": "PRODUCTION-AND-MESHY-REVIEW.md",
+      "bytes": 12032,
+      "sha256": "d2708f94b351f4e4e30598b9b48505287eb18c1d68537e7f889e3cc7c3ce02a5"
+    },
+    {
+      "name": "audit_mesh_blender.py",
+      "bytes": 5181,
+      "sha256": "1b055946b49f05993c96540dcccc0d0709d5ec7fdc5111ac68b4a006e29f55a5"
+    },
+    {
+      "name": "build_print_candidate.py",
+      "bytes": 9000,
+      "sha256": "5908c4827c3896ca6708da410a816c86a20bd96521ebe9166503d4d09bb43b4a"
+    },
+    {
+      "name": "mesh_metrics.py",
+      "bytes": 5040,
+      "sha256": "a80c379c38ab2e05a2c082d99e7a46ca56565b94966a725a28a77375794bf7d0"
+    },
+    {
+      "name": "print-pipeline-fixture-verification.json",
+      "bytes": 408,
+      "sha256": "35ae280b391d66e635634c74db2a7f5f53c1acf9476e21571b75a0a8c45d83ce"
+    },
+    {
+      "name": "production_gate.py",
+      "bytes": 3462,
+      "sha256": "61c6b65db6749aa733592d0883f7214892de82a5acc6e5fef185291793187b85"
+    },
+    {
+      "name": "render_print_candidate.py",
+      "bytes": 3072,
+      "sha256": "7ee0e58e55e5a2323a26d901c02df5051a63a31babbc2653a896f55dacc06ade"
+    },
+    {
+      "name": "test_mesh_metrics.py",
+      "bytes": 2386,
+      "sha256": "67b2b9e22d57a23146fedade695d17708ddf4b6450446cda0d1015f2cf0f56d2"
+    },
+    {
+      "name": "test_production_gate.py",
+      "bytes": 2090,
+      "sha256": "f77ca997d1cfeace129ccf1c25a8d22d75d0fd42c49099262e6888dbb075f06b"
+    },
+    {
+      "name": "verify_print_pipeline.py",
+      "bytes": 499,
+      "sha256": "a4ebfeeee7428cef1d73af9d166c9d74f0e88e7002eb6a499f8a418373d5ae32"
+    }
+  ]
+}

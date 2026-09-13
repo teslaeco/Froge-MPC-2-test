@@ -1,0 +1,7 @@
+{
+  "model": "Dziewczyna E19 · korekta anatomii i skóry",
+  "queen": true,
+  "model_sha256": "08b88ea54b5046e579a9dab0e4f85342ffabdf3b9ed5932c3d49a00ec2b63cb4",
+  "comparison": "E19: nowe łuki zębowe, osadzenie oka i szyi; ciało 8K w pliku master. Meshy porównujemy ze screenów, bez wspólnego testu topologii.",
+  "model_download_manifest": "/assets/E19-downloads.json"
+}

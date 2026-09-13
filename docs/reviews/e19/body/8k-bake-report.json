@@ -1,0 +1,35 @@
+{
+  "method": "Blender 4.3 Cycles procedural emission and tangent-normal baking on R9_continuous_shoulders_neck original UVMap",
+  "body_uv_domain": "U 0..1; V 0.436268..1.0; 124 inherited wrap-spanning triangles repaired; not an upscaled source image",
+  "images": [
+    {
+      "file": "E19_body_BaseColor_8K.png",
+      "width": 8192,
+      "height": 8192,
+      "bytes": 11200991,
+      "sha256": "83af5896c250843b6329b90a3ab3c7b5a39c517911c659c0973535ab2734bd3a",
+      "seconds": 41.132161140441895,
+      "semantic": "torso colour with procedural living skin variation and inherited weathered bone colour"
+    },
+    {
+      "file": "E19_body_ORM_8K.png",
+      "width": 8192,
+      "height": 8192,
+      "bytes": 7643752,
+      "sha256": "cecaf51a93d70412691f402e284b095ba5e529375fb460f0d59da6e0e3a1aabe",
+      "seconds": 30.689729690551758,
+      "semantic": "RGB: AO constant 1, newly authored roughness, metalness constant 0"
+    },
+    {
+      "file": "E19_body_Normal_8K.png",
+      "width": 8192,
+      "height": 8192,
+      "bytes": 22139005,
+      "sha256": "d9b4b45699bed31e4b32f7eef047194623955fc7d81cf78cbea3437448b72a13",
+      "seconds": 49.76253938674927,
+      "semantic": "new tangent normals from physical-scale skin pore and bone surface procedural bump",
+      "original_bake_sha256": "74b9f767fc948900035281cd6e180973ba308b7fb30ed20b00a8213e9e73dff9",
+      "encoding_note": "lossless PNG compression after bake; decoded RGB verified identical"
+    }
+  ]
+}

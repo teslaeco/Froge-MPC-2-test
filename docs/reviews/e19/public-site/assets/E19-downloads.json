@@ -1,0 +1,34 @@
+{
+  "web": {
+    "filename": "FORGE-E19-web.glb",
+    "bytes": 27521620,
+    "sha256": "08b88ea54b5046e579a9dab0e4f85342ffabdf3b9ed5932c3d49a00ec2b63cb4",
+    "parts": [
+      "/assets/E19-web-1.bin",
+      "/assets/E19-web-2.bin"
+    ],
+    "mime": "model/gltf-binary"
+  },
+  "master": {
+    "filename": "FORGE-E19-8K.glb",
+    "bytes": 64211024,
+    "sha256": "f5196a7e6b822d50bbfdaa9d7f6051919b7d48a2e6a84fa5f3082cfc45c5e4f9",
+    "parts": [
+      "/assets/E19-master-1.bin",
+      "/assets/E19-master-2.bin",
+      "/assets/E19-master-3.bin",
+      "/assets/E19-master-4.bin"
+    ],
+    "mime": "model/gltf-binary"
+  },
+  "print": {
+    "filename": "FORGE-E19-print-candidate-200mm-STL.zip",
+    "bytes": 43322304,
+    "sha256": "730359cb72b63d20da5a36757670bb98ce906b97e51455015318ea56ad23755f",
+    "parts": [
+      "/assets/FORGE-E19-print-candidate-200mm-STL.zip.part01",
+      "/assets/FORGE-E19-print-candidate-200mm-STL.zip.part02"
+    ],
+    "mime": "application/zip"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "source": "FORGE-E19-print-candidate-200mm.glb",
+  "source_sha256": "727e1e8899b1ba179b101d773877f9c49095513534659e2ff47ccde40e9cde6e",
+  "render": "real Blender Cycles reimport, neutral clay",
+  "resolution": [
+    640,
+    800
+  ],
+  "samples": 24,
+  "views": [
+    {
+      "view": "front",
+      "path": "print-front.png",
+      "sha256": "02ed23a285f2dfc8b478e43992dc0e68ac728be4af9bdc43f9eac7642e811ea3",
+      "camera_location": [
+        0,
+        -0.8,
+        0.13
+      ],
+      "camera_target": [
+        0,
+        0,
+        0.1
+      ],
+      "orthographic_scale_m": 0.245
+    },
+    {
+      "view": "left",
+      "path": "print-left.png",
+      "sha256": "1c3045a2e400597d346e8049f2c25174305d0fe7987253fd3d97a2c2dc699235",
+      "camera_location": [
+        -0.8,
+        0,
+        0.13
+      ],
+      "camera_target": [
+        0,
+        0,
+        0.1
+      ],
+      "orthographic_scale_m": 0.245
+    },
+    {
+      "view": "back",
+      "path": "print-back.png",
+      "sha256": "5c05a805910cdf393d8cea134ec3fa94e747807a9f54746aafb4cc821a6b2c0b",
+      "camera_location": [
+        0,
+        0.8,
+        0.13
+      ],
+      "camera_target": [
+        0,
+        0,
+        0.1
+      ],
+      "orthographic_scale_m": 0.245
+    },
+    {
+      "view": "face",
+      "path": "print-face.png",
+      "sha256": "3cf822d94772b41963386de77519f0f1d20b7cd705a22c5a94d7e7dd428798fd",
+      "camera_location": [
+        0.15,
+        -0.8,
+        0.205
+      ],
+      "camera_target": [
+        0,
+        0,
+        0.177
+      ],
+      "orthographic_scale_m": 0.075
+    }
+  ],
+  "view_transform": "AgX",
+  "look": "AgX - Medium High Contrast",
+  "exposure": -2.0
+}

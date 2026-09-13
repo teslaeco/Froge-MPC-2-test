@@ -1,0 +1,223 @@
+{
+  "schema": "forge.print-candidate-build/1",
+  "source": "FORGE-E19-web.glb",
+  "source_sha256": "08b88ea54b5046e579a9dab0e4f85342ffabdf3b9ed5932c3d49a00ec2b63cb4",
+  "working_assumed_total_height_mm": 200.0,
+  "measured_dimensions_mm": [
+    128.69891357421875,
+    83.04996490478516,
+    200.00001525878906
+  ],
+  "scale_confirmed_by_customer": false,
+  "nominal_voxel_mm": 0.5,
+  "print_copy_seam_weld_tolerance_mm": 0.0001,
+  "post_remesh_uniform_dimension_scale": 1.0004155166716633,
+  "nominal_added_shell_thickness_mm": 0.9,
+  "base_height_mm": 5.0,
+  "base_overlap_with_hem_mm": 1.0,
+  "omitted_visual_layers": [
+    {
+      "name": "anatomical-lash-fibres",
+      "triangles_estimate": 4224,
+      "reason": "submillimetre visual layer, larger anatomical/hair masses retained"
+    },
+    {
+      "name": "anatomical-upper-eyeliner",
+      "triangles_estimate": 86,
+      "reason": "submillimetre visual layer, larger anatomical/hair masses retained"
+    },
+    {
+      "name": "E17 individual hair fibers and swept hairline",
+      "triangles_estimate": 3967360,
+      "reason": "submillimetre visual layer, larger anatomical/hair masses retained"
+    },
+    {
+      "name": "E18R 960 tapered hairline fibers",
+      "triangles_estimate": 432270,
+      "reason": "submillimetre visual layer, larger anatomical/hair masses retained"
+    }
+  ],
+  "solidified_objects": [
+    {
+      "name": "anatomical-head",
+      "boundary_edges_before": 15959,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "anatomical-eye-r",
+      "boundary_edges_before": 204,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "anatomical-hand-right",
+      "boundary_edges_before": 36,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "anatomical-hand-left",
+      "boundary_edges_before": 36,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "Recessed_empty_orbit",
+      "boundary_edges_before": 96,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "Zygomatic_arch",
+      "boundary_edges_before": 40,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R9_bodice_seam_-1_0.3",
+      "boundary_edges_before": 20,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R9_bodice_seam_-1_0.67",
+      "boundary_edges_before": 20,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R9_neckline_-1",
+      "boundary_edges_before": 20,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R9_sleeve_edge_-1",
+      "boundary_edges_before": 20,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R9_bodice_seam_1_0.3",
+      "boundary_edges_before": 20,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R9_bodice_seam_1_0.67",
+      "boundary_edges_before": 20,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R9_neckline_1",
+      "boundary_edges_before": 20,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R9_sleeve_edge_1",
+      "boundary_edges_before": 20,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R11_Reference_back_lock_06_1",
+      "boundary_edges_before": 1,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R11_Reference_back_lock_19_0",
+      "boundary_edges_before": 1,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R11_Reference_back_lock_25_0",
+      "boundary_edges_before": 1,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R11_Reference_back_lock_36_2",
+      "boundary_edges_before": 1,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R11_Reference_back_lock_50_0",
+      "boundary_edges_before": 1,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R11_Reference_front_lock_1_17_0",
+      "boundary_edges_before": 1,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    },
+    {
+      "name": "R12_asymmetric_scalp",
+      "boundary_edges_before": 940,
+      "nominal_shell_thickness_mm": 0.9,
+      "not_measured_minimum": true
+    }
+  ],
+  "print_only_simplification": [
+    {
+      "name": "anatomical-head",
+      "before_triangles": 1266399,
+      "target_triangles": 300000
+    }
+  ],
+  "structural_opening_caps": [
+    {
+      "name": "R9_continuous_shoulders_neck",
+      "boundary_before": 568,
+      "cap_faces_created": 2,
+      "purpose": "filled structural body instead of hollow shell"
+    },
+    {
+      "name": "R9_tailored_split_gown",
+      "boundary_before": 984,
+      "cap_faces_created": 2,
+      "purpose": "filled structural body instead of hollow shell"
+    },
+    {
+      "name": "R9_gathered_sleeve_-1",
+      "boundary_before": 160,
+      "cap_faces_created": 2,
+      "purpose": "filled structural body instead of hollow shell"
+    },
+    {
+      "name": "R9_gathered_sleeve_1",
+      "boundary_before": 160,
+      "cap_faces_created": 2,
+      "purpose": "filled structural body instead of hollow shell"
+    },
+    {
+      "name": "R10_upper_arm_-1",
+      "boundary_before": 160,
+      "cap_faces_created": 2,
+      "purpose": "filled structural body instead of hollow shell"
+    },
+    {
+      "name": "R10_upper_arm_1",
+      "boundary_before": 160,
+      "cap_faces_created": 2,
+      "purpose": "filled structural body instead of hollow shell"
+    }
+  ],
+  "manufacturing_ready": false,
+  "post_export_audit_required": true,
+  "limitations": [
+    "Nominal solidify thickness is not measured minimum thickness.",
+    "Voxel union changes fine details, hair, teeth and seam edges.",
+    "STL has no texture or standardized stored unit; this file uses mm.",
+    "FDM infill is a separate slicer parameter; no100%infill print was performed.",
+    "Machine/material/supports/thickness/tool access and physical proof are unverified."
+  ],
+  "stl_sha256": "4c5b52bb116d87ea31731680fd09e5f8dc5b653190fef6b5c7c54c0466db039d"
+}

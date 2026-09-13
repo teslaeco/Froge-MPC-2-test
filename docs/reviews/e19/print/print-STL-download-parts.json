@@ -1,0 +1,18 @@
+{
+  "filename": "FORGE-E19-print-candidate-200mm-STL.zip",
+  "bytes": 43322304,
+  "sha256": "730359cb72b63d20da5a36757670bb98ce906b97e51455015318ea56ad23755f",
+  "parts": [
+    {
+      "filename": "FORGE-E19-print-candidate-200mm-STL.zip.part01",
+      "bytes": 24000000,
+      "sha256": "df76207e50017bd8cf9929a5580264ac9c07f9a3d189d801a0450d8d62be9976"
+    },
+    {
+      "filename": "FORGE-E19-print-candidate-200mm-STL.zip.part02",
+      "bytes": 19322304,
+      "sha256": "8c0553c8f1d25f0af971df6e91b6af67fcc901552c88039403bc4e4da819ee6f"
+    }
+  ],
+  "format": "Concatenate numbered parts in order to reconstruct one valid ZIP; contained STL uses millimetres."
+}

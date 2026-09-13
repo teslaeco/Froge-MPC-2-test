@@ -1,0 +1,6 @@
+{
+  "command": "python3 -m unittest discover -s e19/audit -p 'test_*.py'",
+  "tests": 20,
+  "failures": 0,
+  "scope": "topology metrics and fail-closed manufacturing/visual-review decisions; not machine process validation"
+}

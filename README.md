@@ -2,15 +2,28 @@
 
 Prywatna baza rozwoju sklepu TikTok Shop i studia modeli 3D na zamówienie, oparta na projekcie konkursowym **ForgeMCP — Multi-Agent Research & Game Studio**.
 
-## Wznowienie 13 września — jakość modelu i Oracle v34
+## E19: anatomia, skóra 8K i audyt fizycznego produktu — 13 września
 
-Nowa Julia w bluzie i figurka Atlas pokazały istotne niedopasowanie geometrii oraz materiałów. [Porównanie wejściowych przypadków](docs/reviews/resume-2026-09-13/REFERENCE-CASES-2026-09-13.md) rozdziela obserwacje ze screenów od pomiarów pliku 3D. E18 w sukni pozostaje osobnym modelem.
+**Poprawka generatora v35 przeszła CI i została scalona w [PR #11](https://github.com/teslaeco/Froge-MPC-2-test/pull/11).** Scalenie do `codex/v27-mcp-startup-audit`: `23a7b5859f6093073bedeb037b2ba0e75b142c7b`. Korekta E19 i jej dowody są w osobnym [PR #12](https://github.com/teslaeco/Froge-MPC-2-test/pull/12), nadal draft. **Oracle nie został zaktualizowany w tej sesji.** [Paczka v35](public/downloads/froge-v35.zip) i [instrukcja Cloud Shell](docs/reviews/ORACLE-v35.md) dotyczą istniejącej instalacji.
 
-Poprawka v34 obejmuje kompilację edycji przed zużyciem próby Blendera, faktyczne przypisania atlasu głowy, jednoznaczną historię kandydatów oraz ocenę hosta związaną ze skrótami aktualnego eksportu i referencji. Oko w kostnej połowie jest wymagane, gdy pokazuje je bieżąca referencja; pusty oczodół nie jest domyślnym wymaganiem dla każdej czaszki. Więcej trójkątów nie zastępuje właściwego kształtu.
+**Nie używać wcześniejszej paczki v34.** Audyt wykrył, że zawierała serwer i instalator deklarujące wersję 33; zielone testy nie obejmowały zgodności reklamowanego wydania. Host gate już kontrolował API jakości, ale komunikat zakończenia zadania nadal ufał deklaracji agenta. V35 naprawia te niespójności i dodaje testy rzeczywistej zawartości paczki, health, rollbacku oraz komunikatu zadania.
 
-[Instrukcja wykonania i kryteria](docs/reviews/v34/POLECENIE-CODEX.txt) oraz testy są pamięcią projektu. Nie są treningiem wag ani uruchomieniem GPU L4. Meshy w dostarczonych próbach daje lepsze podobieństwo twarzy; Blender i agent pozwalają lokalnie edytować oraz sprawdzać geometrię. Nie wyciągamy ogólnego rankingu z różnych kamer i oświetlenia.
+[CI 34733597773](https://github.com/teslaeco/Froge-MPC-2-test/actions/runs/34733597773), commit `4c6c7fb000a98627264d7c6bcca1f441eb760fe2`: **150 testów na Pythonie 3.9 i 3.12**, rzeczywisty Codex/MCP, Blender 4.3, eksport GLB/FBX, sześć przypadków atlasów i kontrola 64/512 pól. ZIP: **394 642 B**, SHA256 `913918c69dd44a0579b71819522204d1c31f7d5eb4b38c952659347dd9b11c2a`. Payload jest zgodny z udanym CI; instalacji na Oracle nie wolno wnioskować z obecności paczki.
 
-**Wdrożenie:** źródła i paczka aktualizacji nie oznaczają instalacji. Dopiero `FROGE_V34_OK` oraz stan Oracle z `connectorVersion=34`, `referenceAcceptanceRevision=1` i `workerRelease=v34-reference-acceptance` potwierdzają instalację. Aktualny status pracy: [checkpoint](docs/WORK_CHECKPOINT.md). Publiczny [podgląd FORGE](https://forge-studio-public.terraformingplanet.chatgpt.site) przedstawia modele robocze; nie uruchamia płatnego generowania ani zamówień B2B.
+E19 jest rzeczywistą korektą wcześniejszej dorosłej postaci w sukni. Powstały dwa łuki po 12 zróżnicowanych koron zębowych, cofnięte ciemne oko w kostnej połowie, poprawiona głębia ust, lokalna obręcz oczodołu i ciągłość szyi. Wspólna korekta torsu, dekoltu i szwów podkreśla kontur gorsetu. Zmniejszono grubość 312 głównych pasm, zachowując drobne włókna i brązowo-siwy podział. **Nie powiększono globalnie głowy.** Nie jest to nowa Julia w bluzie ani figurka Atlas.
+
+Nowe mapy ciała mają **8192 × 8192 px**: Base Color, ORM i normal. Powstały przez bake materiałów proceduralnych na UV torsu/szyi po naprawie 124 trójkątów przy szwie. **Twarz zachowuje wcześniejszą teksturę o niższej rozdzielczości.** „8K” opisuje atlas ciała, nie skan twarzy ani dokładność wszystkich detali. Mapa normal zmienia odpowiedź na światło; nie zamienia porów w geometrię do druku. Eksport do podglądu ma mapy ciała 2K.
+
+Raport budowy E19: **6 384 581 trójkątów, 379 obiektów siatkowych**. Model pozostaje roboczym rezultatem do oceny. Podobieństwo twarzy, profil czaszki, żywe oko, nos oraz układ długich włosów nadal nie osiągają realizmu referencji. [Zmiany, porównanie z Meshy i ograniczenia](docs/reviews/e19/COMPARISON-E19.md).
+
+**Nie oferujemy tego mastera jako gotowego pliku produkcyjnego.** Audyt finalnego wizualnego E19 wykrył 19 001 otwartych krawędzi. Kopia konstrukcyjna 200 mm przeszła pomiary topologii (jedna zamknięta składowa), lecz została odrzucona wizualnie do sprzedaży; włosy, rysy i podparcie nadal wymagają poprawy. Ta kopia wymaga dalszej korekty detali i podparcia oraz kwalifikacji dla konkretnej technologii i materiału. Akceptacja wyglądu przez klienta nie zastępuje oceny wykonawcy. [Aktualny checkpoint](docs/WORK_CHECKPOINT.md).
+
+Meshy na dostarczonych screenach lepiej odtwarza podobieństwo twarzy i ciągłość większych form. FORGE / Astra + Blender wnosi edytowalne części, ukierunkowane poprawki oraz jawne testy. Porównanie ze screenów o różnych kamerach i świetle nie jest kontrolowanym rankingiem produktów. Wcześniejsze obserwacje wachlarza i szachownic pozostają przypadkami regresji do odtworzenia. Instrukcje, raporty i testy są pamięcią aplikacji — **nie przeprowadzono treningu wag Astra ani uruchomienia GPU L4**.
+
+Ukończono sześć rzeczywistych widoków po ponownym imporcie GLB, dodatkowe zbliżenie ciała 8K oraz porównania. Przeszło **20 testów Python audytu i reguły dopuszczenia oraz 20 testów Node formularza i pobierania plików**; nie jest to przeglądarkowy test WebGL ani kwalifikacja fizycznej produkcji.
+
+Publiczny [FORGE Studio](https://forge-studio-public.terraformingplanet.chatgpt.site) jest pokazem modeli oraz formularzem lokalnego opisu/wyceny. Nie uruchamia płatnego generowania, płatności ani zleceń do wykonawców. **Publikacja E19 oczekuje na potwierdzenie deploymentu.** Ostatnia potwierdzona publiczna wersja to 2 z E18R; status publikacji jest odrębny od scalenia kodu i aktualizacji Oracle.
+
 
 ## Aktualny priorytet
 
@@ -73,7 +86,7 @@ Licencja odziedziczonego kodu: [MIT](LICENSE). [Informacje o komponentach zewnę
 Panel `/shop`: trwały katalog, prywatne pliki 3D, wycena, szkice Shopify CSV, opisy TikTok i zapytania B2B. Model ze studia można zapisać bezpośrednio jako produkt. Kanały sprzedaży i zdalny Blender wymagają konfiguracji; panel nie udaje aktywnej sprzedaży. Szczegóły: [docs/COMMERCE.md](docs/COMMERCE.md).
 
 
-## Reference-driven 3D reconstruction — E18 working result
+## Historical E18 reconstruction notes — superseded by E19 status above
 
 FORGE combines reference analysis, editable Blender scenes and repeatable export checks. We are developing a workflow for game assets and custom objects such as chess sets, globes and decorative tableware. The public experience is intended to remain simple: describe an object, inspect a preview and prepare a manufacturing enquiry.
 

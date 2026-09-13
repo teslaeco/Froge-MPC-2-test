@@ -1,0 +1,206 @@
+{
+  "source": "FORGE-E18R-recovered-checkpoint.blend",
+  "source_sha256": "72504bb056c06c5ef4eaaa41b0e1a8aae864376984516000895366ee8ba89cdb",
+  "changes": {
+    "dental": {
+      "script": "dental/apply_dental.py",
+      "sha256": "ec18110f0a9cde0ac89c153c82c2bcd49eca517f86acb9795dbabba19644f6d3",
+      "result": {
+        "removed": [
+          "Recessed oral cavity",
+          "Anatomical_upper_tooth_-1_0",
+          "Anatomical_upper_tooth_-1_1",
+          "Anatomical_upper_tooth_-1_2",
+          "Anatomical_upper_tooth_-1_3",
+          "Anatomical_upper_tooth_-1_4",
+          "Anatomical_upper_tooth_-1_5",
+          "Anatomical_upper_tooth_1_0",
+          "Anatomical_lower_tooth_0",
+          "Anatomical_upper_tooth_1_1",
+          "Anatomical_lower_tooth_1",
+          "Anatomical_upper_tooth_1_2",
+          "Anatomical_lower_tooth_2",
+          "Anatomical_upper_tooth_1_3",
+          "Anatomical_lower_tooth_3",
+          "Anatomical_upper_tooth_1_4",
+          "Anatomical_lower_tooth_4",
+          "Anatomical_upper_tooth_1_5",
+          "Anatomical_lower_tooth_5",
+          "anatomical-eye-l",
+          "R14 recessed brown iris",
+          "R14 recessed pupil"
+        ],
+        "new_upper_teeth": 12,
+        "new_lower_teeth": 12,
+        "root_beds": 4,
+        "orbital_eye_diameter_m": 0.024,
+        "global_head_scale_changed": false,
+        "local_orbital_rim_vertices": 63794,
+        "orbital_rim_vertical_inset_fraction": 0.105,
+        "oral_backing": "closed recessed mesh",
+        "limitations": [
+          "Root beds overlap jaw; no boolean union or manufacturing certification.",
+          "Skull and living face shape remain approximate; single front reference cannot establish side anatomy.",
+          "E19 changes no global head size."
+        ]
+      }
+    },
+    "body": {
+      "script": "body/apply_body.py",
+      "sha256": "ceace3874a9ab49c11a87c68f2debc2f70435488070c3ecb80f3aab3b7d63e8d",
+      "result": {
+        "uv_wrap_triangles_repaired": 124,
+        "geometry": [
+          {
+            "object": "R9_continuous_shoulders_neck",
+            "changed_vertices": 6924,
+            "max_displacement_m": 0.028005760624209862
+          },
+          {
+            "object": "R9_tailored_split_gown",
+            "changed_vertices": 11539,
+            "max_displacement_m": 0.009153787793813995
+          },
+          {
+            "object": "R9_bodice_seam_-1_0.3",
+            "changed_vertices": 825,
+            "max_displacement_m": 0.0031202889239907625
+          },
+          {
+            "object": "R9_bodice_seam_-1_0.67",
+            "changed_vertices": 825,
+            "max_displacement_m": 0.007422012506053496
+          },
+          {
+            "object": "R9_neckline_-1",
+            "changed_vertices": 1128,
+            "max_displacement_m": 0.009253552933378885
+          },
+          {
+            "object": "R9_gathered_sleeve_-1",
+            "changed_vertices": 2979,
+            "max_displacement_m": 0.0010395852493233887
+          },
+          {
+            "object": "R9_sleeve_edge_-1",
+            "changed_vertices": 618,
+            "max_displacement_m": 0.000679247387215479
+          },
+          {
+            "object": "R9_bodice_seam_1_0.3",
+            "changed_vertices": 825,
+            "max_displacement_m": 0.0031240270453647126
+          },
+          {
+            "object": "R9_bodice_seam_1_0.67",
+            "changed_vertices": 825,
+            "max_displacement_m": 0.007422050003251931
+          },
+          {
+            "object": "R9_neckline_1",
+            "changed_vertices": 1130,
+            "max_displacement_m": 0.009253694133961772
+          },
+          {
+            "object": "R9_gathered_sleeve_1",
+            "changed_vertices": 2960,
+            "max_displacement_m": 0.0011858451917191048
+          },
+          {
+            "object": "R9_sleeve_edge_1",
+            "changed_vertices": 623,
+            "max_displacement_m": 0.0006762846696785794
+          },
+          {
+            "object": "R10_upper_arm_-1",
+            "changed_vertices": 1431,
+            "max_displacement_m": 0.0019132056029671082
+          },
+          {
+            "object": "R10_upper_arm_1",
+            "changed_vertices": 1431,
+            "max_displacement_m": 0.0019131776743411151
+          }
+        ],
+        "textures": {
+          "base": {
+            "file": "/workspace/scratch/584c9d97a5a1/e19/body/textures/E19_body_BaseColor_8K.png",
+            "size": [
+              8192,
+              8192
+            ]
+          },
+          "orm": {
+            "file": "/workspace/scratch/584c9d97a5a1/e19/body/textures/E19_body_ORM_8K.png",
+            "size": [
+              8192,
+              8192
+            ]
+          },
+          "normal": {
+            "file": "/workspace/scratch/584c9d97a5a1/e19/body/textures/E19_body_Normal_8K.png",
+            "size": [
+              8192,
+              8192
+            ]
+          }
+        },
+        "scope": "torso, neck, upper arms, gown and attached seam geometry; existing face albedo retained unchanged",
+        "claims": "authored procedural skin details, not a recovered 8K photograph; no print-readiness claim"
+      }
+    },
+    "hair": {
+      "script": "hair/apply_hair.py",
+      "sha256": "b9f464f13766147e177cdc7b3ed5264c2fd34da9993efd68c9954fb4a4c8d953",
+      "result": {
+        "status": "restrained refinement of original accepted groom",
+        "changed_core_objects": 312,
+        "preserved_fine_groom_triangles": 3967360,
+        "triangles_added": 0,
+        "mean_original_core_radius": 0.0015157160963813173,
+        "mean_refined_core_radius": 0.0008975138447842503,
+        "material_changes": [
+          "E17 aged silver 0",
+          "E17 aged silver 1",
+          "E17 aged silver 2",
+          "E17 aged silver 3",
+          "E17 aged silver 4",
+          "E17 aged silver 5",
+          "E17 chestnut 0",
+          "E17 chestnut 1",
+          "E17 chestnut 2",
+          "E17 chestnut 3",
+          "E17 chestnut 4",
+          "E17 chestnut 5",
+          "E18R root substrate 0",
+          "E18R root substrate 1"
+        ],
+        "head_body_eye_teeth_geometry_edited": false,
+        "silhouette_change": "Maximum 3.5% lower-hair width reduction; rear lower hair moved toward body by at most 9 mm; shared by core and fine fibres",
+        "limitations": [
+          "Still imperfect long-lock grouping and gaps; this is not a photorealism or reference-identity certification.",
+          "Fine strands require a separate fused production copy and manufacturing feature-size verification.",
+          "Rejected new curtain groom variants are not part of this patch."
+        ]
+      }
+    }
+  },
+  "versions": {
+    "master": {
+      "path": "FORGE-E19-8K.glb",
+      "sha256": "f5196a7e6b822d50bbfdaa9d7f6051919b7d48a2e6a84fa5f3082cfc45c5e4f9",
+      "bytes": 64211024,
+      "body_texture_resolution": 8192,
+      "facial_likeness_texture": "inherited lower-resolution reference texture, not newly captured 8K detail"
+    },
+    "web": {
+      "path": "FORGE-E19-web.glb",
+      "sha256": "08b88ea54b5046e579a9dab0e4f85342ffabdf3b9ed5932c3d49a00ec2b63cb4",
+      "bytes": 27521620,
+      "body_texture_resolution": 2048
+    }
+  },
+  "blender": "4.3.0",
+  "triangles": 6384581,
+  "mesh_objects": 379
+}

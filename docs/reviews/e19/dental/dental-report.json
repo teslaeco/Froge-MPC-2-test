@@ -1,0 +1,39 @@
+{
+  "removed": [
+    "Recessed oral cavity",
+    "Anatomical_upper_tooth_-1_0",
+    "Anatomical_upper_tooth_-1_1",
+    "Anatomical_upper_tooth_-1_2",
+    "Anatomical_upper_tooth_-1_3",
+    "Anatomical_upper_tooth_-1_4",
+    "Anatomical_upper_tooth_-1_5",
+    "Anatomical_upper_tooth_1_0",
+    "Anatomical_lower_tooth_0",
+    "Anatomical_upper_tooth_1_1",
+    "Anatomical_lower_tooth_1",
+    "Anatomical_upper_tooth_1_2",
+    "Anatomical_lower_tooth_2",
+    "Anatomical_upper_tooth_1_3",
+    "Anatomical_lower_tooth_3",
+    "Anatomical_upper_tooth_1_4",
+    "Anatomical_lower_tooth_4",
+    "Anatomical_upper_tooth_1_5",
+    "Anatomical_lower_tooth_5",
+    "anatomical-eye-l",
+    "R14 recessed brown iris",
+    "R14 recessed pupil"
+  ],
+  "new_upper_teeth": 12,
+  "new_lower_teeth": 12,
+  "root_beds": 4,
+  "orbital_eye_diameter_m": 0.024,
+  "global_head_scale_changed": false,
+  "local_orbital_rim_vertices": 63794,
+  "orbital_rim_vertical_inset_fraction": 0.105,
+  "oral_backing": "closed recessed mesh",
+  "limitations": [
+    "Root beds overlap jaw; no boolean union or manufacturing certification.",
+    "Skull and living face shape remain approximate; single front reference cannot establish side anatomy.",
+    "E19 changes no global head size."
+  ]
+}

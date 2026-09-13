@@ -1,0 +1,225 @@
+{
+  "mesh_checks": {
+    "E19 closed oral backing": {
+      "vertices": 2498,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0
+    },
+    "E19 upper -1 0": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 22
+    },
+    "E19 lower -1 0": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 upper -1 1": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 lower -1 1": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 upper -1 2": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 35
+    },
+    "E19 lower -1 2": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 upper -1 3": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 lower -1 3": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 34
+    },
+    "E19 upper -1 4": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 lower -1 4": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 16
+    },
+    "E19 upper -1 5": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 lower -1 5": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 10
+    },
+    "E19 upper root bed -1": {
+      "vertices": 2128,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0
+    },
+    "E19 lower root bed -1": {
+      "vertices": 2128,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0
+    },
+    "E19 upper 1 0": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 22
+    },
+    "E19 lower 1 0": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 upper 1 1": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 lower 1 1": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 upper 1 2": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 35
+    },
+    "E19 lower 1 2": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 upper 1 3": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 lower 1 3": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 34
+    },
+    "E19 upper 1 4": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 lower 1 4": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 16
+    },
+    "E19 upper 1 5": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 40
+    },
+    "E19 lower 1 5": {
+      "vertices": 760,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0,
+      "root_ring_vertices_inside_bed": 10
+    },
+    "E19 upper root bed 1": {
+      "vertices": 2128,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0
+    },
+    "E19 lower root bed 1": {
+      "vertices": 2128,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0
+    },
+    "anatomical-eye-l": {
+      "vertices": 2498,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0
+    },
+    "E19 recessed iris": {
+      "vertices": 2498,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0
+    },
+    "E19 recessed pupil": {
+      "vertices": 2498,
+      "boundary_edges": 0,
+      "nonmanifold_edges": 0
+    }
+  },
+  "all_added_meshes_closed": true,
+  "head_min": [
+    -0.11963798105716705,
+    -0.05479151010513306,
+    1.3476849794387817
+  ],
+  "head_max": [
+    0.11964105069637299,
+    0.17448048293590546,
+    1.7009100914001465
+  ],
+  "root_seating": {
+    "E19 upper -1 0": 22,
+    "E19 lower -1 0": 40,
+    "E19 upper -1 1": 40,
+    "E19 lower -1 1": 40,
+    "E19 upper -1 2": 35,
+    "E19 lower -1 2": 40,
+    "E19 upper -1 3": 40,
+    "E19 lower -1 3": 34,
+    "E19 upper -1 4": 40,
+    "E19 lower -1 4": 16,
+    "E19 upper -1 5": 40,
+    "E19 lower -1 5": 10,
+    "E19 upper 1 0": 22,
+    "E19 lower 1 0": 40,
+    "E19 upper 1 1": 40,
+    "E19 lower 1 1": 40,
+    "E19 upper 1 2": 35,
+    "E19 lower 1 2": 40,
+    "E19 upper 1 3": 40,
+    "E19 lower 1 3": 34,
+    "E19 upper 1 4": 40,
+    "E19 lower 1 4": 16,
+    "E19 upper 1 5": 40,
+    "E19 lower 1 5": 10
+  }
+}

@@ -1,0 +1,28 @@
+✔ download: success (8.833833ms)
+✔ viewer flow: success (1.699285ms)
+✔ download: missing manifest (1.037536ms)
+✔ viewer flow: missing manifest (0.879247ms)
+✔ download: missing chunk (0.936955ms)
+✔ viewer flow: missing chunk (0.883052ms)
+✔ download: same-length corrupt chunk (2.644271ms)
+✔ viewer flow: same-length corrupt chunk (1.230668ms)
+✔ download: truncated chunk (0.925286ms)
+✔ viewer flow: truncated chunk (1.343678ms)
+✔ viewer failure restores static render and revokes URL (1.082394ms)
+✔ repair export: no release (0.964325ms)
+✔ repair export: missing hash (0.751134ms)
+✔ repair export: malformed hash (0.804114ms)
+✔ repair export: mismatched hash (0.744153ms)
+✔ repair export: missing manifest (0.712586ms)
+✔ repair export: malformed manifest (0.873188ms)
+✔ repair export: actual release and manifest (2.267061ms)
+✔ actual web parts: size, SHA-256, GLB header, embedded resources (53.468774ms)
+✔ actual master parts: size, SHA-256, GLB header, embedded resources (100.68433ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 263.385955
