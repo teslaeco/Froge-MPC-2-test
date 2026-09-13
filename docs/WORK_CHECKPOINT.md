@@ -15,3 +15,8 @@ A 646 MB local master archive exists. An attempted extra Google Drive backup was
 # E17 active checkpoint
 
 Main task: improve actual E16 hair/teeth/anatomy from supplied reference; model build pending from dedicated agent. Secondary Queen/fan rebuilt; video 15s produced and validated. Generator runtime changes pending integration, source literature and curated error catalog complete. Sources in docs/reviews/e17 and docs/training/e17; no full L4 training or Astra weights claimed. Private ChessArena PR115 provides QA training source but weights/results not recovered in reviewed tree. User's requested public client site is separate from operator studio; static source prepared under public-studio, Site ID appgprj_6aa5c12d4f4c81919545504d438b3ff3. Not deployed yet. Existing Sites clone failed with server HTTP500 three bounded attempts; private studio unchanged. No Oracle worker deployment. Artifact saving via Library unavailable this turn. Models/renders remain local until final handoff.
+
+
+## Wznowienie 2026-09-13
+
+Nowe zgłoszenia Julii w bluzie i figurki Atlas oraz stan wznowienia opisano w [checkpoint](reviews/resume-2026-09-13/RESUME-CHECKPOINT.md) i [analizie porównawczej](reviews/resume-2026-09-13/REFERENCE-CASES-2026-09-13.md). Ten etap nie potwierdza jeszcze instalacji na Oracle ani poprawienia nowych eksportów.
