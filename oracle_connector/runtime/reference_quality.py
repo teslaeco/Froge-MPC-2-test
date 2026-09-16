@@ -19,7 +19,7 @@ def texture_limit(value=None):
     if value is None:
         return 2048  # Existing saved jobs retain their export policy.
     if type(value) is not int or value not in TEXTURE_LIMITS:
-        raise ValueError('Wybierz limit tekstur 2048, 4096 lub 8192 px.')
+        raise ValueError('Choose a texture limit of 2048, 4096 or 8192 px.')
     return value
 
 
@@ -69,9 +69,9 @@ def material_budget(sizes, memory_bytes):
     export_pixels = sum(w*h for _, (w,h) in sizes)
     estimate = GIB + source_pixels*16 + export_pixels*32
     if export_pixels > MAX_EXPORT_PIXELS or estimate > memory_bytes:
-        raise ValueError('Zestaw materialow wymaga ok. %.1f GiB przy budzecie %.1f GiB. '
-                         'Wybierz 4K lub uruchom tryb 8K na serwerze z odpowiednia pamiecia. '
-                         'Nie zmniejszono tekstur po cichu.' % (estimate/GIB, memory_bytes/GIB))
+        raise ValueError('The material set needs about %.1f GiB with a %.1f GiB budget. '
+                         'Choose 4K or run 8K mode on a server with enough memory. '
+                         'Textures were not silently reduced.' % (estimate/GIB, memory_bytes/GIB))
     return {'source_pixels': source_pixels, 'export_pixels': export_pixels,
             'estimated_peak_bytes': estimate, 'memory_limit_bytes': memory_bytes,
             'max_export_pixels': MAX_EXPORT_PIXELS, 'estimate_is_measured_peak': False}
@@ -119,7 +119,14 @@ def export_textures(images, folder):
                        'color_space': image.colorspace_settings.name,
                        'source_sha256': image.get('source_sha256'),
                        'contains_photographed_lighting': bool(image.get('reference_surface'))})
-    return {'revision': 2, 'requested_max_edge': limit, 'textures': report, 'memory_budget': budget,
+    actual_max_edge = max((max(item['export_size']) for item in report), default=0)
+    source_max_edge = max((max(item['source_size']) for item in report), default=0)
+    downsampled_count = sum(item['resampled'] for item in report)
+    return {'revision': 3, 'requested_max_edge': limit,
+            'actual_max_export_edge': actual_max_edge, 'actual_max_source_edge': source_max_edge,
+            'reaches_requested_max_edge': bool(report) and actual_max_edge >= limit,
+            'texture_count': len(report), 'downsampled_count': downsampled_count,
+            'textures': report, 'memory_budget': budget,
             'upscaling_used': False, 'likeness_verified': False,
-            'note': '4K/8K is a maximum texture edge, not recovered detail or render resolution.'}
-
+            'note': '4K/8K is a maximum texture edge, not recovered detail or render resolution. '
+                    'actual_max_export_edge reports what is really present in this export.'}
