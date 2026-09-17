@@ -12,19 +12,19 @@ export function useDictation(onText: (text: string) => void) {
   useEffect(() => () => { if (recognition.current) { recognition.current.onend = null; recognition.current.onresult = null; recognition.current.onerror = null; recognition.current.onstart = null; recognition.current.abort() } }, [])
   function stop() { recognition.current?.abort(); recognition.current = null; setListening(false); setInterim('') }
   function start() {
-    if (!Constructor) { setError('Ta przeglądarka nie obsługuje dyktowania. Użyj klawiatury lub mikrofonu klawiatury telefonu.'); return }
+    if (!Constructor) { setError('This browser does not support dictation. Use the keyboard or your phone keyboard microphone.'); return }
     if (recognition.current) return
     setError(''); const r = new Constructor(); recognition.current = r
-    r.lang = 'pl-PL'; r.continuous = true; r.interimResults = true
+    r.lang = 'en-US'; r.continuous = true; r.interimResults = true
     r.onstart = () => setListening(true)
     r.onend = () => { setListening(false); recognition.current = null; setInterim('') }
-    r.onerror = e => { setError(e.error === 'not-allowed' ? 'Brak zgody na mikrofon. Możesz nadal pisać.' : `Dyktowanie zatrzymane (${e.error}). Możesz spróbować ponownie.`); stop() }
+    r.onerror = e => { setError(e.error === 'not-allowed' ? 'Microphone permission was not granted. You can still type.' : `Dictation stopped (${e.error}). You can try again.`); stop() }
     r.onresult = e => {
       let partial = '', final = ''
       for (let i = e.resultIndex; i < e.results.length; i++) { const result = e.results[i]; if (result.isFinal) final += result[0].transcript + ' '; else partial += result[0].transcript }
       setInterim(partial); if (final.trim()) callback.current(final.trim())
     }
-    try { r.start() } catch { stop(); setError('Nie udało się uruchomić mikrofonu. Sprawdź uprawnienia przeglądarki.') }
+    try { r.start() } catch { stop(); setError('The microphone could not be started. Check your browser permissions.') }
   }
   return { supported: !!Constructor, listening, interim, error, start, stop }
 }

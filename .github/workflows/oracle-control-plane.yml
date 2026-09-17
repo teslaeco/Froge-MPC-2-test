@@ -3,6 +3,9 @@ on:
   pull_request:
     paths:
       - 'oracle_connector/**'
+      - 'src/**'
+      - 'package.json'
+      - 'package-lock.json'
       - 'scripts/package-v34.py'
       - 'scripts/cloud-shell-v34.template.py'
       - 'scripts/package-v35.py'
@@ -27,6 +30,27 @@ on:
 permissions:
   contents: read
 jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked frontend dependencies
+        run: npm ci
+      - name: Lint review source
+        run: npm run lint
+      - name: Typecheck review source
+        run: npm run typecheck
+      - name: Focused localization regressions
+        run: npx vitest run src/tests/english-review-source.test.ts
+      - name: Full frontend regression suite
+        run: npm test -- --run
+      - name: Production build
+        run: npm run build
   offline:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -66,6 +90,10 @@ jobs:
         if: matrix.python == '3.9'
         working-directory: oracle_connector
         run: /tmp/blender-4.3.0-linux-x64/blender --background --python-exit-code 1 --python verify_edit_runtime.py
+      - name: Real Blender rooted-hair attachment and camera regression
+        if: matrix.python == '3.9'
+        working-directory: oracle_connector
+        run: /tmp/blender-4.3.0-linux-x64/blender --background --python-exit-code 1 --python verify_camera_hair_runtime.py
       - name: Real Blender anatomy edits and diagnostics
         if: matrix.python == '3.9'
         working-directory: oracle_connector

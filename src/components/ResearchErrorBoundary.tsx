@@ -19,11 +19,11 @@ export class ResearchErrorBoundary extends Component<Props, State> {
     if (!this.state.failed) return this.props.children
 
     return <section className="card lab-error-fallback" role="alert">
-      <h1>Nie udało się wyświetlić części raportu</h1>
-      <p>Strona nie została wygaszona. Zapis archiwum jest odczytywany niezależnie od tego widoku.</p>
+      <h1>This part of the report could not be displayed</h1>
+      <p>The page remains available. The research archive is read independently of this view.</p>
       <div className="toolbar">
-        <button type="button" onClick={() => this.setState({ failed: false })}>Spróbuj ponownie</button>
-        <Link className="button-link" to="/research-archive">Otwórz archiwum badań</Link>
+        <button type="button" onClick={() => this.setState({ failed: false })}>Try again</button>
+        <Link className="button-link" to="/research-archive">Open research archive</Link>
       </div>
     </section>
   }

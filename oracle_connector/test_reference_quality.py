@@ -20,7 +20,7 @@ class ReferenceQualityTests(unittest.TestCase):
         report=material_budget(sizes,8*GIB)
         self.assertEqual(report['export_pixels'],117440512)
         self.assertLess(report['estimated_peak_bytes'],8*GIB)
-        with self.assertRaisesRegex(ValueError,'budzecie'):material_budget(sizes,4*GIB)
+        with self.assertRaisesRegex(ValueError,'budget'):material_budget(sizes,4*GIB)
         with self.assertRaises(ValueError):material_budget(sizes*2,8*GIB)
 
     def test_low_memory_rejection_does_not_mutate_any_image(self):
@@ -34,12 +34,45 @@ class ReferenceQualityTests(unittest.TestCase):
         for image in images:
             image.scale.assert_not_called();image.pack.assert_not_called()
 
+    def test_report_distinguishes_requested_edge_from_actual_source_pixels(self):
+        image=Mock(size=(1122,1402),has_data=False,packed_file=None,is_dirty=False,name='reference-face')
+        image.get.side_effect=lambda key,default=None: default
+        image.colorspace_settings.name='sRGB'
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp);(folder/'reference-photos.json').write_text('[{"textureMaxSize":8192}]')
+            with patch('runtime.reference_quality.export_memory_bytes',return_value=8*GIB):
+                report=export_textures([image],folder)
+        self.assertEqual(report['revision'],3)
+        self.assertEqual(report['requested_max_edge'],8192)
+        self.assertEqual(report['actual_max_source_edge'],1402)
+        self.assertEqual(report['actual_max_export_edge'],1402)
+        self.assertFalse(report['reaches_requested_max_edge'])
+        self.assertEqual(report['texture_count'],1)
+        self.assertEqual(report['downsampled_count'],0)
+        self.assertFalse(report['upscaling_used'])
+        image.scale.assert_not_called()
+
+    def test_report_records_real_downsampled_export_edge(self):
+        image=Mock(size=(8192,4096),has_data=False,packed_file=None,is_dirty=False,name='large-atlas')
+        image.get.side_effect=lambda key,default=None: True if key=='anatomical_atlas' else default
+        image.colorspace_settings.name='sRGB'
+        with tempfile.TemporaryDirectory() as tmp:
+            folder=Path(tmp);(folder/'reference-photos.json').write_text('[{"textureMaxSize":4096}]')
+            with patch('runtime.reference_quality.export_memory_bytes',return_value=8*GIB):
+                report=export_textures([image],folder)
+        self.assertEqual(report['requested_max_edge'],4096)
+        self.assertEqual(report['actual_max_source_edge'],8192)
+        self.assertEqual(report['actual_max_export_edge'],4096)
+        self.assertTrue(report['reaches_requested_max_edge'])
+        self.assertEqual(report['downsampled_count'],1)
+        image.scale.assert_called_once_with(4096,2048)
+
     def test_aspect_ratio_and_no_invented_pixels(self):
         self.assertEqual(fit_dimensions(8192,4096,4096),(4096,2048))
         self.assertEqual(fit_dimensions(1122,1402,8192),(1122,1402))
         self.assertEqual(fit_dimensions(400,8000,2048),(102,2048))
         for value in (True,'8192',8193,0,4096.0):
-            with self.assertRaises(ValueError):texture_limit(value)
+            with self.assertRaisesRegex(ValueError,'texture limit'):texture_limit(value)
 
     def test_eight_k_admission_metadata_replay_and_limits(self):
         raw=jpeg(8192,4096)
@@ -64,4 +97,3 @@ class ReferenceQualityTests(unittest.TestCase):
         for region in ((slice(5,15),slice(15,25)),(slice(26,40),slice(15,30))):
             changed=pixels.copy();changed[region]=[.9,.1,.8]
             self.assertFalse(compare(changed,template)['matched'])
-

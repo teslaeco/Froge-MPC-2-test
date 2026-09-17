@@ -1,6 +1,7 @@
 """Portable exports of the completed master, with explicit partial failures."""
 from contextlib import contextmanager
 import hashlib
+import math
 import re
 from pathlib import Path
 from array import array
@@ -213,13 +214,58 @@ def _checked_export(report, output, key, format_name, filenames, operation):
         entry.update(status='failed', error=str(error)[:400])
 
 
+def _clean_name(name):
+    """Blender suffixes imported datablocks when originals remain in memory."""
+    return re.sub(r'\.\d{3}$', '', name)
+
+
+def _verify_fbx_reimport(bpy, output, report):
+    """Reject an FBX that Blender cannot reopen with geometry and materials.
+
+    This is structural portability evidence only. It does not prove that every
+    Blender/glTF PBR shader channel has an FBX equivalent or that the model
+    visually matches a reference person.
+    """
+    entry = report['fbx']
+    if entry.get('status') != 'ready':return
+    path = output / 'model.fbx'
+    before_objects=set(bpy.data.objects);before_materials=set(bpy.data.materials);before_images=set(bpy.data.images)
+    source_meshes=[o for o in before_objects if o.type=='MESH']
+    source_materials={_clean_name(m.name) for o in source_meshes for m in o.data.materials if m}
+    source_has_uv=any(o.data.uv_layers for o in source_meshes)
+    try:
+        status=bpy.ops.import_scene.fbx(filepath=str(path))
+        if status!={'FINISHED'}:raise ValueError('FBX reimport did not finish: '+str(status))
+        imported=[o for o in bpy.data.objects if o not in before_objects]
+        meshes=[o for o in imported if o.type=='MESH']
+        if not meshes:raise ValueError('FBX reimport contains no mesh geometry')
+        if any(not o.data.vertices or not all(math.isfinite(c) for v in o.data.vertices for c in v.co) for o in meshes):
+            raise ValueError('FBX reimport contains empty or non-finite geometry')
+        imported_materials={_clean_name(m.name) for o in meshes for m in o.data.materials if m}
+        missing=sorted(source_materials-imported_materials)
+        if missing:raise ValueError('FBX reimport lost materials: '+', '.join(missing[:8]))
+        imported_uv=sum(bool(o.data.uv_layers) for o in meshes)
+        if source_has_uv and not imported_uv:raise ValueError('FBX reimport lost all UV layers')
+        entry.update(reimport_verified=True,reimported_meshes=len(meshes),
+                     reimported_materials=len(imported_materials),uv_presence_verified=not source_has_uv or imported_uv>0,
+                     pbr_shader_equivalence_verified=False,likeness_assessed=False)
+    except Exception as error:
+        path.unlink(missing_ok=True)
+        report['formats']=[item for item in report['formats'] if item!='fbx']
+        entry.update(status='failed',files=[],reimport_verified=False,error=('FBX reimport verification failed: '+str(error))[:400])
+    finally:
+        for obj in [o for o in list(bpy.data.objects) if o not in before_objects]:bpy.data.objects.remove(obj,do_unlink=True)
+        for material in [m for m in list(bpy.data.materials) if m not in before_materials and m.users==0]:bpy.data.materials.remove(material)
+        for image in [i for i in list(bpy.data.images) if i not in before_images and i.users==0]:bpy.data.images.remove(image)
+
+
 def export_interchange(output, scene_source=None):
     import bpy
 
     output = Path(output).resolve()
     output.mkdir(parents=True, exist_ok=True)
     report = {
-        'revision': 2, 'formats': [], 'same_master_scene': True, 'textures': [], 'baked_base_colors': [], 'uv_order_changes': [], 'uv_binding_limitations': [],
+        'revision': 3, 'formats': [], 'same_master_scene': True, 'textures': [], 'baked_base_colors': [], 'uv_order_changes': [], 'uv_binding_limitations': [],
         'fbx': {'axis_forward': '-Z', 'axis_up': 'Y', 'textures_embedding_requested': True,
                 'reimport_verified': False,
                 'shader_boundary': 'FBX preserves supported image-based channels, not every Blender PBR shader',
@@ -259,6 +305,7 @@ def export_interchange(output, scene_source=None):
         except Exception as error:
             for key in ('fbx', 'obj'):
                 report[key].update(status='failed', error=str(error)[:400])
+        _verify_fbx_reimport(bpy,output,report)
         # STL has no unit metadata: write numeric millimetres.
         scale = 1000.0 * bpy.context.scene.unit_settings.scale_length
         _checked_export(report, output, 'stl', 'stl', ['model-mm.stl'], lambda:

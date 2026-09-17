@@ -55,7 +55,7 @@ it('rejects more than four photos and retries the original saved references afte
   choose(['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'])
   await screen.findByText('Możesz dołączyć maksymalnie 4 zdjęcia. Usuń jedno, aby dodać kolejne.')
   expect(screen.queryByAltText('Zdjęcie referencyjne 1: 1.jpg')).not.toBeInTheDocument()
-  const button = await screen.findByRole('button', { name: 'Ponów z tymi zdjęciami' })
+  const button = await screen.findByRole('button', { name: 'Generuj ponownie z tych zdjęć · OpenAI API' })
   await waitFor(() => expect(button).toBeEnabled())
   expect(screen.getByAltText('Referencja 1: front.jpg')).toHaveAttribute('src', original.referencePhotos[0].url)
   fireEvent.click(button)
