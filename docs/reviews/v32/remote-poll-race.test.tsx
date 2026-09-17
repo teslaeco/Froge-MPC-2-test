@@ -1,10 +1,10 @@
 import { afterEach, expect, it, vi } from 'vitest'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { RemoteGenerator } from '../blender/RemoteGenerator'
+import { RemoteGenerator } from '../../../src/blender/RemoteGenerator'
 
-vi.mock('../blender/GenerationExports', () => ({ GenerationExports: () => null }))
-vi.mock('../blender/GenerationReport', () => ({ GenerationReport: () => null }))
-vi.mock('../studio/codexDraft', () => ({
+vi.mock('../../../src/blender/GenerationExports', () => ({ GenerationExports: () => null }))
+vi.mock('../../../src/blender/GenerationReport', () => ({ GenerationReport: () => null }))
+vi.mock('../../../src/studio/codexDraft', () => ({
   connectCodexExecutor: () => () => {},
   instructionsForGeneration: () => 'Zbuduj nowy model i sprawdź jego rendery.',
   regenerateCodexDraft: vi.fn(),
