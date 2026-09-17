@@ -47,6 +47,8 @@ jobs:
         run: npm run typecheck
       - name: Focused localization regressions
         run: npx vitest run src/tests/english-review-source.test.ts
+      - name: Full frontend regression suite
+        run: npm test -- --run
       - name: Production build
         run: npm run build
   offline:
