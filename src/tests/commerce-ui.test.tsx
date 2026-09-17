@@ -22,5 +22,5 @@ it('uses real saved response and retains all channels as unconnected',async()=>{
  await waitFor(()=>expect(screen.getByText('Produkt zapisany w Twoim katalogu. Oferta pozostaje nieopublikowana.')).toBeTruthy())
  expect(screen.getAllByText('Niepołączony')).toHaveLength(1)
  expect(screen.getAllByText('Planowane połączenie')).toHaveLength(4)
- expect(screen.getByText('Serwer niepołączony')).toBeTruthy()
+ expect(screen.getByRole('link',{name:'Studio i stan połączenia z Blenderem →'})).toHaveAttribute('href','/')
 })
