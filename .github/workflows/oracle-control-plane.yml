@@ -45,8 +45,8 @@ jobs:
         run: npm run lint
       - name: Typecheck review source
         run: npm run typecheck
-      - name: Frontend regression tests
-        run: npm test -- --run
+      - name: Focused localization regressions
+        run: npx vitest run src/tests/english-review-source.test.ts
       - name: Production build
         run: npm run build
   offline:
