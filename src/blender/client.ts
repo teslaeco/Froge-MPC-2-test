@@ -9,6 +9,17 @@ export class BlenderRequestError extends Error {
   readonly status: number
   constructor(message: string, retryable = false, status = 0) { super(message); this.retryable = retryable; this.status = status }
 }
+
+// One Studio surface owns one generation stream. Starting a newer POST must
+// invalidate in-flight reads for the previously selected job before their
+// response can replace the new model or restart old polling. This guard lives
+// below React so status/model requests that were already awaiting fetch are
+// also rejected when they finally resolve.
+let generationEpoch = 0
+let pendingGenerationId: string | null = null
+const jobIdFromPath = (path: string) => /^jobs\/([^/?]+)(?:\/model)?(?:\?|$)/.exec(path)?.[1]
+const supersededRequest = () => new BlenderRequestError('This request was superseded by a newer generation.', false)
+
 async function receive<T>(path: string, options: RequestInit | undefined, read: (response: Response) => Promise<T>): Promise<T> {
   const controller = new AbortController()
   const abort = () => controller.abort()
@@ -32,15 +43,37 @@ async function receive<T>(path: string, options: RequestInit | undefined, read: 
   }
 }
 export async function blenderRequest<T>(path: string, options?: RequestInit): Promise<T> {
-  return receive(path, options, async response => {
-    if (!response.headers.get('content-type')?.includes('application/json')) throw new BlenderRequestError('Nie można odczytać odpowiedzi. Odśwież stronę i zaloguj się ponownie do Froge.', response.status >= 500, response.status)
-    const data = await response.json()
-    if (!response.ok) throw new BlenderRequestError(data.error || 'Operacja nie powiodła się.', response.status >= 500 || response.status === 429, response.status)
-    return data as T
-  })
+  const method = (options?.method || 'GET').toUpperCase()
+  const isGenerationSubmission = path === 'jobs' && method === 'POST'
+  let submittedId: string | null = null
+  if (isGenerationSubmission) {
+    generationEpoch++
+    try {
+      const parsed = typeof options?.body === 'string' ? JSON.parse(options.body) : null
+      submittedId = typeof parsed?.id === 'string' ? parsed.id : null
+    } catch { submittedId = null }
+    pendingGenerationId = submittedId
+  }
+  const requestEpoch = generationEpoch
+  const requestedJobId = jobIdFromPath(path)
+  if (!isGenerationSubmission && pendingGenerationId && requestedJobId && requestedJobId !== pendingGenerationId) throw supersededRequest()
+  try {
+    const result = await receive(path, options, async response => {
+      if (!response.headers.get('content-type')?.includes('application/json')) throw new BlenderRequestError('Nie można odczytać odpowiedzi. Odśwież stronę i zaloguj się ponownie do Froge.', response.status >= 500, response.status)
+      const data = await response.json()
+      if (!response.ok) throw new BlenderRequestError(data.error || 'Operacja nie powiodła się.', response.status >= 500 || response.status === 429, response.status)
+      return data as T
+    })
+    if (!isGenerationSubmission && requestedJobId && requestEpoch !== generationEpoch) throw supersededRequest()
+    return result
+  } finally {
+    if (isGenerationSubmission && pendingGenerationId === submittedId) pendingGenerationId = null
+  }
 }
 export async function generatedModel(id: string, options?: RequestInit) {
-  return receive(`jobs/${id}/model`, options, async response => {
+  const requestEpoch = generationEpoch
+  if (pendingGenerationId && id !== pendingGenerationId) throw supersededRequest()
+  const bytes = await receive(`jobs/${id}/model`, options, async response => {
     if (!response.ok || !response.headers.get('content-type')?.includes('model/gltf-binary')) {
       let message = 'Nie udało się pobrać gotowego modelu.'
       try { message = (await response.json()).error || message } catch { /* Preserve a useful error. */ }
@@ -48,4 +81,6 @@ export async function generatedModel(id: string, options?: RequestInit) {
     }
     return response.arrayBuffer()
   })
+  if (requestEpoch !== generationEpoch) throw supersededRequest()
+  return bytes
 }
