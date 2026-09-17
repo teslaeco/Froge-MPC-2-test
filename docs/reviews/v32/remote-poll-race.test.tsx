@@ -30,14 +30,13 @@ function deferred<T>() {
   return { promise, resolve }
 }
 async function settle() {
-  // Flush the real response body promises and React work before negative assertions.
   await new Promise(resolve => setTimeout(resolve, 0))
 }
 
 it.each(['reviewed', 'retryable-error'] as const)('ignores a late old status (%s) while the next POST is pending', async outcome => {
   const oldStatus = deferred<Response>(), submission = deferred<Response>()
   let next = { ...previous, id: '', prompt: '', state: 'queued', hasModel: false, modelStatus: 'none' }
-  const onResult = vi.fn(async () => true), onJobChange = vi.fn()
+  const onResult = vi.fn(async () => true)
   const fetcher = vi.fn((url: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
     const path = String(url)
     if (path.endsWith('/connection')) return Promise.resolve(Response.json(connection))
@@ -53,13 +52,12 @@ it.each(['reviewed', 'retryable-error'] as const)('ignores a late old status (%s
     throw new Error('Unexpected request: ' + path)
   })
   vi.stubGlobal('fetch', fetcher)
-  render(<RemoteGenerator prompt="Nowy dąb" onStart={() => 1} onResult={onResult} onJobChange={onJobChange}/>)
+  render(<RemoteGenerator prompt="Nowy dąb" onStart={() => 1} onResult={onResult}/>)
   await waitFor(() => expect(fetcher.mock.calls.filter(([url]) => String(url).endsWith('/jobs/' + previous.id))).toHaveLength(1))
   await waitFor(() => expect(screen.getByRole('button', { name: 'Generuj model 3D' })).toBeEnabled())
   fireEvent.click(screen.getByRole('button', { name: 'Generuj model 3D' }))
   expect(screen.getByRole('button', { name: 'Wysyłam zlecenie…' })).toBeDisabled()
   expect(next.prompt).toBe('Nowy dąb')
-  onJobChange.mockClear()
   await act(async () => {
     oldStatus.resolve(outcome === 'reviewed'
       ? Response.json({ job: previous })
@@ -67,19 +65,19 @@ it.each(['reviewed', 'retryable-error'] as const)('ignores a late old status (%s
     await settle()
   })
   expect(onResult).not.toHaveBeenCalled()
-  expect(onJobChange).not.toHaveBeenCalled()
   expect(fetcher.mock.calls.some(([url]) => String(url).endsWith('/model'))).toBe(false)
 
-  // active.id has not changed yet: the old effect's online handler is still mounted.
-  // It must not acquire the new serial and restart polling the previous job.
+  // The old effect remains mounted until the accepted POST changes active.id.
+  // An online event must not restart a status read for the previous job.
   await act(async () => { fireEvent(window, new Event('online')); await settle() })
   expect(fetcher.mock.calls.filter(([url]) => String(url).endsWith('/jobs/' + previous.id))).toHaveLength(1)
   expect(screen.getByRole('button', { name: 'Wysyłam zlecenie…' })).toBeDisabled()
   expect(fetcher.mock.calls.filter(([, init]) => init?.method === 'POST')).toHaveLength(1)
 
   await act(async () => { submission.resolve(Response.json({ job: next })); await settle() })
-  await waitFor(() => expect(onJobChange).toHaveBeenCalledWith(expect.objectContaining({ id: next.id, prompt: 'Nowy dąb' })))
-  expect(screen.getByText('Nowe zlecenie przyjęte')).toBeInTheDocument()
+  await screen.findByText('Nowe zlecenie przyjęte')
+  expect(screen.getByText('Nowy dąb')).toBeInTheDocument()
+  expect(screen.queryByText('Zapisany poprzedni wynik')).not.toBeInTheDocument()
   expect(onResult).not.toHaveBeenCalled()
 })
 
