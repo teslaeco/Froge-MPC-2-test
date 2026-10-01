@@ -141,7 +141,7 @@ class WorkerHTTPTests(unittest.TestCase):
                 server.worker()
             ai.assert_not_called()
             blender.assert_called_once()
-            self.assertEqual(blender.call_args.kwargs['timeout'], 600)
+            self.assertEqual(blender.call_args.kwargs['timeout'], 900)
         self.assertEqual((folder / 'generate.py').read_text(), original)
         self.assertNotIn('generated_type', (server.JOBS / rebuilt / 'generate.py').read_text())
         status, result = self.call('/v1/jobs/' + rebuilt)
