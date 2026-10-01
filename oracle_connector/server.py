@@ -29,7 +29,8 @@ JOBS = STATE / 'jobs'
 CONFIG = STATE / 'config.json'
 MODEL = os.environ.get('FROGE_AI_MODEL', 'qwen2.5-coder:7b')
 CONNECTOR_VERSION = 18
-AI_TIME_LIMIT = 180
+AI_TIME_LIMIT = 600
+BLENDER_TIME_LIMIT = 600
 OLLAMA = 'http://127.0.0.1:11434'
 UUID = re.compile(r'^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$')
 LOCK = threading.RLock()
@@ -74,7 +75,7 @@ def health():
         ready = bool(selected.get('api_key'))
         return {'ready': ready, 'provider': 'openai', 'model': openai_provider.MODEL,
                 'detail': 'OpenAI Astra jest polaczone. Blender wykona sprawdzony plan sceny.' if ready else 'Podlacz klucz OpenAI API w ustawieniach.',
-                'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
+                'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18, 'astraTimeLimitSeconds': AI_TIME_LIMIT, 'blenderTimeLimitSeconds': BLENDER_TIME_LIMIT}
     try:
         tags = ollama_json('/api/tags').get('models', [])
         ready = any(m.get('name') == MODEL or m.get('model') == MODEL for m in tags)
@@ -82,7 +83,7 @@ def health():
         pull = STATE / 'pull-status.json'
         if not ready and pull.exists():
             detail = json.loads(pull.read_text()).get('detail', detail)
-        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
+        return {'ready': ready, 'provider': 'ollama', 'model': MODEL, 'detail': detail, 'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18, 'astraTimeLimitSeconds': AI_TIME_LIMIT, 'blenderTimeLimitSeconds': BLENDER_TIME_LIMIT}
     except Exception:
         return {'ready': False, 'provider': 'ollama', 'model': MODEL, 'detail': 'Lokalne AI jeszcze sie uruchamia. Sprawdz ponownie za chwile.', 'connectorVersion': CONNECTOR_VERSION, 'characterStandard': 18}
 
@@ -214,7 +215,7 @@ def worker():
                     status(job['id'], 'building', 'Plan sprawdzony. Blender buduje geometrie i zapisuje GLB…')
                     phase_started = time.monotonic()
                     try:
-                        run_blender(job['id'], folder, cancelled, timeout=180)
+                        run_blender(job['id'], folder, cancelled, timeout=BLENDER_TIME_LIMIT)
                     finally:
                         blender_seconds += time.monotonic() - phase_started
                     elapsed = time.monotonic() - started
