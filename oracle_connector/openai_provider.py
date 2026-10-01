@@ -9,7 +9,7 @@ from ai_stream import OpenAIServiceError, openai_error, stream_chat
 MODEL = 'gpt-6-astra'
 API = 'https://api.openai.com/v1'
 KEY = re.compile(r'^sk-[A-Za-z0-9_-]{20,500}$')
-TIME_LIMIT = 180
+TIME_LIMIT = 600
 # Complex reference-driven characters can need more than 4.5k output tokens even
 # when the scene contract is compact. Keep this below the worker's 60 KB JSON cap.
 MAX_OUTPUT_TOKENS = 9000
