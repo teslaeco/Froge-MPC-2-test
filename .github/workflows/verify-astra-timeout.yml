@@ -1,0 +1,20 @@
+name: Verify Astra complex-model timeout fix
+on:
+  push:
+    branches: ['fix/astra-complex-model-timeout-20261001']
+  pull_request:
+    branches: ['main']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Compile connector
+        run: python3 -m compileall -q oracle_connector
+      - name: Run timeout-sensitive connector tests
+        env:
+          PYTHONPATH: oracle_connector
+        run: python3 -m unittest oracle_connector.test_openai oracle_connector.test_connector -v
